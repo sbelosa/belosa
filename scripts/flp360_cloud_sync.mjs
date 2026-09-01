@@ -1250,6 +1250,153 @@ function extractLiveCcRecord(payload, expectedFboId, date = new Date(), currentD
     };
 }
 
+function historicalMonthlyCore(row, label) {
+    const fields = {
+        personalCc: 'personalCCMtd',
+        totalCc: 'totalCCMtd',
+        totalActiveCc: 'totalActiveCCMtd',
+    };
+    const rawCore = Object.values(fields).map(field => row?.[field]);
+    const nullCount = rawCore.filter(value => value === null).length;
+    if(nullCount !== 0 && nullCount !== rawCore.length) {
+        throw liveCcValidationError('historical_month_mixed_null', `${label} ima mješovita osnovna mjesečna CC polja.`);
+    }
+    const usedHistoricalNullSentinel = nullCount === rawCore.length;
+    const core = Object.fromEntries(Object.entries(fields).map(([target, source]) => [
+        target,
+        usedHistoricalNullSentinel ? 0 : nonNegativeCc(row?.[source], `${label} ${source}`),
+    ]));
+    const optionalSubmetric = field => {
+        const value = row?.[field];
+        if(value === null || value === undefined) return core.totalActiveCc === 0 ? 0 : null;
+        return nonNegativeCc(value, `${label} ${field}`);
+    };
+    return {
+        ...core,
+        nonManagerCc: optionalSubmetric('nonManagerCCMtd'),
+        leadershipCc: optionalSubmetric('leadershipCCMtd'),
+        usedHistoricalNullSentinel,
+    };
+}
+
+function exactHistoricalMonthlyRow(payload, period, label, options = {}) {
+    if(!payload || typeof payload !== 'object' || Array.isArray(payload) || !Array.isArray(payload.monthly)) {
+        throw liveCcValidationError('historical_month_payload_invalid', `${label} nije vratio valjan mjesečni skup.`);
+    }
+    const hasEnvelopeError = value => {
+        if(value === null || value === undefined || value === false || value === '') return false;
+        if(Array.isArray(value)) return value.length > 0;
+        if(typeof value === 'object') return Object.keys(value).length > 0;
+        return true;
+    };
+    if(hasEnvelopeError(payload.error)
+        || hasEnvelopeError(payload.errors)
+        || hasEnvelopeError(payload.redirectUrl)) {
+        throw liveCcValidationError('historical_month_upstream_error', `${label} je vratio poruku o pogrešci.`);
+    }
+    const status = String(payload.status || '').trim().toLocaleLowerCase('en');
+    const acceptedStatuses = new Set(['', 'ok', 'success', 'succeeded', 'complete', 'completed']);
+    const statusCode = payload.statusCode === null || payload.statusCode === undefined || payload.statusCode === ''
+        ? null
+        : Number(payload.statusCode);
+    if(!acceptedStatuses.has(status)
+        || (statusCode !== null && (!Number.isInteger(statusCode) || statusCode < 200 || statusCode >= 300))) {
+        throw liveCcValidationError('historical_month_upstream_error', `${label} je vratio status pogreške.`);
+    }
+    const message = String(payload.message ?? '').trim();
+    if(options.requireSuccess === true) {
+        if(payload.isSuccess !== true || payload.success !== true
+            || (message !== '' && message.toLocaleLowerCase('en') !== 'success')) {
+            throw liveCcValidationError('historical_month_not_successful', `${label} nije potvrdio uspješan odgovor.`);
+        }
+    } else if(payload.isSuccess !== false || payload.success !== false || message !== '') {
+        /* This selected-period endpoint has a stable legacy envelope whose two
+         * success flags are false even when it carries a valid monthly row.
+         * Accept that exact contract, but not an arbitrary error-like response
+         * which merely happens to include stale monthly data. */
+        throw liveCcValidationError('historical_month_legacy_contract', `${label} nema očekivani povijesni odgovor.`);
+    }
+    const rows = payload.monthly.filter(row => row && typeof row === 'object' && String(row.month || '').trim() === period);
+    if(rows.length !== 1) {
+        throw liveCcValidationError(
+            'historical_month_period_unconfirmed',
+            rows.length > 1 ? `${label} ima duplicirano razdoblje ${period}.` : `${label} nema točno razdoblje ${period}.`
+        );
+    }
+    return rows[0];
+}
+
+function extractHistoricalPerformanceCcRecord(
+    selectedPayload,
+    performancePayload,
+    detailPayload,
+    expectedFboId,
+    date = new Date(),
+    currentDate = new Date()
+) {
+    const targetPeriod = zagrebPeriod(date);
+    if(targetPeriod === zagrebPeriod(currentDate)) {
+        throw liveCcValidationError('historical_month_not_closed', 'Povijesni CC izvor ne smije se koristiti za aktualni mjesec.');
+    }
+    if(payloadHasExplicitError(detailPayload)) {
+        throw liveCcValidationError('detail_upstream_error', `FLP360 povijesna potvrda nije sigurna za ${expectedFboId}.`);
+    }
+    const detail = exactSingleEnvelopeRecord(detailPayload);
+    if(!detail || !normalizeFboId(detail.distributorId)) {
+        throw liveCcValidationError('detail_identity_missing', `FLP360 povijesna potvrda nema identitet za ${expectedFboId}.`);
+    }
+    if(normalizeFboId(detail.distributorId) !== normalizeFboId(expectedFboId)) {
+        throw liveCcValidationError('detail_identity_mismatch', `FLP360 povijesna potvrda ne odgovara FBO ID-u ${expectedFboId}.`);
+    }
+
+    const selectedRow = exactHistoricalMonthlyRow(selectedPayload, targetPeriod, 'FLP360 My Business');
+    const performanceRow = exactHistoricalMonthlyRow(
+        performancePayload,
+        targetPeriod,
+        'FLP360 Performance',
+        {requireSuccess: true}
+    );
+    const selected = historicalMonthlyCore(selectedRow, 'FLP360 My Business');
+    const performance = historicalMonthlyCore(performanceRow, 'FLP360 Performance');
+    if(selected.usedHistoricalNullSentinel || performance.usedHistoricalNullSentinel) {
+        throw liveCcValidationError(
+            'historical_month_null_unconfirmed',
+            'FLP360 povijesni izvori nemaju objavljene numeričke vrijednosti za odabrani mjesec.'
+        );
+    }
+    for(const field of ['personalCc', 'totalCc', 'totalActiveCc', 'nonManagerCc', 'leadershipCc']) {
+        const left = selected[field];
+        const right = performance[field];
+        if((left === null) !== (right === null)
+            || (left !== null && Math.round(left * 1000) !== Math.round(right * 1000))) {
+            throw liveCcValidationError('historical_month_source_mismatch', `FLP360 povijesni izvori ne slažu se za polje ${field}.`);
+        }
+    }
+    if(selected.usedHistoricalNullSentinel !== performance.usedHistoricalNullSentinel) {
+        throw liveCcValidationError('historical_month_source_mismatch', 'FLP360 povijesni izvori ne slažu se o nultom mjesečnom zapisu.');
+    }
+    if(selectedRow.lastUpdatedDate !== null && selectedRow.lastUpdatedDate !== undefined
+        && !parseFlpTimestamp(selectedRow.lastUpdatedDate)) {
+        throw liveCcValidationError('historical_month_timestamp_invalid', 'FLP360 povijesni zapis nema valjano vrijeme osvježavanja.');
+    }
+    return {
+        fboId: normalizeFboId(expectedFboId),
+        personalCc: selected.personalCc,
+        totalCc: selected.totalCc,
+        totalActiveCc: selected.totalActiveCc,
+        nonManagerCc: selected.nonManagerCc,
+        leadershipCc: selected.leadershipCc,
+        /* MonthlyCC is authoritative for the selected MTD row only. Preserve
+         * the already signed FCC YTD snapshot instead of copying current-year
+         * values backward into the closed month. */
+        totalActiveCcYtd: null,
+        nonManagerCcYtd: null,
+        leadershipCcYtd: null,
+        usedHistoricalPerformance: true,
+        usedHistoricalNullSentinel: selected.usedHistoricalNullSentinel,
+    };
+}
+
 function extractLiveZeroFallback(treePayload, detailPayload, expectedFboId, date = new Date(), currentDate = new Date()) {
     const tree = liveCcEmptyTreeSentinel(treePayload)
         || liveCcPriorOnlyTreeRecord(treePayload, expectedFboId, date, currentDate);
@@ -1405,8 +1552,13 @@ function downlineMemberCount(contents) {
 
 async function fetchLiveCcForMembers(page, configuration, members, date = new Date(), options = {}) {
     const currentDate = options.currentDate instanceof Date ? options.currentDate : new Date();
+    const historicalReconcile = options.historicalReconcile === true;
+    if(historicalReconcile && !(options.storedByFboId instanceof Map)) {
+        throw new Error('Povijesni live CC dohvat nema potpisani FCC početni snapshot.');
+    }
     let completed = 0;
     let fallbackCount = 0;
+    let historicalPerformanceCount = 0;
     let nullCurrentMonthCount = 0;
     let zeroCurrentMonthCount = 0;
     let ytdFloorAccountCount = 0;
@@ -1414,7 +1566,10 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
     let operatingMarketFallbackCount = 0;
     const countryCounts = new Map();
     const unconfirmed = [];
-    const records = await mapWithConcurrency(members, 8, async member => {
+    /* Historical mode performs three corroborating requests per account.
+     * Keep its fan-out lower than the current-month tree lookup so FLP360's
+     * report service is not flooded during the 630-account reconciliation. */
+    const records = await mapWithConcurrency(members, historicalReconcile ? 3 : 8, async member => {
         const fboId = normalizeFboId(member?.fboId);
         const preferredCountryCode = normalizeCountryCode(member?.countryCode);
         const operatingCountryCode = normalizeCountryCode(configuration?.operatingCountryCode);
@@ -1433,16 +1588,48 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
         const candidateReasonCodes = [];
         for(const countryCode of countryCandidates) {
             try {
-                const requestUrl = reportV2Url(configuration, `distributors/${fboId}/treeview-cc?countryCode=${encodeURIComponent(countryCode)}`);
-                const treePayload = await flpGetJson(page, requestUrl, configuration);
-                if(liveCcEmptyTreeSentinel(treePayload)
-                    || liveCcPriorOnlyTreeRecord(treePayload, fboId, date, currentDate)) {
+                if(historicalReconcile) {
+                    const selectedPeriod = zagrebPeriod(date).replace('-', '');
                     const detailUrl = reportV2Url(configuration, `downlineLoggedInDetails/fboId/${fboId}/country/${encodeURIComponent(countryCode)}`);
-                    const detailPayload = await flpGetJson(page, detailUrl, configuration);
-                    record = extractLiveZeroFallback(treePayload, detailPayload, fboId, date, currentDate);
-                    usedDetailFallback = true;
+                    const selectedUrl = reportV2Url(
+                        configuration,
+                        `myBusiness/fboId/${fboId}/country/${encodeURIComponent(countryCode)}/widget/monthlyCC?selectedPeriod=${selectedPeriod}`
+                    );
+                    const performanceUrl = reportV2Url(
+                        configuration,
+                        `performance/fboId/${fboId}/country/${encodeURIComponent(countryCode)}/widget/monthlyCC`
+                    );
+                    const [selectedPayload, performancePayload, detailPayload] = await Promise.all([
+                        flpGetJson(page, selectedUrl, configuration, 3),
+                        flpGetJson(page, performanceUrl, configuration, 3),
+                        flpGetJson(page, detailUrl, configuration, 3),
+                    ]);
+                    record = extractHistoricalPerformanceCcRecord(
+                        selectedPayload,
+                        performancePayload,
+                        detailPayload,
+                        fboId,
+                        date,
+                        currentDate
+                    );
+                    if(!options.storedByFboId.has(fboId)) {
+                        throw liveCcValidationError(
+                            'historical_snapshot_missing',
+                            'FCC početni snapshot nema račun potreban za povijesno usklađenje.'
+                        );
+                    }
                 } else {
-                    record = extractLiveCcRecord(treePayload, fboId, date, currentDate);
+                    const requestUrl = reportV2Url(configuration, `distributors/${fboId}/treeview-cc?countryCode=${encodeURIComponent(countryCode)}`);
+                    const treePayload = await flpGetJson(page, requestUrl, configuration);
+                    if(liveCcEmptyTreeSentinel(treePayload)
+                        || liveCcPriorOnlyTreeRecord(treePayload, fboId, date, currentDate)) {
+                        const detailUrl = reportV2Url(configuration, `downlineLoggedInDetails/fboId/${fboId}/country/${encodeURIComponent(countryCode)}`);
+                        const detailPayload = await flpGetJson(page, detailUrl, configuration);
+                        record = extractLiveZeroFallback(treePayload, detailPayload, fboId, date, currentDate);
+                        usedDetailFallback = true;
+                    } else {
+                        record = extractLiveCcRecord(treePayload, fboId, date, currentDate);
+                    }
                 }
                 confirmedCountryCode = countryCode;
                 break;
@@ -1467,6 +1654,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
             ytdFloorFieldCount += safetyFloor.ytdFloorFields;
         }
         if(usedDetailFallback) fallbackCount++;
+        if(record.usedHistoricalPerformance === true) historicalPerformanceCount++;
         if(record.usedNullCurrentSentinel === true) nullCurrentMonthCount++;
         if(record.usedVerifiedCurrentZero === true) zeroCurrentMonthCount++;
         if(confirmedCountryCode !== preferredCountryCode) {
@@ -1488,6 +1676,7 @@ async function fetchLiveCcForMembers(page, configuration, members, date = new Da
         records: new Map(confirmedRecords.map(record => [record.fboId, record])),
         unconfirmed,
         fallbackCount,
+        historicalPerformanceCount,
         nullCurrentMonthCount,
         zeroCurrentMonthCount,
         ytdFloorAccountCount,
@@ -1959,7 +2148,11 @@ async function main() {
                     ? registeredAccounts.map(account => account.fboId === rootFboId ? rootTarget : account)
                     : [rootTarget, ...registeredAccounts];
             }
-            const liveCc = await fetchLiveCcForMembers(page, configuration, liveTargets, runDate, {allowUnconfirmed: true});
+            const liveCc = await fetchLiveCcForMembers(page, configuration, liveTargets, runDate, {
+                allowUnconfirmed: true,
+                historicalReconcile,
+                ...(historicalReconcile ? {storedByFboId} : {}),
+            });
             if(liveCc.records.size + liveCc.unconfirmed.length !== liveTargets.length) {
                 throw new Error('Registrirani FCC sync nema cjelovito knjiženje potvrđenih i nepotvrđenih live odgovora; prije upisa ništa nije promijenjeno.');
             }
@@ -2005,6 +2198,17 @@ async function main() {
                 && expectedRecords.size + liveCc.unconfirmed.length !== registeredAccounts.length) {
                 throw new Error('Povijesno usklađenje nema točno razdvojene potvrđene i sačuvane FCC račune; prije upisa ništa nije promijenjeno.');
             }
+            if(historicalReconcile && expectedRecords.has(rootFboId)) {
+                const historicalRoot = expectedRecords.get(rootFboId);
+                const missingRootMetrics = [
+                    'nonManagerCc', 'leadershipCc',
+                    'totalActiveCcYtd', 'nonManagerCcYtd', 'leadershipCcYtd',
+                ]
+                    .filter(field => !Number.isFinite(historicalRoot[field]));
+                if(missingRootMetrics.length > 0) {
+                    throw new Error(`Povijesno usklađenje nema potpuni root zapis; nedostaje ${missingRootMetrics.join(', ')}; prije upisa ništa nije promijenjeno.`);
+                }
+            }
             const uploadAccounts = historicalReconcile
                 ? registeredAccounts.filter(account => expectedRecords.has(account.fboId))
                 : registeredAccounts;
@@ -2023,7 +2227,7 @@ async function main() {
                 ? expectedActiveFourCcAfterReconciliation(storedByFboId, expectedRecords, period)
                 : fourCc.rowCount;
             const reconciliation = summarizeRegisteredReconciliation(storedByFboId, expectedRecords, period);
-            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size}/${registeredAccounts.length} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
+            console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size}/${registeredAccounts.length} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.historicalPerformanceCount} dvostruko potvrđenih povijesnih UI zapisa; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
             if(historicalReconcile && liveCc.unconfirmed.length > 0) {
                 console.warn(`Povijesno usklađenje čuva ${liveCc.unconfirmed.length} nedostupnih FCC zapisa bez promjene; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}.`);
             }
@@ -2234,6 +2438,7 @@ export {
     extractLiveCcRecord,
     extractLiveMemberReferences,
     extractLiveZeroFallback,
+    extractHistoricalPerformanceCcRecord,
     extractRegisteredStoredMetrics,
     expectedActiveFourCcAfterReconciliation,
     applyRegisteredAccountSafetyFloor,

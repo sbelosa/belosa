@@ -14,6 +14,7 @@ import {
     applyRegisteredAccountSafetyFloor,
     extractCurrentCcSummary,
     extractFourCcRows,
+    extractHistoricalPerformanceCcRecord,
     extractLiveCcRecord,
     extractLiveMemberReferences,
     extractLiveZeroFallback,
@@ -497,6 +498,136 @@ assert.throws(() => extractLiveCcRecord([{
     fboId: '360000000002', processingYear: null, totalActiveCC: 81.125, nonManagerCC: 42.5, leaderCC: 7.25,
     monthlyCCValues: [{processingYear: null, processingMonth: null}],
 }], '360000000002', testDate), /nema potvrđeno razdoblje/);
+const historicalSelectedPayload = {
+    isSuccess: false, success: false, error: null, statusCode: null, message: null,
+    monthly: [
+        {
+            year: '2026', month: '2026-08', personalCCMtd: 0.738, totalCCMtd: 0.738,
+            totalActiveCCMtd: 0.738, nonManagerCCMtd: 0, leadershipCCMtd: 0,
+            lastUpdatedDate: '2026-08-31T17:25:01.000+0000',
+        },
+        {
+            year: '2026', month: '2026-07', personalCCMtd: 0.346, totalCCMtd: 0.346,
+            totalActiveCCMtd: 0.346, nonManagerCCMtd: 0, leadershipCCMtd: 0,
+        },
+    ],
+};
+const historicalPerformancePayload = {
+    isSuccess: true, success: true, error: null, statusCode: null, message: 'Success',
+    monthly: [
+        {
+            year: null, month: '2026-09', personalCCMtd: null, totalCCMtd: null,
+            totalActiveCCMtd: null, nonManagerCCMtd: null, leadershipCCMtd: 0,
+        },
+        {
+            year: null, month: '2026-08', personalCCMtd: 0.738, totalCCMtd: 0.738,
+            totalActiveCCMtd: 0.738, nonManagerCCMtd: 0, leadershipCCMtd: 0,
+        },
+    ],
+};
+const historicalDetailPayload = [{
+    distributorId: '360000000002', personalCCCurMonth: null,
+    totalCCCurMonth: null, totalActiveCCCurMonth: null,
+}];
+assert.deepEqual(extractHistoricalPerformanceCcRecord(
+    historicalSelectedPayload,
+    historicalPerformancePayload,
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), {
+    fboId: '360000000002', personalCc: 0.738, totalCc: 0.738, totalActiveCc: 0.738,
+    nonManagerCc: 0, leadershipCc: 0, totalActiveCcYtd: null,
+    nonManagerCcYtd: null, leadershipCcYtd: null,
+    usedHistoricalPerformance: true, usedHistoricalNullSentinel: false,
+});
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    historicalSelectedPayload,
+    historicalPerformancePayload,
+    [{...historicalDetailPayload[0], distributorId: '360000000999'}],
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'detail_identity_mismatch');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    historicalSelectedPayload,
+    {...historicalPerformancePayload, monthly: historicalPerformancePayload.monthly.map(row =>
+        row.month === '2026-08' ? {...row, personalCCMtd: 0.700} : row)},
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_source_mismatch');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    historicalSelectedPayload,
+    {...historicalPerformancePayload, monthly: historicalPerformancePayload.monthly.map(row =>
+        row.month === '2026-08' ? {...row, personalCCMtd: 0.739} : row)},
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_source_mismatch');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    {...historicalSelectedPayload, status: 'error'},
+    historicalPerformancePayload,
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_upstream_error');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    {...historicalSelectedPayload, status: 'unauthorized'},
+    historicalPerformancePayload,
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_upstream_error');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    {...historicalSelectedPayload, message: 'Unauthorized'},
+    historicalPerformancePayload,
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_legacy_contract');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    historicalSelectedPayload,
+    {...historicalPerformancePayload, success: false},
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_not_successful');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    {...historicalSelectedPayload, statusCode: 401},
+    historicalPerformancePayload,
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_upstream_error');
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    {...historicalSelectedPayload, redirectUrl: '/login'},
+    historicalPerformancePayload,
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_upstream_error');
+const historicalNullRow = {
+    year: '2026', month: '2026-08', personalCCMtd: null, totalCCMtd: null,
+    totalActiveCCMtd: null, nonManagerCCMtd: null, leadershipCCMtd: 0,
+};
+assert.throws(() => extractHistoricalPerformanceCcRecord(
+    {...historicalSelectedPayload, monthly: [historicalNullRow]},
+    {...historicalPerformancePayload, monthly: [historicalNullRow]},
+    historicalDetailPayload,
+    '360000000002',
+    testDate,
+    new Date('2026-09-01T12:00:00Z')
+), error => error?.liveCcReasonCode === 'historical_month_null_unconfirmed');
 const fallbackRecord = extractLiveZeroFallback([{
     fboId: '', processingYear: 0, monthlyCCValues: [{processingYear: 0, processingMonth: 0}],
 }], {
@@ -841,6 +972,45 @@ const historicalIdentifiedZero = await fetchLiveCcForMembers(historicalIdentifie
 assert.equal(historicalIdentifiedZero.records.size, 0);
 assert.equal(historicalIdentifiedZero.unconfirmed.length, 1);
 assert.deepEqual(historicalIdentifiedZero.unconfirmedReasonCounts, {tree_period_unconfirmed: 1});
+const historicalPerformanceUrls = [];
+const historicalPerformancePage = {
+    context: () => ({request: {get: async requestUrl => {
+        historicalPerformanceUrls.push(requestUrl);
+        const path = new URL(requestUrl).pathname;
+        const payload = path.includes('downlineLoggedInDetails')
+            ? historicalDetailPayload
+            : path.includes('/myBusiness/')
+                ? historicalSelectedPayload
+                : historicalPerformancePayload;
+        return {ok: () => true, status: () => 200, text: async () => JSON.stringify(payload)};
+    }}}),
+    waitForTimeout: async () => {},
+};
+const historicalPerformanceLive = await fetchLiveCcForMembers(historicalPerformancePage, {
+    reportBase: 'https://example.test/api/reporttdmpro',
+    aesEncryptionKey: '0123456789abcdef',
+    guestToken: 'test-token',
+    operatingCountryCode: 'HUN',
+}, [{
+    fboId: '360000000002', countryCode: 'HUN', totalActiveCcYtd: 3.084,
+    nonManagerCcYtd: 0, leadershipCcYtd: 2.633, isVipEnrolled: false,
+}], testDate, {
+    allowUnconfirmed: true,
+    historicalReconcile: true,
+    currentDate: new Date('2026-09-01T12:00:00Z'),
+    storedByFboId: new Map([['360000000002', {
+        metricPeriod: '2026-08', personalCc: 0.287, totalCc: 0.287,
+        totalActiveCc: 0.287, nonManagerCc: 0, leadershipCc: 0,
+    }]]),
+});
+const historicalPerformanceRecord = historicalPerformanceLive.records.get('360000000002');
+assert.equal(historicalPerformanceRecord.personalCc, 0.738);
+assert.equal(historicalPerformanceRecord.totalActiveCcYtd, 3.084);
+assert.equal(historicalPerformanceRecord.leadershipCcYtd, 2.633);
+assert.equal(historicalPerformanceLive.historicalPerformanceCount, 1);
+assert.equal(historicalPerformanceLive.unconfirmed.length, 0);
+assert.equal(historicalPerformanceUrls.length, 3);
+assert.equal(historicalPerformanceUrls.some(url => url.includes('selectedPeriod=202608')), true);
 
 const regionalFallbackUrls = [];
 const regionalFallbackPage = {
