@@ -423,6 +423,48 @@ const CC_SUMMARY_ROW_SIGNATURE_KEYS = [
     'currentMonthActive', 'leadershipQualified',
 ];
 
+function isStructurallyValidCcSummaryRow(row) {
+    if(!row || typeof row !== 'object' || Array.isArray(row)
+        || Object.getPrototypeOf(row) !== Object.prototype
+        || Object.hasOwn(row, 'body') || Object.hasOwn(row, 'data')
+        || !Object.hasOwn(row, 'totalCC') || !Object.hasOwn(row, 'globalTotalCC')) return false;
+    const year = explicitInteger(row.processingYear);
+    const month = explicitInteger(row.processingMonth);
+    const valueType = typeof row.valueType === 'string'
+        ? row.valueType.trim().toLocaleLowerCase('en')
+        : '';
+    if(year === null || year < 2000 || year > 2100) return false;
+    if(valueType === 'monthly') return month !== null && month >= 1 && month <= 12;
+    return valueType === 'yearly' && month === 0;
+}
+
+function hasNeutralCcSummaryRowMetadata(row) {
+    if(!isStructurallyValidCcSummaryRow(row)
+        || !Object.hasOwn(row, 'statusCode')
+        || !Object.hasOwn(row, 'success')
+        || !Object.hasOwn(row, 'error')
+        || Object.hasOwn(row, 'status')
+        || Object.hasOwn(row, 'errors')) return false;
+    const statusCode = row.statusCode;
+    const neutralStatusCode = statusCode === null
+        || (statusCode && typeof statusCode === 'object' && !Array.isArray(statusCode)
+            && Object.getPrototypeOf(statusCode) === Object.prototype
+            && Object.keys(statusCode).length === 0);
+    const messageIsNeutral = !Object.hasOwn(row, 'message')
+        || row.message === null
+        || (typeof row.message === 'string' && row.message.trim() === '');
+    return neutralStatusCode
+        && row.success === false
+        && row.error === null
+        && messageIsNeutral;
+}
+
+function isDirectNeutralCcSummaryPayload(payload) {
+    return Array.isArray(payload)
+        && payload.length > 0
+        && payload.every(hasNeutralCcSummaryRowMetadata);
+}
+
 function ccSummaryObjectHasError(value) {
     if(payloadHasExplicitError(value)) return true;
     if(Object.hasOwn(value, 'errors')) {
@@ -541,10 +583,15 @@ function ccSummaryPayloadShape(value, depth = 0) {
         knownKeys,
     };
     if(Object.hasOwn(value, 'statusCode')) {
-        const statusCode = explicitInteger(value.statusCode);
-        shape.statusCode = statusCode === null || statusCode < 100 || statusCode > 599
-            ? `invalid:${typeof value.statusCode}`
-            : `${Math.floor(statusCode / 100)}xx`;
+        const rawStatusCode = value.statusCode;
+        const statusCode = explicitInteger(rawStatusCode);
+        shape.statusCode = rawStatusCode === null
+            ? 'null'
+            : rawStatusCode && typeof rawStatusCode === 'object' && !Array.isArray(rawStatusCode)
+                ? `object:${Object.keys(rawStatusCode).length === 0 ? 'empty' : 'nonempty'}`
+                : statusCode === null || statusCode < 100 || statusCode > 599
+                    ? `invalid:${typeof rawStatusCode}`
+                    : `${Math.floor(statusCode / 100)}xx`;
     }
     if(Object.hasOwn(value, 'status')) {
         const normalizedStatus = typeof value.status === 'string'
@@ -586,20 +633,12 @@ function isVerifiedRootCurrentZero(record) {
 }
 
 function isValidCcSummaryRow(row) {
-    if(!row || typeof row !== 'object' || Array.isArray(row) || ccSummaryObjectHasError(row)) return false;
-    if(Object.hasOwn(row, 'body') || Object.hasOwn(row, 'data')) return false;
-    const year = explicitInteger(row.processingYear);
-    const month = explicitInteger(row.processingMonth);
-    const valueType = typeof row.valueType === 'string'
-        ? row.valueType.trim().toLocaleLowerCase('en')
-        : '';
-    if(year === null || year < 2000 || year > 2100) return false;
-    if(valueType === 'monthly') return month !== null && month >= 1 && month <= 12;
-    return valueType === 'yearly' && month === 0;
+    return isStructurallyValidCcSummaryRow(row) && !ccSummaryObjectHasError(row);
 }
 
 function extractCcSummaryRows(payload) {
     let rows;
+    const allowNeutralRowMetadata = isDirectNeutralCcSummaryPayload(payload);
     if(Array.isArray(payload)) {
         const wrapped = payload.length === 1
             && payload[0]
@@ -624,7 +663,9 @@ function extractCcSummaryRows(payload) {
     } else {
         return null;
     }
-    if(rows.some(row => !isValidCcSummaryRow(row))) return null;
+    if(rows.some(row => !(allowNeutralRowMetadata
+        ? hasNeutralCcSummaryRowMetadata(row)
+        : isValidCcSummaryRow(row)))) return null;
     return rows;
 }
 
@@ -633,7 +674,7 @@ function extractCurrentCcSummary(payload, date = new Date(), options = {}) {
     if(isUnambiguousCcSummaryErrorEnvelope(payload)) {
         throw ccSummaryValidationError('summary_upstream_error', 'FLP360 CC Summary vratio je poruku o pogrešci.');
     }
-    if(ccSummaryPayloadHasExplicitError(payload)) {
+    if(!isDirectNeutralCcSummaryPayload(payload) && ccSummaryPayloadHasExplicitError(payload)) {
         throw new Error(`FLP360 CC Summary odgovor s pogreškom nije jednoznačan. Sanitizirana struktura: ${JSON.stringify(ccSummaryPayloadShape(payload))}`);
     }
     const rows = extractCcSummaryRows(payload);

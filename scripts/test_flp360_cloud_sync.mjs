@@ -150,6 +150,15 @@ assert.throws(
         && !error.message.includes(String(sensitiveSummaryStatusCode)),
 );
 assert.throws(
+    () => extractCurrentCcSummary({
+        status: 'success',
+        statusCode: {[sensitiveSummaryDiagnosticValue]: sensitiveSummaryDiagnosticValue},
+        error: true,
+    }, testDate),
+    error => error?.message.includes('"statusCode":"object:nonempty"')
+        && !error.message.includes(sensitiveSummaryDiagnosticValue),
+);
+assert.throws(
     () => extractCurrentCcSummary([
         {foo: 'a'}, {foo: 'b'}, {foo: 'c'}, {status: 'error'}, {foo: 'd'}, {foo: 'e'},
     ], testDate),
@@ -159,6 +168,33 @@ assert.throws(
 const validSummaryRow = {
     processingYear: 2026, processingMonth: 8, valueType: 'Monthly', totalCC: 0, globalTotalCC: 0,
 };
+const neutralSummaryRowMetadata = {statusCode: null, success: false, error: null};
+assert.deepEqual(extractCurrentCcSummary([
+    {
+        processingYear: 2026, processingMonth: 0, valueType: 'Yearly', totalCC: 10, globalTotalCC: 20,
+        ...neutralSummaryRowMetadata,
+    },
+    {...validSummaryRow, ...neutralSummaryRowMetadata, statusCode: {}},
+], testDate), {totalCc: 0, globalTotalCc: 0});
+for(const invalidNeutralMetadata of [
+    {statusCode: {code: 500}, success: false, error: null},
+    {statusCode: [], success: false, error: null},
+    {statusCode: 200, success: false, error: null},
+    {statusCode: null, success: true, error: null},
+    {statusCode: null, success: false, error: {message: 'failure'}},
+    {statusCode: null, success: false, error: null, status: 'error'},
+    {statusCode: null, success: false, error: null, errors: []},
+    {statusCode: null, success: false, error: null, message: 'failure'},
+]) {
+    assert.throws(
+        () => extractCurrentCcSummary([{...validSummaryRow, ...invalidNeutralMetadata}], testDate),
+        /nije jednoznačan/,
+    );
+}
+assert.throws(() => extractCurrentCcSummary([
+    {...validSummaryRow, ...neutralSummaryRowMetadata},
+    {...validSummaryRow, processingMonth: 7},
+], testDate), /nije jednoznačan/);
 for(const ambiguousSummaryPayload of [
     [{body: [validSummaryRow]}, {status: 'error'}],
     [validSummaryRow, {status: 'error'}],
@@ -189,6 +225,12 @@ const unavailableLocalSummaryRow = {
     processingYear: 2026, processingMonth: 9, valueType: 'Monthly', totalCC: null, globalTotalCC: 0,
 };
 assert.deepEqual(extractCurrentCcSummary([unavailableLocalSummaryRow], summaryRolloverDate, {
+    rootRecord: verifiedSummaryRootZero, currentDate: summaryRolloverDate,
+}), {totalCc: 0, globalTotalCc: 0, usedRootCorroboratedLocalTotal: true});
+assert.deepEqual(extractCurrentCcSummary([{
+    ...unavailableLocalSummaryRow,
+    ...neutralSummaryRowMetadata,
+}], summaryRolloverDate, {
     rootRecord: verifiedSummaryRootZero, currentDate: summaryRolloverDate,
 }), {totalCc: 0, globalTotalCc: 0, usedRootCorroboratedLocalTotal: true});
 assert.deepEqual(extractCurrentCcSummary([{...unavailableLocalSummaryRow, globalTotalCC: null}], summaryRolloverDate, {
@@ -240,6 +282,7 @@ for(const invalidAnnualSummary of [
     {statusCode: 200, status: 'error'},
     {status: 'error', success: true},
     {statusCode: 500, errors: {malformed: true}},
+    {body: [{...validSummaryRow, ...neutralSummaryRowMetadata}]},
 ]) {
     const invalidAnnualUrls = [];
     const invalidAnnualPage = {
