@@ -24,7 +24,7 @@ $assertions = [
     'Focus Group duplicate key includes confirmed period' => str_contains($helper, '$file_sha256 . \'|\' . implode(\',\', $report[\'periods\'])'),
     'Focus Group report is supported' => str_contains($helper, "'focus_group'"),
     '4 CC official signal remains tri-state in schema and guarded migration' => str_contains($helper, '`is_4cc_active` TINYINT(1) NULL DEFAULT NULL') && substr_count($helper, "SHOW COLUMNS FROM `forever_business_metrics` LIKE 'is_4cc_active'") >= 2 && str_contains($helper, 'MODIFY `is_4cc_active` TINYINT(1) NULL DEFAULT NULL') && str_contains($helper, '4 CC signal column must allow NULL before imports can continue'),
-    'Focus Group ACTIVE never overwrites the official 4 CC signal' => str_contains($helper, "'is_4cc_active' => null") && str_contains($helper, "? ['personal_cc', 'updated_at']") && str_contains($helper, "\$metric['is_4cc_active'] === null ? null : (int) \$metric['is_4cc_active']"),
+    'Focus Group remains diagnostic and never overwrites authoritative monthly metrics' => str_contains($helper, 'forever_business_optional_number') && str_contains($helper, "if(\$report['kind'] === 'focus_group') continue;") && str_contains($helper, 'Focus Group stays in its dedicated diagnostic table'),
     'only positively trusted imports can supply historical official 4 CC flags without destructive cleanup' => substr_count($helper, "report_kind NOT IN ('downline', 'four_cc_active')") >= 5 && !str_contains($helper, 'four_cc_focus_provenance_cleanup_v1'),
     'admin subtree scope uses hierarchy closure' => str_contains($helper, "where('ancestor_fbo_id', \$requested_root"),
     'non-admin scope is permanently self-only' => str_contains($helper, 'legacy manager') && str_contains($helper, 'return $own_fbo_id !== \'\' ? [$own_fbo_id] : []'),
@@ -84,7 +84,7 @@ $assertions = [
     'all supported Forever ID preference aliases provision members and qualified email recipients' => substr_count($helper, "$.meta.forever_id") >= 4 && substr_count($helper, "$.meta.foreverID") >= 4 && str_contains($helper, 'JSON_VALID(u.preferences)'),
     'admin usage and reconciliation audits use the same three Forever ID aliases as access' => str_contains($helper, 'function forever_business_user_fbo_sql_expression') && substr_count($helper, "forever_business_user_fbo_sql_expression('u.preferences')") >= 2 && substr_count($helper, "forever_business_user_fbo_sql_expression('preferences')") >= 2,
     'members can request mentor help without completing a task' => str_contains($helper, 'forever_business_vip_help_requests') && str_contains($helper, 'forever_business_request_vip_help') && str_contains($view, 'request_vip_help') && str_contains($view, 'Pošalji upit mentoru'),
-    'runtime schema verifies every launch table and preserves legacy help flags before marking complete' => str_contains($helper, 'forever_business_runtime_schema_v20260831_4') && str_contains($helper, '$required_tables') && str_contains($helper, 'Legacy VIP help requests could not be preserved.') && str_contains($helper, '`outcome`.`needs_help` = 1'),
+    'runtime schema verifies every launch table and starting-track column while preserving legacy help flags' => str_contains($helper, 'forever_business_runtime_schema_v20260901_1') && str_contains($helper, '$required_tables') && str_contains($helper, "'starting_track_key'") && str_contains($helper, "'starting_track_reason'") && str_contains($helper, "'starting_track_decided_at'") && str_contains($helper, 'Legacy VIP help requests could not be preserved.') && str_contains($helper, '`outcome`.`needs_help` = 1'),
     'Leader program copy requires full Manager and official August 4 CC' => str_contains($vip_tasks, 'punim, priznatim statusom Managera') && str_contains($vip_tasks, 'službeno potvrđenim `4 CC Active` signalom za kolovoz 2026'),
     '4 CC member copy and runtime language caches explain the inclusive fallback' => str_contains($hr_language, 'Personal CC već je dio Total Active CC-a') && str_contains($hr_language_cache, 'Personal CC već je dio Total Active CC-a') && str_contains($en_language, 'Personal CC is already included in Total Active CC') && str_contains($en_language_cache, 'Personal CC is already included in Total Active CC'),
     'weekly Marketing plan is fixed to Sunday at 18:00 Zagreb time' => str_contains($helper, "'weekday' => 7") && str_contains($helper, "setTime(18, 0)") && str_contains($view, 'svake nedjelje u 18:00'),
@@ -108,6 +108,26 @@ if($failed) {
 
 defined('ALTUMCODE') || define('ALTUMCODE', 66);
 require_once $root . '/app/helpers/forever_business.php';
+
+$focus_missing_personal_path = tempnam(sys_get_temp_dir(), 'fcc-focus-missing-');
+$focus_blank_personal_path = tempnam(sys_get_temp_dir(), 'fcc-focus-blank-');
+if(!$focus_missing_personal_path || !$focus_blank_personal_path) {
+    fwrite(STDERR, "Forever business regression check could not create temporary Focus fixtures.\n");
+    exit(1);
+}
+try {
+    file_put_contents($focus_missing_personal_path,
+        "FBO ID,FBO NAME,CURRENT LEVEL,NEXT LEVEL,LAST PURCHASE DATE,NEEDED CC FOR NEXT LEVEL\n"
+        . "360000000991,Focus Missing,Supervisor,Assistant Manager,15-06-2026,10\n");
+    file_put_contents($focus_blank_personal_path,
+        "FBO ID,FBO NAME,CURRENT LEVEL,NEXT LEVEL,LAST PURCHASE DATE,NEEDED CC FOR NEXT LEVEL,PERSONAL CC\n"
+        . "360000000992,Focus Blank,Supervisor,Assistant Manager,15-06-2026,10,\n");
+    $focus_missing_personal_report = forever_business_parse_report($focus_missing_personal_path, 'focus-missing.csv', '', '', '2026-08-01');
+    $focus_blank_personal_report = forever_business_parse_report($focus_blank_personal_path, 'focus-blank.csv', '', '', '2026-08-01');
+} finally {
+    @unlink($focus_missing_personal_path);
+    @unlink($focus_blank_personal_path);
+}
 
 $base = [
     'title' => 'Assistant Supervisor',
@@ -249,12 +269,26 @@ $at_monday_midnight_action = forever_business_get_action($starter_member, null, 
 $spring_daily_complete_action = forever_business_get_action($starter_member, null, 1, true, $spring_dst_night, true);
 $autumn_daily_complete_action = forever_business_get_action($starter_member, null, 1, true, $autumn_dst_night, true);
 $completed_program = forever_business_get_action($starter_member, null, 30, true, $weekday_morning);
+$confirmed_reactivation_member = array_merge($starter_member, [
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_current_personal_cc' => .5,
+    'vip_current_is_4cc_active' => 0,
+    'vip_qualifying_period' => '2026-09-01',
+    'vip_known_enrollment_date' => '2025-01-15',
+    'vip_has_established_prior_activity' => 1,
+    'vip_has_prior_activity_before_pause' => 1,
+    'vip_previous_month_has_activity' => 0,
+    'vip_previous_month_confirmed_inactive' => 1,
+    'vip_starting_track_key' => 'reactivation',
+    'vip_starting_track_reason' => 'return_after_pause',
+]);
 $timer_track_members = [
     $starter_member,
     array_merge($starter_member, ['vip_base_personal_cc' => 1.2, 'vip_base_is_4cc_active' => 0, 'vip_current_personal_cc' => 1.2, 'vip_current_is_4cc_active' => 0]),
     array_merge($starter_member, ['vip_base_personal_cc' => 4, 'vip_base_is_4cc_active' => 1, 'vip_current_personal_cc' => 4, 'vip_current_is_4cc_active' => 1]),
     array_merge($starter_member, ['force_vip_leader' => true]),
-    array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_had_previous_activity_12m' => 1, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]),
+    $confirmed_reactivation_member,
 ];
 $timer_track_unlocks = array_map(
     static fn(array $member): string => (string) (forever_business_get_action($member, null, 1, false, $weekday_late, true)['next_unlock_at_iso'] ?? ''),
@@ -262,10 +296,11 @@ $timer_track_unlocks = array_map(
 );
 $fixed_builder_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => 4, 'vip_base_is_4cc_active' => 1, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]));
 $upgraded_activator_track = forever_business_get_vip_track(array_merge($starter_member, ['personal_cc' => 0, 'vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_current_personal_cc' => 1.2, 'vip_current_is_4cc_active' => 0]));
-$reactivation_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => .4, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
+$confirmed_reactivation_track = forever_business_get_vip_track($confirmed_reactivation_member);
+$previous_cc_only_starter_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => .4, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
 $rolling_activator_after_drop = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => 1.2, 'vip_base_is_4cc_active' => 0, 'vip_august_is_4cc_active' => 0, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]));
 $activator_first_action = forever_business_get_action(array_merge($starter_member, ['vip_base_personal_cc' => 1.2, 'vip_base_is_4cc_active' => 0, 'vip_august_is_4cc_active' => 0, 'vip_current_personal_cc' => 0, 'vip_current_is_4cc_active' => 0]), null, 0, false, $weekday_morning);
-$reactivation_from_12m_history = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => 0, 'vip_base_focus_previous_active' => 0, 'vip_base_had_previous_activity_12m' => 1, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
+$history_only_starter_track = forever_business_get_vip_track(array_merge($starter_member, ['vip_base_personal_cc' => .5, 'vip_base_is_4cc_active' => 0, 'vip_base_previous_personal_cc' => 0, 'vip_base_focus_previous_active' => 0, 'vip_base_had_previous_activity_12m' => 1, 'vip_current_personal_cc' => .5, 'vip_current_is_4cc_active' => 0]));
 $adapted_builder_action = forever_business_get_action(array_merge($base, [
     'vip_base_personal_cc' => 4,
     'vip_base_is_4cc_active' => 1,
@@ -318,10 +353,7 @@ $starter_path = forever_business_get_vip_education_path(array_merge($starter_mem
     'vip_current_total_active_cc' => .8,
     'vip_current_is_4cc_active' => 0,
 ]));
-$reactivation_path = forever_business_get_vip_education_path(array_merge($starter_member, [
-    'vip_base_personal_cc' => .5,
-    'vip_base_is_4cc_active' => 0,
-    'vip_base_had_previous_activity_12m' => 1,
+$reactivation_path = forever_business_get_vip_education_path(array_merge($confirmed_reactivation_member, [
     'vip_current_personal_cc' => .25,
     'vip_current_total_active_cc' => .5,
     'vip_current_is_4cc_active' => 0,
@@ -398,7 +430,109 @@ $verified_metrics_cannot_create_leader = forever_business_get_vip_track(array_me
     'verified_progress' => forever_business_get_verified_progress(array_merge($base, ['title' => 'Recognized Manager', 'is_4cc_active' => 0])),
 ]));
 
+$vip_start_classifier_base = [
+    'vip_qualifying_period' => '2026-09-01',
+    'vip_known_enrollment_date' => null,
+    'vip_has_established_prior_activity' => false,
+    'vip_has_prior_activity_before_pause' => false,
+    'vip_previous_month_has_activity' => false,
+    'vip_previous_month_confirmed_inactive' => false,
+    'vip_starting_track_key' => null,
+    'vip_starting_track_reason' => null,
+];
+$vip_start_recent_enrollment_q = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-09-01',
+]));
+$vip_start_recent_enrollment_q_minus_1 = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-08-15',
+    'vip_previous_month_has_activity' => true,
+]));
+$vip_start_recent_enrollment_q_minus_3_boundary = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-06-01',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_return_before_recent_boundary = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-05-31',
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_return_without_known_enrollment_date = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_legacy_1999_returner = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '1999-12-31',
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_active_previous_month = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2025-01-15',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_has_activity' => true,
+]));
+$vip_start_missing_history = forever_business_classify_vip_start($vip_start_classifier_base);
+$vip_start_missing_qualifying_period = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_qualifying_period' => null,
+    'vip_known_enrollment_date' => '2025-01-15',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_invalid_enrollment_date = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-02-31',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_conflicting_previous_month_signals = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2025-01-15',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_has_activity' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+]));
+$vip_start_persisted_starter = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2025-01-15',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+    'vip_starting_track_key' => 'starter',
+    'vip_starting_track_reason' => 'recent_enrollment',
+]));
+$vip_start_persisted_reactivation = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-09-01',
+    'vip_starting_track_key' => 'reactivation',
+    'vip_starting_track_reason' => 'return_after_pause',
+]));
+$vip_start_unknown_persisted_reason = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2025-01-15',
+    'vip_has_established_prior_activity' => true,
+    'vip_has_prior_activity_before_pause' => true,
+    'vip_previous_month_confirmed_inactive' => true,
+    'vip_starting_track_key' => 'starter',
+    'vip_starting_track_reason' => 'legacy_unknown_reason',
+]));
+$vip_start_mismatched_persisted_pair = forever_business_classify_vip_start(array_merge($vip_start_classifier_base, [
+    'vip_known_enrollment_date' => '2026-09-01',
+    'vip_starting_track_key' => 'reactivation',
+    'vip_starting_track_reason' => 'recent_enrollment',
+]));
+
 $rule_assertions = [
+    'Focus reports with a missing or blank Personal CC keep the value unknown and never create authoritative monthly metrics' => empty($focus_missing_personal_report['metrics'])
+        && empty($focus_blank_personal_report['metrics'])
+        && array_key_exists('personal_cc', $focus_missing_personal_report['focus_metrics']['360000000991|2026-08-01'] ?? [])
+        && array_key_exists('personal_cc', $focus_blank_personal_report['focus_metrics']['360000000992|2026-08-01'] ?? [])
+        && $focus_missing_personal_report['focus_metrics']['360000000991|2026-08-01']['personal_cc'] === null
+        && $focus_blank_personal_report['focus_metrics']['360000000992|2026-08-01']['personal_cc'] === null,
+    'optional report numbers distinguish missing values from an explicit zero' => forever_business_optional_number('') === null
+        && forever_business_optional_number('not-a-number') === null
+        && forever_business_optional_number('0') === 0.0,
+    'invalid imported calendar dates are rejected instead of being normalized into another month' => forever_business_parse_date('31-02-2026') === null && forever_business_parse_date('2026-02-31') === null && forever_business_parse_date('28-02-2026') === '2026-02-28',
     'official positive 4 CC signal wins even when supporting numbers are incomplete' => $official_active_formula_low['is_officially_active'] && $official_active_formula_low['is_4cc_active'] && $official_active_formula_low['official_activity_signal'] === 1 && $official_active_formula_low['activity_source'] === 'official',
     'official negative 4 CC signal wins even when the supporting formula is met' => !$official_inactive_formula_high['is_officially_active'] && !$official_inactive_formula_high['is_4cc_active'] && $official_inactive_formula_high['official_activity_signal'] === 0 && $official_inactive_formula_high['activity_source'] === 'official',
     'unknown official signal uses inclusive 1 Personal and 4 Total Active CC fallback' => $fallback_two_plus_remainder['is_4cc_active'] && $fallback_four_personal['is_4cc_active'] && !$fallback_personal_below['is_4cc_active'] && !$fallback_total_below['is_4cc_active'] && $fallback_two_plus_remainder['activity_source'] === 'formula' && $fallback_four_personal['activity_source'] === 'formula',
@@ -445,8 +579,24 @@ $rule_assertions = [
     'August Builder level cannot drop when a later month starts at zero' => $fixed_builder_track['key'] === 'builder',
     'later qualifying Activator level cannot drop when the next month starts at zero' => $rolling_activator_after_drop['key'] === 'activator',
     'new synchronized results can raise Starter to Activator' => $upgraded_activator_track['key'] === 'activator',
-    'August returners receive the Reaktivacija path' => $reactivation_track['key'] === 'reactivation',
-    'twelve-month historical activity also receives the Reaktivacija path' => $reactivation_from_12m_history['key'] === 'reactivation',
+    'a confirmed persisted returner receives the Reaktivacija path' => $confirmed_reactivation_track['key'] === 'reactivation',
+    'previous-month Personal CC alone can no longer misclassify a new member as Reaktivacija' => $previous_cc_only_starter_track['key'] === 'starter',
+    'generic twelve-month activity alone can no longer assign Reaktivacija' => $history_only_starter_track['key'] === 'starter',
+    'same-month enrollment always starts in Starter' => ($vip_start_recent_enrollment_q['key'] ?? '') === 'starter' && ($vip_start_recent_enrollment_q['reason'] ?? '') === 'recent_enrollment',
+    'previous-month enrollment remains Starter even after first activity' => ($vip_start_recent_enrollment_q_minus_1['key'] ?? '') === 'starter' && ($vip_start_recent_enrollment_q_minus_1['reason'] ?? '') === 'recent_enrollment',
+    'the inclusive Q minus three-month boundary protects recent enrollees from Reaktivacija' => ($vip_start_recent_enrollment_q_minus_3_boundary['key'] ?? '') === 'starter' && ($vip_start_recent_enrollment_q_minus_3_boundary['reason'] ?? '') === 'recent_enrollment',
+    'an established returner one day before the recent-enrollment boundary receives Reaktivacija' => ($vip_start_return_before_recent_boundary['key'] ?? '') === 'reactivation' && ($vip_start_return_before_recent_boundary['reason'] ?? '') === 'return_after_pause',
+    'historical activity cannot assign Reaktivacija when the enrollment date is unavailable' => ($vip_start_return_without_known_enrollment_date['key'] ?? '') === 'starter' && ($vip_start_return_without_known_enrollment_date['reason'] ?? '') === 'insufficient_history',
+    'a valid pre-2000 enrollment date can identify a true established returner' => ($vip_start_legacy_1999_returner['key'] ?? '') === 'reactivation' && ($vip_start_legacy_1999_returner['reason'] ?? '') === 'return_after_pause',
+    'confirmed activity in the previous month blocks Reaktivacija when there was no pause' => ($vip_start_active_previous_month['key'] ?? '') === 'starter' && ($vip_start_active_previous_month['reason'] ?? '') === 'active_without_pause',
+    'missing enrollment and activity history fail safely to Starter' => ($vip_start_missing_history['key'] ?? '') === 'starter' && ($vip_start_missing_history['reason'] ?? '') === 'insufficient_history',
+    'missing qualifying period cannot manufacture a Reaktivacija decision from otherwise return-like evidence' => ($vip_start_missing_qualifying_period['key'] ?? '') === 'starter' && ($vip_start_missing_qualifying_period['reason'] ?? '') === 'insufficient_history',
+    'an invalid calendar enrollment date fails safely as a data conflict' => ($vip_start_invalid_enrollment_date['key'] ?? '') === 'starter' && ($vip_start_invalid_enrollment_date['reason'] ?? '') === 'data_conflict',
+    'conflicting previous-month activity signals fail safely to Starter' => ($vip_start_conflicting_previous_month_signals['key'] ?? '') === 'starter' && ($vip_start_conflicting_previous_month_signals['reason'] ?? '') === 'data_conflict',
+    'a persisted Starter decision is not rewritten by later return-like evidence' => ($vip_start_persisted_starter['key'] ?? '') === 'starter' && ($vip_start_persisted_starter['reason'] ?? '') === 'recent_enrollment',
+    'a persisted Reaktivacija decision is not rewritten by later recent-enrollment evidence' => ($vip_start_persisted_reactivation['key'] ?? '') === 'reactivation' && ($vip_start_persisted_reactivation['reason'] ?? '') === 'return_after_pause',
+    'an unknown persisted reason is ignored and the starting track is recomputed from evidence' => ($vip_start_unknown_persisted_reason['key'] ?? '') === 'reactivation' && ($vip_start_unknown_persisted_reason['reason'] ?? '') === 'return_after_pause',
+    'a logically mismatched persisted key and reason are ignored in favor of fresh evidence' => ($vip_start_mismatched_persisted_pair['key'] ?? '') === 'starter' && ($vip_start_mismatched_persisted_pair['reason'] ?? '') === 'recent_enrollment',
     'Leader requires both full recognized Manager status and official August 4 CC' => $recognized_manager_active_track['key'] === 'leader' && $recognized_manager_inactive_track['key'] !== 'leader',
     'Assistant and Unrecognized Manager do not receive Leader solely from their title' => $assistant_manager_active_track['key'] === 'builder' && $unrecognized_manager_active_track['key'] === 'builder',
     'historical Leader completion cannot bypass the stricter current qualification' => $historical_leader_without_qualification['key'] === 'builder',
@@ -470,7 +620,7 @@ $rule_assertions = [
     'numeric day references do not cut the task title at 21.' => str_contains($catalog['builder'][14]['title'] ?? '', '30. dan'),
     'completion modes enforce quick and full thresholds' => forever_business_vip_completion_mode_for_count(['target' => 10, 'quick_target' => 5], 4) === null && forever_business_vip_completion_mode_for_count(['target' => 10, 'quick_target' => 5], 5) === 'quick' && forever_business_vip_completion_mode_for_count(['target' => 10, 'quick_target' => 5], 10) === 'standard',
     'a hard previous step automatically reduces the next explicit numeric quick target without misclassifying a mentor simulation' => !empty($adapted_builder_action['is_adaptively_simplified']) && ($adapted_builder_action['target'] ?? 0) === 20 && ($adapted_builder_action['quick_target'] ?? 0) === 3 && str_contains((string) ($adapted_builder_action['fallback'] ?? ''), 'Edukacija / trening'),
-    'adaptive copy is not shown and a reviewed fallback is preserved when the quick target is already one' => empty($already_minimum_quick_action['is_adaptively_simplified']) && ($already_minimum_quick_action['quick_target'] ?? 0) === 1 && str_contains((string) ($already_minimum_quick_action['fallback'] ?? ''), 'Ako danas nemaš kupca'),
+    'adaptive copy is not shown and a reviewed fallback is preserved when the quick target is already one' => empty($already_minimum_quick_action['is_adaptively_simplified']) && ($already_minimum_quick_action['quick_target'] ?? 0) === 1 && str_contains((string) ($already_minimum_quick_action['fallback'] ?? ''), 'Ako još nemaš kupca'),
 ];
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));

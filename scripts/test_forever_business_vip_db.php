@@ -61,6 +61,22 @@ try {
     while($help_indexes_result && $row = $help_indexes_result->fetch_assoc()) $help_indexes[(string) $row['Key_name']] = true;
     $assert(isset($help_indexes['forever_business_vip_help_user_action_uq'], $help_indexes['forever_business_vip_help_status_idx']), 'Help-request uniqueness and status indexes are required.');
 
+    $vip_enrollment_columns_result = database()->query("SHOW COLUMNS FROM forever_business_vip_enrollments");
+    $vip_enrollment_columns = [];
+    while($vip_enrollment_columns_result && $row = $vip_enrollment_columns_result->fetch_assoc()) {
+        $vip_enrollment_columns[(string) $row['Field']] = $row;
+    }
+    $assert(isset(
+        $vip_enrollment_columns['starting_track_key'],
+        $vip_enrollment_columns['starting_track_reason'],
+        $vip_enrollment_columns['starting_track_decided_at']
+    ), 'Permanent VIP starting-track decision columns are required.');
+    $assert(strtolower((string) ($vip_enrollment_columns['starting_track_key']['Type'] ?? '')) === 'varchar(24)'
+        && strtolower((string) ($vip_enrollment_columns['starting_track_reason']['Type'] ?? '')) === 'varchar(32)'
+        && strtolower((string) ($vip_enrollment_columns['starting_track_decided_at']['Type'] ?? '')) === 'datetime'
+        && strtoupper((string) ($vip_enrollment_columns['starting_track_decided_at']['Null'] ?? 'NO')) === 'YES',
+        'VIP starting-track decision columns must keep their bounded nullable schema.');
+
     $fixture_preferences = [
         ['meta' => ['foreverId' => $fbo_id]],
         ['meta' => ['forever_id' => $fbo_id]],
@@ -96,6 +112,291 @@ try {
         'is_4cc_active' => 0,
     ]);
     forever_business_upsert_total_cc_snapshot($fbo_id, '2026-08-01', 99.0, true, 'GLOBAL', 'VIP month-boundary fixture');
+    $recent_sponsor_date = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '2026-07-15'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $recent_sponsor_date, 'Recent-enrollment fixture date could not be prepared.');
+
+    /* Focus stores a missing/blank PREVIOUS MONTH ACTIVE value as zero in the
+     * legacy schema. That default must never be treated as a confirmed pause. */
+    $focus_unknown_date_ready = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '2025-01-15'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $focus_unknown_date_ready, 'Focus unknown-pause fixture date could not be prepared.');
+    $focus_unknown_pause_ready = database()->query("INSERT INTO forever_business_focus_metrics
+        (fbo_id, period_month, snapshot_date, enrollment_date, last_purchase_date, is_active,
+         was_active_previous_month, personal_cc, new_recruits, source_import_id, updated_at)
+        VALUES ('{$fbo_id}', '2026-08-01', '2026-08-31', '2025-01-15', '2026-06-15', 0,
+                0, 0.000, 0, NULL, '{$now}')");
+    $assert((bool) $focus_unknown_pause_ready, 'Focus unknown-pause fixture could not be created.');
+    $focus_guard_now = new DateTimeImmutable('2026-09-01 00:00:01', new DateTimeZone('Europe/Zagreb'));
+    $focus_guard_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $focus_guard_now);
+    $focus_guard_member = $focus_guard_dashboard['members'][0] ?? [];
+    $focus_guard_storage_result = database()->query("SELECT starting_track_key, starting_track_reason
+        FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}' LIMIT 1");
+    $focus_guard_storage = $focus_guard_storage_result ? $focus_guard_storage_result->fetch_assoc() : [];
+    $assert(($focus_guard_member['vip_starting_track_key'] ?? '') === 'starter'
+        && ($focus_guard_member['vip_starting_track_reason'] ?? '') === 'insufficient_history'
+        && empty($focus_guard_storage['starting_track_key'])
+        && empty($focus_guard_storage['starting_track_reason']),
+        'A Focus zero caused by a missing or blank previous-month field must not manufacture a confirmed pause or Reaktivacija.');
+    database()->query("DELETE FROM forever_business_focus_metrics
+        WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-08-01'");
+    $focus_unknown_date_restored = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '2026-07-15'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $focus_unknown_date_restored, 'Recent-enrollment fixture date could not be restored after Focus pause guard.');
+
+    /* Quarantine historical rows that older code may have changed to zero via
+     * Focus while retaining an earlier trusted source_import_id. A later real
+     * monthly sync can explicitly reconfirm and release that zero. */
+    $legacy_focus_zero_date_ready = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '2025-01-15'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $legacy_focus_zero_date_ready, 'Legacy Focus-zero fixture date could not be prepared.');
+    $legacy_focus_zero_metrics_ready = database()->query("INSERT INTO forever_business_metrics
+        (fbo_id, period_month, personal_cc, total_cc, total_active_cc, non_manager_cc, leadership_cc,
+         is_4cc_active, source_import_id, updated_at)
+        VALUES
+        ('{$fbo_id}', '2026-06-01', 0.500, 0.500, 0.500, 0.000, 0.000, 0, NULL, '2026-08-15 09:00:00'),
+        ('{$fbo_id}', '2026-07-01', 0.000, 0.000, 0.000, 0.000, 0.000, 0, NULL, '2026-08-15 10:00:00')");
+    $legacy_focus_zero_focus_ready = database()->query("INSERT INTO forever_business_focus_metrics
+        (fbo_id, period_month, snapshot_date, enrollment_date, last_purchase_date, is_active,
+         was_active_previous_month, personal_cc, new_recruits, source_import_id, updated_at)
+        VALUES ('{$fbo_id}', '2026-07-01', '2026-08-16', '2025-01-15', '2026-06-15', 0,
+                0, 0.000, 0, NULL, '2026-08-16 10:00:00')");
+    $assert((bool) $legacy_focus_zero_metrics_ready && (bool) $legacy_focus_zero_focus_ready,
+        'Legacy Focus-zero fixtures could not be created.');
+    $legacy_focus_zero_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $focus_guard_now);
+    $legacy_focus_zero_member = $legacy_focus_zero_dashboard['members'][0] ?? [];
+    $legacy_focus_zero_storage_result = database()->query("SELECT starting_track_key, starting_track_reason
+        FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}' LIMIT 1");
+    $legacy_focus_zero_storage = $legacy_focus_zero_storage_result ? $legacy_focus_zero_storage_result->fetch_assoc() : [];
+    $assert(($legacy_focus_zero_member['vip_starting_track_key'] ?? '') === 'starter'
+        && ($legacy_focus_zero_member['vip_starting_track_reason'] ?? '') === 'insufficient_history'
+        && empty($legacy_focus_zero_storage['starting_track_key'])
+        && empty($legacy_focus_zero_storage['starting_track_reason']),
+        'A potentially Focus-overwritten historical zero must remain quarantined and cannot assign Reaktivacija.');
+    $trusted_zero_reconfirmed = database()->query("UPDATE forever_business_metrics
+        SET updated_at = '2026-08-17 10:00:00'
+        WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-07-01'");
+    $assert((bool) $trusted_zero_reconfirmed, 'Trusted zero reconfirmation fixture could not be prepared.');
+    $reconfirmed_zero_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $focus_guard_now);
+    $reconfirmed_zero_member = $reconfirmed_zero_dashboard['members'][0] ?? [];
+    $assert(($reconfirmed_zero_member['vip_starting_track_key'] ?? '') === 'reactivation'
+        && ($reconfirmed_zero_member['vip_starting_track_reason'] ?? '') === 'return_after_pause',
+        'A strictly later trusted monthly sync may reconfirm the zero and resolve a true returner as Reaktivacija.');
+    database()->query("DELETE FROM forever_business_focus_metrics
+        WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-07-01'");
+    database()->query("DELETE FROM forever_business_metrics
+        WHERE fbo_id = '{$fbo_id}' AND period_month IN ('2026-06-01', '2026-07-01')");
+    database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_key = NULL, starting_track_reason = NULL, starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+    $legacy_focus_zero_restored = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '2026-07-15'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $legacy_focus_zero_restored, 'Recent-enrollment fixture date could not be restored after legacy Focus-zero guard.');
+
+    /* An explicit official 4 CC positive signal always proves activity, even
+     * when Personal CC in the same trusted row is anomalously zero. */
+    $official_precedence_date_ready = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '1999-12-31'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $official_precedence_date_ready, 'Official-precedence fixture date could not be prepared.');
+    $official_precedence_metrics_ready = database()->query("INSERT INTO forever_business_metrics
+        (fbo_id, period_month, personal_cc, total_cc, total_active_cc, non_manager_cc, leadership_cc,
+         is_4cc_active, source_import_id, updated_at)
+        VALUES
+        ('{$fbo_id}', '2026-06-01', 0.500, 0.500, 0.500, 0.000, 0.000, 0, NULL, '{$now}'),
+        ('{$fbo_id}', '2026-07-01', 0.000, 4.000, 4.000, 0.000, 0.000, 1, NULL, '{$now}')");
+    $assert((bool) $official_precedence_metrics_ready, 'Official-precedence metrics could not be prepared.');
+    $official_precedence_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $focus_guard_now);
+    $official_precedence_member = $official_precedence_dashboard['members'][0] ?? [];
+    $assert(($official_precedence_member['vip_starting_track_key'] ?? '') === 'starter'
+        && ($official_precedence_member['vip_starting_track_reason'] ?? '') === 'active_without_pause',
+        'Official Q-1 4 CC activity must block Reaktivacija even when Personal CC is zero.');
+    database()->query("DELETE FROM forever_business_metrics
+        WHERE fbo_id = '{$fbo_id}' AND period_month IN ('2026-06-01', '2026-07-01')");
+    $official_precedence_restored = database()->query("UPDATE forever_business_members
+        SET sponsor_date = '2026-07-15'
+        WHERE fbo_id = '{$fbo_id}'");
+    database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_key = NULL, starting_track_reason = NULL, starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $official_precedence_restored, 'Recent-enrollment fixture date could not be restored after official precedence guard.');
+
+    /* Incomplete same-cohort evidence is shown as fail-safe Starter but must
+     * remain unfrozen so a later completed import can make the correct choice. */
+    $incomplete_start = forever_business_persist_vip_start([
+        'fbo_id' => $fbo_id,
+        'vip_qualifying_period' => '2026-08-01',
+        'vip_known_enrollment_date' => '2025-01-15',
+    ]);
+    $incomplete_storage_result = database()->query("SELECT starting_track_key, starting_track_reason, starting_track_decided_at
+        FROM forever_business_vip_enrollments
+        WHERE fbo_id = '{$fbo_id}'
+        LIMIT 1");
+    $incomplete_storage = $incomplete_storage_result ? $incomplete_storage_result->fetch_assoc() : [];
+    $assert(($incomplete_start['key'] ?? '') === 'starter'
+        && ($incomplete_start['reason'] ?? '') === 'insufficient_history'
+        && empty($incomplete_storage['starting_track_key'])
+        && empty($incomplete_storage['starting_track_reason'])
+        && empty($incomplete_storage['starting_track_decided_at']),
+        'Incomplete same-cohort evidence must not permanently freeze the fail-safe Starter response.');
+    $completed_history_start = forever_business_persist_vip_start([
+        'fbo_id' => $fbo_id,
+        'vip_qualifying_period' => '2026-08-01',
+        'vip_known_enrollment_date' => '2025-01-15',
+        'vip_has_prior_activity_before_pause' => true,
+        'vip_previous_month_confirmed_inactive' => true,
+    ]);
+    $assert(($completed_history_start['key'] ?? '') === 'reactivation'
+        && ($completed_history_start['reason'] ?? '') === 'return_after_pause'
+        && !empty($completed_history_start['is_persisted']),
+        'Completed same-cohort evidence must still be able to resolve an unfrozen returner as Reaktivacija.');
+    $same_cohort_reset = database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_key = NULL,
+            starting_track_reason = NULL,
+            starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $same_cohort_reset, 'Same-cohort persistence fixture could not be reset.');
+
+    $entry_lock_input = [
+        'core_key' => 'Development',
+        'action_key' => 'vip26_starter_d01',
+        'outcome_type' => 'starter',
+        'result_type' => 'planning',
+        'difficulty' => 'normal',
+        'completion_mode' => 'standard',
+        'needs_help' => false,
+        'outcome_count' => 1,
+        'sequence_position' => 1,
+        'note' => '',
+    ];
+    $entry_lock_time = new DateTimeImmutable('2026-08-28 10:00:00', new DateTimeZone('Europe/Zagreb'));
+    $opposite_decision_ready = database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_key = 'reactivation',
+            starting_track_reason = 'return_after_pause',
+            starting_track_decided_at = '{$now}'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $opposite_decision_ready
+        && !forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $entry_lock_input, $entry_lock_time),
+        'A stale Starter submit must be rejected after the shared FBO has committed Reaktivacija.');
+    $entry_lock_reset = database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_key = NULL, starting_track_reason = NULL, starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $entry_lock_reset
+        && forever_business_record_daily_outcome($fixture_user_ids[0], $fbo_id, [$fbo_id], $entry_lock_input, $entry_lock_time),
+        'The first valid entry-task completion must atomically persist its shared FBO path.');
+    $entry_lock_storage_result = database()->query("SELECT starting_track_key, starting_track_reason
+        FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}' LIMIT 1");
+    $entry_lock_storage = $entry_lock_storage_result ? $entry_lock_storage_result->fetch_assoc() : [];
+    $assert(($entry_lock_storage['starting_track_key'] ?? '') === 'starter'
+        && ($entry_lock_storage['starting_track_reason'] ?? '') === 'started_starter_path',
+        'The enrollment row and first entry outcome must commit the same path.');
+    database()->query("DELETE FROM forever_business_daily_outcomes
+        WHERE fbo_id = '{$fbo_id}' AND action_key = 'vip26_starter_d01' AND action_date = '2026-08-28'");
+    database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_key = NULL, starting_track_reason = NULL, starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+
+    /* A completed entry-path task freezes continuity across an earlier cohort
+     * import. Before the first task, the same earlier import may safely clear a
+     * provisional decision so it can be recomputed from the corrected cohort. */
+    $cohort_fixture_prepared = database()->query("UPDATE forever_business_vip_enrollments
+        SET qualifying_period = '2026-09-01',
+            starting_track_key = 'reactivation',
+            starting_track_reason = 'return_after_pause',
+            starting_track_decided_at = '{$now}'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $cohort_fixture_prepared, 'Started-path cohort fixture could not be prepared.');
+    $started_fixture = database()->query("INSERT INTO forever_business_daily_outcomes
+        (fbo_id, action_date, core_key, action_key, status, outcome_count, outcome_type,
+         recorded_by_user_id, completion_mode, created_at, updated_at)
+        VALUES ('{$fbo_id}', '2026-08-31', 'Development', 'vip26_starter_d01', 'done', 1, 'starter',
+                {$fixture_user_ids[0]}, 'standard', '{$now}', '{$now}')");
+    $assert((bool) $started_fixture, 'Started-path outcome fixture could not be created.');
+    $started_path = forever_business_persist_vip_start([
+        'fbo_id' => $fbo_id,
+        'vip_qualifying_period' => '2026-09-01',
+    ]);
+    $assert(($started_path['key'] ?? '') === 'starter'
+        && ($started_path['reason'] ?? '') === 'started_starter_path'
+        && !empty($started_path['is_persisted']),
+        'The earliest completed Starter task must reconcile and freeze even an opposite legacy decision.');
+    $assert(forever_business_record_vip_eligibility_metric($fbo_id, '2026-08-01', 0.500, null, 'member_cc', $fixture_user_ids[0]),
+        'Earlier qualifying-period fixture could not update the enrollment after a started path.');
+    $started_cohort_result = database()->query("SELECT qualifying_period, starting_track_key, starting_track_reason
+        FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}' LIMIT 1");
+    $started_cohort = $started_cohort_result ? $started_cohort_result->fetch_assoc() : [];
+    $assert(($started_cohort['qualifying_period'] ?? '') === '2026-08-01'
+        && ($started_cohort['starting_track_key'] ?? '') === 'starter'
+        && ($started_cohort['starting_track_reason'] ?? '') === 'started_starter_path',
+        'An earlier qualifying import must preserve a path after its first completed task.');
+    database()->query("DELETE FROM forever_business_daily_outcomes
+        WHERE fbo_id = '{$fbo_id}' AND action_key = 'vip26_starter_d01' AND action_date = '2026-08-31'");
+
+    $reverse_path_prepared = database()->query("UPDATE forever_business_vip_enrollments
+        SET qualifying_period = '2026-08-01',
+            starting_track_key = NULL,
+            starting_track_reason = NULL,
+            starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $reverse_path_prepared, 'Reverse path-freeze fixture could not be prepared.');
+    $reactivation_started_fixture = database()->query("INSERT INTO forever_business_daily_outcomes
+        (fbo_id, action_date, core_key, action_key, status, outcome_count, outcome_type,
+         recorded_by_user_id, completion_mode, created_at, updated_at)
+        VALUES ('{$fbo_id}', '2026-08-30', 'Development', 'vip26_reactivation_d01', 'done', 1, 'reactivation',
+                {$fixture_user_ids[1]}, 'standard', '{$now}', '{$now}')");
+    $assert((bool) $reactivation_started_fixture, 'Reverse Reaktivacija outcome fixture could not be created.');
+    $reverse_fixed_now = new DateTimeImmutable('2026-09-01 00:00:01', new DateTimeZone('Europe/Zagreb'));
+    $reverse_los = forever_business_get_los_admin_analytics($fixture_user_ids[0], 30, '', $reverse_fixed_now);
+    $reverse_los_members = array_values(array_filter((array) ($reverse_los['members'] ?? []), static fn(array $member): bool => ($member['fbo_id'] ?? '') === $fbo_id));
+    $assert(count($reverse_los_members) === 2
+        && count(array_filter($reverse_los_members, static fn(array $member): bool =>
+            ($member['starting_track_key'] ?? '') === 'reactivation'
+            && ($member['starting_track_reason'] ?? '') === 'started_reactivation_path'
+        )) === 2,
+        'A completed Reaktivacija entry task must be reported as the shared starting path even before a decision is persisted.');
+    $reverse_path = forever_business_persist_vip_start([
+        'fbo_id' => $fbo_id,
+        'vip_qualifying_period' => '2026-08-01',
+        'vip_known_enrollment_date' => '2026-07-15',
+    ]);
+    $assert(($reverse_path['key'] ?? '') === 'reactivation'
+        && ($reverse_path['reason'] ?? '') === 'started_reactivation_path'
+        && !empty($reverse_path['is_persisted']),
+        'A first completed Reaktivacija task must override later recent-enrollment evidence and freeze continuity.');
+    $reverse_dashboard_a = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $reverse_fixed_now);
+    $reverse_dashboard_b = forever_business_get_dashboard($fixture_user_ids[1], false, '', '', $reverse_fixed_now);
+    $reverse_member_a = $reverse_dashboard_a['members'][0] ?? [];
+    $reverse_member_b = $reverse_dashboard_b['members'][0] ?? [];
+    $assert(($reverse_member_a['vip_starting_track_key'] ?? '') === 'reactivation'
+        && ($reverse_member_a['vip_starting_track_reason'] ?? '') === 'started_reactivation_path'
+        && ($reverse_member_b['vip_starting_track_key'] ?? '') === 'reactivation'
+        && ($reverse_member_b['vip_starting_track_reason'] ?? '') === 'started_reactivation_path',
+        'Both FCC accounts sharing the FBO must receive the frozen Reaktivacija starting path.');
+    database()->query("DELETE FROM forever_business_daily_outcomes
+        WHERE fbo_id = '{$fbo_id}' AND action_key = 'vip26_reactivation_d01' AND action_date = '2026-08-30'");
+
+    $unstarted_cohort_prepared = database()->query("UPDATE forever_business_vip_enrollments
+        SET qualifying_period = '2026-09-01',
+            starting_track_key = 'starter',
+            starting_track_reason = 'recent_enrollment',
+            starting_track_decided_at = '{$now}'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $unstarted_cohort_prepared, 'Unstarted cohort fixture could not be prepared.');
+    $assert(forever_business_record_vip_eligibility_metric($fbo_id, '2026-08-01', 0.500, null, 'member_cc', $fixture_user_ids[0]),
+        'Earlier qualifying-period fixture could not update the unstarted enrollment.');
+    $unstarted_cohort_result = database()->query("SELECT qualifying_period, starting_track_key, starting_track_reason, starting_track_decided_at
+        FROM forever_business_vip_enrollments WHERE fbo_id = '{$fbo_id}' LIMIT 1");
+    $unstarted_cohort = $unstarted_cohort_result ? $unstarted_cohort_result->fetch_assoc() : [];
+    $assert(($unstarted_cohort['qualifying_period'] ?? '') === '2026-08-01'
+        && empty($unstarted_cohort['starting_track_key'])
+        && empty($unstarted_cohort['starting_track_reason'])
+        && empty($unstarted_cohort['starting_track_decided_at']),
+        'An earlier qualifying import may clear an unstarted path so the corrected cohort is recomputed.');
 
     $zagreb_launch_boundary = new DateTimeImmutable('2026-09-01 00:01:00', new DateTimeZone('Europe/Zagreb'));
     forever_business_record_page_visit($fixture_user_ids[0], $zagreb_launch_boundary);
@@ -125,8 +426,97 @@ try {
         VALUES ('{$fbo_id}', '2026-09-01', 'Development', 'vip26_activator_d01', 'done', 1, 'activator',
                 'planning', 'normal', 0, {$fixture_user_ids[0]}, 'standard', '{$legacy_timestamp}', '{$legacy_timestamp}')");
     $assert((bool) $legacy_outcome, 'Superseded Activator day-one fixture could not be created.');
+
+    /* Simulate a dashboard that classified the August cohort immediately before
+     * an overlapping import moved the same FBO to an earlier July cohort. The
+     * stale dashboard must not persist its August decision into the new cohort. */
+    $stale_snapshot_ready = database()->query("UPDATE forever_business_vip_enrollments
+        SET qualifying_period = '2026-07-01',
+            starting_track_key = NULL,
+            starting_track_reason = NULL,
+            starting_track_decided_at = NULL
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $stale_snapshot_ready, 'Concurrent import fixture could not move the enrollment to an earlier cohort.');
+    $stale_start_result = forever_business_persist_vip_start([
+        'fbo_id' => $fbo_id,
+        'vip_qualifying_period' => '2026-08-01',
+        'vip_known_enrollment_date' => '2026-07-15',
+    ]);
+    $stale_storage_result = database()->query("SELECT qualifying_period, starting_track_key, starting_track_reason, starting_track_decided_at
+        FROM forever_business_vip_enrollments
+        WHERE fbo_id = '{$fbo_id}'
+        LIMIT 1");
+    $stale_storage = $stale_storage_result ? $stale_storage_result->fetch_assoc() : [];
+    $assert(($stale_storage['qualifying_period'] ?? '') === '2026-07-01'
+        && empty($stale_storage['starting_track_key'])
+        && empty($stale_storage['starting_track_reason'])
+        && empty($stale_storage['starting_track_decided_at'])
+        && ($stale_start_result['key'] ?? '') === 'starter',
+        'A stale dashboard classification must not be written after a concurrent earlier qualifying-period import.');
+    $stale_snapshot_restored = database()->query("UPDATE forever_business_vip_enrollments
+        SET qualifying_period = '2026-08-01'
+        WHERE fbo_id = '{$fbo_id}'");
+    $assert((bool) $stale_snapshot_restored, 'Concurrent import fixture could not restore the August cohort.');
+
     $september_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $fixed_now);
     $september_member = $september_dashboard['members'][0] ?? [];
+    $starting_track_result = database()->query("SELECT starting_track_key, starting_track_reason, starting_track_decided_at
+        FROM forever_business_vip_enrollments
+        WHERE fbo_id = '{$fbo_id}'
+        LIMIT 1");
+    $starting_track = $starting_track_result ? $starting_track_result->fetch_assoc() : [];
+    $assert(($starting_track['starting_track_key'] ?? '') === 'starter'
+        && ($starting_track['starting_track_reason'] ?? '') === 'recent_enrollment'
+        && !empty($starting_track['starting_track_decided_at']),
+        'The first dashboard resolution must persist the recent enrollment as the FBO starting track exactly once.');
+    $assert(($september_member['vip_starting_track_key'] ?? '') === 'starter'
+        && ($september_member['vip_starting_track_reason'] ?? '') === 'recent_enrollment',
+        'The dashboard member must expose the persisted FBO starting-track decision.');
+
+    $shared_start_dashboard = forever_business_get_dashboard($fixture_user_ids[1], false, '', '', $fixed_now);
+    $shared_start_member = $shared_start_dashboard['members'][0] ?? [];
+    $assert(($shared_start_member['vip_starting_track_key'] ?? '') === 'starter'
+        && ($shared_start_member['vip_starting_track_reason'] ?? '') === 'recent_enrollment',
+        'Every FCC account linked to the same FBO must receive the same persisted starting track.');
+
+    /* Make a later recomputation disagree with the original decision: activity
+     * predating the recorded sponsor date followed by a zero month is both a
+     * historical return/pause signal and a data conflict. The original FBO
+     * decision, reason and timestamp must still be immutable. */
+    $starting_track_timestamp_sentinel = '2026-08-20 12:34:56';
+    $starting_track_sentinel_ready = database()->query("UPDATE forever_business_vip_enrollments
+        SET starting_track_decided_at = '{$starting_track_timestamp_sentinel}'
+        WHERE fbo_id = '{$fbo_id}'
+          AND starting_track_key = 'starter'
+          AND starting_track_reason = 'recent_enrollment'");
+    $assert((bool) $starting_track_sentinel_ready && (int) database()->affected_rows === 1,
+        'Persisted starting-track timestamp sentinel could not be prepared.');
+    $history_fixture_time = database()->real_escape_string(get_date());
+    $old_activity_ready = database()->query("INSERT INTO forever_business_metrics
+        (fbo_id, period_month, personal_cc, total_cc, total_active_cc, non_manager_cc, leadership_cc,
+         is_4cc_active, source_import_id, updated_at)
+        VALUES
+        ('{$fbo_id}', '2026-06-01', 0.500, 0.500, 0.500, 0.000, 0.000, 0, NULL, '{$history_fixture_time}'),
+        ('{$fbo_id}', '2026-07-01', 0.000, 0.000, 0.000, 0.000, 0.000, 0, NULL, '{$history_fixture_time}')");
+    $assert((bool) $old_activity_ready, 'Contradictory historical activity and pause fixtures could not be created.');
+
+    $persistent_start_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $fixed_now);
+    $persistent_start_member = $persistent_start_dashboard['members'][0] ?? [];
+    $persistent_start_result = database()->query("SELECT starting_track_key, starting_track_reason, starting_track_decided_at
+        FROM forever_business_vip_enrollments
+        WHERE fbo_id = '{$fbo_id}'
+        LIMIT 1");
+    $persistent_start = $persistent_start_result ? $persistent_start_result->fetch_assoc() : [];
+    $assert(($persistent_start['starting_track_key'] ?? '') === 'starter'
+        && ($persistent_start['starting_track_reason'] ?? '') === 'recent_enrollment'
+        && ($persistent_start['starting_track_decided_at'] ?? '') === $starting_track_timestamp_sentinel,
+        'Later contradictory history must not rewrite the persisted FBO starting-track decision or timestamp.');
+    $assert(($persistent_start_member['vip_starting_track_key'] ?? '') === 'starter'
+        && ($persistent_start_member['vip_starting_track_reason'] ?? '') === 'recent_enrollment',
+        'The dashboard must continue using the original persisted decision after later contradictory history appears.');
+    database()->query("DELETE FROM forever_business_metrics
+        WHERE fbo_id = '{$fbo_id}' AND period_month IN ('2026-06-01', '2026-07-01')");
+
     $assert((int) ($september_member['vip_actions_done_total'] ?? -1) === 0
         && (int) ($september_member['actions_done_7d'] ?? -1) === 0
         && empty($september_member['vip_action_done_today'])
@@ -187,8 +577,13 @@ try {
         'LOS must append a non-official September zero without relabeling the official August Global Total CC.');
     $los_fixture_members = array_values(array_filter((array) ($los['members'] ?? []), static fn(array $member): bool => ($member['fbo_id'] ?? '') === $fbo_id));
     $assert(count($los_fixture_members) === 2
-        && count(array_filter($los_fixture_members, static fn(array $member): bool => (float) ($member['personal_cc'] ?? -1) === 0.0 && (float) ($member['total_active_cc'] ?? -1) === 0.0)) === 2,
-        'LOS participant statistics must show current-month zeros for every linked collaborator sharing the fixture FBO.');
+        && count(array_filter($los_fixture_members, static fn(array $member): bool =>
+            (float) ($member['personal_cc'] ?? -1) === 0.0
+            && (float) ($member['total_active_cc'] ?? -1) === 0.0
+            && ($member['track'] ?? '') === 'starter'
+            && ($member['starting_track_reason'] ?? '') === 'recent_enrollment'
+        )) === 2,
+        'LOS participant statistics must show current-month zeros and the persisted Starter path for every linked collaborator sharing the fixture FBO.');
     $legacy_los_participant = array_values(array_filter($los_fixture_members, static fn(array $member): bool => (int) ($member['user_id'] ?? 0) === $fixture_user_ids[0]));
     $assert(count($legacy_los_participant) === 1
         && (int) ($legacy_los_participant[0]['vip_steps_completed'] ?? -1) === 0
@@ -459,6 +854,7 @@ try {
         database()->query("DELETE FROM forever_business_vip_enrollments WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
         database()->query("DELETE FROM forever_business_total_cc_snapshots WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
         database()->query("DELETE FROM forever_business_yearly_metrics WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
+        database()->query("DELETE FROM forever_business_focus_metrics WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
         database()->query("DELETE FROM forever_business_metrics WHERE fbo_id IN ('{$fbo_id}', '{$tampered_fbo_id}')");
         database()->query("DELETE FROM users WHERE user_id IN ({$id_list})");
     }

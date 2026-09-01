@@ -15,7 +15,7 @@ function forever_business_ensure_tables(): void {
      * one indexed SELECT; a database advisory lock serializes the one request
      * that provisions a new version. Bump this key whenever schema DDL below
      * changes. */
-    $runtime_schema_key = 'forever_business_runtime_schema_v20260831_4';
+    $runtime_schema_key = 'forever_business_runtime_schema_v20260901_1';
     $escaped_runtime_schema_key = database()->real_escape_string($runtime_schema_key);
     try {
         $runtime_schema_result = database()->query("SELECT `completed_at`
@@ -30,7 +30,7 @@ function forever_business_ensure_tables(): void {
         /* Fresh databases do not have the marker table yet. */
     }
 
-    $schema_lock_name = 'fcc_forever_schema_v20260831_4';
+    $schema_lock_name = 'fcc_forever_schema_v20260901_1';
     $schema_lock_result = database()->query("SELECT GET_LOCK('{$schema_lock_name}', 20) AS `acquired`");
     $schema_lock_row = $schema_lock_result ? $schema_lock_result->fetch_assoc() : null;
     if((int) ($schema_lock_row['acquired'] ?? 0) !== 1) {
@@ -248,6 +248,9 @@ function forever_business_ensure_tables(): void {
             `last_verified_period` DATE NOT NULL,
             `last_verified_personal_cc` DECIMAL(12,3) NOT NULL,
             `source_import_id` BIGINT UNSIGNED NULL,
+            `starting_track_key` VARCHAR(24) NULL,
+            `starting_track_reason` VARCHAR(32) NULL,
+            `starting_track_decided_at` DATETIME NULL,
             `enrolled_at` DATETIME NOT NULL,
             `created_at` DATETIME NOT NULL,
             `updated_at` DATETIME NOT NULL,
@@ -331,6 +334,40 @@ function forever_business_ensure_tables(): void {
     $missing_required_tables = array_values(array_diff($required_tables, array_keys($available_tables)));
     if(!$required_tables_result || $missing_required_tables) {
         throw new \RuntimeException('Forever Business required tables could not be provisioned: ' . implode(', ', $missing_required_tables));
+    }
+
+    /* The initial Starter/Reactivation decision belongs to the permanent VIP
+     * enrollment (one Forever ID), not to a monthly metric or an individual
+     * page request. Persisting it prevents a later partial import from moving a
+     * participant between two parallel day-one curricula. Existing rows remain
+     * NULL until they are classified once from the complete evidence below. */
+    $vip_enrollment_columns_result = database()->query("SHOW COLUMNS FROM `forever_business_vip_enrollments`");
+    if(!$vip_enrollment_columns_result) {
+        throw new \RuntimeException('Forever Business VIP enrollment columns could not be audited.');
+    }
+    $vip_enrollment_columns = [];
+    while($vip_enrollment_column = $vip_enrollment_columns_result->fetch_assoc()) {
+        $vip_enrollment_columns[(string) ($vip_enrollment_column['Field'] ?? '')] = true;
+    }
+    $vip_enrollment_alters = [
+        'starting_track_key' => "ADD `starting_track_key` VARCHAR(24) NULL AFTER `source_import_id`",
+        'starting_track_reason' => "ADD `starting_track_reason` VARCHAR(32) NULL AFTER `starting_track_key`",
+        'starting_track_decided_at' => "ADD `starting_track_decided_at` DATETIME NULL AFTER `starting_track_reason`",
+    ];
+    foreach($vip_enrollment_alters as $column => $alter) {
+        if(isset($vip_enrollment_columns[$column])) continue;
+        if(!database()->query("ALTER TABLE `forever_business_vip_enrollments` {$alter}")) {
+            throw new \RuntimeException('Forever Business VIP starting-track column could not be provisioned: ' . $column);
+        }
+    }
+    $vip_enrollment_verify_result = database()->query("SHOW COLUMNS FROM `forever_business_vip_enrollments`");
+    $vip_enrollment_verify = [];
+    while($vip_enrollment_verify_result && $vip_enrollment_column = $vip_enrollment_verify_result->fetch_assoc()) {
+        $vip_enrollment_verify[(string) ($vip_enrollment_column['Field'] ?? '')] = true;
+    }
+    if(!$vip_enrollment_verify_result
+        || !isset($vip_enrollment_verify['starting_track_key'], $vip_enrollment_verify['starting_track_reason'], $vip_enrollment_verify['starting_track_decided_at'])) {
+        throw new \RuntimeException('Forever Business VIP starting-track columns could not be verified.');
     }
 
     /* `NULL` means FLP360 has not supplied an official 4 CC result for this
@@ -644,6 +681,20 @@ function forever_business_number($value): float {
     return is_numeric($value) ? (float) $value : 0.0;
 }
 
+/** Parse an optional numeric report cell without turning unknown into zero. */
+function forever_business_optional_number($value): ?float {
+    if($value === null || trim((string) $value) === '') {
+        return null;
+    }
+
+    $normalized = str_replace([' ', ','], ['', '.'], trim((string) $value));
+    return is_numeric($normalized) ? (float) $normalized : null;
+}
+
+function forever_business_report_cell(array $row, array $header_map, string $header, $default = '') {
+    return isset($header_map[$header]) ? ($row[$header_map[$header]] ?? $default) : $default;
+}
+
 function forever_business_contact_hash($value): ?string {
     $value = mb_strtolower(trim((string) $value));
 
@@ -669,7 +720,10 @@ function forever_business_parse_date($value): ?string {
 
     foreach(['d-m-Y', 'Y-m-d', 'd.m.Y', 'm/d/Y'] as $format) {
         $date = \DateTimeImmutable::createFromFormat('!' . $format, $value);
-        if($date instanceof \DateTimeImmutable) {
+        $errors = \DateTimeImmutable::getLastErrors();
+        if($date instanceof \DateTimeImmutable
+            && ($errors === false
+                || ((int) ($errors['warning_count'] ?? 0) === 0 && (int) ($errors['error_count'] ?? 0) === 0))) {
             return $date->format('Y-m-d');
         }
     }
@@ -1114,9 +1168,11 @@ function forever_business_parse_report(string $path, string $original_name, stri
 
             $title = trim((string) ($row[$header_map['CURRENT LEVEL']] ?? ''));
             $name = trim((string) ($row[$header_map['FBO NAME']] ?? ''));
-            $sponsor_fbo_id = forever_business_normalize_fbo_id($row[$header_map['SPONSOR ID']] ?? '');
-            $personal_cc = forever_business_number($row[$header_map['PERSONAL CC']] ?? 0);
-            $is_active = mb_strtoupper(trim((string) ($row[$header_map['ACTIVE']] ?? ''))) === 'YES' ? 1 : 0;
+            $sponsor_fbo_id = forever_business_normalize_fbo_id(forever_business_report_cell($row, $header_map, 'SPONSOR ID'));
+            $personal_cc = isset($header_map['PERSONAL CC'])
+                ? forever_business_optional_number($row[$header_map['PERSONAL CC']] ?? null)
+                : null;
+            $is_active = mb_strtoupper(trim((string) forever_business_report_cell($row, $header_map, 'ACTIVE'))) === 'YES' ? 1 : 0;
             if($period) $report['periods'][$period] = true;
 
             $report['members'][$fbo_id] = [
@@ -1125,7 +1181,7 @@ function forever_business_parse_report(string $path, string $original_name, stri
                 'title' => mb_substr($title, 0, 96),
                 'generation' => isset($header_map['GEN']) ? max(0, (int) ($row[$header_map['GEN']] ?? 0)) : null,
                 'country_code' => null,
-                'sponsor_date' => forever_business_parse_date($row[$header_map['ENROLLMENT DATE']] ?? ''),
+                'sponsor_date' => forever_business_parse_date(forever_business_report_cell($row, $header_map, 'ENROLLMENT DATE')),
                 'parent_fbo_id' => $sponsor_fbo_id ?: null,
                 'tree_sequence' => null,
                 'is_manager' => stripos($title, 'manager') !== false ? 1 : 0,
@@ -1135,34 +1191,24 @@ function forever_business_parse_report(string $path, string $original_name, stri
             ];
 
             if($period) {
-                $report['metrics'][$fbo_id . '|' . $period] = [
-                    'fbo_id' => $fbo_id,
-                    'period_month' => $period,
-                    'personal_cc' => $personal_cc,
-                    'total_cc' => null,
-                    'total_active_cc' => null,
-                    'non_manager_cc' => null,
-                    'leadership_cc' => null,
-                    /* Focus Group ACTIVE is a focus/report signal, not the official
-                     * FLP360 4 CC Active result. Only Downline 4CC ACTIVE and the
-                     * dedicated 4 CC Active report may set this field. */
-                    'is_4cc_active' => null,
-                ];
+                /* Focus Group stays in its dedicated diagnostic table. Its
+                 * optional Personal CC must never overwrite a trusted monthly
+                 * Downline/live row or inherit that row's provenance. */
                 $report['focus_metrics'][$fbo_id . '|' . $period] = [
                     'fbo_id' => $fbo_id,
                     'period_month' => $period,
                     'snapshot_date' => date('Y-m-d'),
                     'next_level' => mb_substr(trim((string) ($row[$header_map['NEXT LEVEL']] ?? '')), 0, 96),
-                    'enrollment_date' => forever_business_parse_date($row[$header_map['ENROLLMENT DATE']] ?? ''),
+                    'enrollment_date' => forever_business_parse_date(forever_business_report_cell($row, $header_map, 'ENROLLMENT DATE')),
                     'last_purchase_date' => forever_business_parse_date($row[$header_map['LAST PURCHASE DATE']] ?? ''),
                     'is_active' => $is_active,
-                    'was_active_previous_month' => mb_strtoupper(trim((string) ($row[$header_map['PREVIOUS MONTH ACTIVE']] ?? ''))) === 'YES' ? 1 : 0,
-                    'open_group_cc_2m' => forever_business_number($row[$header_map['2 MONTHS OPEN GROUP CC']] ?? 0),
+                    'was_active_previous_month' => mb_strtoupper(trim((string) forever_business_report_cell($row, $header_map, 'PREVIOUS MONTH ACTIVE'))) === 'YES' ? 1 : 0,
+                    'open_group_cc_2m' => forever_business_number(forever_business_report_cell($row, $header_map, '2 MONTHS OPEN GROUP CC', 0)),
                     'needed_cc_next_level' => forever_business_number($row[$header_map['NEEDED CC FOR NEXT LEVEL']] ?? 0),
                     'personal_cc' => $personal_cc,
-                    'new_recruits' => max(0, (int) forever_business_number($row[$header_map['NEW RECRUITS']] ?? 0)),
+                    'new_recruits' => max(0, (int) forever_business_number(forever_business_report_cell($row, $header_map, 'NEW RECRUITS', 0))),
                     'sponsor_fbo_id' => $sponsor_fbo_id ?: null,
-                    'sponsor_name' => mb_substr(trim((string) ($row[$header_map['SPONSOR NAME']] ?? '')), 0, 160),
+                    'sponsor_name' => mb_substr(trim((string) forever_business_report_cell($row, $header_map, 'SPONSOR NAME')), 0, 160),
                 ];
             }
         }
@@ -1171,7 +1217,8 @@ function forever_business_parse_report(string $path, string $original_name, stri
     $report['periods'] = array_keys($report['periods']);
     sort($report['periods']);
     $latest_period = !empty($report['periods']) ? end($report['periods']) : null;
-    $latest_metrics = array_values(array_filter($report['metrics'], static fn($metric) => $metric['period_month'] === $latest_period));
+    $summary_metric_source = $report['kind'] === 'focus_group' ? $report['focus_metrics'] : $report['metrics'];
+    $latest_metrics = array_values(array_filter($summary_metric_source, static fn($metric) => $metric['period_month'] === $latest_period));
     $report['summary'] = [
         'kind' => $report['kind'],
         'rows' => count($report['members']),
@@ -1319,13 +1366,12 @@ function forever_business_import_report(array $report, string $file_sha256, int 
         }
 
         foreach($report['metrics'] as $metric) {
+            /* Defensive boundary for callers that construct a report array
+             * directly: Focus data never mutates authoritative monthly rows. */
+            if($report['kind'] === 'focus_group') continue;
             $metric_update_columns = $report['kind'] === 'four_cc_active'
                 ? ['personal_cc', 'total_active_cc', 'is_4cc_active', 'source_import_id', 'updated_at']
-                : ($report['kind'] === 'focus_group'
-                    /* Keep the prior official/downline import provenance when a
-                     * Focus report only refreshes Personal CC. */
-                    ? ['personal_cc', 'updated_at']
-                    : ['personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc', 'is_4cc_active', 'source_import_id', 'updated_at']);
+                : ['personal_cc', 'total_cc', 'total_active_cc', 'non_manager_cc', 'leadership_cc', 'is_4cc_active', 'source_import_id', 'updated_at'];
             db()->onDuplicate($metric_update_columns)->insert('forever_business_metrics', [
                 'fbo_id' => $metric['fbo_id'],
                 'period_month' => $metric['period_month'],
@@ -1637,6 +1683,39 @@ function forever_business_record_vip_eligibility_metric(
             `qualifying_personal_cc` = IF(VALUES(`qualifying_period`) < `qualifying_period`, VALUES(`qualifying_personal_cc`), `qualifying_personal_cc`),
             `qualification_source` = IF(VALUES(`qualifying_period`) < `qualifying_period`, VALUES(`qualification_source`), `qualification_source`),
             `source_import_id` = IF(VALUES(`qualifying_period`) < `qualifying_period`, VALUES(`source_import_id`), `source_import_id`),
+            `starting_track_key` = IF(
+                VALUES(`qualifying_period`) < `qualifying_period`
+                AND NOT EXISTS (
+                    SELECT 1 FROM `forever_business_daily_outcomes` `vip_started`
+                    WHERE `vip_started`.`fbo_id` = `forever_business_vip_enrollments`.`fbo_id`
+                      AND `vip_started`.`status` = 'done'
+                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                ),
+                NULL,
+                `starting_track_key`
+            ),
+            `starting_track_reason` = IF(
+                VALUES(`qualifying_period`) < `qualifying_period`
+                AND NOT EXISTS (
+                    SELECT 1 FROM `forever_business_daily_outcomes` `vip_started`
+                    WHERE `vip_started`.`fbo_id` = `forever_business_vip_enrollments`.`fbo_id`
+                      AND `vip_started`.`status` = 'done'
+                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                ),
+                NULL,
+                `starting_track_reason`
+            ),
+            `starting_track_decided_at` = IF(
+                VALUES(`qualifying_period`) < `qualifying_period`
+                AND NOT EXISTS (
+                    SELECT 1 FROM `forever_business_daily_outcomes` `vip_started`
+                    WHERE `vip_started`.`fbo_id` = `forever_business_vip_enrollments`.`fbo_id`
+                      AND `vip_started`.`status` = 'done'
+                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                ),
+                NULL,
+                `starting_track_decided_at`
+            ),
             `qualifying_period` = LEAST(`qualifying_period`, VALUES(`qualifying_period`)),
             `last_verified_personal_cc` = IF(VALUES(`last_verified_period`) >= `last_verified_period`, VALUES(`last_verified_personal_cc`), `last_verified_personal_cc`),
             `last_verified_period` = GREATEST(`last_verified_period`, VALUES(`last_verified_period`)),
@@ -2463,8 +2542,8 @@ function forever_business_process_vip_email_notifications(int $limit = 25): arra
 
 function forever_business_vip_track_definitions(): array {
     return [
-        'starter' => ['label' => 'Starter', 'rank' => 1, 'goal' => 'Izgradi jednostavan dnevni ritam i napreduj prema najmanje 1 osobnom CC bez stvaranja zaliha.'],
-        'reactivation' => ['label' => 'Reaktivacija', 'rank' => 1, 'goal' => 'Vrati kontinuitet kroz postojeće odnose, jednostavne razgovore i korisničku podršku.'],
+        'starter' => ['label' => 'Starter', 'rank' => 1, 'goal' => 'Postavi temelje korak po korak: upoznaj alate, pokreni prve tople razgovore i gradi prema najmanje 1 osobnom CC bez stvaranja zaliha.'],
+        'reactivation' => ['label' => 'Reaktivacija', 'rank' => 1, 'goal' => 'Vrati kontinuitet koristeći ranije iskustvo, postojeće odnose, jednostavne razgovore i korisničku podršku.'],
         'activator' => ['label' => 'Aktivator', 'rank' => 2, 'goal' => 'Uz najmanje 1 osobni CC gradi prema službeno potvrđenoj aktivnosti od 4 CC.'],
         'builder' => ['label' => 'Builder', 'rank' => 3, 'goal' => 'Pretvori potvrđenu aktivnost u stabilnu produktivnost, retention i nove poslovne razgovore.'],
         'leader' => ['label' => 'Leader', 'rank' => 4, 'goal' => 'Razvijaj samostalne suradnike, buduće voditelje i jednostavan sustav koji se može duplicirati.'],
@@ -2749,6 +2828,226 @@ function forever_business_get_vip_task_catalog(): array {
     return $catalog;
 }
 
+/**
+ * Strictly parse an ISO calendar date. DateTime otherwise normalizes values
+ * such as 2026-02-31, which would be unsafe evidence for a curriculum choice.
+ */
+function forever_business_vip_strict_date($value): ?\DateTimeImmutable {
+    $value = trim((string) $value);
+    if(!preg_match('/^(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/D', $value)) {
+        return null;
+    }
+
+    $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value, new \DateTimeZone('Europe/Zagreb'));
+    $errors = \DateTimeImmutable::getLastErrors();
+    if(!$date
+        || ($errors !== false && ((int) ($errors['warning_count'] ?? 0) > 0 || (int) ($errors['error_count'] ?? 0) > 0))
+        || $date->format('Y-m-d') !== $value) {
+        return null;
+    }
+
+    return $date;
+}
+
+function forever_business_vip_start_reason_is_valid(string $key, string $reason): bool {
+    $valid_reasons = [
+        'starter' => ['recent_enrollment', 'active_without_pause', 'started_starter_path'],
+        'reactivation' => ['return_after_pause', 'started_reactivation_path'],
+    ];
+    return isset($valid_reasons[$key]) && in_array($reason, $valid_reasons[$key], true);
+}
+
+/**
+ * Resolve only the two parallel entry curricula. Higher levels continue to be
+ * selected from verified CC/4 CC results in forever_business_get_vip_track().
+ *
+ * New collaborators are protected for the qualifying month and the preceding
+ * three calendar months. Reaktivacija requires all three independent facts:
+ * an established history, activity before the pause and a confirmed inactive
+ * immediately preceding month. Missing or contradictory data fails safely to
+ * Starter because Starter never assumes former customers or an old contact
+ * list.
+ */
+function forever_business_classify_vip_start(array $member): array {
+    $persisted_key = trim((string) ($member['vip_starting_track_key'] ?? $member['starting_track_key'] ?? ''));
+    $persisted_reason = trim((string) ($member['vip_starting_track_reason'] ?? $member['starting_track_reason'] ?? ''));
+    if(forever_business_vip_start_reason_is_valid($persisted_key, $persisted_reason)) {
+        return [
+            'key' => $persisted_key,
+            'reason' => $persisted_reason,
+            'is_new_collaborator' => $persisted_key === 'starter' && $persisted_reason === 'recent_enrollment',
+            'is_reactivation' => $persisted_key === 'reactivation',
+            'is_persisted' => true,
+            'decided_at' => $member['vip_starting_track_decided_at'] ?? $member['starting_track_decided_at'] ?? null,
+        ];
+    }
+
+    $result = static function(string $key, string $reason, bool $is_new = false): array {
+        return [
+            'key' => $key,
+            'reason' => $reason,
+            'is_new_collaborator' => $is_new,
+            'is_reactivation' => $key === 'reactivation',
+            'is_persisted' => false,
+            'decided_at' => null,
+        ];
+    };
+
+    $qualifying_value = (string) ($member['vip_qualifying_period'] ?? $member['qualifying_period'] ?? '');
+    $qualifying_period = forever_business_vip_strict_date($qualifying_value);
+    if(!$qualifying_period || $qualifying_period->format('d') !== '01') {
+        return $result('starter', 'insufficient_history');
+    }
+
+    $enrollment_value = trim((string) ($member['vip_known_enrollment_date'] ?? $member['sponsor_date'] ?? $member['enrollment_date'] ?? ''));
+    $enrollment_date = $enrollment_value !== '' ? forever_business_vip_strict_date($enrollment_value) : null;
+    $entry_conflict = !empty($member['vip_entry_conflict']);
+    if($enrollment_value !== '' && !$enrollment_date) {
+        $entry_conflict = true;
+    }
+
+    $new_window_start = $qualifying_period->modify('-3 months');
+    $qualifying_month_end = $qualifying_period->modify('+1 month');
+    if($entry_conflict || ($enrollment_date && $enrollment_date >= $qualifying_month_end)) {
+        return $result('starter', 'data_conflict');
+    }
+    if($enrollment_date && $enrollment_date >= $new_window_start) {
+        return $result('starter', 'recent_enrollment', true);
+    }
+
+    /* A positive signal always blocks Reaktivacija. If the same month is also
+     * reported inactive, keep Starter and surface the evidence as conflicting
+     * instead of pretending that a confirmed pause exists. */
+    $previous_month_has_activity = !empty($member['vip_previous_month_has_activity']);
+    $previous_month_confirmed_inactive = !empty($member['vip_previous_month_confirmed_inactive']);
+    if($previous_month_has_activity && $previous_month_confirmed_inactive) {
+        return $result('starter', 'data_conflict');
+    }
+    if($previous_month_has_activity) {
+        return $result('starter', 'active_without_pause');
+    }
+
+    $has_prior_activity_before_pause = !empty($member['vip_has_prior_activity_before_pause']);
+    /* Historical metrics cannot prove that the current person is an older
+     * collaborator on their own. A known enrollment date outside the protected
+     * new-member window is therefore mandatory for Reaktivacija. */
+    $is_established = $enrollment_date && $enrollment_date < $new_window_start;
+
+    if($is_established && $has_prior_activity_before_pause && $previous_month_confirmed_inactive) {
+        return $result('reactivation', 'return_after_pause');
+    }
+
+    return $result('starter', 'insufficient_history');
+}
+
+/** Persist a high-confidence or already-started entry decision once per FBO. */
+function forever_business_persist_vip_start(array $member): array {
+    $classification = forever_business_classify_vip_start($member);
+
+    $fbo_id = forever_business_normalize_fbo_id($member['fbo_id'] ?? '');
+    $qualifying_period = forever_business_period_from_label(
+        $member['vip_qualifying_period'] ?? $member['qualifying_period'] ?? ''
+    ) ?: '';
+    if($fbo_id === '' || $qualifying_period === '') {
+        return $classification;
+    }
+
+    $escaped_fbo_id = database()->real_escape_string($fbo_id);
+    $escaped_qualifying_period = database()->real_escape_string($qualifying_period);
+
+    /* Once either entry curriculum has genuinely started, that path wins for
+     * every FCC account linked to the same FBO. This also protects continuity
+     * when an earlier qualifying import arrives after day one. */
+    $started_result = database()->query("SELECT `action_key`
+        FROM `forever_business_daily_outcomes`
+        WHERE `fbo_id` = '{$escaped_fbo_id}'
+          AND `status` = 'done'
+          AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+        ORDER BY `action_date` ASC, `outcome_id` ASC
+        LIMIT 1");
+    if(!$started_result) {
+        throw new \RuntimeException('Forever Business VIP starting outcome could not be checked.');
+    }
+    $started = $started_result->fetch_assoc();
+    $started_action_key = (string) ($started['action_key'] ?? '');
+    if(str_starts_with($started_action_key, 'vip26_starter_')) {
+        $classification = [
+            'key' => 'starter',
+            'reason' => 'started_starter_path',
+            'is_new_collaborator' => false,
+            'is_reactivation' => false,
+            'is_persisted' => false,
+            'decided_at' => null,
+        ];
+    } elseif(str_starts_with($started_action_key, 'vip26_reactivation_')) {
+        $classification = [
+            'key' => 'reactivation',
+            'reason' => 'started_reactivation_path',
+            'is_new_collaborator' => false,
+            'is_reactivation' => true,
+            'is_persisted' => false,
+            'decided_at' => null,
+        ];
+    }
+
+    if($started_action_key === '' && !empty($classification['is_persisted'])) {
+        return $classification;
+    }
+
+    /* Incomplete or contradictory evidence is a temporary, fail-safe Starter
+     * response. Do not freeze it while a same-month import may still complete. */
+    $persistable_reasons = ['recent_enrollment', 'active_without_pause', 'return_after_pause', 'started_starter_path', 'started_reactivation_path'];
+    if(!in_array((string) ($classification['reason'] ?? ''), $persistable_reasons, true)) {
+        return $classification;
+    }
+
+    $escaped_key = database()->real_escape_string((string) $classification['key']);
+    $escaped_reason = database()->real_escape_string((string) $classification['reason']);
+    $decided_at = database()->real_escape_string(get_date());
+    $started_path_override = in_array((string) ($classification['reason'] ?? ''), ['started_starter_path', 'started_reactivation_path'], true);
+    $decision_where = $started_path_override
+        ? "(`starting_track_key` IS NULL
+             OR `starting_track_reason` IS NULL
+             OR `starting_track_key` <> '{$escaped_key}'
+             OR `starting_track_reason` <> '{$escaped_reason}')"
+        : "(`starting_track_key` IS NULL
+             OR `starting_track_key` NOT IN ('starter', 'reactivation')
+             OR `starting_track_reason` IS NULL
+             OR `starting_track_reason` = ''
+             OR (`starting_track_key` = 'starter'
+                 AND `starting_track_reason` NOT IN ('recent_enrollment', 'active_without_pause', 'started_starter_path'))
+             OR (`starting_track_key` = 'reactivation'
+                 AND `starting_track_reason` NOT IN ('return_after_pause', 'started_reactivation_path')))";
+    $saved = database()->query("UPDATE `forever_business_vip_enrollments`
+        SET `starting_track_key` = '{$escaped_key}',
+            `starting_track_reason` = '{$escaped_reason}',
+            `starting_track_decided_at` = COALESCE(`starting_track_decided_at`, '{$decided_at}')
+        WHERE `fbo_id` = '{$escaped_fbo_id}'
+          AND `qualifying_period` = '{$escaped_qualifying_period}'
+          AND {$decision_where}");
+    if(!$saved) {
+        throw new \RuntimeException('Forever Business VIP starting track could not be persisted.');
+    }
+
+    $stored_result = database()->query("SELECT `starting_track_key`, `starting_track_reason`, `starting_track_decided_at`
+        FROM `forever_business_vip_enrollments`
+        WHERE `fbo_id` = '{$escaped_fbo_id}'
+        LIMIT 1");
+    if(!$stored_result) {
+        throw new \RuntimeException('Forever Business VIP starting track could not be verified.');
+    }
+    $stored = $stored_result->fetch_assoc();
+    if(!$stored) {
+        return $classification;
+    }
+
+    return forever_business_classify_vip_start([
+        'vip_starting_track_key' => $stored['starting_track_key'] ?? null,
+        'vip_starting_track_reason' => $stored['starting_track_reason'] ?? null,
+        'vip_starting_track_decided_at' => $stored['starting_track_decided_at'] ?? null,
+    ]);
+}
+
 function forever_business_get_vip_track(array $member): array {
     $definitions = forever_business_vip_track_definitions();
     $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
@@ -2766,9 +3065,7 @@ function forever_business_get_vip_track(array $member): array {
             'total_active_cc' => $member['vip_base_total_active_cc'] ?? null,
         ])
         : !empty($progress['is_4cc_active']);
-    $base_had_previous_activity = !empty($member['vip_base_had_previous_activity_12m'])
-        || !empty($member['vip_base_focus_previous_active'])
-        || (float) ($member['vip_base_previous_personal_cc'] ?? $member['previous_personal_cc'] ?? 0) > 0;
+    $starting_track = forever_business_classify_vip_start($member);
     /* The qualification snapshot fixes the initial curriculum, while upgrades
      * use only this calendar month's activity. A missing open-month row is a
      * zero and must never inherit the qualifying/August CC. */
@@ -2795,7 +3092,7 @@ function forever_business_get_vip_track(array $member): array {
         $track_key = 'builder';
     } elseif($base_personal_cc >= 1) {
         $track_key = 'activator';
-    } elseif($base_had_previous_activity) {
+    } elseif(($starting_track['key'] ?? 'starter') === 'reactivation') {
         $track_key = 'reactivation';
     } else {
         $track_key = 'starter';
@@ -2885,12 +3182,12 @@ function forever_business_get_vip_education_path(array $member): array {
             [
                 'key' => 'starter',
                 'label' => 'Starter',
-                'requirement' => 'Početni smjer za suradnike koji tek grade svoj redoviti ritam. Prema Aktivatoru napreduješ nakon najmanje 1 osobnog CC u potvrđenom mjesecu.',
+                'requirement' => 'Početni smjer za nove suradnike i sve koji još nemaju potvrđeno ranije poslovno razdoblje. Vodi te od prvih koraka i toplih razgovora prema najmanje 1 osobnom CC u potvrđenom mjesecu.',
             ],
             [
                 'key' => 'reactivation',
                 'label' => 'Reaktivacija',
-                'requirement' => 'Početni smjer za suradnike koji se vraćaju u ritam. Prema Aktivatoru napreduješ nakon najmanje 1 osobnog CC u potvrđenom mjesecu.',
+                'requirement' => 'Smjer za suradnike s potvrđenim ranijim iskustvom koji se vraćaju nakon stvarne pauze. Prema Aktivatoru napreduješ nakon najmanje 1 osobnog CC u potvrđenom mjesecu.',
             ],
             [
                 'key' => 'activator',
@@ -3440,28 +3737,102 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                    prev.personal_cc AS previous_personal_cc, prev.total_cc AS previous_total_cc,
                    prev2.total_cc AS two_months_ago_total_cc,
                    prev3.total_cc AS three_months_ago_total_cc,
+                   vip_enrollment.qualifying_period AS vip_qualifying_period,
+                   vip_enrollment.starting_track_key AS vip_starting_track_key,
+                   vip_enrollment.starting_track_reason AS vip_starting_track_reason,
+                   vip_enrollment.starting_track_decided_at AS vip_starting_track_decided_at,
+                   COALESCE(m.sponsor_date, vip_focus_identity.focus_enrollment_date) AS vip_known_enrollment_date,
+                   CASE
+                       WHEN COALESCE(vip_focus_identity.distinct_enrollment_dates, 0) > 1 THEN 1
+                       WHEN m.sponsor_date IS NOT NULL
+                        AND vip_focus_identity.focus_enrollment_date IS NOT NULL
+                        AND m.sponsor_date <> vip_focus_identity.focus_enrollment_date THEN 1
+                       ELSE 0
+                   END AS vip_entry_conflict,
                    COALESCE(vip_enrollment.qualifying_personal_cc, vip_base.personal_cc) AS vip_base_personal_cc,
                    vip_base.total_active_cc AS vip_base_total_active_cc,
                    CASE WHEN vip_base.source_import_id IS NOT NULL AND (vip_base_source.import_id IS NULL OR vip_base_source.report_kind NOT IN ('downline', 'four_cc_active')) THEN NULL ELSE vip_base.is_4cc_active END AS vip_base_is_4cc_active,
                    CASE WHEN vip_august.source_import_id IS NOT NULL AND (vip_august_source.import_id IS NULL OR vip_august_source.report_kind NOT IN ('downline', 'four_cc_active')) THEN NULL ELSE vip_august.is_4cc_active END AS vip_august_is_4cc_active,
-                   vip_base_prev.personal_cc AS vip_base_previous_personal_cc,
-                   vip_base_focus.was_active_previous_month AS vip_base_focus_previous_active,
                    EXISTS(
                        SELECT 1
                        FROM forever_business_metrics vip_history
+                       LEFT JOIN forever_business_imports vip_history_source
+                         ON vip_history_source.import_id = vip_history.source_import_id
                        WHERE vip_history.fbo_id = m.fbo_id
-                         AND vip_history.period_month < COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
-                         AND vip_history.period_month >= DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 12 MONTH)
-                         AND vip_history.personal_cc > 0
+                         AND vip_history.period_month < DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
+                         AND (vip_history.personal_cc > 0 OR vip_history.is_4cc_active = 1)
+                         AND (vip_history.source_import_id IS NULL
+                              OR (vip_history_source.status = 'completed'
+                                  AND vip_history_source.report_kind IN ('downline', 'four_cc_active')))
                    ) OR EXISTS(
                        SELECT 1
                        FROM forever_business_focus_metrics vip_focus_history
+                       LEFT JOIN forever_business_imports vip_focus_history_source
+                         ON vip_focus_history_source.import_id = vip_focus_history.source_import_id
                        WHERE vip_focus_history.fbo_id = m.fbo_id
-                         AND vip_focus_history.period_month < COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
-                         AND vip_focus_history.period_month >= DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 12 MONTH)
-                         AND (vip_focus_history.was_active_previous_month = 1
-                              OR vip_focus_history.last_purchase_date >= DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 12 MONTH))
-                   ) AS vip_base_had_previous_activity_12m,
+                         AND vip_focus_history.period_month <= COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
+                         AND (
+                              (vip_focus_history.period_month < DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
+                               AND (vip_focus_history.personal_cc > 0 OR vip_focus_history.is_active = 1))
+                              OR (vip_focus_history.was_active_previous_month = 1
+                                  AND DATE_SUB(vip_focus_history.period_month, INTERVAL 1 MONTH) < DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH))
+                              OR (vip_focus_history.last_purchase_date IS NOT NULL
+                                  AND vip_focus_history.last_purchase_date < DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH))
+                         )
+                         AND (vip_focus_history.source_import_id IS NULL
+                              OR (vip_focus_history_source.status = 'completed'
+                                  AND vip_focus_history_source.report_kind = 'focus_group'))
+                   ) AS vip_has_prior_activity_before_pause,
+                   EXISTS(
+                       SELECT 1
+                       FROM forever_business_metrics vip_previous_active
+                       LEFT JOIN forever_business_imports vip_previous_active_source
+                         ON vip_previous_active_source.import_id = vip_previous_active.source_import_id
+                       WHERE vip_previous_active.fbo_id = m.fbo_id
+                         AND vip_previous_active.period_month = DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
+                         AND (vip_previous_active.personal_cc > 0 OR vip_previous_active.is_4cc_active = 1)
+                         AND (vip_previous_active.source_import_id IS NULL
+                              OR (vip_previous_active_source.status = 'completed'
+                                  AND vip_previous_active_source.report_kind IN ('downline', 'four_cc_active')))
+                   ) OR EXISTS(
+                       SELECT 1
+                       FROM forever_business_focus_metrics vip_focus_previous_active
+                       LEFT JOIN forever_business_imports vip_focus_previous_active_source
+                         ON vip_focus_previous_active_source.import_id = vip_focus_previous_active.source_import_id
+                       WHERE vip_focus_previous_active.fbo_id = m.fbo_id
+                         AND vip_focus_previous_active.period_month = COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
+                         AND (vip_focus_previous_active.was_active_previous_month = 1
+                              OR (vip_focus_previous_active.last_purchase_date >= DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
+                                  AND vip_focus_previous_active.last_purchase_date < COALESCE(vip_enrollment.qualifying_period, '2026-08-01')))
+                         AND (vip_focus_previous_active.source_import_id IS NULL
+                              OR (vip_focus_previous_active_source.status = 'completed'
+                                  AND vip_focus_previous_active_source.report_kind = 'focus_group'))
+                   ) AS vip_previous_month_has_activity,
+                   EXISTS(
+                       SELECT 1
+                       FROM forever_business_metrics vip_previous_inactive
+                       LEFT JOIN forever_business_imports vip_previous_inactive_source
+                         ON vip_previous_inactive_source.import_id = vip_previous_inactive.source_import_id
+                       WHERE vip_previous_inactive.fbo_id = m.fbo_id
+                         AND vip_previous_inactive.period_month = DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
+                         AND vip_previous_inactive.personal_cc = 0
+                         AND COALESCE(vip_previous_inactive.is_4cc_active, 0) <> 1
+                         /* Older code could let a missing Focus Personal CC
+                          * overwrite this row with 0 while retaining trusted
+                          * provenance. Quarantine that historical shape until
+                          * a strictly later monthly sync reconfirms the zero. */
+                         AND NOT EXISTS(
+                             SELECT 1
+                             FROM forever_business_focus_metrics vip_suspect_focus_zero
+                             WHERE vip_suspect_focus_zero.fbo_id = vip_previous_inactive.fbo_id
+                               AND vip_suspect_focus_zero.period_month = vip_previous_inactive.period_month
+                               AND vip_suspect_focus_zero.personal_cc = 0
+                               AND vip_suspect_focus_zero.updated_at >= vip_previous_inactive.updated_at
+                         )
+                         AND (vip_previous_inactive.source_import_id IS NULL
+                              OR (vip_previous_inactive_source.status = 'completed'
+                                  AND vip_previous_inactive_source.report_kind IN ('downline', 'four_cc_active')))
+                   ) AS vip_previous_month_confirmed_inactive,
                    COALESCE((
                        SELECT MAX(CASE
                            WHEN (
@@ -3528,15 +3899,24 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
             LEFT JOIN forever_business_metrics prev2 ON prev2.fbo_id = m.fbo_id AND prev2.period_month = '{$two_months_ago_period}'
             LEFT JOIN forever_business_metrics prev3 ON prev3.fbo_id = m.fbo_id AND prev3.period_month = '{$three_months_ago_period}'
             LEFT JOIN forever_business_vip_enrollments vip_enrollment ON vip_enrollment.fbo_id = m.fbo_id
+            LEFT JOIN (
+                SELECT vip_focus_identity_metric.fbo_id,
+                       MIN(vip_focus_identity_metric.enrollment_date) AS focus_enrollment_date,
+                       COUNT(DISTINCT vip_focus_identity_metric.enrollment_date) AS distinct_enrollment_dates
+                FROM forever_business_focus_metrics vip_focus_identity_metric
+                LEFT JOIN forever_business_imports vip_focus_identity_source
+                  ON vip_focus_identity_source.import_id = vip_focus_identity_metric.source_import_id
+                WHERE vip_focus_identity_metric.enrollment_date IS NOT NULL
+                  AND (vip_focus_identity_metric.source_import_id IS NULL
+                       OR (vip_focus_identity_source.status = 'completed'
+                           AND vip_focus_identity_source.report_kind = 'focus_group'))
+                GROUP BY vip_focus_identity_metric.fbo_id
+            ) vip_focus_identity ON vip_focus_identity.fbo_id = m.fbo_id
             LEFT JOIN forever_business_metrics vip_base ON vip_base.fbo_id = m.fbo_id
                 AND vip_base.period_month = COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
             LEFT JOIN forever_business_imports vip_base_source ON vip_base_source.import_id = vip_base.source_import_id
             LEFT JOIN forever_business_metrics vip_august ON vip_august.fbo_id = m.fbo_id AND vip_august.period_month = '2026-08-01'
             LEFT JOIN forever_business_imports vip_august_source ON vip_august_source.import_id = vip_august.source_import_id
-            LEFT JOIN forever_business_metrics vip_base_prev ON vip_base_prev.fbo_id = m.fbo_id
-                AND vip_base_prev.period_month = DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 1 MONTH)
-            LEFT JOIN forever_business_focus_metrics vip_base_focus ON vip_base_focus.fbo_id = m.fbo_id
-                AND vip_base_focus.period_month = COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
             LEFT JOIN forever_business_metrics vip_current ON vip_current.fbo_id = m.fbo_id
                 AND vip_current.period_month = '{$vip_current_period}'
             LEFT JOIN forever_business_imports vip_current_source ON vip_current_source.import_id = vip_current.source_import_id
@@ -3619,6 +3999,14 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                 ] as $progress_key) {
                     $row[$progress_key] = $row['team_' . $progress_key] ?? null;
                 }
+            }
+            $vip_start = $is_actor_member
+                ? forever_business_persist_vip_start($row)
+                : forever_business_classify_vip_start($row);
+            $row['vip_starting_track_key'] = (string) ($vip_start['key'] ?? 'starter');
+            $row['vip_starting_track_reason'] = (string) ($vip_start['reason'] ?? 'insufficient_history');
+            if(!empty($vip_start['decided_at'])) {
+                $row['vip_starting_track_decided_at'] = $vip_start['decided_at'];
             }
             $row['force_vip_leader'] = $is_admin
                 && $requested_root_id === ''
@@ -3867,7 +4255,14 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
     $difficulty = forever_business_normalize_difficulty($input['difficulty'] ?? null);
     $completion_mode = forever_business_normalize_completion_mode($input['completion_mode'] ?? null);
     $needs_help = !empty($input['needs_help']) ? 1 : 0;
+    $submitted_outcome_type = mb_substr(input_clean($input['outcome_type'] ?? '', 32), 0, 32);
+    $entry_track = preg_match('/^vip26_(starter|reactivation)_d(?:0[1-9]|[12][0-9]|30)$/D', $action_key, $entry_match)
+        ? (string) ($entry_match[1] ?? '')
+        : '';
     if($action_key === '' || !str_starts_with($action_key, 'vip26_') || $outcome_count === null || $result_type === null || $difficulty === null || $completion_mode === null) {
+        return false;
+    }
+    if($entry_track !== '' && !hash_equals($entry_track, $submitted_outcome_type)) {
         return false;
     }
 
@@ -3889,6 +4284,65 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
             throw new \RuntimeException('vip_participant_lock_failed');
         }
 
+        if($entry_track !== '') {
+            /* Entry-path completion and imports serialize on the shared FBO
+             * enrollment row. Two linked accounts therefore cannot commit
+             * opposite Starter/Reaktivacija paths from stale browser tabs. */
+            $escaped_entry_fbo_id = database()->real_escape_string($fbo_id);
+            $entry_enrollment_result = database()->query("SELECT `starting_track_key`, `starting_track_reason`
+                FROM `forever_business_vip_enrollments`
+                WHERE `fbo_id` = '{$escaped_entry_fbo_id}'
+                LIMIT 1 FOR UPDATE");
+            $entry_enrollment = $entry_enrollment_result ? $entry_enrollment_result->fetch_assoc() : null;
+            if(!$entry_enrollment) {
+                db()->rollback();
+                return false;
+            }
+
+            $stored_entry_key = trim((string) ($entry_enrollment['starting_track_key'] ?? ''));
+            $stored_entry_reason = trim((string) ($entry_enrollment['starting_track_reason'] ?? ''));
+            if(forever_business_vip_start_reason_is_valid($stored_entry_key, $stored_entry_reason)
+                && !hash_equals($stored_entry_key, $entry_track)) {
+                db()->rollback();
+                return false;
+            }
+
+            $existing_entry_result = database()->query("SELECT `action_key`
+                FROM `forever_business_daily_outcomes`
+                WHERE `fbo_id` = '{$escaped_entry_fbo_id}'
+                  AND `status` = 'done'
+                  AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                ORDER BY `action_date` ASC, `outcome_id` ASC
+                LIMIT 1");
+            if(!$existing_entry_result) {
+                throw new \RuntimeException('vip_entry_outcome_lookup_failed');
+            }
+            $existing_entry = $existing_entry_result->fetch_assoc();
+            $existing_entry_action = (string) ($existing_entry['action_key'] ?? '');
+            $existing_entry_track = str_starts_with($existing_entry_action, 'vip26_starter_')
+                ? 'starter'
+                : (str_starts_with($existing_entry_action, 'vip26_reactivation_') ? 'reactivation' : '');
+            if($existing_entry_track !== '' && !hash_equals($existing_entry_track, $entry_track)) {
+                db()->rollback();
+                return false;
+            }
+
+            if(!forever_business_vip_start_reason_is_valid($stored_entry_key, $stored_entry_reason)) {
+                $entry_reason = $entry_track === 'reactivation' ? 'started_reactivation_path' : 'started_starter_path';
+                $escaped_entry_track = database()->real_escape_string($entry_track);
+                $escaped_entry_reason = database()->real_escape_string($entry_reason);
+                $entry_decision_saved = database()->query("UPDATE `forever_business_vip_enrollments`
+                    SET `starting_track_key` = '{$escaped_entry_track}',
+                        `starting_track_reason` = '{$escaped_entry_reason}',
+                        `starting_track_decided_at` = COALESCE(`starting_track_decided_at`, '{$timestamp}'),
+                        `updated_at` = '{$timestamp}'
+                    WHERE `fbo_id` = '{$escaped_entry_fbo_id}'");
+                if(!$entry_decision_saved) {
+                    throw new \RuntimeException('vip_entry_track_persist_failed');
+                }
+            }
+        }
+
         $existing = database()->query("SELECT outcome_id FROM forever_business_daily_outcomes
             WHERE recorded_by_user_id = {$user_id} AND status = 'done'
               AND ((action_date = '{$action_date}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') OR action_key = '{$action_key}')
@@ -3908,7 +4362,7 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
             'action_key' => $action_key,
             'status' => 'done',
             'outcome_count' => $outcome_count,
-            'outcome_type' => mb_substr(input_clean($input['outcome_type'] ?? '', 32), 0, 32) ?: null,
+            'outcome_type' => $submitted_outcome_type ?: null,
             'result_type' => $result_type,
             'difficulty' => $difficulty,
             'needs_help' => $needs_help,

@@ -7,8 +7,8 @@ defined('ALTUMCODE') || die();
 
 return [
     'starter' => [
-        'targets' => [1, 10, 1, 3, 1, 1, 2, 3, 1, 1, 1, 2, 1, 2, 4, 2, 2, 1, 1, 1, 2, 3, 2, 1, 2, 1, 1, 1, 5, 1],
-        'quick_targets' => [1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+        'targets' => [1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 2, 4, 2, 2, 1, 1, 1, 2, 3, 2, 1, 2, 1, 1, 1, 5, 1],
+        'quick_targets' => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
         'result_types' => [
             'planning', 'planning', 'planning', 'contact', 'content', 'planning',
             'customer_checkin', 'conversation', 'invitation', 'planning', 'follow_up',
@@ -18,16 +18,25 @@ return [
             'training', 'follow_up', 'planning',
         ],
         'examples' => [
-            4 => 'prvi osobni kontakt', 7 => 'korisnički check-in', 8 => 'prvi osobni kontakt',
+            4 => 'prvi osobni kontakt', 7 => 'topli nastavak za prvi krug', 8 => 'prvi osobni kontakt',
             9 => 'poziv na marketing plan', 10 => 'follow-up nakon marketing plana',
-            14 => 'korisnički check-in', 15 => 'prvi osobni kontakt', 16 => 'poziv na marketing plan',
-            21 => 'korisnički check-in', 22 => 'prvi osobni kontakt',
+            14 => 'topli nastavak za prvi krug', 15 => 'prvi osobni kontakt', 16 => 'poziv na marketing plan',
+            21 => 'topli nastavak za prvi krug', 22 => 'prvi osobni kontakt',
             23 => 'poziv na marketing plan', 29 => 'kulturno zatvaranje razgovora',
         ],
+        'allowed_result_types' => [
+            7 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
+            14 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
+            21 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
+        ],
         'fallbacks' => [
-            2 => 'Ako ti popis danas ne dolazi lako, s mentorom prođi broj ljudi iz brzog cilja i za svakoga pronađi jednu prirodnu temu za razgovor.',
+            2 => 'Za verziju brzog cilja kreni s jednom osobom koju dobro poznaješ i zapiši jednu temu o kojoj prirodno razgovarate.',
             3 => 'Ako ti se još nitko ne izdvaja, s mentorom prođi jedan primjer i odredi kakvoj bi osobi Marketing plan mogao biti zanimljiv.',
+            4 => 'Ako danas još nisi spreman/na poslati poruku, napiši je kao nacrt i prođi s mentorom prije slanja.',
+            7 => 'Ako još nemaš kupca ni otvoreni razgovor, s mentorom uvježbaj jedan prijateljski check-in i zapiši pitanje koje ćeš koristiti sa svojim prvim kupcem.',
             11 => 'Ako danas nemaš gosta, nastavi razgovor s jednom osobom koja je već pokazala interes.',
+            14 => 'Za verziju brzog cilja odradi jednu od ponuđenih mogućnosti. Ako još nemaš kupca ni otvoreni razgovor, s mentorom pripremi jedan prijateljski check-in za svojeg prvog kupca.',
+            21 => 'Za verziju brzog cilja odradi jednu od ponuđenih mogućnosti. Ako još nemaš kupca ni otvoreni razgovor, s mentorom uvježbaj kako ćeš prvom kupcu objasniti podršku nakon odabira proizvoda.',
             28 => 'Ako danas nemaš osobu za pokazivanje, uvježbaj korak s mentorom i zatraži jednu konkretnu povratnu informaciju.',
         ],
     ],
@@ -120,7 +129,7 @@ return [
     ],
     'reactivation' => [
         'targets' => [1, 10, 1, 2, 1, 1, 3, 3, 1, 1, 1, 1, 1, 3, 3, 1, 1, 2, 1, 1, 5, 3, 2, 2, 3, 1, 1, 1, 5, 1],
-        'quick_targets' => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+        'quick_targets' => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
         'result_types' => [
             'planning', 'planning', 'invitation', 'contact', 'planning', 'planning',
             'customer_checkin', 'contact', 'invitation', 'planning', 'follow_up', 'planning',
@@ -137,9 +146,16 @@ return [
             22 => 'prvi osobni kontakt',
             23 => 'poziv na marketing plan', 29 => 'kulturno zatvaranje razgovora',
         ],
+        'allowed_result_types' => [
+            7 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
+            14 => ['customer_checkin', 'follow_up', 'conversation', 'recommendation', 'order', 'training', 'no_response'],
+            21 => ['follow_up', 'conversation', 'contact', 'customer_checkin', 'recommendation', 'order', 'new_partner', 'no_response', 'training'],
+        ],
         'fallbacks' => [
             2 => 'Ako ti se ljudi za ponovno povezivanje danas ne izdvajaju lako, s mentorom prođi broj primjera iz brzog cilja i pronađi prirodan razlog za svaki razgovor.',
+            7 => 'Za verziju brzog cilja odradi jedan check-in ili jedan nastavak razgovora. Ako danas nemaš kupca ni raniji razgovor za nastavak, s mentorom uvježbaj jedan prijateljski korisnički check-in.',
             11 => 'Ako danas nemaš gosta, nastavi razgovor s jednom osobom koja je odgovorila na tvoju poruku za ponovno povezivanje.',
+            14 => 'Za verziju brzog cilja odradi jedan check-in ili jedan nastavak razgovora. Ako danas nemaš kupca ni raniji razgovor za nastavak, s mentorom pripremi jedan prijateljski korisnički check-in.',
             26 => 'Ako danas nitko ne čeka preporuku, pripremi jednu probnu rutinu iz aktualnog Forever materijala i provjeri je s mentorom.',
         ],
     ],

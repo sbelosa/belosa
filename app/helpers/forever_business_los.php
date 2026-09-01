@@ -214,6 +214,9 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'linked_accounts' => 0,
             'is_enrolled' => false,
             'qualification_source' => '',
+            'starting_track_key' => '',
+            'starting_track_reason' => '',
+            'starting_track_decided_at' => null,
             'enrolled_at' => null,
             'enrollment_event_date' => null,
             'qualifying_period' => null,
@@ -296,8 +299,12 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         $warnings[] = ['key' => 'missing_enrollment', 'params' => []];
     } else {
         $qualification_source_select = isset($enrollment_columns['qualification_source']) ? '`qualification_source`' : "'' AS `qualification_source`";
+        $starting_track_key_select = isset($enrollment_columns['starting_track_key']) ? '`starting_track_key`' : "'' AS `starting_track_key`";
+        $starting_track_reason_select = isset($enrollment_columns['starting_track_reason']) ? '`starting_track_reason`' : "'' AS `starting_track_reason`";
+        $starting_track_decided_at_select = isset($enrollment_columns['starting_track_decided_at']) ? '`starting_track_decided_at`' : 'NULL AS `starting_track_decided_at`';
         $enrollment_rows = forever_business_los_rows("SELECT `fbo_id`, `qualifying_period`, `qualifying_personal_cc`,
-                `last_verified_period`, `last_verified_personal_cc`, {$qualification_source_select}, `enrolled_at`
+                `last_verified_period`, `last_verified_personal_cc`, {$qualification_source_select},
+                {$starting_track_key_select}, {$starting_track_reason_select}, {$starting_track_decided_at_select}, `enrolled_at`
             FROM `forever_business_vip_enrollments`");
         foreach($enrollment_rows as $row) {
             $fbo_id = (string) $row['fbo_id'];
@@ -312,6 +319,9 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
                     'linked_accounts' => $linked_account_counts[$fbo_id] ?? 0,
                     'is_enrolled' => false,
                     'qualification_source' => '',
+                    'starting_track_key' => '',
+                    'starting_track_reason' => '',
+                    'starting_track_decided_at' => null,
                     'enrolled_at' => null,
                     'enrollment_event_date' => null,
                     'qualifying_period' => null,
@@ -340,6 +350,18 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             }
             $members[$fbo_id]['is_enrolled'] = true;
             $members[$fbo_id]['qualification_source'] = (string) ($row['qualification_source'] ?? '');
+            $saved_starting_track = in_array((string) ($row['starting_track_key'] ?? ''), ['starter', 'reactivation'], true)
+                ? (string) $row['starting_track_key']
+                : '';
+            /* Unresolved evidence is intentionally not persisted while imports
+             * may still complete. Reporting keeps those enrolled participants
+             * visible on the conservative Starter path instead of blank. */
+            $members[$fbo_id]['starting_track_key'] = $saved_starting_track !== '' ? $saved_starting_track : 'starter';
+            $members[$fbo_id]['starting_track_reason'] = $saved_starting_track !== ''
+                ? (string) ($row['starting_track_reason'] ?? '')
+                : 'insufficient_history';
+            $members[$fbo_id]['starting_track_decided_at'] = $row['starting_track_decided_at'] ?: null;
+            $members[$fbo_id]['track'] = $members[$fbo_id]['starting_track_key'];
             $members[$fbo_id]['enrolled_at'] = $row['enrolled_at'] ?: null;
             $members[$fbo_id]['enrollment_event_date'] = (string) ($row['qualification_source'] ?? '') === 'legacy_august_backfill'
                 ? ($row['qualifying_period'] ?: null)
@@ -386,6 +408,9 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'linked_accounts' => $linked_accounts,
             'is_enrolled' => false,
             'qualification_source' => '',
+            'starting_track_key' => '',
+            'starting_track_reason' => '',
+            'starting_track_decided_at' => null,
             'enrolled_at' => null,
             'enrollment_event_date' => null,
             'qualifying_period' => null,
@@ -433,7 +458,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'help_note' => '',
             'help_requested_at' => null,
             'help_action_key' => '',
-            'track' => '',
+            'track' => (string) ($fbo_member['track'] ?? $fbo_member['starting_track_key'] ?? ''),
             'stall_state' => '',
             'is_legacy_unattributed' => false,
             'has_outcome_fbo_mismatch' => false,
@@ -473,6 +498,34 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         if(!empty($participant_ids_by_fbo[$fbo_id])) continue;
         $placeholder_key = 'fbo:' . $fbo_id;
         $participants[$placeholder_key] = $make_participant($fbo_member, 0, (string) ($fbo_member['name'] ?? ''), false);
+    }
+    $participant_keys_by_fbo = [];
+    foreach($participants as $participant_key => $participant) {
+        $participant_fbo_id = (string) ($participant['fbo_id'] ?? '');
+        if($participant_fbo_id !== '') {
+            $participant_keys_by_fbo[$participant_fbo_id][] = $participant_key;
+        }
+    }
+
+    /* The first completed entry-path task is an FBO-wide continuity decision,
+     * even when multiple FCC accounts share that Forever ID. Apply it to every
+     * linked participant before individual later outcomes raise their track. */
+    $started_path_rows = forever_business_los_rows("SELECT `fbo_id`,
+            SUBSTRING_INDEX(GROUP_CONCAT(`action_key` ORDER BY `action_date` ASC, `outcome_id` ASC SEPARATOR ','), ',', 1) AS `action_key`
+        FROM `forever_business_daily_outcomes`
+        WHERE `status` = 'done'
+          AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+        GROUP BY `fbo_id`");
+    foreach($started_path_rows as $row) {
+        $started_fbo_id = (string) ($row['fbo_id'] ?? '');
+        $started_track = forever_business_los_track_from_action_key((string) ($row['action_key'] ?? ''));
+        if(!in_array($started_track, ['starter', 'reactivation'], true)) continue;
+        $started_reason = $started_track === 'reactivation' ? 'started_reactivation_path' : 'started_starter_path';
+        foreach($participant_keys_by_fbo[$started_fbo_id] ?? [] as $participant_key) {
+            $participants[$participant_key]['starting_track_key'] = $started_track;
+            $participants[$participant_key]['starting_track_reason'] = $started_reason;
+            $participants[$participant_key]['track'] = $started_track;
+        }
     }
 
     $outcome_columns = forever_business_los_table_columns('forever_business_daily_outcomes');
@@ -560,8 +613,9 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         /* This is a compatibility fallback only. The open help table below is
          * authoritative whenever it exists. */
         $participants[$participant_id]['needs_help'] = !empty($row['needs_help']);
-        $participants[$participant_id]['track'] = trim((string) ($row['outcome_type'] ?? ''))
+        $latest_track = trim((string) ($row['outcome_type'] ?? ''))
             ?: forever_business_los_track_from_action_key((string) $row['action_key']);
+        $participants[$participant_id]['track'] = $latest_track;
     }
 
     $outcome_rows = forever_business_los_rows("SELECT `outcome`.`recorded_by_user_id`, `outcome`.`fbo_id`, `account`.`name` AS `account_name`,
