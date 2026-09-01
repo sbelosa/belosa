@@ -71,6 +71,8 @@ $assertions = [
     'VIP task submission and admin personal view are bound to the authenticated FBO' => str_contains($user, "empty(\$vip_program['can_access_education'])") && str_contains($user, "hash_equals(\$authenticated_fbo_id, \$submitted_fbo_id)") && str_contains($user, "[\$authenticated_fbo_id]") && str_contains($user, "\$requested_root = ''") && str_contains($user, 'if(!$is_admin && !$focus_member'),
     'VIP launch view includes countdown eligibility and a locked preview' => str_contains($view, 'data-fb-vip-countdown') && str_contains($view, 'fb-vip-conditions') && str_contains($view, 'fb-vip-preview') && str_contains($view, 'Prag od 0,330 CC uvjet je za ovu dodatnu edukaciju'),
     'completed VIP task view shows a server-synchronized midnight countdown and refreshes at unlock' => str_contains($view, 'data-fb-next-unlock-at') && str_contains($view, 'data-fb-next-unlock-server-now') && str_contains($view, 'Sljedeći zadatak otključava se za') && str_contains($view, "window.location.reload()") && str_contains($view, "document.addEventListener('visibilitychange'") && str_contains($view, "window.addEventListener('pageshow'"),
+    'VIP education path is discreet, expandable and distinct from official Forever positions' => str_contains($view, 'Tvoj put kroz edukaciju') && str_contains($view, 'Kako napreduju edukacijski smjerovi?') && str_contains($view, 'Edukacijski smjer:') && str_contains($view, 'Ne mijenjaju tvoju službenu Forever poziciju') && str_contains($user, "'preview_education_path'"),
+    'verified education promotions survive monthly reset without allowing historical metrics to create Leader' => str_contains($helper, 'vip_verified_highest_track_rank') && str_contains($helper, 'vip_verified.period_month >= COALESCE(vip_enrollment.qualifying_period') && str_contains($helper, "vip_verified.period_month <= '{\$vip_current_period}'") && str_contains($helper, "(int) \$definitions['builder']['rank']"),
     'VIP task content is centralized for later copy corrections' => str_contains($helper, 'forever_business_vip_tasks.php') && str_contains($vip_tasks, '# Razina 5 — Reaktivacija'),
     'VIP task targets quick targets and result types are machine-readable rather than parsed from Croatian prose' => str_contains($helper, 'forever_business_vip_task_meta.php') && str_contains($vip_task_meta_source, "'targets'") && str_contains($vip_task_meta_source, "'quick_targets'") && str_contains($vip_task_meta_source, "'result_types'") && str_contains($helper, "\$meta[\$track_key]['targets'][\$day - 1]") && str_contains($helper, "\$meta[\$track_key]['quick_targets'][\$day - 1]") && str_contains($helper, "\$meta[\$track_key]['result_types'][\$day - 1]"),
     'VIP task metadata fails closed if the separately deployed rules file is missing or incomplete' => str_contains($helper, 'VIP task metadata is missing; the curriculum cannot be opened safely.') && str_contains($helper, 'must contain exactly 30 reviewed rules') && str_contains($helper, 'contains an invalid checklist item') && str_contains($helper, 'contains an invalid allowed result type') && str_contains($helper, "foreach(['starter', 'activator', 'builder', 'leader', 'reactivation'] as \$track_key)"),
@@ -309,6 +311,92 @@ $assistant_manager_active_track = forever_business_get_vip_track($make_track_mem
 $unrecognized_manager_active_track = forever_business_get_vip_track($make_track_member('Unrecognized Manager', 1));
 $historical_leader_without_qualification = forever_business_get_vip_track($make_track_member('Recognized Manager', 0, 4, 3));
 $forced_admin_leader = forever_business_get_vip_track(array_merge($make_track_member('Recognized Manager', 0), ['force_vip_leader' => true]));
+$starter_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_current_personal_cc' => .4,
+    'vip_current_total_active_cc' => .8,
+    'vip_current_is_4cc_active' => 0,
+]));
+$reactivation_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_base_had_previous_activity_12m' => 1,
+    'vip_current_personal_cc' => .25,
+    'vip_current_total_active_cc' => .5,
+    'vip_current_is_4cc_active' => 0,
+]));
+$activator_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => 1.2,
+    'vip_base_is_4cc_active' => 0,
+    'vip_august_is_4cc_active' => 0,
+    'vip_current_personal_cc' => .6,
+    'vip_current_total_active_cc' => 2,
+    'vip_current_is_4cc_active' => 0,
+]));
+$activator_official_blocked_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => 1.2,
+    'vip_base_is_4cc_active' => 0,
+    'vip_august_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 1.2,
+    'vip_current_total_active_cc' => 4,
+    'vip_current_is_4cc_active' => 0,
+]));
+$fallback_builder_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => 1.2,
+    'vip_base_is_4cc_active' => 0,
+    'vip_august_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 1,
+    'vip_current_total_active_cc' => 4,
+    'vip_current_is_4cc_active' => null,
+]));
+$official_positive_builder_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => 1.2,
+    'vip_base_is_4cc_active' => 0,
+    'vip_august_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 0,
+    'vip_current_total_active_cc' => 0,
+    'vip_current_is_4cc_active' => 1,
+]));
+$builder_zero_path = forever_business_get_vip_education_path(array_merge($starter_member, [
+    'vip_base_personal_cc' => 4,
+    'vip_base_total_active_cc' => 4,
+    'vip_base_is_4cc_active' => 1,
+    'vip_august_is_4cc_active' => 1,
+    'vip_current_personal_cc' => 0,
+    'vip_current_total_active_cc' => 0,
+    'vip_current_is_4cc_active' => 0,
+]));
+$leader_path = forever_business_get_vip_education_path(array_merge($make_track_member('Recognized Manager', 1), ['force_vip_leader' => true]));
+$assistant_manager_path = forever_business_get_vip_education_path($make_track_member('Assistant Manager', 1));
+$historical_unqualified_leader_path = forever_business_get_vip_education_path($make_track_member('Recognized Manager', 0, 4, 3));
+$persisted_dynamic_activator = forever_business_get_vip_track(array_merge($starter_member, [
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 0,
+    'vip_current_total_active_cc' => 0,
+    'vip_current_is_4cc_active' => 0,
+    'vip_verified_highest_track_rank' => 2,
+]));
+$persisted_dynamic_builder = forever_business_get_vip_track(array_merge($starter_member, [
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 0,
+    'vip_current_total_active_cc' => 0,
+    'vip_current_is_4cc_active' => 0,
+    'vip_verified_highest_track_rank' => 3,
+]));
+$verified_metrics_cannot_create_leader = forever_business_get_vip_track(array_merge($starter_member, [
+    'title' => 'Recognized Manager',
+    'vip_base_personal_cc' => .5,
+    'vip_base_is_4cc_active' => 0,
+    'vip_august_is_4cc_active' => 0,
+    'vip_current_personal_cc' => 0,
+    'vip_current_total_active_cc' => 0,
+    'vip_current_is_4cc_active' => 0,
+    'vip_verified_highest_track_rank' => 4,
+    'verified_progress' => forever_business_get_verified_progress(array_merge($base, ['title' => 'Recognized Manager', 'is_4cc_active' => 0])),
+]));
 
 $rule_assertions = [
     'official positive 4 CC signal wins even when supporting numbers are incomplete' => $official_active_formula_low['is_officially_active'] && $official_active_formula_low['is_4cc_active'] && $official_active_formula_low['official_activity_signal'] === 1 && $official_active_formula_low['activity_source'] === 'official',
@@ -363,6 +451,14 @@ $rule_assertions = [
     'Assistant and Unrecognized Manager do not receive Leader solely from their title' => $assistant_manager_active_track['key'] === 'builder' && $unrecognized_manager_active_track['key'] === 'builder',
     'historical Leader completion cannot bypass the stricter current qualification' => $historical_leader_without_qualification['key'] === 'builder',
     'root administrator profile can be placed on the Leader curriculum only by a server flag' => $forced_admin_leader['key'] === 'leader',
+    'Starter and Reaktivacija are parallel starting paths toward Activator using only current-month Personal CC' => $starter_path['current_key'] === 'starter' && $starter_path['mode'] === 'personal' && $starter_path['next_key'] === 'activator' && $starter_path['personal_cc'] === .4 && $starter_path['personal_gap_cc'] === .6 && $reactivation_path['current_key'] === 'reactivation' && $reactivation_path['mode'] === 'personal' && $reactivation_path['next_key'] === 'activator',
+    'Activator shows separate Personal Total Active and official-signal facts without a misleading combined percentage' => $activator_path['current_key'] === 'activator' && $activator_path['mode'] === 'four_cc' && $activator_path['next_key'] === 'builder' && $activator_path['personal_progress'] === 60.0 && $activator_path['total_active_progress'] === 50.0 && $activator_path['official_activity_signal'] === 0 && !array_key_exists('progress', $activator_path),
+    'an explicit negative official status blocks Builder even when both numeric guides are complete' => $activator_official_blocked_path['current_key'] === 'activator' && $activator_official_blocked_path['personal_progress'] === 100.0 && $activator_official_blocked_path['total_active_progress'] === 100.0 && str_contains($activator_official_blocked_path['transition_note'], 'Builder se otvara čim FLP360 potvrdi 4 CC Active status'),
+    'official positive and exact NULL-only fallback each open Builder with the same verified rule as the task engine' => $official_positive_builder_path['current_key'] === 'builder' && $fallback_builder_path['current_key'] === 'builder',
+    'Builder and Leader cards present an accurate focus while Leader remains special' => $builder_zero_path['mode'] === 'builder_focus' && $builder_zero_path['personal_cc'] === 0.0 && $leader_path['mode'] === 'leader_focus' && $leader_path['current_key'] === 'leader' && $assistant_manager_path['current_key'] === 'builder' && $historical_unqualified_leader_path['current_key'] === 'builder',
+    'the expandable guide keeps both parallel starting paths distinct and shows the exact fixed Leader qualification' => count($starter_path['guide']) === 5 && ($starter_path['guide'][0]['key'] ?? '') === 'starter' && ($starter_path['guide'][1]['key'] ?? '') === 'reactivation' && str_contains((string) ($starter_path['guide'][4]['requirement'] ?? ''), 'kolovoz 2026') && str_contains((string) ($starter_path['guide'][4]['requirement'] ?? ''), 'Ne otključava se automatski nakon Buildera'),
+    'verified threshold promotions remain after a new-month zero even before a new-track task is completed' => $persisted_dynamic_activator['key'] === 'activator' && $persisted_dynamic_builder['key'] === 'builder',
+    'historical verified metric rank is capped at Builder and can never manufacture Leader' => $verified_metrics_cannot_create_leader['key'] === 'builder',
     'outcome count accepts only strict integers from 1 through 999' => forever_business_normalize_outcome_count(1) === 1 && forever_business_normalize_outcome_count('999') === 999 && forever_business_normalize_outcome_count(0) === null && forever_business_normalize_outcome_count(-1) === null && forever_business_normalize_outcome_count('1.0') === null && forever_business_normalize_outcome_count(1000) === null && forever_business_normalize_outcome_count(null) === null,
     'structured result and difficulty vocabularies reject arbitrary values' => forever_business_normalize_result_type('conversation') === 'conversation' && forever_business_normalize_result_type('planning') === 'planning' && forever_business_normalize_result_type('made_up') === null && forever_business_normalize_difficulty('hard') === 'hard' && forever_business_normalize_difficulty('extreme') === null,
     'planning and preparation tasks do not inflate training or direct-action analytics' => ($catalog['starter'][1]['expected_result_type'] ?? '') === 'planning' && ($catalog['starter'][10]['expected_result_type'] ?? '') === 'planning' && ($catalog['activator'][24]['expected_result_type'] ?? '') === 'planning' && ($catalog['builder'][24]['expected_result_type'] ?? '') === 'planning' && ($catalog['leader'][3]['expected_result_type'] ?? '') === 'planning' && ($catalog['leader'][3]['target'] ?? 0) === 1 && ($catalog['leader'][6]['expected_result_type'] ?? '') === 'planning' && ($catalog['leader'][27]['expected_result_type'] ?? '') === 'planning' && ($catalog['reactivation'][17]['expected_result_type'] ?? '') === 'planning',

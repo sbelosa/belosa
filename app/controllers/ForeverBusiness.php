@@ -54,6 +54,7 @@ class ForeverBusiness extends Controller {
                     ],
                 ];
                 $vip_program['preview_action'] = forever_business_get_action($preview_member, null, 0, false, $preview_now);
+                $vip_program['preview_education_path'] = forever_business_get_vip_education_path($preview_member);
                 $vip_program['preview_action']['can_complete'] = false;
                 $vip_program['preview_action']['is_preview'] = true;
             }

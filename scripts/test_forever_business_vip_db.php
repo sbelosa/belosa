@@ -138,8 +138,9 @@ try {
         && (float) ($september_member['total_active_cc'] ?? -1) === 0.0,
         'Missing September monthly Personal, Total and Total Active CC must start at zero.');
     $assert((float) ($september_member['previous_total_cc'] ?? -1) === 42.0
-        && ($september_member['vip_current_period_month'] ?? null) === null,
-        'August must remain the previous month and must not be copied into VIP current-month fields.');
+        && ($september_member['vip_current_period_month'] ?? null) === null
+        && (int) ($september_member['vip_verified_highest_track_rank'] ?? 0) === 2,
+        'August must remain the previous month, persist its verified Activator threshold and never be copied into VIP current-month fields.');
     $september_trend = (array) ($september_dashboard['trend'] ?? []);
     $september_trend_rows = array_values(array_filter($september_trend, static fn(array $row): bool => ($row['period_month'] ?? '') === '2026-09-01'));
     $assert(count($september_trend_rows) === 1 && (float) ($september_trend_rows[0]['total_cc'] ?? -1) === 0.0,
@@ -224,6 +225,71 @@ try {
         && (float) ($registered_sync_fixture[0]['total_active_cc_ytd'] ?? -1) === 78.25
         && ($registered_sync_fixture[0]['is_4cc_active'] ?? null) === false,
         'Secret-protected registered account verification must expose monthly, official 4 CC and YTD values needed for exact post-write reconciliation.');
+
+    /* A promotion is a result milestone, not an accident of completing the
+     * first new-track task before month end. Verify all three official-signal
+     * states and persistence through a real October zero-month dashboard query. */
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
+        'personal_cc' => 4.0,
+        'total_cc' => 4.0,
+        'total_active_cc' => 4.0,
+        'non_manager_cc' => 0.0,
+        'leadership_cc' => 0.0,
+        'total_active_cc_ytd' => 81.0,
+        'non_manager_cc_ytd' => 55.0,
+        'leadership_cc_ytd' => 22.0,
+        'is_4cc_active' => 0,
+    ]);
+    $october_zero = new DateTimeImmutable('2026-10-01 00:00:01', new DateTimeZone('Europe/Zagreb'));
+    $official_negative_october_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $october_zero);
+    $official_negative_october_member = $official_negative_october_dashboard['members'][0] ?? [];
+    $assert(($official_negative_october_dashboard['period'] ?? '') === '2026-10-01'
+        && (float) ($official_negative_october_member['personal_cc'] ?? -1) === 0.0
+        && (int) ($official_negative_october_member['vip_verified_highest_track_rank'] ?? 0) === 2
+        && ($official_negative_october_member['next_action']['track_key'] ?? '') === 'activator',
+        'An explicit negative FLP360 4 CC signal must block historical Builder promotion even when September numeric values reach 1 Personal and 4 Total Active CC.');
+
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
+        'personal_cc' => 1.0,
+        'total_cc' => 4.0,
+        'total_active_cc' => 4.0,
+        'non_manager_cc' => 0.0,
+        'leadership_cc' => 0.0,
+        'total_active_cc_ytd' => 81.0,
+        'non_manager_cc_ytd' => 55.0,
+        'leadership_cc_ytd' => 22.0,
+    ]);
+    $unknown_signal_october_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $october_zero);
+    $unknown_signal_october_member = $unknown_signal_october_dashboard['members'][0] ?? [];
+    $assert((int) ($unknown_signal_october_member['vip_verified_highest_track_rank'] ?? 0) === 3
+        && ($unknown_signal_october_member['next_action']['track_key'] ?? '') === 'builder',
+        'A missing official FLP360 signal must allow historical Builder promotion only when September has both 1 Personal and 4 Total Active CC.');
+
+    forever_business_upsert_registered_member_live_cc($fbo_id, '2026-09-01', [
+        'personal_cc' => 0.0,
+        'total_cc' => 0.0,
+        'total_active_cc' => 0.0,
+        'non_manager_cc' => 0.0,
+        'leadership_cc' => 0.0,
+        'total_active_cc_ytd' => 81.0,
+        'non_manager_cc_ytd' => 55.0,
+        'leadership_cc_ytd' => 22.0,
+        'is_4cc_active' => 1,
+    ]);
+    $official_positive_october_dashboard = forever_business_get_dashboard($fixture_user_ids[0], false, '', '', $october_zero);
+    $official_positive_october_member = $official_positive_october_dashboard['members'][0] ?? [];
+    $official_positive_october_path = forever_business_get_vip_education_path($official_positive_october_member);
+    $assert((float) ($official_positive_october_member['personal_cc'] ?? -1) === 0.0
+        && (float) ($official_positive_october_member['total_active_cc'] ?? -1) === 0.0
+        && (int) ($official_positive_october_member['vip_verified_highest_track_rank'] ?? 0) === 3
+        && ($official_positive_october_member['next_action']['track_key'] ?? '') === 'builder'
+        && ($official_positive_october_path['mode'] ?? '') === 'builder_focus',
+        'An explicit positive FLP360 signal must preserve Builder after October resets to zero even when the historical numeric values are incomplete and no Builder task was completed.');
+    $shared_account_october_dashboard = forever_business_get_dashboard($fixture_user_ids[1], false, '', '', $october_zero);
+    $shared_account_october_member = $shared_account_october_dashboard['members'][0] ?? [];
+    $assert((int) ($shared_account_october_member['vip_verified_highest_track_rank'] ?? 0) === 3
+        && ($shared_account_october_member['next_action']['track_key'] ?? '') === 'builder',
+        'Metric-derived progress for a shared FBO must resolve to the same education track on each linked FCC account.');
     database()->query("DELETE FROM forever_business_metrics WHERE fbo_id = '{$fbo_id}' AND period_month = '2026-09-01'");
     /* Restore the pre-existing fixture state so the later stale-qualification
      * queue test still exercises an account without permanent enrollment. */

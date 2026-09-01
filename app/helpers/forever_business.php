@@ -2801,9 +2801,20 @@ function forever_business_get_vip_track(array $member): array {
         $track_key = 'starter';
     }
 
-    if($current_is_active && (int) $definitions[$track_key]['rank'] < (int) $definitions['builder']['rank']) {
+    /* A verified promotion belongs to the education path even when the member
+     * did not manage to complete the first task of that new track before the
+     * next monthly reset. The dashboard supplies the highest level supported
+     * by any trusted metric since enrollment; it is intentionally capped at
+     * Builder because Leader has its own fixed August qualification. */
+    $verified_highest_rank = max(0, min(
+        (int) $definitions['builder']['rank'],
+        (int) ($member['vip_verified_highest_track_rank'] ?? 0)
+    ));
+    if(($current_is_active || $verified_highest_rank >= (int) $definitions['builder']['rank'])
+        && (int) $definitions[$track_key]['rank'] < (int) $definitions['builder']['rank']) {
         $track_key = 'builder';
-    } elseif($current_personal_cc >= 1 && (int) $definitions[$track_key]['rank'] < (int) $definitions['activator']['rank']) {
+    } elseif(($current_personal_cc >= 1 || $verified_highest_rank >= (int) $definitions['activator']['rank'])
+        && (int) $definitions[$track_key]['rank'] < (int) $definitions['activator']['rank']) {
         $track_key = 'activator';
     }
 
@@ -2827,6 +2838,113 @@ function forever_business_get_vip_track(array $member): array {
         'key' => $track_key,
         'has_advanced' => $highest_rank > 0 && $resolved_rank > $highest_rank,
     ] + $definitions[$track_key];
+}
+
+function forever_business_get_vip_education_path(array $member): array {
+    $track = forever_business_get_vip_track($member);
+    $progress = $member['verified_progress'] ?? forever_business_get_verified_progress($member);
+    $current_personal_cc = max(0.0, (float) ($member['vip_current_personal_cc'] ?? 0));
+    $current_total_active_cc = max(0.0, (float) ($member['vip_current_total_active_cc'] ?? 0));
+    $official_activity_signal = array_key_exists('vip_current_is_4cc_active', $member)
+        && $member['vip_current_is_4cc_active'] !== null
+        ? ((int) $member['vip_current_is_4cc_active'] === 1 ? 1 : 0)
+        : null;
+    $current_activity_is_verified = forever_business_has_verified_four_cc_activity([
+        'is_4cc_active' => $member['vip_current_is_4cc_active'] ?? null,
+        'personal_cc' => $member['vip_current_personal_cc'] ?? 0.0,
+        'total_active_cc' => $member['vip_current_total_active_cc'] ?? 0.0,
+    ]);
+    $august_is_officially_active = array_key_exists('vip_august_is_4cc_active', $member)
+        ? $member['vip_august_is_4cc_active'] !== null && (int) $member['vip_august_is_4cc_active'] === 1
+        : false;
+    $is_recognized_manager = ($progress['rank']['mode'] ?? '') === 'manager';
+
+    $path = [
+        'current_key' => $track['key'],
+        'current_label' => $track['label'],
+        'current_goal' => $track['goal'],
+        'mode' => 'focus',
+        'next_key' => null,
+        'next_label' => null,
+        'headline' => '',
+        'summary' => '',
+        'transition_note' => '',
+        'personal_cc' => round($current_personal_cc, 3),
+        'personal_target_cc' => 1.0,
+        'personal_gap_cc' => max(0.0, round(1.0 - $current_personal_cc, 3)),
+        'personal_progress' => min(100.0, round($current_personal_cc * 100, 1)),
+        'total_active_cc' => round($current_total_active_cc, 3),
+        'total_active_target_cc' => 4.0,
+        'total_active_gap_cc' => max(0.0, round(4.0 - $current_total_active_cc, 3)),
+        'total_active_progress' => min(100.0, round(($current_total_active_cc / 4.0) * 100, 1)),
+        'official_activity_signal' => $official_activity_signal,
+        'current_activity_is_verified' => $current_activity_is_verified,
+        'is_recognized_manager' => $is_recognized_manager,
+        'august_is_officially_active' => $august_is_officially_active,
+        'guide' => [
+            [
+                'key' => 'starter',
+                'label' => 'Starter',
+                'requirement' => 'Početni smjer za suradnike koji tek grade svoj redoviti ritam. Prema Aktivatoru napreduješ nakon najmanje 1 osobnog CC u potvrđenom mjesecu.',
+            ],
+            [
+                'key' => 'reactivation',
+                'label' => 'Reaktivacija',
+                'requirement' => 'Početni smjer za suradnike koji se vraćaju u ritam. Prema Aktivatoru napreduješ nakon najmanje 1 osobnog CC u potvrđenom mjesecu.',
+            ],
+            [
+                'key' => 'activator',
+                'label' => 'Aktivator',
+                'requirement' => 'Otvara se nakon najmanje 1 osobnog CC u jednom potvrđenom mjesecu od upisa nadalje.',
+            ],
+            [
+                'key' => 'builder',
+                'label' => 'Builder',
+                'requirement' => 'Builder se otvara kada je potvrđen 4 CC Active status. Ako taj FLP360 status još nije dostupan, sustav napredak može potvrditi potpunim mjesečnim podacima: najmanje 1 osobni CC i 4 Total Active CC.',
+            ],
+            [
+                'key' => 'leader',
+                'label' => 'Leader · posebni smjer',
+                'requirement' => 'Leader je poseban voditeljski smjer ovog ciklusa za suradnike sa službeno priznatom Manager pozicijom i potvrđenim 4 CC Active statusom za kolovoz 2026. Ne otključava se automatski nakon Buildera.',
+            ],
+        ],
+    ];
+
+    if(in_array($track['key'], ['starter', 'reactivation'], true)) {
+        $path['mode'] = 'personal';
+        $path['next_key'] = 'activator';
+        $path['next_label'] = 'Aktivator';
+        $path['headline'] = 'Sljedeći smjer: Aktivator';
+        $path['summary'] = $track['key'] === 'reactivation'
+            ? 'Ponovno gradiš dobar ritam prema 1 osobnom CC u aktualnom mjesecu.'
+            : 'Tvoj prvi cilj je izgraditi ritam prema 1 osobnom CC u aktualnom mjesecu.';
+        $path['transition_note'] = 'Kada dosegneš 1 osobni CC, program se automatski prilagođava Aktivator smjeru, a ti nastavljaš istim rednim brojem zadatka.';
+    } elseif($track['key'] === 'activator') {
+        $path['mode'] = 'four_cc';
+        $path['next_key'] = 'builder';
+        $path['next_label'] = 'Builder';
+        $path['headline'] = 'Sljedeći smjer: Builder';
+        $path['summary'] = 'Sada gradiš prema potvrđenoj 4 CC aktivnosti u aktualnom mjesecu.';
+        if($official_activity_signal === 0 && $current_personal_cc >= 1 && $current_total_active_cc >= 4) {
+            $path['transition_note'] = 'Potrebne CC vrijednosti su dosegnute. Builder se otvara čim FLP360 potvrdi 4 CC Active status.';
+        } elseif($official_activity_signal === null) {
+            $path['transition_note'] = 'FLP360 4 CC Active status još nije dostupan. Dok se ne prikaže, napredak se potvrđuje prema oba prikazana CC uvjeta.';
+        } else {
+            $path['transition_note'] = 'Kada FLP360 potvrdi 4 CC Active, program se automatski prilagođava Builder smjeru, a ti nastavljaš istim rednim brojem zadatka.';
+        }
+    } elseif($track['key'] === 'builder') {
+        $path['mode'] = 'builder_focus';
+        $path['headline'] = 'Tvoj sljedeći fokus: učvrsti Builder ritam';
+        $path['summary'] = 'Održi 4 CC aktivnost, njeguj odnose s kupcima i pomozi jednoj osobi da samostalno ponovi jednostavan proces.';
+        $path['transition_note'] = 'Kao Builder, napredak sada gradiš kroz stabilnu 4 CC aktivnost i razvoj ljudi. Leader je poseban voditeljski smjer s uvjetima navedenima u vodiču.';
+    } else {
+        $path['mode'] = 'leader_focus';
+        $path['headline'] = 'Tvoj sljedeći fokus: razvijaj samostalne ljude';
+        $path['summary'] = 'Na najnaprednijem si voditeljskom smjeru ove edukacije. Fokus je na podršci suradnicima, razvoju budućih voditelja i jednostavnom sustavu koji tim može ponavljati.';
+        $path['transition_note'] = 'Leader smjer je aktivan.';
+    }
+
+    return $path;
 }
 
 function forever_business_vip_action_key(string $track_key, int $day): string {
@@ -3344,6 +3462,36 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                          AND (vip_focus_history.was_active_previous_month = 1
                               OR vip_focus_history.last_purchase_date >= DATE_SUB(COALESCE(vip_enrollment.qualifying_period, '2026-08-01'), INTERVAL 12 MONTH))
                    ) AS vip_base_had_previous_activity_12m,
+                   COALESCE((
+                       SELECT MAX(CASE
+                           WHEN (
+                               (CASE
+                                   WHEN vip_verified.source_import_id IS NOT NULL
+                                    AND (vip_verified_source.import_id IS NULL OR vip_verified_source.report_kind NOT IN ('downline', 'four_cc_active'))
+                                       THEN NULL
+                                   ELSE vip_verified.is_4cc_active
+                               END) = 1
+                               OR (
+                                   (CASE
+                                       WHEN vip_verified.source_import_id IS NOT NULL
+                                        AND (vip_verified_source.import_id IS NULL OR vip_verified_source.report_kind NOT IN ('downline', 'four_cc_active'))
+                                           THEN NULL
+                                       ELSE vip_verified.is_4cc_active
+                                   END) IS NULL
+                                   AND vip_verified.personal_cc >= 1
+                                   AND vip_verified.total_active_cc >= 4
+                               )
+                           ) THEN 3
+                           WHEN vip_verified.personal_cc >= 1 THEN 2
+                           ELSE 1
+                       END)
+                       FROM forever_business_metrics vip_verified
+                       LEFT JOIN forever_business_imports vip_verified_source
+                         ON vip_verified_source.import_id = vip_verified.source_import_id
+                       WHERE vip_verified.fbo_id = m.fbo_id
+                         AND vip_verified.period_month >= COALESCE(vip_enrollment.qualifying_period, '2026-08-01')
+                         AND vip_verified.period_month <= '{$vip_current_period}'
+                   ), 0) AS vip_verified_highest_track_rank,
                    vip_current.period_month AS vip_current_period_month,
                    vip_current.personal_cc AS vip_current_personal_cc,
                    vip_current.total_active_cc AS vip_current_total_active_cc,

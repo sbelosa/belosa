@@ -94,15 +94,39 @@ $format_change = static function(float $value): string {
     .forever-business-page .fb-next-unlock-copy { display: flex; flex-wrap: wrap; align-items: baseline; gap: .22rem .42rem; }
     .forever-business-page .fb-next-unlock-value { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .035em; white-space: nowrap; }
     .forever-business-page .fb-next-unlock-time { opacity: .68; white-space: nowrap; }
+    .forever-business-page .fb-education-path { background: linear-gradient(135deg, rgba(67,166,111,.075), rgba(31,120,200,.045)); border-color: rgba(67,166,111,.22); }
+    .forever-business-page .fb-education-current { display: inline-flex; align-items: center; padding: .45rem .7rem; border: 1px solid rgba(67,166,111,.22); border-radius: 999px; background: rgba(67,166,111,.09); font-size: .78rem; font-weight: 800; white-space: nowrap; }
+    .forever-business-page .fb-education-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+    .forever-business-page .fb-education-metric { padding: .8rem .9rem; border: 1px solid rgba(127,127,127,.15); border-radius: .8rem; background: rgba(255,255,255,.36); }
+    .forever-business-page .fb-education-metric .progress { height: .42rem; background: rgba(127,127,127,.16); }
+    .forever-business-page .fb-education-metric .progress-bar { background: linear-gradient(90deg, #43a66f, #7ed7a5); }
+    .forever-business-page .fb-education-note { padding: .72rem .85rem; border-radius: .75rem; background: rgba(30,136,229,.055); border: 1px solid rgba(30,136,229,.13); }
+    .forever-business-page .fb-education-details { border-top: 1px solid rgba(127,127,127,.16); }
+    .forever-business-page .fb-education-details summary { cursor: pointer; font-weight: 800; }
+    .forever-business-page .fb-education-details summary:focus { outline: 2px solid rgba(31,120,200,.35); outline-offset: 3px; border-radius: .25rem; }
+    .forever-business-page .fb-education-guide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+    .forever-business-page .fb-education-guide-item { padding: .75rem .8rem; border: 1px solid rgba(127,127,127,.14); border-radius: .75rem; background: rgba(127,127,127,.035); }
+    .forever-business-page .fb-education-guide-item.is-current { border-color: rgba(67,166,111,.34); background: rgba(67,166,111,.075); }
+    .forever-business-page .fb-education-guide-dot { display: inline-block; width: .48rem; height: .48rem; margin-right: .4rem; border-radius: 50%; background: rgba(127,127,127,.45); vertical-align: .08rem; }
+    .forever-business-page .fb-education-guide-item.is-current .fb-education-guide-dot { background: #43a66f; box-shadow: 0 0 0 3px rgba(67,166,111,.13); }
     @media (max-width: 991.98px) {
         .forever-business-page .fb-vip-conditions { grid-template-columns: 1fr; }
         .forever-business-page .fb-vip-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .forever-business-page .fb-education-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 575.98px) {
         .forever-business-page .fb-progress-row { margin-left: 0; margin-right: 0; }
         .forever-business-page .fb-vip-countdown { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .forever-business-page .fb-vip-preview-grid { grid-template-columns: 1fr; }
         .forever-business-page .fb-vip-feature { min-height: 0; }
+        .forever-business-page .fb-education-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+        .forever-business-page .fb-education-metrics .fb-education-metric:last-child { grid-column: 1 / -1; }
+        .forever-business-page .fb-education-guide { grid-template-columns: 1fr; }
+        .forever-business-page .fb-education-current { white-space: normal; }
+    }
+    @media (max-width: 359.98px) {
+        .forever-business-page .fb-education-metrics { grid-template-columns: 1fr; }
+        .forever-business-page .fb-education-metrics .fb-education-metric:last-child { grid-column: auto; }
     }
 </style>
 
@@ -410,6 +434,92 @@ $format_change = static function(float $value): string {
         <?php endif ?>
 
         <?php
+        $vip_education_path = !empty($vip_program['preview_education_path'])
+            ? $vip_program['preview_education_path']
+            : ($data->focus_member ? forever_business_get_vip_education_path($data->focus_member) : []);
+        ?>
+        <?php if(!empty($vip_program['can_access_education']) && !empty($vip_education_path)): ?>
+            <?php
+            $education_mode = (string) ($vip_education_path['mode'] ?? 'focus');
+            $education_current_key = (string) ($vip_education_path['current_key'] ?? '');
+            $education_guide_current_key = $education_current_key;
+            ?>
+            <section class="card fb-card fb-education-path mb-4" aria-labelledby="fb-education-path-title">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start">
+                        <div class="pr-md-4">
+                            <div class="small text-uppercase text-muted font-weight-bold mb-1">Tvoj put kroz edukaciju</div>
+                            <h2 class="h5 mb-1" id="fb-education-path-title"><?= htmlspecialchars((string) ($vip_education_path['headline'] ?? 'Tvoj edukacijski smjer')) ?></h2>
+                            <p class="small text-muted mb-0"><?= htmlspecialchars((string) ($vip_education_path['summary'] ?? '')) ?></p>
+                        </div>
+                        <span class="fb-education-current mt-3 mt-md-0"><i class="fas fa-route mr-1" aria-hidden="true"></i> Trenutačno: <?= htmlspecialchars((string) ($vip_education_path['current_label'] ?? '')) ?></span>
+                    </div>
+
+                    <?php if($education_mode === 'personal'): ?>
+                        <div class="mt-3">
+                            <div class="d-flex flex-wrap justify-content-between small mb-1">
+                                <span>Osobni CC u aktualnom mjesecu</span>
+                                <strong><?= $format_cc($vip_education_path['personal_cc'] ?? 0) ?> / <?= $format_cc($vip_education_path['personal_target_cc'] ?? 1) ?></strong>
+                            </div>
+                            <div class="progress" style="height:.5rem" role="progressbar" aria-label="Napredak prema Aktivator smjeru" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= (float) ($vip_education_path['personal_progress'] ?? 0) ?>">
+                                <div class="progress-bar bg-success" style="width: <?= (float) ($vip_education_path['personal_progress'] ?? 0) ?>%"></div>
+                            </div>
+                            <div class="small text-muted mt-1">Do Aktivatora ti nedostaje još <?= $format_cc($vip_education_path['personal_gap_cc'] ?? 0) ?> osobnog CC.</div>
+                        </div>
+                    <?php elseif($education_mode === 'four_cc'): ?>
+                        <div class="fb-education-metrics mt-3">
+                            <div class="fb-education-metric">
+                                <div class="small text-muted mb-1">Osobni CC ovog mjeseca</div>
+                                <strong><?= $format_cc($vip_education_path['personal_cc'] ?? 0) ?> / <?= $format_cc($vip_education_path['personal_target_cc'] ?? 1) ?></strong>
+                                <div class="progress mt-2" role="progressbar" aria-label="Osobni CC prema Builder smjeru" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= (float) ($vip_education_path['personal_progress'] ?? 0) ?>"><div class="progress-bar" style="width: <?= (float) ($vip_education_path['personal_progress'] ?? 0) ?>%"></div></div>
+                            </div>
+                            <div class="fb-education-metric">
+                                <div class="small text-muted mb-1">Total Active CC ovog mjeseca</div>
+                                <strong><?= $format_cc($vip_education_path['total_active_cc'] ?? 0) ?> / <?= $format_cc($vip_education_path['total_active_target_cc'] ?? 4) ?></strong>
+                                <div class="progress mt-2" role="progressbar" aria-label="Total Active CC prema Builder smjeru" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= (float) ($vip_education_path['total_active_progress'] ?? 0) ?>"><div class="progress-bar" style="width: <?= (float) ($vip_education_path['total_active_progress'] ?? 0) ?>%"></div></div>
+                            </div>
+                            <div class="fb-education-metric">
+                                <div class="small text-muted mb-1">FLP360 4 CC Active</div>
+                                <?php if(($vip_education_path['official_activity_signal'] ?? null) === 1): ?>
+                                    <strong class="text-success"><i class="fas fa-check-circle mr-1" aria-hidden="true"></i> Potvrđen</strong>
+                                <?php elseif(($vip_education_path['official_activity_signal'] ?? null) === 0): ?>
+                                    <strong class="text-warning"><i class="fas fa-hourglass-half mr-1" aria-hidden="true"></i> Još nije potvrđen</strong>
+                                <?php else: ?>
+                                    <strong class="text-muted"><i class="fas fa-sync-alt mr-1" aria-hidden="true"></i> Status još nije dostupan</strong>
+                                <?php endif ?>
+                                <div class="small text-muted mt-2">Kada je dostupan, službeni FLP360 status potvrđuje prelazak.</div>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="fb-education-note small mt-3"><i class="fas fa-check-circle text-success mr-1" aria-hidden="true"></i> <?= htmlspecialchars((string) ($vip_education_path['current_label'] ?? '')) ?> smjer je aktivan.</div>
+                    <?php endif ?>
+
+                    <?php if(!empty($vip_education_path['transition_note']) && !in_array($education_mode, ['builder_focus', 'leader_focus'], true)): ?>
+                        <div class="fb-education-note small mt-3"><?= htmlspecialchars((string) $vip_education_path['transition_note']) ?></div>
+                    <?php elseif($education_mode === 'builder_focus'): ?>
+                        <div class="small text-muted mt-2"><?= htmlspecialchars((string) ($vip_education_path['transition_note'] ?? '')) ?></div>
+                    <?php endif ?>
+
+                    <details class="fb-education-details mt-3 pt-3">
+                        <summary class="small">Kako napreduju edukacijski smjerovi?</summary>
+                        <div class="small text-muted mt-3 mb-2">Program se prilagođava tvojim potvrđenim rezultatima. Kada prijeđeš u napredniji smjer, zadržavaš isti redni broj zadatka.</div>
+                        <div class="fb-education-guide">
+                            <?php foreach(($vip_education_path['guide'] ?? []) as $guide_item): ?>
+                                <?php $guide_is_current = (string) ($guide_item['key'] ?? '') === $education_guide_current_key; ?>
+                                <div class="fb-education-guide-item <?= $guide_is_current ? 'is-current' : '' ?>">
+                                    <strong class="d-block small"><span class="fb-education-guide-dot" aria-hidden="true"></span><?= htmlspecialchars((string) ($guide_item['label'] ?? '')) ?><?= $guide_is_current ? ' · tvoj smjer' : '' ?></strong>
+                                    <span class="small text-muted"><?= htmlspecialchars((string) ($guide_item['requirement'] ?? '')) ?></span>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                        <div class="small text-muted mt-3">Novi mjesec počinje od 0 CC, ali jednom ostvareni smjer Aktivator ili Builder ostaje tvoj. Leader ima posebne uvjete opisane iznad.</div>
+                        <div class="small text-muted mt-2"><strong>Važno:</strong> Starter, Reaktivacija, Aktivator, Builder i Leader nazivi su smjerova unutar VIP 4 Core edukacije. Ne mijenjaju tvoju službenu Forever poziciju, koju određuju službeni Forever kriteriji i potvrđeni FLP360 podaci.</div>
+                    </details>
+                </div>
+            </section>
+        <?php endif ?>
+
+        <?php
         $action = !empty($vip_program['preview_action'])
             ? $vip_program['preview_action']
             : ($data->focus_member ? ($data->focus_member['next_action'] ?? null) : null);
@@ -421,13 +531,13 @@ $format_change = static function(float $value): string {
                         <div class="col-lg-8">
                             <div class="fb-action-meta align-items-center mb-2">
                                 <span class="text-uppercase text-muted small mr-1"><?= !empty($action['is_daily_complete']) ? 'Današnji korak' : 'Sljedeći korak' ?> · <?= htmlspecialchars($action['core']) ?></span>
-                                <?php if(!empty($action['track_label'])): ?><span class="badge badge-info">Razina: <?= htmlspecialchars($action['track_label']) ?></span><?php endif ?>
+                                <?php if(!empty($action['track_label'])): ?><span class="badge badge-info">Edukacijski smjer: <?= htmlspecialchars($action['track_label']) ?></span><?php endif ?>
                                 <?php if(!empty($action['sequence_total']) && empty($action['is_daily_complete'])): ?><span class="badge badge-light">Korak <?= nr($action['sequence_position']) ?>/<?= nr($action['sequence_total']) ?></span><?php endif ?>
                                 <?php if(!empty($action['is_weekly_plan'])): ?><span class="badge badge-warning">Nedjeljni prioritet</span><?php endif ?>
                             </div>
                             <h2 class="h4 mb-2"><?= htmlspecialchars($action['title']) ?></h2>
-                            <?php if(!empty($action['track_has_advanced'])): ?><div class="alert alert-success py-2 mb-3"><i class="fas fa-level-up-alt mr-1"></i> Tvoj plan automatski je prilagođen novoj razini prema najnovijim potvrđenim FLP360 podacima. Nastavljaš istim rednim brojem, ali sa zadacima naprednijeg programa.</div><?php endif ?>
-                            <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvoje razine:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
+                            <?php if(!empty($action['track_has_advanced'])): ?><div class="alert alert-success py-2 mb-3"><i class="fas fa-level-up-alt mr-1"></i> Tvoj plan automatski je prilagođen novom edukacijskom smjeru prema najnovijim potvrđenim FLP360 podacima. Nastavljaš istim rednim brojem, ali sa zadacima naprednijeg programa.</div><?php endif ?>
+                            <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvojeg edukacijskog smjera:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
                             <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="small text-muted mb-3"><strong>Naš stil:</strong> javi se osobno, govori svojim riječima i slušaj više nego što objašnjavaš. Kada je tema proizvod ili posao, prirodno reci da si Forever suradnik i osloni se na aktualne informacije, bez obećavanja zdravstvenog rezultata ili zarade. Primjeri su inspiracija — prilagodi ih odnosu koji već imaš s osobom.</div><?php endif ?>
                             <?php if(!empty($action['is_weekly_plan'])): ?>
                                 <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 18:00</strong><span class="d-block small mt-1">Pridruži se nekoliko minuta ranije i pripremi popis svojih gostiju.</span><?php if(!empty($vip_marketing_plan['url'])): ?><a href="<?= htmlspecialchars($vip_marketing_plan['url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2">Otvori Marketing plan</a><?php endif ?></div>
@@ -462,7 +572,7 @@ $format_change = static function(float $value): string {
                             <?php if(!empty($action['adaptive_note'])): ?><div class="alert alert-warning small mt-3 mb-2"><strong>Danas ideš još lakšim tempom:</strong> <?= htmlspecialchars($action['adaptive_note']) ?></div><?php endif ?>
                             <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && (int) ($action['target'] ?? 0) > 1): ?><div class="fb-quick-step small mt-3"><strong>Treba ti kraći tempo?</strong> Napravi istu radnju u manjem opsegu: puni korak je <?= (int) $action['target'] ?>, a za održavanje ritma danas je dovoljno najmanje <?= (int) $action['quick_target'] ?>.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete']) && !empty($action['fallback'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako ga danas ne možeš odraditi, iskoristi ponuđenu mogućnost iznad ili se javi mentoru.</div><?php elseif(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="fb-quick-step small mt-3"><strong>Jedan mali korak je dovoljan.</strong> Ako zapneš, javi se mentoru.</div><?php endif ?>
                             <div class="small text-muted mt-2"><?= !empty($action['is_daily_complete']) ? 'Za danas nema dodatnih zadataka. Novi korak otključava se u ponoć.' : 'Ovaj korak ostaje aktivan dok ga ne dovršiš. Nakon potvrde novi korak otvorit će se sljedećeg dana.' ?></div>
-                            <div class="small text-muted mt-1">Redovitim izvršavanjem koraka gradiš dobre poslovne navike, ostvaruješ više kvalitetnih kontakata i napreduješ prema svojoj sljedećoj razini.</div>
+                            <div class="small text-muted mt-1">Redovitim izvršavanjem koraka gradiš dobre poslovne navike, ostvaruješ više kvalitetnih kontakata i napreduješ prema svojem sljedećem edukacijskom smjeru.</div>
                         </div>
                         <div class="col-lg-4 mt-4 mt-lg-0">
                             <?php if(!empty($vip_program['whatsapp_group_url'])): ?><a href="<?= htmlspecialchars($vip_program['whatsapp_group_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-block fb-vip-whatsapp mb-3"><i class="fab fa-whatsapp mr-1"></i> Otvori VIP WhatsApp grupu</a><?php endif ?>
