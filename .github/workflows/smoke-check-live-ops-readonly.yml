@@ -8,36 +8,105 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+
 jobs:
   smoke-check:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - name: Check configuration
-        id: config
+      - name: Require a successful deployment run
+        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success' }}
         run: |
-          if [ -n "${OPS_BASE_URL}" ] && [ -n "${FCC_OPS_READONLY_KEY}" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
+          echo "Deployment run ${EXPECTED_RUN_ID} did not complete successfully." >&2
+          exit 1
+        env:
+          EXPECTED_RUN_ID: ${{ github.event.workflow_run.id }}
+
+      - name: Select authenticated smoke check
+        id: config
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -n "${OPS_BASE_URL}" && -n "${FCC_OPS_READONLY_KEY}" ]]; then
+            echo "mode=ops" >> "${GITHUB_OUTPUT}"
+          elif [[ -n "${FCC_FOREVER_SYNC_URL}" && -n "${FCC_FOREVER_SYNC_KEY}" ]]; then
+            echo "mode=forever" >> "${GITHUB_OUTPUT}"
+            echo "OPS readonly secrets are unavailable; using the authenticated Forever runtime smoke check."
           else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "No complete authenticated production smoke-check credentials are configured." >&2
+            exit 1
           fi
         env:
           OPS_BASE_URL: ${{ secrets.OPS_BASE_URL }}
           FCC_OPS_READONLY_KEY: ${{ secrets.FCC_OPS_READONLY_KEY }}
-
-      - name: Skip when secrets are missing
-        if: steps.config.outputs.configured != 'true'
-        run: echo "Skipping smoke check because OPS_BASE_URL or FCC_OPS_READONLY_KEY is not configured."
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
 
       - name: Smoke check health scope
-        if: steps.config.outputs.configured == 'true'
+        if: ${{ steps.config.outputs.mode == 'ops' }}
         run: |
+          set -euo pipefail
+          : "${OPS_BASE_URL:?OPS_BASE_URL is not configured}"
+          : "${FCC_OPS_READONLY_KEY:?FCC_OPS_READONLY_KEY is not configured}"
+
+          response_file="$(mktemp)"
+          trap 'rm -f "${response_file}"' EXIT
+
           curl --fail --silent --show-error \
+            --max-time 30 \
             --get "${OPS_BASE_URL%/}/ops-readonly" \
             --data-urlencode "scope=health" \
-            --data-urlencode "key=${FCC_OPS_READONLY_KEY}" \
-            --data-urlencode "pretty=1"
+            --header "X-FCC-Ops-Key: ${FCC_OPS_READONLY_KEY}" \
+            --output "${response_file}"
+
+          jq -e --arg expected_sha "${EXPECTED_SHA}" --arg expected_run_id "${EXPECTED_RUN_ID}" '
+            .status == "success"
+            and .scope == "health"
+            and .data.database.connected == true
+            and (.data.deployment.github_sha | test("^[0-9a-f]{40}$"))
+            and (.data.deployment.github_run_id | test("^[1-9][0-9]{0,19}$"))
+            and ($expected_sha == "" or .data.deployment.github_sha == $expected_sha)
+            and ($expected_run_id == "" or .data.deployment.github_run_id == $expected_run_id)
+          ' "${response_file}"
+
+          jq '{status, scope, generated_at, php_version: .data.php_version, database_connected: .data.database.connected, deployment: .data.deployment}' "${response_file}"
         env:
           OPS_BASE_URL: ${{ secrets.OPS_BASE_URL }}
           FCC_OPS_READONLY_KEY: ${{ secrets.FCC_OPS_READONLY_KEY }}
+          EXPECTED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          EXPECTED_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
+
+      - name: Fallback smoke check authenticated Forever runtime
+        if: ${{ steps.config.outputs.mode == 'forever' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${FCC_FOREVER_SYNC_URL:?FCC_FOREVER_SYNC_URL is not configured}"
+          : "${FCC_FOREVER_SYNC_KEY:?FCC_FOREVER_SYNC_KEY is not configured}"
+
+          response_file="$(mktemp)"
+          trap 'rm -f "${response_file}"' EXIT
+
+          curl --fail --silent --show-error \
+            --max-time 30 \
+            --request POST "${FCC_FOREVER_SYNC_URL}" \
+            --header "X-FCC-Forever-Sync-Key: ${FCC_FOREVER_SYNC_KEY}" \
+            --data-urlencode "metric=status" \
+            --output "${response_file}"
+
+          jq -e '
+            .status == "success"
+            and .metric == "status"
+            and (.period | type == "string")
+            and (.summary | type == "object")
+          ' "${response_file}"
+
+          jq '{status, metric, period, last_sync_at}' "${response_file}"
+        env:
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}

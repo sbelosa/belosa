@@ -1201,12 +1201,39 @@ class Cron extends Controller {
     }
 
     private function fcc_public_signal_notifications() {
-        $users = db()
-            ->where('status', 1)
-            ->where('email', '', '!=')
-            ->get('users', 500, ['user_id', 'name', 'email', 'language', 'anti_phishing_code', 'preferences', 'plan_id', 'plan_settings', 'plan_expiration_date']) ?? [];
+        $active_growth_pro_condition = fcc_ai_get_active_growth_pro_user_condition_sql('`users`', get_date());
+        $users_result = database()->query("SELECT
+                `users`.`user_id`,
+                `users`.`name`,
+                `users`.`email`,
+                `users`.`language`,
+                `users`.`anti_phishing_code`,
+                `users`.`preferences`,
+                `users`.`plan_id`,
+                `users`.`plan_settings`,
+                `users`.`plan_expiration_date`,
+                `users`.`extra`
+            FROM `users`
+            WHERE {$active_growth_pro_condition}
+              AND `users`.`type` = 0
+              AND `users`.`email` != ''
+            ORDER BY COALESCE(
+                NULLIF(JSON_UNQUOTE(JSON_EXTRACT(`users`.`preferences`, '$.fcc_public_signal_notifications.last_evaluated_at')), ''),
+                '1970-01-01 00:00:00'
+            ) ASC, `users`.`user_id` ASC
+            LIMIT 500");
+        $users = [];
+
+        while($users_result && ($user = $users_result->fetch_object())) {
+            $users[] = $user;
+        }
 
         foreach($users as $user) {
+            /* Defense in depth if plan data changes after the candidate query. */
+            if(!fcc_ai_user_has_active_growth_pro($user)) {
+                continue;
+            }
+
             $preferences = fcc_ai_normalize_user_preferences($user->preferences ?? null);
             $state = fcc_featured_get_public_signal_notification_state($preferences);
             $visibility = fcc_featured_get_user_public_profile_state($user, (string) ($user->language ?? 'hr'));
@@ -1215,25 +1242,10 @@ class Cron extends Controller {
             $qualified_target = max(15, (int) ($visibility['qualified_target'] ?? 15));
             $top_target = max($qualified_target, (int) ($visibility['top_target'] ?? 50));
             $last_public_signal_30d = max(0, (int) ($state['last_public_signal_30d'] ?? 0));
-            $has_growth_pro = !empty($visibility['has_growth_pro']);
             $profile_complete = !empty($visibility['generated_profile_complete']);
             $sales_link_ready = !empty($visibility['sales_link_ready']);
             $qualified_already_handled = !empty($state['qualified_unlock_sent_at']) || !empty($state['top_unlock_sent_at']);
             $top_already_handled = !empty($state['top_unlock_sent_at']);
-
-            if(!$has_growth_pro) {
-                $state['qualified_unlock_sent_at'] = '';
-                $state['qualified_reminder_sent_at'] = '';
-                $state['top_unlock_sent_at'] = '';
-                $state['top_reminder_sent_at'] = '';
-                $state['qualified_reentry_admin_notified_at'] = '';
-                $state['top_reentry_admin_notified_at'] = '';
-                $state['last_public_signal_30d'] = $public_signal_30d;
-                $state['last_public_signal_7d'] = $public_signal_7d;
-                $state['last_evaluated_at'] = get_date();
-                fcc_featured_save_public_signal_notification_state((int) $user->user_id, $preferences, $state);
-                continue;
-            }
 
             $crossed_top = $public_signal_30d >= $top_target
                 && $last_public_signal_30d < $top_target

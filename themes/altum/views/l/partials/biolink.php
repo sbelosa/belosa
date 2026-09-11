@@ -125,7 +125,7 @@
                         $country_code = null;
                         $country_code_is_trusted = false;
                         /* Custom code: FC-2026-03-05: robust country detection fallback for BIH-only block display */
-                        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
+                        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE'] as $country_header_key) {
                             if(!empty($_SERVER[$country_header_key])) {
                                 $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
                                 $header_country_code = mb_substr($header_country_code, 0, 2);
@@ -138,12 +138,12 @@
                             }
                         }
 
-                        if(!$country_code) {
-                            $country_code = \Altum\Link::get_external_geo_country_code($geo_lookup_ip);
-                        }
-
                         if(!$country_code && isset($maxmind['country']['iso_code'])) {
                             $country_code = $maxmind['country']['iso_code'];
+                        }
+
+                        if(!$country_code) {
+                            $country_code = \Altum\Link::get_external_geo_country_code($geo_lookup_ip);
                         }
 
                         if($country_code) {

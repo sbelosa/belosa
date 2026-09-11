@@ -10,13 +10,60 @@ on:
       - '.github/workflows/deploy-cpanel-ftp.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Use PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Lint deployed PHP files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' -t php_files < <(find app themes -type f -name '*.php' -print0)
+          if [[ "${#php_files[@]}" -eq 0 ]]; then
+            echo 'No PHP files were found in app/ or themes/.' >&2
+            exit 1
+          fi
+
+          for php_file in "${php_files[@]}"; do
+            php -l "${php_file}" > /dev/null
+          done
+
+          echo "PHP lint passed for ${#php_files[@]} deployed files."
+
+      - name: Run deterministic release guards
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          php scripts/test_authentication_stripe_restore_guard.php
+          php scripts/test_billing_recovery_guard.php
+          php scripts/test_brevo_mail_fallback.php
+          php scripts/test_forever_business_import.php
+          php scripts/test_los_forever_admin_guards.php
+          php scripts/test_ops_readonly_secret_redaction.php
+          php scripts/test_public_biolink_js_guards.php
+          php scripts/test_request_performance_guards.php
+          php scripts/test_user_plan_expiration_guard.php
+          php scripts/test_vip_funnel_persistence_guards.php
 
       - name: Deploy app/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -52,6 +99,7 @@ jobs:
           trap 'rm -f "${response_file}"' EXIT
 
           curl --fail --silent --show-error \
+            --max-time 30 \
             --request POST "${FCC_FOREVER_SYNC_URL}" \
             --header "X-FCC-Forever-Sync-Key: ${FCC_FOREVER_SYNC_KEY}" \
             --data-urlencode "metric=status" \
@@ -64,3 +112,56 @@ jobs:
             and (.summary | type == "object")
           ' "${response_file}"
           jq '{status, metric, period, last_sync_at}' "${response_file}"
+
+      - name: Generate verified deployment marker
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p deployment-marker
+          php <<'PHP'
+          <?php
+          $github_sha = getenv('GITHUB_SHA');
+          $github_run_id = getenv('GITHUB_RUN_ID');
+
+          if(!is_string($github_sha) || preg_match('/\A[0-9a-f]{40}\z/', $github_sha) !== 1) {
+              fwrite(STDERR, "GITHUB_SHA is invalid.\n");
+              exit(1);
+          }
+
+          if(!is_string($github_run_id) || preg_match('/\A[1-9][0-9]{0,19}\z/', $github_run_id) !== 1) {
+              fwrite(STDERR, "GITHUB_RUN_ID is invalid.\n");
+              exit(1);
+          }
+
+          $marker = [
+              'github_sha' => $github_sha,
+              'github_run_id' => $github_run_id,
+              'deployed_at' => gmdate('Y-m-d\TH:i:s\Z'),
+          ];
+          $contents = sprintf(
+              "<?php\n\nreturn [\n    'github_sha' => '%s',\n    'github_run_id' => '%s',\n    'deployed_at' => '%s',\n];\n",
+              $marker['github_sha'],
+              $marker['github_run_id'],
+              $marker['deployed_at']
+          );
+
+          if(file_put_contents('deployment-marker/deployment.php', $contents) === false) {
+              fwrite(STDERR, "Could not write the deployment marker.\n");
+              exit(1);
+          }
+          PHP
+
+          php -l deployment-marker/deployment.php
+
+      - name: Publish verified deployment marker
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./deployment-marker/
+          server-dir: /public_html/app/config/
+          state-name: .ftp-deploy-sync-state-deployment-marker.json
+          dangerous-clean-slate: false

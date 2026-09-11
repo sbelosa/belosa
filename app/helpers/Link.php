@@ -97,7 +97,8 @@ class Link {
     }
 
     public static function get_trusted_forever_request_country_code(): ?string {
-        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
+        /* X-Country is a client-controlled convention, not a trusted proxy signal. */
+        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE'] as $country_header_key) {
             if(!empty($_SERVER[$country_header_key])) {
                 $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
                 $header_country_code = mb_substr($header_country_code, 0, 2);

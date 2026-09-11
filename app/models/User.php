@@ -682,9 +682,15 @@ class User extends Model {
 
     /* Requires full user variable */
     public function process_user_plan_expiration_by_user($user) {
-        $has_recurring_billing_protection = $this->has_expired_plan_downgrade_protection($user);
+        $plan_expiration_date = new \DateTime($user->plan_expiration_date);
+        $now = new \DateTime();
 
-        if((new \DateTime($user->plan_expiration_date)) < (new \DateTime()) && $user->plan_id != 'free' && !$has_recurring_billing_protection) {
+        /* Live billing recovery is needed only after local access has actually expired. */
+        if($plan_expiration_date >= $now || $user->plan_id == 'free') {
+            return;
+        }
+
+        if(!$this->has_expired_plan_downgrade_protection($user)) {
 
             /* Switch the user to the default plan */
             db()->where('user_id', $user->user_id)->update('users', [

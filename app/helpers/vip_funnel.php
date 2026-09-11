@@ -1488,10 +1488,6 @@ function vip_funnel_get_forever_business_referral_url(int $owner_user_id = 0): s
     $country_code = \Altum\Link::get_trusted_forever_request_country_code();
     $country_code_is_trusted = (bool) $country_code;
 
-    if(!$country_code) {
-        $country_code = \Altum\Link::get_external_geo_country_code(vip_funnel_get_geo_lookup_ip());
-    }
-
     if(!$country_code && vip_funnel_get_geo_lookup_ip() && is_file(APP_PATH . 'includes/GeoLite2-City.mmdb')) {
         try {
             $maxmind = (new \MaxMind\Db\Reader(APP_PATH . 'includes/GeoLite2-City.mmdb'))->get(vip_funnel_get_geo_lookup_ip());
@@ -1499,6 +1495,10 @@ function vip_funnel_get_forever_business_referral_url(int $owner_user_id = 0): s
         } catch(\Exception $exception) {
             $country_code = null;
         }
+    }
+
+    if(!$country_code) {
+        $country_code = \Altum\Link::get_external_geo_country_code(vip_funnel_get_geo_lookup_ip());
     }
 
     $business_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
@@ -10318,7 +10318,6 @@ function vip_funnel_get_public_qualification_signal_map(string $period_start_dat
         return $map;
     }
 
-    vip_funnel_ensure_runtime_schema();
     $period_start_datetime = database()->real_escape_string($period_start_datetime);
     $period_end_datetime = trim($period_end_datetime) !== '' ? database()->real_escape_string($period_end_datetime) : '';
     $range_sql = "`datetime` >= '{$period_start_datetime}'";
@@ -10402,14 +10401,54 @@ function vip_funnel_get_public_qualification_signal_map(string $period_start_dat
 }
 
 function vip_funnel_get_public_qualification_signal_payload(int $user_id = 0, string $period_start_datetime = '', string $period_end_datetime = ''): array {
-    $map = vip_funnel_get_public_qualification_signal_map($period_start_datetime, $period_end_datetime);
-
-    return $map[$user_id] ?? [
+    $payload = [
         'funnel_contacts' => 0,
         'funnel_contact_signal' => 0,
         'funnel_shop_clicks' => 0,
         'total' => 0,
     ];
+
+    if($user_id <= 0 || $period_start_datetime === '') {
+        return $payload;
+    }
+
+    $period_start_datetime = database()->real_escape_string($period_start_datetime);
+    $period_end_datetime = trim($period_end_datetime) !== '' ? database()->real_escape_string($period_end_datetime) : '';
+    $range_sql = "`datetime` >= '{$period_start_datetime}'";
+
+    if($period_end_datetime !== '') {
+        $range_sql .= " AND `datetime` < '{$period_end_datetime}'";
+    }
+
+    if(vip_funnel_has_table('vip_leads')) {
+        $contacts_result = database()->query("SELECT COUNT(*) AS `total`
+            FROM `vip_leads`
+            WHERE `owner_user_id` = {$user_id}
+              AND `source` = 'vip_funnel_public'
+              AND {$range_sql}");
+        $contacts_row = $contacts_result ? $contacts_result->fetch_object() : null;
+        $payload['funnel_contacts'] = (int) ($contacts_row->total ?? 0);
+    }
+
+    if(vip_funnel_has_table('vip_funnel_events')) {
+        $shop_clicks_result = database()->query("SELECT COUNT(DISTINCT CASE
+                WHEN COALESCE(`visitor_key`, '') <> '' THEN CONCAT(`visitor_key`, '|', COALESCE(NULLIF(`block_id`, ''), 'shop'))
+                ELSE CONCAT('event_', `vip_funnel_event_id`)
+            END) AS `total`
+            FROM `vip_funnel_events`
+            WHERE `user_id` = {$user_id}
+              AND `event_type` = 'cta_click'
+              AND JSON_UNQUOTE(JSON_EXTRACT(`meta`, '$.signal_key')) = 'forever_shop'
+              AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`meta`, '$.external_url')), '') NOT LIKE '%blog-click%'
+              AND {$range_sql}");
+        $shop_clicks_row = $shop_clicks_result ? $shop_clicks_result->fetch_object() : null;
+        $payload['funnel_shop_clicks'] = (int) ($shop_clicks_row->total ?? 0);
+    }
+
+    $payload['funnel_contact_signal'] = $payload['funnel_contacts'] * 3;
+    $payload['total'] = $payload['funnel_contact_signal'] + $payload['funnel_shop_clicks'];
+
+    return $payload;
 }
 
 function vip_funnel_demo_schema_is_ready(): bool {
@@ -10594,7 +10633,7 @@ function vip_funnel_demo_sync_statuses(): void {
     database()->query("UPDATE `vip_demo_accounts` SET `status` = 'expired', `last_datetime` = '{$now_sql}' WHERE `status` IN ('active', 'expiring', 'paused') AND `expires_at` IS NOT NULL AND `expires_at` < '{$now_sql}'");
     database()->query("UPDATE `vip_demo_accounts` SET `status` = 'expiring', `last_datetime` = '{$now_sql}' WHERE `status` = 'active' AND `expires_at` IS NOT NULL AND `expires_at` BETWEEN '{$now_sql}' AND '{$soon_sql}'");
     database()->query("UPDATE `vip_demo_accounts` SET `status` = 'active' WHERE `status` = 'expiring' AND `expires_at` IS NOT NULL AND `expires_at` > '{$soon_sql}'");
-    database()->query("UPDATE `vip_leads` `l` INNER JOIN `vip_demo_accounts` `d` ON `d`.`vip_lead_id` = `l`.`vip_lead_id` SET `l`.`demo_status` = `d`.`status`, `l`.`last_datetime` = `d`.`last_datetime`");
+    database()->query("UPDATE `vip_leads` `l` INNER JOIN `vip_demo_accounts` `d` ON `d`.`vip_lead_id` = `l`.`vip_lead_id` SET `l`.`demo_status` = `d`.`status`, `l`.`last_datetime` = `d`.`last_datetime` WHERE NOT (`l`.`demo_status` <=> `d`.`status`) OR NOT (`l`.`last_datetime` <=> `d`.`last_datetime`)");
 
     foreach(array_values(array_unique(array_filter($expired_ids))) as $expired_account_id) {
         $expired_account = vip_funnel_demo_get_account_context((int) $expired_account_id);
@@ -10874,6 +10913,13 @@ function vip_funnel_demo_get_user_payload($user = null): \stdClass {
 }
 
 function vip_funnel_demo_is_sandbox_user($user = null): bool {
+    $payload = vip_funnel_demo_get_user_payload($user);
+    $is_sandbox_user = (int) ($payload->vip_demo_account_id ?? 0) > 0 || !empty($payload->vip_demo_is_sandbox);
+
+    if(!$is_sandbox_user) {
+        return false;
+    }
+
     static $statuses_synced = false;
 
     if(!$statuses_synced && vip_funnel_demo_schema_is_ready()) {
@@ -10881,9 +10927,7 @@ function vip_funnel_demo_is_sandbox_user($user = null): bool {
         vip_funnel_demo_sync_statuses();
     }
 
-    $payload = vip_funnel_demo_get_user_payload($user);
-
-    return (int) ($payload->vip_demo_account_id ?? 0) > 0 || !empty($payload->vip_demo_is_sandbox);
+    return true;
 }
 
 function vip_funnel_demo_get_owner_user_id_from_user($user = null): int {

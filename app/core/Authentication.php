@@ -28,6 +28,9 @@ class Authentication {
     public static $login_guard_is_set = false;
     private static $has_valid_forever_sales_link = null;
     private static $forever_sales_link_notice_applied = false;
+    private static $stripe_plan_restore_attempted_user_ids = [];
+    private static $stripe_plan_restore_deadline = null;
+    private static $stripe_plan_restore_http_client = null;
 
     private static function decode_extra($extra): object {
         if(is_string($extra)) {
@@ -86,13 +89,65 @@ class Authentication {
 
         $subscription_id = trim((string) ($user->payment_subscription_id ?? ''));
         $extra = self::decode_extra($user->extra ?? null);
-        $has_stripe_context = ($user->payment_processor ?? '') === 'stripe' || str_starts_with($subscription_id, 'sub_') || !empty($extra->stripe_customer_id);
+        $has_valid_subscription_id = str_starts_with($subscription_id, 'sub_');
+        $has_stripe_context = ($user->payment_processor ?? '') === 'stripe' || $has_valid_subscription_id || !empty($extra->stripe_customer_id);
 
         if(!$has_stripe_context) {
             return false;
         }
 
+        $billing_state = mb_strtolower(trim((string) ($extra->billing_state ?? '')));
+        $stripe_status = mb_strtolower(trim((string) ($extra->billing_stripe_status ?? '')));
+        $is_terminal_without_retry_context = !$has_valid_subscription_id
+            && in_array($billing_state, ['', 'healthy', 'recovered'], true)
+            && in_array($stripe_status, ['canceled', 'unpaid', 'incomplete_expired'], true);
+
+        if($is_terminal_without_retry_context) {
+            return false;
+        }
+
         return (int) ($user->plan_id ?? 0) === 2;
+    }
+
+    private static function acquire_stripe_plan_restore_cooldown(int $user_id): bool {
+        if($user_id <= 0) {
+            return false;
+        }
+
+        try {
+            $cache_key = 'authentication_stripe_plan_restore_attempt?user_id=' . $user_id;
+            $cache_item = cache()->getItem($cache_key);
+
+            if($cache_item->get() !== null) {
+                return false;
+            }
+
+            cache()->save($cache_item->set(1)->expiresAfter(600));
+        } catch(\Throwable $exception) {
+            /* Recovery remains available if cache storage is temporarily unavailable. */
+            error_log('[Authentication] Stripe plan restore cooldown unavailable (' . get_class($exception) . ').');
+        }
+
+        return true;
+    }
+
+    private static function prepare_stripe_plan_restore_request(): bool {
+        if(self::$stripe_plan_restore_deadline === null) {
+            return true;
+        }
+
+        $remaining_seconds = self::$stripe_plan_restore_deadline - microtime(true);
+        if($remaining_seconds < 1.0) {
+            return false;
+        }
+
+        if(self::$stripe_plan_restore_http_client) {
+            $request_timeout_seconds = max(1, min(5, (int) floor($remaining_seconds)));
+            self::$stripe_plan_restore_http_client->setConnectTimeout(min(2, $request_timeout_seconds));
+            self::$stripe_plan_restore_http_client->setTimeout($request_timeout_seconds);
+        }
+
+        return true;
     }
 
     private static function get_active_stripe_subscription_for_user($user) {
@@ -107,6 +162,10 @@ class Authentication {
 
         if($subscription_id !== '' && str_starts_with($subscription_id, 'sub_')) {
             try {
+                if(!self::prepare_stripe_plan_restore_request()) {
+                    return null;
+                }
+
                 $subscription = \Stripe\Subscription::retrieve($subscription_id);
                 $checked_subscription_ids[(string) ($subscription->id ?? $subscription_id)] = true;
 
@@ -127,6 +186,10 @@ class Authentication {
 
         if(!empty($user->email)) {
             try {
+                if(!self::prepare_stripe_plan_restore_request()) {
+                    return null;
+                }
+
                 $customers = \Stripe\Customer::all([
                     'email' => $user->email,
                     'limit' => 10,
@@ -152,6 +215,10 @@ class Authentication {
                 ];
 
                 do {
+                    if(!self::prepare_stripe_plan_restore_request()) {
+                        return null;
+                    }
+
                     $subscriptions = \Stripe\Subscription::all($params);
                     $subscription_data = $subscriptions->data ?? [];
 
@@ -280,12 +347,59 @@ class Authentication {
             return $user;
         }
 
-        $subscription = self::get_active_stripe_subscription_for_user($user);
-        if(!$subscription) {
+        $user_id = (int) ($user->user_id ?? 0);
+        if(isset(self::$stripe_plan_restore_attempted_user_ids[$user_id])) {
             return $user;
         }
 
-        return self::sync_user_from_stripe_subscription($user, $subscription);
+        /* A PHP class static is request-scoped in the supported Apache/PHP-FPM runtime. */
+        self::$stripe_plan_restore_attempted_user_ids[$user_id] = true;
+
+        /* Never keep the PHP session lock during cache I/O or while waiting on Stripe. */
+        if(session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        $stripe_http_client = null;
+        $previous_stripe_connect_timeout = null;
+        $previous_stripe_timeout = null;
+
+        try {
+            /* Bound all subsequent opportunistic work; cache delays consume the Stripe budget. */
+            self::$stripe_plan_restore_deadline = microtime(true) + 5.5;
+
+            /* Cross-request throttle: this is a recovery fallback, never a per-page dependency. */
+            if(!self::acquire_stripe_plan_restore_cooldown($user_id)) {
+                return $user;
+            }
+
+            if(class_exists('\\Stripe\\HttpClient\\CurlClient')) {
+                $stripe_http_client = \Stripe\HttpClient\CurlClient::instance();
+                $previous_stripe_connect_timeout = $stripe_http_client->getConnectTimeout();
+                $previous_stripe_timeout = $stripe_http_client->getTimeout();
+                self::$stripe_plan_restore_http_client = $stripe_http_client;
+            }
+
+            $subscription = self::get_active_stripe_subscription_for_user($user);
+            if(!$subscription) {
+                return $user;
+            }
+
+            return self::sync_user_from_stripe_subscription($user, $subscription);
+        } catch(\Throwable $exception) {
+            /* Do not expose exception messages because Stripe errors may contain customer data. */
+            error_log('[Authentication] Stripe plan restore failed (' . get_class($exception) . ').');
+
+            return $user;
+        } finally {
+            if($stripe_http_client && $previous_stripe_connect_timeout !== null && $previous_stripe_timeout !== null) {
+                $stripe_http_client->setConnectTimeout($previous_stripe_connect_timeout);
+                $stripe_http_client->setTimeout($previous_stripe_timeout);
+            }
+
+            self::$stripe_plan_restore_deadline = null;
+            self::$stripe_plan_restore_http_client = null;
+        }
     }
 
     public static function check() {
@@ -297,11 +411,6 @@ class Authentication {
 
         /* Already logged in from previous checks */
         if(self::$is_logged_in) {
-            if(self::$user) {
-                self::$user = self::maybe_restore_stripe_plan_access(self::$user);
-                self::$user_id = self::$user->user_id ?? self::$user_id;
-            }
-
             return self::$user_id;
         }
 

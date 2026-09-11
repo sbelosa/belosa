@@ -860,6 +860,87 @@ class OpsReadonly extends Controller {
         ];
     }
 
+    /* Custom code: FC-2026-09-11: expose only a validated, non-secret deployment marker */
+    private function normalize_deployment_marker($marker): ?array {
+        $allowed_keys = ['github_sha', 'github_run_id', 'deployed_at'];
+
+        if(!is_array($marker) || array_keys($marker) !== $allowed_keys) {
+            return null;
+        }
+
+        $github_sha = $marker['github_sha'];
+        $github_run_id = $marker['github_run_id'];
+        $deployed_at = $marker['deployed_at'];
+
+        if(!is_string($github_sha) || preg_match('/\A[0-9a-f]{40}\z/', $github_sha) !== 1) {
+            return null;
+        }
+
+        if(!is_string($github_run_id) || preg_match('/\A[1-9][0-9]{0,19}\z/', $github_run_id) !== 1) {
+            return null;
+        }
+
+        if(!is_string($deployed_at) || preg_match('/\A20[0-9]{2}-(?:0[1-9]|1[0-2])-(?:[0-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z\z/', $deployed_at) !== 1) {
+            return null;
+        }
+
+        $deployment_datetime = \DateTimeImmutable::createFromFormat(
+            '!Y-m-d\TH:i:s\Z',
+            $deployed_at,
+            new \DateTimeZone('UTC')
+        );
+        $date_errors = \DateTimeImmutable::getLastErrors();
+
+        if(
+            !$deployment_datetime
+            || ($date_errors !== false && ((int) ($date_errors['warning_count'] ?? 0) > 0 || (int) ($date_errors['error_count'] ?? 0) > 0))
+            || $deployment_datetime->format('Y-m-d\TH:i:s\Z') !== $deployed_at
+        ) {
+            return null;
+        }
+
+        return [
+            'github_sha' => $github_sha,
+            'github_run_id' => $github_run_id,
+            'deployed_at' => $deployed_at,
+        ];
+    }
+
+    private function get_deployment_payload(): ?array {
+        $marker_path = APP_PATH . 'config/deployment.php';
+
+        clearstatcache(true, $marker_path);
+        if(!is_file($marker_path) || is_link($marker_path) || !is_readable($marker_path)) {
+            return null;
+        }
+
+        $marker_size = filesize($marker_path);
+        if($marker_size === false || $marker_size < 1 || $marker_size > 4096) {
+            return null;
+        }
+
+        $marker_contents = @file_get_contents($marker_path);
+        if(!is_string($marker_contents) || strlen($marker_contents) !== $marker_size) {
+            return null;
+        }
+
+        $marker_pattern = <<<'REGEX'
+~\A<\?php\s+return\s+\[\s*'github_sha'\s*=>\s*'(?<github_sha>[0-9a-f]{40})'\s*,\s*'github_run_id'\s*=>\s*'(?<github_run_id>[1-9][0-9]{0,19})'\s*,\s*'deployed_at'\s*=>\s*'(?<deployed_at>20[0-9]{2}-(?:0[1-9]|1[0-2])-(?:[0-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z)'\s*,\s*\]\s*;\s*\z~D
+REGEX;
+        $matches = [];
+
+        if(preg_match($marker_pattern, $marker_contents, $matches) !== 1) {
+            return null;
+        }
+
+        return $this->normalize_deployment_marker([
+            'github_sha' => $matches['github_sha'],
+            'github_run_id' => $matches['github_run_id'],
+            'deployed_at' => $matches['deployed_at'],
+        ]);
+    }
+    /* /Custom code: FC-2026-09-11 */
+
     private function get_ai_diagnostics_payload(): array {
         $settings_main = $this->get_setting_object_from_database('main');
         $settings_aix = $this->get_setting_object_from_database('aix');
@@ -898,7 +979,7 @@ class OpsReadonly extends Controller {
             ? fc_get_brevo_webhook_secret() !== ''
             : (defined('BREVO_WEBHOOK_SECRET') && trim((string) BREVO_WEBHOOK_SECRET) !== '');
 
-        return [
+        $payload = [
             'server_time' => get_date(),
             'php_version' => PHP_VERSION,
             'database' => [
@@ -934,6 +1015,13 @@ class OpsReadonly extends Controller {
             'allowed_scopes' => ['health', 'overview', 'ai_feedback', 'ai_plan_usage', 'ai_recent_communications', 'plans', 'billing', 'pro_billing_audit', 'collaborators', 'fcc_signal_notifications', 'collaborator', 'collaborator_vip_funnels'],
             /* /Custom code: FC-2026-08-20 */
         ];
+
+        $deployment = $this->get_deployment_payload();
+        if($deployment !== null) {
+            $payload['deployment'] = $deployment;
+        }
+
+        return $payload;
     }
 
     private function get_overview_payload(): array {
