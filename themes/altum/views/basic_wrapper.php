@@ -88,7 +88,9 @@
 <main class="altum-animate altum-animate-fill-none altum-animate-fade-in py-6">
     <div class="container">
         <div class="d-flex flex-column align-items-center">
-            <div class="col-xs-12 col-md-10 col-lg-7 col-xl-6">
+            <!-- Custom code: FC-2026-09-14: Widen only the registration layout -->
+            <div class="col-xs-12 col-md-10 col-lg-7 col-xl-6 <?= \Altum\Router::$controller_key === 'register' ? 'fcc-registration-layout' : '' ?>">
+            <!-- /Custom code: FC-2026-09-14 -->
 
                 <!-- Custom code: FC-2026-02-25: register logo wrapper -->
                 <div class="mb-5 text-center register-logo-wrap">

@@ -3637,6 +3637,11 @@ return [
 	'global.seo.meta.description.partner' => 'Neovisni Forever Living Products poslovni partner',
 	/* Custom code: FC-2026-09-14: Explain strict registration validation */
 	'register.error_message.foreverId_length' => 'Forever ID mora sadržavati točno 12 znamenki, bez razmaka i slova.',
+	/* Custom code: FC-2026-09-14: Registration section headings */
+	'register.section.account_details' => 'Osnovni podaci',
+	'register.section.contact_details' => 'Kontakt i adresa',
+	'register.section.confirmation' => 'Potvrda registracije',
+	/* /Custom code: FC-2026-09-14 */
 	'register.forever_id_help' => 'Forever ID mora sadržavati točno 12 znamenki, bez razmaka i slova.',
 	'register.error_message.security_check' => 'Sigurnosna provjera nije uspjela. Osvježite stranicu i pokušajte ponovno.',
 	/* /Custom code: FC-2026-09-14 */

@@ -4229,6 +4229,11 @@ return [
 	'global.seo.meta.description.partner' => 'Independent Forever Living Products Business Partner',
 	/* Custom code: FC-2026-09-14: Explain strict registration validation */
 	'register.error_message.foreverId_length' => 'Forever ID must contain exactly 12 digits, with no spaces or letters.',
+	/* Custom code: FC-2026-09-14: Registration section headings */
+	'register.section.account_details' => 'Account details',
+	'register.section.contact_details' => 'Contact and address',
+	'register.section.confirmation' => 'Confirm registration',
+	/* /Custom code: FC-2026-09-14 */
 	'register.forever_id_help' => 'Forever ID must contain exactly 12 digits, with no spaces or letters.',
 	'register.error_message.security_check' => 'The security check failed. Refresh the page and try again.',
 	/* /Custom code: FC-2026-09-14 */

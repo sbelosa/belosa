@@ -5,291 +5,132 @@
 <?php $contact_country_options = get_contact_phone_country_options_array(); ?>
 
 <?php ob_start() ?>
+<!-- Custom code: FC-2026-09-14: Give the registration form balanced spacing and a readable responsive layout -->
 <style>
     .register-background {
-        background:
-            radial-gradient(circle at top center, rgba(54, 222, 201, .12), transparent 34rem),
-            radial-gradient(circle at bottom left, rgba(17, 91, 255, .08), transparent 26rem),
-            #0b0f14;
+        min-height: 100vh;
+        background: radial-gradient(ellipse at 50% 0, #18312f 0, transparent 48rem), #0b1015;
+        background-attachment: fixed;
     }
-
-    .register-logo-wrap {
-        margin-bottom: 1rem !important;
-    }
-
+    .register-background main { padding: 2.5rem 0 !important; }
+    .register-background .fcc-registration-layout { flex: 0 0 auto; width: 100%; max-width: 760px; }
+    .register-logo-wrap { margin-bottom: 1.5rem !important; }
     .register-card {
-        border: 1px solid rgba(69, 213, 194, .14);
-        background:
-            linear-gradient(180deg, rgba(12, 18, 27, .96) 0%, rgba(10, 14, 22, .98) 100%);
-        box-shadow:
-            0 1.5rem 4rem rgba(0, 0, 0, .34),
-            inset 0 1px 0 rgba(255,255,255,.03);
+        border: 1px solid #26363b;
+        border-radius: 1.5rem !important;
+        background: #10171e;
+        box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .22);
         overflow: hidden;
     }
-
-    .register-shell {
-        color: #e6f3f1;
-    }
-
+    .register-card .card-body { padding: 2.25rem !important; }
+    .register-shell { color: #e8f0ef; }
     .register-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: .5rem;
-        padding: .35rem .7rem;
-        border-radius: 999px;
-        background: rgba(46, 211, 198, .12);
-        border: 1px solid rgba(46, 211, 198, .16);
-        color: #85efe4;
-        font-size: .72rem;
-        font-weight: 800;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-        margin-bottom: .7rem;
-    }
-
-    .register-title {
-        margin: 0;
-        font-size: clamp(1.75rem, 3.4vw, 2.35rem);
-        line-height: 1.02;
-        letter-spacing: -.03em;
-        color: #f7fbfb;
-        font-weight: 800;
-    }
-
-    .register-subtitle {
-        display: inline-block;
-        margin-left: .45rem;
-        color: #72e5d9;
-        font-size: .82rem;
-        font-weight: 700;
-        vertical-align: middle;
-    }
-
-    .register-note-card {
-        margin-top: .9rem;
-        margin-bottom: 1.15rem;
-        padding: .8rem .9rem;
-        border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(19, 41, 43, .92), rgba(17, 34, 38, .92));
-        border: 1px solid rgba(84, 224, 208, .16);
-        color: #ddfbf7;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-        font-size: .88rem;
-        line-height: 1.5;
-    }
-
-    .register-note-card strong {
-        color: #8cf4ea;
-    }
-
-    .register-grid {
-        display: grid;
-        gap: .75rem;
-    }
-
-    .register-section {
-        padding: .9rem;
-        border-radius: 1rem;
-        background: rgba(255,255,255,.02);
-        border: 1px solid rgba(255,255,255,.06);
-    }
-
-    .register-section-title {
         margin-bottom: .75rem;
-        color: #f5fbfa;
-        font-size: .72rem;
-        font-weight: 800;
-        letter-spacing: .1em;
+        color: #83dcca;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .16em;
         text-transform: uppercase;
     }
-
-    .register-form-grid {
-        row-gap: .2rem;
+    .register-title { margin: 0; color: #f6faf9; font-size: 2rem; font-weight: 750; line-height: 1.2; letter-spacing: -.035em; }
+    .register-subtitle { display: block; margin-top: .45rem; color: #aabfbe; font-size: 1rem; font-weight: 400; line-height: 1.5; letter-spacing: 0; }
+    .register-note-card {
+        margin: 1.25rem 0 1.75rem;
+        padding: .2rem 0 .2rem 1rem;
+        border-left: 2px solid #3c8b7f;
+        color: #acbfbd;
+        font-size: .85rem;
+        line-height: 1.65;
     }
-
-    .register-form-col {
-        margin-bottom: .45rem;
-    }
-
-    .register-shell label,
-    .register-shell .custom-control-label {
-        color: #c6d8d7;
-        font-weight: 700;
-        font-size: .82rem;
-        margin-bottom: .45rem;
-    }
-
-    .register-shell .form-control,
-    .register-shell .custom-select,
-    .register-shell .input-group-text {
-        min-height: 3rem;
-        border-radius: .9rem;
-        border: 1px solid rgba(255,255,255,.08);
-    }
-
+    .register-note-card strong { color: #dbece8; }
+    .register-form { margin-top: 0; }
+    .register-grid { display: grid; gap: 1.75rem; }
+    .register-section + .register-section { padding-top: 1.75rem; border-top: 1px solid #29363d; }
+    .register-section-title { display: flex; align-items: center; gap: .65rem; margin: 0 0 1.2rem; color: #edf5f2; font-size: .95rem; font-weight: 650; line-height: 1.4; }
+    .register-section-number { display: inline-flex; align-items: center; justify-content: center; width: 1.65rem; height: 1.65rem; border: 1px solid #36504e; border-radius: .5rem; color: #89daca; font-size: .7rem; font-weight: 600; }
+    .register-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem 1.25rem; }
+    .register-form-col { min-width: 0; }
+    .register-form-col-full { grid-column: 1 / -1; }
+    .register-shell .form-group { margin-bottom: 0; }
+    .register-shell label { margin-bottom: .5rem; color: #c9d7d6; font-size: .84rem; font-weight: 500; }
     .register-shell .form-control,
     .register-shell .custom-select {
-        background: rgba(255,255,255,.03);
-        color: #f7fbfb;
-        box-shadow: none;
-    }
-
-    .register-shell .form-control::placeholder {
-        color: rgba(207, 226, 224, .44);
-    }
-
-    .register-shell .form-control:focus,
-    .register-shell .custom-select:focus {
-        border-color: rgba(81, 229, 212, .5);
-        box-shadow: 0 0 0 .2rem rgba(81, 229, 212, .12);
-        background: rgba(255,255,255,.05);
-    }
-
-    .register-shell .input-group-text {
-        background: rgba(255,255,255,.05);
-        color: #76e8dd;
-    }
-
-    .register-shell .fcc-contact-capture {
-        padding: .7rem;
-        border-radius: .95rem;
-        background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-        border: 1px solid rgba(255,255,255,.06);
-    }
-
-    .register-shell .fcc-contact-capture .custom-select,
-    .register-shell .fcc-contact-capture .form-control,
-    .register-shell .fcc-contact-capture .input-group-text {
-        background: rgba(11, 16, 24, .82);
-        border-color: rgba(255,255,255,.06);
-    }
-
-    .register-shell .fcc-contact-capture .custom-select {
-        font-weight: 700;
-    }
-
-    .register-shell .fcc-contact-capture-row + .fcc-contact-capture-row {
-        margin-top: .55rem;
-    }
-
-    .register-shell .register-phone-field {
-        position: relative;
-    }
-
-    .register-shell .register-phone-field-icon {
-        position: absolute;
-        left: .85rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #76e8dd;
-        pointer-events: none;
-        z-index: 2;
-    }
-
-    .register-shell .register-phone-field .form-control {
-        padding-left: 2.35rem;
-    }
-
-    .register-shell .text-muted,
-    .register-shell .form-text {
-        color: rgba(198, 216, 215, .72) !important;
-        font-size: .76rem;
-        line-height: 1.45;
-    }
-
-    .register-shell .custom-control-label a {
-        color: #84eee3;
-        font-weight: 700;
-    }
-
-    .register-submit-wrap {
-        margin-top: .95rem;
-    }
-
-    .register-submit-btn {
-        min-height: 3.15rem;
-        border: 0;
-        border-radius: .95rem;
+        height: 3rem;
+        min-height: 3rem;
+        border: 1px solid #35434c;
+        border-radius: .65rem;
+        background-color: #172129;
+        color: #f1f6f5;
         font-size: .95rem;
-        font-weight: 800;
-        letter-spacing: .01em;
-        color: #062624;
-        background: linear-gradient(135deg, #6fffd2 0%, #42d4bf 52%, #2bb6dd 100%);
-        box-shadow: 0 1rem 2rem rgba(52, 213, 198, .18);
+        box-shadow: none;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
-
-    .register-submit-btn:hover,
-    .register-submit-btn:focus {
-        color: #041d1b;
-        transform: translateY(-1px);
-        box-shadow: 0 1.2rem 2.2rem rgba(52, 213, 198, .22);
+    .register-shell .custom-select option { color: #eef5f3; background: #172129; }
+    .register-shell .form-control::placeholder { color: #8c9ea5; opacity: 1; }
+    .register-shell .form-control:focus,
+    .register-shell .custom-select:focus { border-color: #70d6c2; box-shadow: 0 0 0 3px rgba(112, 214, 194, .12); }
+    .register-shell .form-control.is-invalid { border-color: #ed939b; }
+    .register-shell .invalid-feedback { color: #f1a7ae; font-size: .8rem; line-height: 1.5; }
+    .register-shell .text-muted,
+    .register-shell .form-text { color: #9fafb5 !important; font-size: .78rem; line-height: 1.55; }
+    .register-shell .form-text { margin-top: .45rem; }
+    .register-shell .fcc-contact-capture { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: .75rem; }
+    .register-shell .fcc-contact-capture-row { min-width: 0; }
+    .register-phone-field { position: relative; }
+    .register-phone-field-icon { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: #88b9ad; pointer-events: none; }
+    .register-shell .register-phone-field .form-control { padding-left: 2.4rem; }
+    .register-captcha {
+        display: grid;
+        grid-template-columns: 176px minmax(0, 1fr);
+        gap: .75rem 1rem;
+        align-items: center;
+        margin-bottom: 1.25rem !important;
+        padding: 1rem;
+        border: 1px solid #2d4145;
+        border-radius: .8rem;
+        background: #141f25;
     }
-
-    .register-auth-divider {
-        position: relative;
-        margin: 1.15rem 0 .85rem;
-        text-align: center;
+    .register-captcha > img { display: block; max-width: 100%; height: auto; margin: 0 !important; border-radius: .45rem !important; }
+    .register-captcha > :not(img):not(input) { grid-column: 1 / -1; }
+    .register-captcha > input:not([type="hidden"]) { min-width: 0; }
+    .register-shell .custom-control-label { margin-bottom: 0; padding-top: .1rem; font-weight: 400; line-height: 1.6; }
+    .register-shell .custom-control-label a { color: #8adcca; font-weight: 500; }
+    .register-shell .custom-control-label::before { background-color: #18272d; border: 1px solid #72888b; border-radius: .25rem; }
+    .register-shell .custom-control-input:checked ~ .custom-control-label::before { background-color: #3b9c87; border-color: #70d6c2; }
+    .register-submit-wrap { margin-top: 1.4rem; }
+    .register-submit-btn { min-height: 3.15rem; border: 1px solid transparent; border-radius: .7rem; color: #092c25; background: #7ae0c8; font-size: .95rem; font-weight: 700; box-shadow: none; }
+    .register-submit-btn:hover { color: #092c25; background: #96ead7; }
+    .register-submit-btn:focus-visible { outline: 2px solid #c9fff0; outline-offset: 3px; }
+    .register-auth-divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0 1rem; color: #9fafb5; font-size: .8rem; }
+    .register-auth-divider::before, .register-auth-divider::after { content: ''; flex: 1; border-top: 1px solid #29363d; }
+    .register-social-btn { padding: .8rem; border: 1px solid #35434c; border-radius: .65rem; background: #172129; color: #edf5f2; }
+    .register-social-btn:hover, .register-social-btn:focus { background: #233039; color: #fff; }
+    .register-footer-link { margin-top: 1.5rem; text-align: center; color: #a7b8bd; font-size: .85rem; }
+    .register-footer-link a { margin-left: .2rem; color: #8adcca; }
+    @media (max-width: 575.98px) {
+        .register-background main { padding: 1.5rem 0 !important; }
+        .register-background .fcc-registration-layout { padding: 0; }
+        .register-logo-wrap { margin-bottom: 1rem !important; }
+        .register-card { border-radius: 1rem !important; }
+        .register-card .card-body { padding: 1.35rem !important; }
+        .register-title { font-size: 1.8rem; }
+        .register-note-card { margin-bottom: 1.5rem; }
+        .register-form-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+        .register-shell .form-control, .register-shell .custom-select { font-size: 1rem; }
+        .register-captcha { grid-template-columns: minmax(0, 1fr); padding: .85rem; }
+        .register-captcha > img { justify-self: center; }
     }
-
-    .register-auth-divider::before {
-        content: '';
-        position: absolute;
-        inset: 50% 0 auto;
-        border-top: 1px solid rgba(255,255,255,.08);
+    @media (max-width: 399.98px) {
+        .register-shell .fcc-contact-capture { grid-template-columns: minmax(0, 1fr); }
     }
-
-    .register-auth-divider span {
-        position: relative;
-        z-index: 1;
-        display: inline-block;
-        padding: 0 .75rem;
-        background: #0e141d;
-        color: rgba(198, 216, 215, .72);
-        font-size: .74rem;
-        font-weight: 700;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+    @media (prefers-reduced-motion: reduce) {
+        .register-shell .form-control, .register-shell .custom-select { transition: none; }
     }
-
-    .register-social-btn {
-        border-radius: .85rem;
-        border: 1px solid rgba(255,255,255,.07);
-        background: rgba(255,255,255,.03);
-        color: #eef7f6;
-        font-weight: 700;
-    }
-
-    .register-social-btn:hover,
-    .register-social-btn:focus {
-        background: rgba(255,255,255,.06);
-        color: #fff;
-    }
-
-    .register-footer-link {
-        color: rgba(228, 242, 241, .78);
-    }
-
-    .register-footer-link a {
-        color: #87f0e6;
-    }
-
-    @media (max-width: 991.98px) {
-        .register-card .card-body {
-            padding: 1.05rem !important;
-        }
-
-        .register-note-card {
-            margin-bottom: 1rem;
-        }
-
-        .register-section {
-            padding: .8rem;
-        }
-    }
-
 </style>
+<!-- /Custom code: FC-2026-09-14 -->
 <?php \Altum\Event::add_content(ob_get_clean(), 'head', 'fcc_register_premium_styles') ?>
 
+<!-- Custom code: FC-2026-09-14: Consistent form grid and section headings -->
 <div class="register-shell">
     <div class="register-eyebrow">Forever Card Club</div>
 
@@ -302,7 +143,7 @@
         <?= l('register.hero_note') ?>
     </div>
 
-    <form action="" method="post" class="mt-4" role="form">
+    <form action="" method="post" class="register-form" role="form">
         <?php if(!settings()->users->register_only_social_logins): ?>
             <!-- Custom code: FC-2026-09-14: Session token and an off-screen bot trap -->
             <input type="hidden" name="registration_token" value="<?= \Altum\Csrf::get('registration_token') ?>" />
@@ -313,34 +154,34 @@
             <!-- /Custom code: FC-2026-09-14 -->
             <div class="register-grid">
                 <section class="register-section">
-                    <div class="register-section-title">Osnovni podaci</div>
+                    <h2 class="register-section-title"><span class="register-section-number" aria-hidden="true">01</span><?= l('register.section.account_details') ?></h2>
 
-                    <div class="row register-form-grid">
-                        <div class="col-12 col-lg-6 register-form-col">
+                    <div class="register-form-grid">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="name"><?= l('register.full_name') ?></label>
-                                <input id="name" type="text" name="name" class="form-control <?= \Altum\Alerts::has_field_errors('name') ? 'is-invalid' : null ?>" value="<?= $data->values['name'] ?>" maxlength="32" required="required" autofocus="autofocus" />
+                                <input id="name" type="text" name="name" autocomplete="name" class="form-control <?= \Altum\Alerts::has_field_errors('name') ? 'is-invalid' : null ?>" value="<?= $data->values['name'] ?>" maxlength="32" required="required" autofocus="autofocus" />
                                 <?= \Altum\Alerts::output_field_error('name') ?>
                             </div>
                         </div>
 
-                        <div class="col-12 col-lg-6 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="email"><?= l('global.email') ?></label>
-                                <input id="email" type="email" name="email" class="form-control <?= \Altum\Alerts::has_field_errors('email') ? 'is-invalid' : null ?>" value="<?= $data->values['email'] ?>" maxlength="128" required="required" />
+                                <input id="email" type="email" name="email" autocomplete="email" class="form-control <?= \Altum\Alerts::has_field_errors('email') ? 'is-invalid' : null ?>" value="<?= $data->values['email'] ?>" maxlength="128" required="required" />
                                 <?= \Altum\Alerts::output_field_error('email') ?>
                             </div>
                         </div>
 
-                        <div class="col-12 col-lg-6 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group" data-password-toggle-view data-password-toggle-view-show="<?= l('global.show') ?>" data-password-toggle-view-hide="<?= l('global.hide') ?>">
                                 <label for="password"><?= l('global.password') ?></label>
-                                <input id="password" type="password" name="password" class="form-control <?= \Altum\Alerts::has_field_errors('password') ? 'is-invalid' : null ?>" value="<?= $data->values['password'] ?>" required="required" />
+                                <input id="password" type="password" name="password" autocomplete="new-password" class="form-control <?= \Altum\Alerts::has_field_errors('password') ? 'is-invalid' : null ?>" value="<?= $data->values['password'] ?>" required="required" />
                                 <?= \Altum\Alerts::output_field_error('password') ?>
                             </div>
                         </div>
 
-                        <div class="col-12 col-lg-6 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="meta_foreverId"><?= l('global.forerverId') ?></label>
                                 <!-- Custom code: FC-2026-09-14: Match the strict server ID validation and offer a mobile numeric keyboard -->
@@ -354,10 +195,10 @@
                 </section>
 
                 <section class="register-section">
-                    <div class="register-section-title">Kontakt i adresa</div>
+                    <h2 class="register-section-title"><span class="register-section-number" aria-hidden="true">02</span><?= l('register.section.contact_details') ?></h2>
 
-                    <div class="row register-form-grid">
-                        <div class="col-12 col-lg-6 register-form-col">
+                    <div class="register-form-grid">
+                        <div class="register-form-col register-form-col-full">
                             <div class="form-group">
                                 <label for="meta_phone"><?= l('account.billing.phone') ?></label>
                                 <div class="fcc-contact-capture">
@@ -379,7 +220,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-lg-6 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="meta_country"><?= l('global.country') ?></label>
                                 <input id="meta_country" type="text" name="meta_country" class="form-control <?= \Altum\Alerts::has_field_errors('meta_country') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_country']) && !empty($data->values['meta_country']) ? $data->values['meta_country'] : 'Hrvatska' ?>" maxlength="64" required="required"/>
@@ -387,7 +228,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="meta_address"><?= l('account.billing.address') ?></label>
                                 <input id="meta_address" type="text" name="meta_address" class="form-control <?= \Altum\Alerts::has_field_errors('meta_address') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_address']) ? $data->values['meta_address'] : '' ?>" maxlength="128" required="required"/>
@@ -395,7 +236,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-lg-6 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="meta_zip"><?= l('account.billing.zip') ?></label>
                                 <input id="meta_zip" type="text" name="meta_zip" class="form-control <?= \Altum\Alerts::has_field_errors('meta_zip') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_zip']) ? $data->values['meta_zip'] : '' ?>" maxlength="64" required="required"/>
@@ -403,7 +244,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-lg-6 register-form-col">
+                        <div class="register-form-col">
                             <div class="form-group">
                                 <label for="meta_city"><?= l('global.city') ?></label>
                                 <input id="meta_city" type="text" name="meta_city" class="form-control <?= \Altum\Alerts::has_field_errors('meta_city') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_city']) ? $data->values['meta_city'] : '' ?>" maxlength="64" required="required"/>
@@ -414,10 +255,10 @@
                 </section>
 
                 <section class="register-section">
-                    <div class="register-section-title">Potvrda</div>
+                    <h2 class="register-section-title"><span class="register-section-number" aria-hidden="true">03</span><?= l('register.section.confirmation') ?></h2>
 
                     <!-- Custom code: FC-2026-09-14: Always display the CAPTCHA required by the registration controller -->
-                        <div class="form-group">
+                        <div class="form-group register-captcha">
                             <?php $data->captcha->display() ?>
                         </div>
                     <!-- /Custom code: FC-2026-09-14 -->
@@ -509,11 +350,12 @@
         <?php endif ?>
     </form>
 
-    <div class="mt-5 text-center register-footer-link">
-        <?= sprintf(l('register.login'), '<a href="' . url('login' . $data->redirect_append) . '" class="font-weight-bold">' . l('register.login_help') . '</a>') ?></a>
+    <div class="register-footer-link">
+        <?= sprintf(l('register.login'), '<a href="' . url('login' . $data->redirect_append) . '" class="font-weight-bold">' . l('register.login_help') . '</a>') ?>
     </div>
 </div>
 
+<!-- /Custom code: FC-2026-09-14 -->
 <?php ob_start() ?>
     <script type="application/ld+json">
         {
