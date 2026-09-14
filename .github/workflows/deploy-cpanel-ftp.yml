@@ -30,6 +30,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          # Custom code: FC-2026-09-14: Render the real registration CAPTCHA in release tests
+          extensions: gd, mbstring
+          # /Custom code: FC-2026-09-14
           coverage: none
 
       - name: Lint deployed PHP files
@@ -57,6 +60,9 @@ jobs:
           php scripts/test_authentication_stripe_restore_guard.php
           php scripts/test_billing_recovery_guard.php
           php scripts/test_account_plan.php
+          # Custom code: FC-2026-09-14: Verify registration rejection and success paths before publishing
+          php scripts/test_registration_security.php
+          # /Custom code: FC-2026-09-14
           php scripts/test_brevo_mail_fallback.php
           php scripts/test_forever_business_import.php
           php scripts/test_los_forever_admin_guards.php

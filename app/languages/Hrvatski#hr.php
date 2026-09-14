@@ -4628,7 +4628,11 @@ return [
 	'biolink_custom_html_whatsapp.subheader' => 'WhatsApp',
 	'global.forerverId' => 'Forever ID',
 	'global.seo.meta.description.partner' => 'Neovisni Forever Living Products poslovni partner',
-	'register.error_message.foreverId_length' => 'Forever ID nije ispravan',
+	/* Custom code: FC-2026-09-14: Explain strict registration validation */
+	'register.error_message.foreverId_length' => 'Forever ID mora sadržavati točno 12 znamenki, bez razmaka i slova.',
+	'register.forever_id_help' => 'Forever ID mora sadržavati točno 12 znamenki, bez razmaka i slova.',
+	'register.error_message.security_check' => 'Sigurnosna provjera nije uspjela. Osvježite stranicu i pokušajte ponovno.',
+	/* /Custom code: FC-2026-09-14 */
 	'register.error_message.phone_invalid' => 'Upišite ispravan broj mobitela s pozivnim brojem države, na primjer 385911234567.',
 	'register.success_message.homepage' => 'Hvala na registraciji. Vaš račun čeka verifikaciju i uskoro ćemo vas kontaktirati putem emaila!',
 	'blog.copy_url' => 'Kopiraj link članka',

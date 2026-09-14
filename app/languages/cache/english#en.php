@@ -4227,7 +4227,11 @@ return [
 	'biolink_custom_html_whatsapp.subheader' => 'WhatsApp',
 	'global.forerverId' => 'Forever ID',
 	'global.seo.meta.description.partner' => 'Independent Forever Living Products Business Partner',
-	'register.error_message.foreverId_length' => 'Forever ID is not valid',
+	/* Custom code: FC-2026-09-14: Explain strict registration validation */
+	'register.error_message.foreverId_length' => 'Forever ID must contain exactly 12 digits, with no spaces or letters.',
+	'register.forever_id_help' => 'Forever ID must contain exactly 12 digits, with no spaces or letters.',
+	'register.error_message.security_check' => 'The security check failed. Refresh the page and try again.',
+	/* /Custom code: FC-2026-09-14 */
 	'register.error_message.phone_invalid' => 'Enter a valid mobile number with country calling code, for example 385911234567.',
 	'register.success_message.homepage' => 'Thank you for your registration. Your account is awaiting verification and we will contact you via Email shortly!',
 	'blog.copy_url' => 'Copy the link to the article',

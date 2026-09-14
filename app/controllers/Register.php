@@ -72,13 +72,28 @@ class Register extends Controller {
         $redirect = process_and_get_redirect_params() ?? 'dashboard';
         $redirect_append = $redirect ? '?redirect=' . $redirect : null;
 
+        /* Custom code: FC-2026-09-14: Reject malformed form fields before cleaning or rendering them */
+        $forever_id_input = $_POST['meta_foreverId'] ?? null;
+        if(!empty($_POST)) {
+            foreach(['name', 'email', 'password', 'meta_foreverId', 'meta_address', 'meta_city', 'meta_zip', 'meta_country', 'meta_phone', 'meta_phone_country_code', 'captcha', 'g-recaptcha-response', 'h-captcha-response', 'cf-turnstile-response'] as $field) {
+                if(isset($_POST[$field]) && !is_string($_POST[$field])) {
+                    Alerts::add_error(l('register.error_message.security_check'));
+                    $_POST[$field] = '';
+                }
+                $_POST[$field] = $_POST[$field] ?? '';
+            }
+        }
+        /* /Custom code: FC-2026-09-14 */
+
         /* Default variables */
         $values = [
             'name' => isset($_GET['name']) ? query_clean($_GET['name']) : '',
             'email' => isset($_GET['email']) && is_string($_GET['email']) ? query_clean($_GET['email']) : '',
             'password' => '',
              /* Custom code */
-            'meta_foreverId' => isset($_POST['meta_foreverId']) ? query_clean($_POST['meta_foreverId']) : '',
+            /* Custom code: FC-2026-09-14: Escape the original ID without trimming or truncating it */
+            'meta_foreverId' => is_string($forever_id_input) ? e($forever_id_input) : '',
+            /* /Custom code: FC-2026-09-14 */
             'meta_address' => isset($_POST['meta_address']) ? query_clean($_POST['meta_address']) : '',
             'meta_city' => isset($_POST['meta_city']) ? query_clean($_POST['meta_city']) : '',
             'meta_zip' => isset($_POST['meta_zip']) ? query_clean($_POST['meta_zip']) : '',
@@ -93,6 +108,17 @@ class Register extends Controller {
 
         if(!empty($_POST) && !settings()->users->register_only_social_logins) {
 
+            /* Custom code: FC-2026-09-14: Require a session-bound POST token and reject automated field filling */
+            $valid_form_token = isset($_POST['registration_token'])
+                && is_string($_POST['registration_token'])
+                && hash_equals(\Altum\Csrf::get('registration_token'), $_POST['registration_token']);
+            $empty_honeypot = !isset($_POST['registration_website'])
+                || (is_string($_POST['registration_website']) && $_POST['registration_website'] === '');
+            if(!$valid_form_token || !$empty_honeypot) {
+                Alerts::add_error(l('register.error_message.security_check'));
+            }
+            /* /Custom code: FC-2026-09-14 */
+
             /* Clean some posted variables */
             $_POST['name'] = input_clean_name($_POST['name'], 64);
             $_POST['email'] = input_clean_email($_POST['email'] ?? '');
@@ -101,9 +127,13 @@ class Register extends Controller {
             /* Default variables */
             $values['name'] = $_POST['name'];
             $values['email'] = $_POST['email'];
-            $values['password'] = $_POST['password'];
+            /* Custom code: FC-2026-09-14: Do not echo submitted passwords back into the form */
+            $values['password'] = '';
+            /* /Custom code: FC-2026-09-14 */
                /* Custom code */
-            $_POST['meta_foreverId'] = input_clean($_POST['meta_foreverId'], 12);
+            /* Custom code: FC-2026-09-14: Preserve leading zeroes and validate the full original ID */
+            $_POST['meta_foreverId'] = is_string($forever_id_input) ? $forever_id_input : '';
+            /* /Custom code: FC-2026-09-14 */
             $_POST['meta_address'] = input_clean($_POST['meta_address'], 128);
             $_POST['meta_city'] = input_clean($_POST['meta_city'], 64);
             $_POST['meta_zip'] = input_clean($_POST['meta_zip'], 12);
@@ -132,9 +162,19 @@ class Register extends Controller {
                 }
             }
 
-            if(settings()->captcha->register_is_enabled && !$captcha->is_valid()) {
+            /* Custom code: FC-2026-09-14: CAPTCHA is mandatory for FCC registration, including direct POST requests */
+            $valid_captcha = false;
+            if($valid_form_token && $empty_honeypot) {
+                try {
+                    $valid_captcha = $captcha->is_valid();
+                } catch(\Throwable $exception) {
+                    error_log('FCC registration CAPTCHA verification failed.');
+                }
+            }
+            if(!$valid_captcha) {
                 Alerts::add_field_error('captcha', l('global.error_message.invalid_captcha'));
             }
+            /* /Custom code: FC-2026-09-14 */
             if(mb_strlen($_POST['name']) < 1 || mb_strlen($_POST['name']) > 64) {
                 Alerts::add_field_error('name', l('register.error_message.name_length'));
             }
@@ -151,9 +191,11 @@ class Register extends Controller {
                 Alerts::add_field_error('password', l('global.error_message.password_length'));
             }
             /* Custom code */
-            if(mb_strlen($_POST['meta_foreverId']) < 12 || mb_strlen($_POST['meta_foreverId']) > 12) {
+            /* Custom code: FC-2026-09-14: Only exactly twelve ASCII digits are valid */
+            if(!is_string($forever_id_input) || preg_match('/\A[0-9]{12}\z/', $forever_id_input) !== 1) {
                 Alerts::add_field_error('meta_foreverId', l('register.error_message.foreverId_length'));
             }
+            /* /Custom code: FC-2026-09-14 */
             if(!$this->is_valid_registration_phone($_POST['meta_phone'])) {
                 Alerts::add_field_error('meta_phone', l('register.error_message.phone_invalid'));
             }

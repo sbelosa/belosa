@@ -27,6 +27,9 @@
 !scripts/fcc_foreverclub_founders_origin_pages_2026_04_10.sql
 !scripts/test_billing_recovery_guard.php
 !scripts/test_account_plan.php
+# Custom code: FC-2026-09-14: Track registration security regression tests
+!scripts/test_registration_security.php
+# /Custom code: FC-2026-09-14
 !scripts/test_public_biolink_js_guards.php
 !scripts/test_ops_readonly_secret_redaction.php
 !scripts/forever_business_import.php

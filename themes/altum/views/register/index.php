@@ -304,6 +304,13 @@
 
     <form action="" method="post" class="mt-4" role="form">
         <?php if(!settings()->users->register_only_social_logins): ?>
+            <!-- Custom code: FC-2026-09-14: Session token and an off-screen bot trap -->
+            <input type="hidden" name="registration_token" value="<?= \Altum\Csrf::get('registration_token') ?>" />
+            <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
+                <label for="registration_website">Website</label>
+                <input id="registration_website" type="text" name="registration_website" value="" tabindex="-1" autocomplete="off" />
+            </div>
+            <!-- /Custom code: FC-2026-09-14 -->
             <div class="register-grid">
                 <section class="register-section">
                     <div class="register-section-title">Osnovni podaci</div>
@@ -336,7 +343,10 @@
                         <div class="col-12 col-lg-6 register-form-col">
                             <div class="form-group">
                                 <label for="meta_foreverId"><?= l('global.forerverId') ?></label>
-                                <input id="meta_foreverId" type="text" name="meta_foreverId" class="form-control <?= \Altum\Alerts::has_field_errors('meta_foreverId') ? 'is-invalid' : null ?>" value="<?= isset($data->values['meta_foreverId']) ? $data->values['meta_foreverId'] : '' ?>" maxlength="12" required="required"/>
+                                <!-- Custom code: FC-2026-09-14: Match the strict server ID validation and offer a mobile numeric keyboard -->
+                                <input id="meta_foreverId" type="text" name="meta_foreverId" class="form-control <?= \Altum\Alerts::has_field_errors('meta_foreverId') ? 'is-invalid' : null ?>" value="<?= $data->values['meta_foreverId'] ?? '' ?>" inputmode="numeric" pattern="[0-9]{12}" minlength="12" maxlength="12" required="required" aria-describedby="meta_foreverId_help" title="<?= l('register.forever_id_help') ?>" />
+                                <small id="meta_foreverId_help" class="form-text text-muted"><?= l('register.forever_id_help') ?></small>
+                                <!-- /Custom code: FC-2026-09-14 -->
                                 <?= \Altum\Alerts::output_field_error('meta_foreverId') ?>
                             </div>
                         </div>
@@ -406,11 +416,11 @@
                 <section class="register-section">
                     <div class="register-section-title">Potvrda</div>
 
-                    <?php if(settings()->captcha->register_is_enabled): ?>
+                    <!-- Custom code: FC-2026-09-14: Always display the CAPTCHA required by the registration controller -->
                         <div class="form-group">
                             <?php $data->captcha->display() ?>
                         </div>
-                    <?php endif ?>
+                    <!-- /Custom code: FC-2026-09-14 -->
 
                     <div class="custom-control custom-checkbox">
                         <input type="checkbox" name="accept" class="custom-control-input" id="accept" required="required">
