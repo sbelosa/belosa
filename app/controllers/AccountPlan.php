@@ -585,13 +585,23 @@ class AccountPlan extends Controller {
 
         \Altum\Authentication::guard();
 
+        /* Cancellation must be an explicit form submission, never a followed link. */
+        if(($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            redirect('account-plan');
+        }
+
         if(vip_funnel_demo_is_sandbox_user($this->user)) {
             Alerts::add_info(vip_funnel_demo_get_locked_action_message('account_plan'));
             redirect('account-plan');
         }
 
-        if(!\Altum\Csrf::check()) {
+        if(!isset($_POST['token']) || !is_string($_POST['token']) || !hash_equals(\Altum\Csrf::get(), $_POST['token'])) {
             Alerts::add_error(l('global.error_message.invalid_csrf_token'));
+            redirect('account-plan');
+        }
+
+        if(empty($this->user->payment_subscription_id)) {
+            Alerts::add_info(l('account_plan.manage.no_subscription'));
             redirect('account-plan');
         }
 

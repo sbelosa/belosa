@@ -5,7 +5,6 @@ $current_plan = $this->user->plan;
 $current_plan_settings = $this->user->plan_settings ?? new \stdClass();
 $suggested_plan = $data->suggested_plan ?? null;
 $suggested_plan_settings = $suggested_plan->settings ?? null;
-$active_paid_plans = $data->active_paid_plans ?? [];
 $billing_summary = (array) ($data->billing_summary ?? []);
 $billing_state = (string) ($billing_summary['billing_state'] ?? 'healthy');
 $billing_last_notification_stage = (string) ($billing_summary['last_notification_stage'] ?? '');
@@ -203,7 +202,6 @@ $count_premium_tools = static function($plan_settings) use ($plan_has_feature, $
 
 $current_plan_name = $get_plan_translation_value($current_plan, 'name');
 $current_plan_description = $normalize_plan_description($get_plan_translation_value($current_plan, 'description'));
-$current_plan_prices = $get_plan_price_variants($current_plan);
 $current_plan_highlights = $get_plan_highlights($current_plan_settings);
 $current_premium_tools_count = $count_premium_tools($current_plan_settings);
 
@@ -243,48 +241,44 @@ $show_billing_pause_notice = $billing_state === 'access_revoked'
         || !empty($billing_summary['stripe_status'])
     );
 
-$current_plan_status_text = l('account_plan.premium.status_free');
-$current_plan_status_icon = 'fa-star';
-
-if($this->user->plan_id != 'free') {
-    try {
-        $expiration_date = new \DateTime($this->user->plan_expiration_date);
-        $is_lifetime = $expiration_date > (new \DateTime())->modify('+10 years');
-
-        if($show_billing_recovery_notice) {
-            $current_plan_status_text = sprintf(l('account_plan.billing.status_unresolved'), '<strong>' . $retry_window_until_label . '</strong>');
-            $current_plan_status_icon = 'fa-triangle-exclamation';
-        } elseif($is_lifetime) {
-            $current_plan_status_text = l('account_plan.plan.lifetime');
-            $current_plan_status_icon = 'fa-infinity';
-        } elseif($this->user->payment_subscription_id) {
-            $current_plan_status_text = sprintf(
-                l('account_plan.plan.renews'),
-                '<strong>' . \Altum\Date::get($this->user->plan_expiration_date, 2) . '</strong>',
-                l('pay.custom_plan.' . $this->user->payment_processor),
-                nr($this->user->payment_total_amount, 2),
-                $this->user->payment_currency
-            );
-            $current_plan_status_icon = 'fa-sync-alt';
-        } else {
-            $current_plan_status_text = sprintf(l('account_plan.plan.expires'), '<strong>' . \Altum\Date::get($this->user->plan_expiration_date, 2) . '</strong>');
-            $current_plan_status_icon = 'fa-hourglass-end';
-        }
-    } catch(\Throwable $exception) {
-        $current_plan_status_text = l('global.active');
-        $current_plan_status_icon = 'fa-check-circle';
+/* Billing and plan access are separate: a downgraded account can still have a subscription. */
+$escape = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+$has_subscription = trim((string) ($this->user->payment_subscription_id ?? '')) !== '';
+$is_free_plan = (string) $this->user->plan_id === 'free';
+$is_trial = $has_subscription && ($billing_summary['stripe_status'] ?? '') === 'trialing';
+$expiration_date = null;
+try {
+    if(!empty($this->user->plan_expiration_date)) {
+        $expiration_date = new \DateTimeImmutable($this->user->plan_expiration_date);
     }
+} catch(\Throwable $exception) {
+    /* Missing or invalid dates must not imply a new renewal date. */
 }
-
-$visible_plans = [
-    (string) ($this->user->plan_id ?? 'current') => $current_plan,
-];
-
-foreach($active_paid_plans as $plan_id => $plan) {
-    if(!isset($visible_plans[(string) $plan_id])) {
-        $visible_plans[(string) $plan_id] = $plan;
-    }
+$is_lifetime = !$is_free_plan && !$has_subscription && $expiration_date && $expiration_date > (new \DateTimeImmutable())->modify('+10 years');
+$has_paid_access = !$is_free_plan && $expiration_date && $expiration_date > new \DateTimeImmutable();
+$expiration_label = $expiration_date ? \Altum\Date::get($this->user->plan_expiration_date, 2) : l('global.na');
+$renewal_state = $has_subscription ? 'on' : 'off';
+if($has_subscription && ($show_billing_recovery_notice || $show_billing_pause_notice || $billing_state === 'access_revoked')) {
+    $renewal_state = 'attention';
+} elseif($is_trial) {
+    $renewal_state = 'trial';
+} elseif($is_free_plan && !$has_subscription) {
+    $renewal_state = 'free';
+} elseif($is_lifetime) {
+    $renewal_state = 'lifetime';
+} elseif(!$has_subscription && !$is_free_plan && $expiration_date && !$has_paid_access) {
+    $renewal_state = 'expired';
 }
+$renewal_label = l('account_plan.manage.state_' . $renewal_state);
+$access_date_label = l('account_plan.manage.' . ($has_subscription && $renewal_state === 'on' ? 'renews_on' : ($is_trial ? 'trial_until' : 'access_until')));
+$display_date = $show_billing_recovery_notice ? $retry_window_until_label : $expiration_label;
+if($show_billing_recovery_notice) $access_date_label = l('account_plan.manage.payment_deadline');
+$cancellation_note = $has_paid_access && !$is_lifetime
+    ? sprintf(l('account_plan.manage.cancel_access_until'), rtrim($expiration_label, '.'))
+    : l('account_plan.manage.cancel_no_access');
+$subscription_amount = $has_subscription && (float) ($this->user->payment_total_amount ?? 0) > 0 && !empty($this->user->payment_currency)
+    ? nr($this->user->payment_total_amount, 2) . ' ' . $this->user->payment_currency
+    : null;
 
 $comparison_rows = [];
 
@@ -377,6 +371,81 @@ if($suggested_plan) {
 
     <?= $this->views['account_header_menu'] ?>
 
+    <header class="fcc-account-plan-heading">
+        <div class="fcc-account-plan-eyebrow"><?= l('account_plan.manage.eyebrow') ?></div>
+        <h1><?= l('account_plan.manage.title') ?></h1>
+        <p><?= l('account_plan.manage.subtitle') ?></p>
+    </header>
+
+    <section class="fcc-account-plan-hero" aria-labelledby="fcc-current-plan-title">
+        <div class="fcc-account-plan-hero__content">
+            <div class="fcc-account-plan-eyebrow"><?= l('account_plan.manage.current_plan') ?></div>
+            <div class="fcc-account-plan-plan-name">
+                <h2 id="fcc-current-plan-title"><?= $escape($current_plan_name) ?></h2>
+                <span class="fcc-account-plan-badge is-<?= $renewal_state ?>"><?= $renewal_label ?></span>
+            </div>
+            <p class="fcc-account-plan-subtitle"><?= $escape($current_plan_description) ?></p>
+
+            <dl class="fcc-account-plan-facts">
+                <div>
+                    <dt><?= l('account_plan.manage.renewal') ?></dt>
+                    <dd><?= l('account_plan.manage.' . ($has_subscription ? 'automatic' : 'not_automatic')) ?></dd>
+                </div>
+                <?php if(!$is_free_plan && !$is_lifetime): ?>
+                    <div>
+                        <dt><?= $access_date_label ?></dt>
+                        <dd><?= $escape($display_date) ?></dd>
+                    </div>
+                <?php elseif($is_lifetime): ?>
+                    <div><dt><?= l('account_plan.manage.access_until') ?></dt><dd><?= l('account_plan.manage.lifetime') ?></dd></div>
+                <?php endif ?>
+                <?php if($subscription_amount): ?>
+                    <div><dt><?= l('account_plan.manage.amount') ?></dt><dd><?= $escape($subscription_amount) ?></dd></div>
+                <?php endif ?>
+            </dl>
+
+            <div class="fcc-account-plan-actions">
+                <?php if(settings()->payment->is_enabled && !$has_subscription && !$is_lifetime): ?>
+                    <a href="<?= url($is_free_plan ? 'plan/upgrade' : 'plan/renew') ?>" class="btn fcc-account-plan-btn-primary">
+                        <i class="fas fa-fw fa-arrow-up mr-1" aria-hidden="true"></i><?= l($is_free_plan ? 'account.plan.upgrade_plan' : 'account.plan.renew_plan') ?>
+                    </a>
+                <?php endif ?>
+                <a href="#fcc-plan-features" class="fcc-account-plan-text-link" data-scroll-target="#fcc-plan-features"><?= l('account_plan.manage.view_features') ?> <i class="fas fa-arrow-down ml-1" aria-hidden="true"></i></a>
+                <?php if($suggested_plan): ?>
+                    <a href="#fcc-plan-compare" class="fcc-account-plan-text-link" data-scroll-target="#fcc-plan-compare"><?= l('account_plan.premium.goto_compare') ?></a>
+                <?php endif ?>
+            </div>
+        </div>
+
+        <div class="fcc-account-plan-management" aria-labelledby="fcc-manage-title">
+            <h2 id="fcc-manage-title"><i class="fas fa-fw fa-credit-card mr-2" aria-hidden="true"></i><?= l('account_plan.manage.header') ?></h2>
+            <p><?= l('account_plan.manage.' . ($has_subscription ? 'active_help' : ($is_free_plan ? 'no_subscription' : ($is_lifetime ? 'lifetime_help' : 'off_help')))) ?></p>
+            <div class="fcc-account-plan-management-links">
+                <?php if($stripe_portal_available): ?>
+                    <a href="<?= $escape($stripe_payment_method_url) ?>" class="btn fcc-account-plan-btn-secondary"><?= l('account_plan.manage.update_card') ?></a>
+                <?php endif ?>
+                <a href="<?= url('account-payments') ?>" class="btn fcc-account-plan-btn-secondary"><?= l('account_plan.manage.payments') ?></a>
+            </div>
+
+            <?php if($has_subscription): ?>
+                <details class="fcc-account-plan-cancellation" id="fcc-cancel-subscription">
+                    <summary class="btn fcc-account-plan-btn-danger"><i class="fas fa-fw fa-ban mr-1" aria-hidden="true"></i><?= l('account_plan.cancel.cancel') ?></summary>
+                    <div class="fcc-account-plan-confirmation">
+                        <h3><?= l('account_plan.manage.confirm_title') ?></h3>
+                        <p><?= $escape($cancellation_note) ?></p>
+                        <form method="post" action="<?= url('account-plan/cancel_subscription') ?>" data-cancel-subscription-form>
+                            <input type="hidden" name="token" value="<?= $escape(\Altum\Csrf::get()) ?>">
+                            <button type="submit" class="btn fcc-account-plan-btn-danger"><?= l('account_plan.manage.confirm_cancel') ?></button>
+                            <button type="button" class="btn fcc-account-plan-btn-secondary" data-keep-subscription hidden><?= l('account_plan.manage.keep') ?></button>
+                        </form>
+                    </div>
+                </details>
+            <?php else: ?>
+                <div class="fcc-account-plan-no-renewal"><i class="fas fa-fw fa-check-circle mr-1" aria-hidden="true"></i><?= l('account_plan.manage.' . ($is_free_plan ? 'nothing_to_cancel' : 'no_future_renewal')) ?></div>
+            <?php endif ?>
+        </div>
+    </section>
+
     <?php if($show_billing_recovery_notice): ?>
         <section id="billing-recovery" class="fcc-account-plan-billing-alert <?= $billing_state === 'past_due_critical' ? 'is-critical' : '' ?>">
             <div class="fcc-account-plan-billing-alert__icon">
@@ -423,122 +492,46 @@ if($suggested_plan) {
         </section>
     <?php endif ?>
 
-    <section class="fcc-account-plan-hero">
-        <div class="fcc-account-plan-hero__content">
-            <div class="fcc-account-plan-eyebrow"><?= l('account_plan.premium.eyebrow') ?></div>
-            <h1 class="fcc-account-plan-title"><?= sprintf(l('account_plan.header'), $current_plan_name) ?></h1>
-            <p class="fcc-account-plan-subtitle"><?= l('account_plan.premium.subheader') ?></p>
-
-            <div class="fcc-account-plan-badges">
-                <span class="fcc-account-plan-badge is-active"><?= l('account_plan.premium.current_badge') ?>: <?= $current_plan_name ?></span>
-                <?php if($suggested_plan): ?>
-                    <span class="fcc-account-plan-badge is-recommended"><?= l('account_plan.premium.recommended_badge') ?>: <?= $suggested_plan_name ?></span>
-                <?php endif ?>
-                <span class="fcc-account-plan-badge">
-                    <i class="fas fa-fw <?= $current_plan_status_icon ?> mr-1"></i>
-                    <?= strip_tags($current_plan_status_text) ?>
-                </span>
-            </div>
-
-            <?php if(!empty($visible_plans)): ?>
-                <div class="fcc-account-plan-rail-label"><?= l('account_plan.premium.available_plans') ?></div>
-                <div class="fcc-account-plan-rail">
-                    <?php foreach($visible_plans as $plan_id => $plan): ?>
-                        <?php $plan_name = $get_plan_translation_value($plan, 'name'); ?>
-                        <div class="fcc-account-plan-rail-pill <?= (string) $plan_id === (string) $this->user->plan_id ? 'is-current' : '' ?> <?= $suggested_plan && (string) $plan_id === (string) $suggested_plan->plan_id ? 'is-recommended' : '' ?>">
-                            <?= $plan_name ?>
-                        </div>
-                    <?php endforeach ?>
+    <?php if($show_billing_pause_notice): ?>
+        <section class="fcc-account-plan-section">
+            <div class="fcc-account-plan-section-header">
+                <div>
+                    <div class="fcc-account-plan-eyebrow"><i class="fas fa-fw fa-credit-card mr-1"></i><?= l('account_plan.billing.paused_eyebrow') ?></div>
+                    <h2 class="fcc-account-plan-section-title"><?= l('account_plan.billing.paused_title') ?></h2>
+                    <p class="fcc-account-plan-section-subtitle mb-0"><?= sprintf(l('account_plan.billing.paused_subtitle'), $retry_window_until_label) ?></p>
                 </div>
-            <?php endif ?>
 
-            <div class="fcc-account-plan-actions">
-                <?php if(settings()->payment->is_enabled): ?>
-                    <?php if($this->user->plan_id == 'free'): ?>
-                        <a href="<?= url('plan/upgrade') ?>" class="btn btn-primary btn-lg fcc-account-plan-btn-primary">
-                            <i class="fas fa-fw fa-arrow-up mr-1"></i> <?= l('account.plan.upgrade_plan') ?>
-                        </a>
-                    <?php else: ?>
-                        <a href="<?= url('plan/renew') ?>" class="btn btn-primary btn-lg fcc-account-plan-btn-primary">
-                            <i class="fas fa-fw fa-sync-alt mr-1"></i> <?= l('account.plan.renew_plan') ?>
-                        </a>
-                    <?php endif ?>
-                <?php endif ?>
-
-                <?php if($suggested_plan): ?>
-                    <a href="<?= htmlspecialchars(url('account-plan') . '#fcc-plan-compare', ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light btn-lg fcc-account-plan-btn-secondary" data-scroll-target="#fcc-plan-compare">
-                        <i class="fas fa-fw fa-layer-group mr-1"></i> <?= l('account_plan.premium.goto_compare') ?>
+                <?php if($stripe_portal_available): ?>
+                    <a href="<?= htmlspecialchars($stripe_portal_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary">
+                        <?= l('account_plan.billing.portal_button') ?>
                     </a>
                 <?php endif ?>
             </div>
-        </div>
+        </section>
+    <?php endif ?>
 
-        <div class="fcc-account-plan-hero__metrics">
-            <div class="fcc-account-plan-metric-card">
-                <div class="fcc-account-plan-metric-label"><?= l('account_plan.premium.metric_tools') ?></div>
-                <div class="fcc-account-plan-metric-value"><?= nr($current_premium_tools_count) ?></div>
-                <div class="fcc-account-plan-metric-note"><?= l('plan_features.forever.group') ?></div>
-            </div>
-
-            <div class="fcc-account-plan-metric-card">
-                <div class="fcc-account-plan-metric-label"><?= l('account_plan.premium.metric_ai') ?></div>
-                <div class="fcc-account-plan-metric-value"><?= $plan_has_feature($current_plan_settings, 'ai_growth_plan_is_enabled') ? l('global.active') : l('global.no') ?></div>
-                <div class="fcc-account-plan-metric-note"><?= l('global.plan_settings.ai_growth_plan_is_enabled') ?></div>
-            </div>
-
-            <div class="fcc-account-plan-metric-card">
-                <div class="fcc-account-plan-metric-label"><?= l('account_plan.premium.metric_apps') ?></div>
-                <div class="fcc-account-plan-metric-value"><?= $get_limit_label($current_plan_settings->biolinks_limit ?? 0) ?></div>
-                <div class="fcc-account-plan-metric-note">FCC</div>
-            </div>
-
-            <div class="fcc-account-plan-metric-card">
-                <div class="fcc-account-plan-metric-label"><?= l('account_plan.premium.metric_blocks') ?></div>
-                <div class="fcc-account-plan-metric-value"><?= $get_limit_label($current_plan_settings->biolink_blocks_limit ?? 0) ?></div>
-                <div class="fcc-account-plan-metric-note"><?= l('account_plan.premium.metric_blocks') ?></div>
-            </div>
-        </div>
-    </section>
-
-    <div class="row mt-4">
+    <div class="row mt-4" id="fcc-plan-features">
         <div class="col-12 <?= $suggested_plan ? 'col-xl-6' : 'col-xl-12' ?>">
             <section class="fcc-account-plan-card is-current">
-                <div class="fcc-account-plan-card-header">
-                    <div>
-                        <h2 class="fcc-account-plan-card-title"><?= $current_plan_name ?></h2>
-                        <p class="fcc-account-plan-card-description"><?= $current_plan_description ?: ($this->user->plan_id === 'free' ? l('account_plan.premium.status_free') : strip_tags($current_plan_status_text)) ?></p>
-                    </div>
-
-                    <?php if(!empty($current_plan_prices[0])): ?>
-                        <div class="fcc-account-plan-price-box">
-                            <div class="fcc-account-plan-price-main"><?= $current_plan_prices[0]['amount'] ?></div>
-                            <?php if(!empty($current_plan_prices[0]['label'])): ?>
-                                <div class="fcc-account-plan-price-label"><?= $current_plan_prices[0]['label'] ?></div>
-                            <?php endif ?>
-                        </div>
-                    <?php endif ?>
+                <div class="fcc-account-plan-eyebrow"><?= $escape($current_plan_name) ?></div>
+                <h2 class="fcc-account-plan-card-title"><?= l('account_plan.manage.included') ?></h2>
+                <p class="fcc-account-plan-card-description"><?= l('account_plan.manage.features_help') ?></p>
+                <div class="fcc-account-plan-usage">
+                    <span><strong><?= nr($current_premium_tools_count) ?></strong> <?= l('account_plan.premium.metric_tools') ?></span>
+                    <span><strong><?= $get_limit_label($current_plan_settings->biolinks_limit ?? 0) ?></strong> <?= l('account_plan.premium.metric_apps') ?></span>
                 </div>
-
-                <div class="fcc-account-plan-status-line">
-                    <i class="fas fa-fw <?= $current_plan_status_icon ?>"></i>
-                    <span><?= $current_plan_status_text ?></span>
-                </div>
-
-                <?php if(count($current_plan_prices) > 1): ?>
-                    <div class="fcc-account-plan-price-chips">
-                        <?php foreach(array_slice($current_plan_prices, 1) as $price_variant): ?>
-                            <span class="fcc-account-plan-price-chip"><?= $price_variant['label'] ?>: <?= $price_variant['amount'] ?></span>
-                        <?php endforeach ?>
-                    </div>
-                <?php endif ?>
-
                 <div class="fcc-account-plan-card-section-title"><?= l('account_plan.premium.top_features') ?></div>
                 <div class="fcc-account-plan-feature-pills">
                     <?php foreach($current_plan_highlights as $highlight): ?>
                         <span class="fcc-account-plan-feature-pill"><?= $highlight ?></span>
                     <?php endforeach ?>
                 </div>
-
+                <details class="fcc-account-plan-details">
+                    <summary><?= l('account_plan.manage.all_features') ?></summary>
+                    <div class="fcc-account-plan-details-content">
+                        <?= (new \Altum\View('partials/plan_features'))->run(['plan_settings' => $current_plan_settings]) ?>
+                    </div>
+                </details>
             </section>
         </div>
 
@@ -603,63 +596,39 @@ if($suggested_plan) {
         <?php endif ?>
     </div>
 
-    <?php if($show_billing_pause_notice): ?>
-        <section class="fcc-account-plan-section">
-            <div class="fcc-account-plan-section-header">
-                <div>
-                    <div class="fcc-account-plan-eyebrow"><i class="fas fa-fw fa-credit-card mr-1"></i><?= l('account_plan.billing.paused_eyebrow') ?></div>
-                    <h2 class="fcc-account-plan-section-title"><?= l('account_plan.billing.paused_title') ?></h2>
-                    <p class="fcc-account-plan-section-subtitle mb-0"><?= sprintf(l('account_plan.billing.paused_subtitle'), $retry_window_until_label) ?></p>
-                </div>
-
-                <?php if($stripe_portal_available): ?>
-                    <a href="<?= htmlspecialchars($stripe_portal_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary">
-                        <?= l('account_plan.billing.portal_button') ?>
-                    </a>
-                <?php endif ?>
-            </div>
-        </section>
-    <?php endif ?>
-
     <?php if($suggested_plan && !empty($comparison_rows)): ?>
-        <section id="fcc-plan-compare" class="fcc-account-plan-section">
-            <div class="fcc-account-plan-section-header">
-                <div>
-                    <h2 class="fcc-account-plan-section-title"><?= l('account_plan.premium.compare_title') ?></h2>
-                    <p class="fcc-account-plan-section-subtitle"><?= l('account_plan.premium.compare_subtitle') ?></p>
-                </div>
-            </div>
-
-            <div class="fcc-account-plan-compare-table">
-                <div class="fcc-account-plan-compare-head fcc-account-plan-compare-feature"><?= l('account_plan.premium.matrix_feature') ?></div>
-                <div class="fcc-account-plan-compare-head"><?= $current_plan_name ?></div>
-                <div class="fcc-account-plan-compare-head is-recommended"><?= $suggested_plan_name ?></div>
-
-                <?php foreach($comparison_rows as $comparison_row): ?>
-                    <div class="fcc-account-plan-compare-cell fcc-account-plan-compare-feature-name"><?= $comparison_row['label'] ?></div>
-
-                    <div class="fcc-account-plan-compare-cell">
-                        <?php if($comparison_row['type'] === 'boolean'): ?>
-                            <span class="fcc-account-plan-compare-badge <?= $comparison_row['current'] ? 'is-on' : 'is-off' ?>">
-                                <i class="fas fa-fw <?= $comparison_row['current'] ? 'fa-check-circle' : 'fa-times-circle' ?> mr-1"></i>
-                                <?= $comparison_row['current'] ? l('global.yes') : l('global.no') ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="fcc-account-plan-compare-value"><?= $comparison_row['current'] ?></span>
-                        <?php endif ?>
-                    </div>
-
-                    <div class="fcc-account-plan-compare-cell is-recommended">
-                        <?php if($comparison_row['type'] === 'boolean'): ?>
-                            <span class="fcc-account-plan-compare-badge <?= $comparison_row['suggested'] ? 'is-on' : 'is-off' ?>">
-                                <i class="fas fa-fw <?= $comparison_row['suggested'] ? 'fa-check-circle' : 'fa-times-circle' ?> mr-1"></i>
-                                <?= $comparison_row['suggested'] ? l('global.yes') : l('global.no') ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="fcc-account-plan-compare-value"><?= $comparison_row['suggested'] ?></span>
-                        <?php endif ?>
-                    </div>
-                <?php endforeach ?>
+        <details id="fcc-plan-compare" class="fcc-account-plan-section fcc-account-plan-comparison">
+            <summary>
+                <span class="fcc-account-plan-section-title"><?= l('account_plan.premium.compare_title') ?></span>
+                <span class="fcc-account-plan-section-subtitle"><?= l('account_plan.manage.compare_help') ?></span>
+            </summary>
+            <div class="fcc-account-plan-table-wrap">
+                <table class="fcc-account-plan-compare-table">
+                    <thead><tr>
+                        <th scope="col"><?= l('account_plan.premium.matrix_feature') ?></th>
+                        <th scope="col"><?= $escape($current_plan_name) ?></th>
+                        <th scope="col"><?= $escape($suggested_plan_name) ?></th>
+                    </tr></thead>
+                    <tbody>
+                        <?php foreach($comparison_rows as $comparison_row): ?>
+                            <tr>
+                                <th scope="row"><?= $comparison_row['label'] ?></th>
+                                <?php foreach(['current', 'suggested'] as $column): ?>
+                                    <td>
+                                        <?php if($comparison_row['type'] === 'boolean'): ?>
+                                            <span class="fcc-account-plan-compare-badge <?= $comparison_row[$column] ? 'is-on' : 'is-off' ?>">
+                                                <i class="fas fa-fw <?= $comparison_row[$column] ? 'fa-check' : 'fa-minus' ?>" aria-hidden="true"></i>
+                                                <?= $comparison_row[$column] ? l('global.yes') : l('global.no') ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="fcc-account-plan-compare-value"><?= $comparison_row[$column] ?></span>
+                                        <?php endif ?>
+                                    </td>
+                                <?php endforeach ?>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
             </div>
 
             <details class="fcc-account-plan-details fcc-account-plan-details--comparison">
@@ -678,772 +647,204 @@ if($suggested_plan) {
                     </div>
                 </div>
             </details>
-        </section>
-    <?php elseif(settings()->payment->is_enabled): ?>
-        <section class="fcc-account-plan-section">
-            <div class="fcc-account-plan-empty-state">
-                <i class="fas fa-fw fa-crown"></i>
-                <div>
-                    <h2 class="fcc-account-plan-section-title mb-2"><?= l('account_plan.premium.recommended_plan_title') ?></h2>
-                    <p class="fcc-account-plan-section-subtitle mb-0"><?= l('account_plan.premium.no_recommendation') ?></p>
-                </div>
-            </div>
-        </section>
-    <?php endif ?>
-
-    <?php if($this->user->plan_id != 'free' && $this->user->payment_subscription_id): ?>
-        <section class="fcc-account-plan-cancel-card">
-            <div>
-                <div class="fcc-account-plan-eyebrow"><?= l('account_plan.cancel.header') ?></div>
-                <h2 class="fcc-account-plan-section-title"><?= l('account_plan.cancel.header') ?></h2>
-                <p class="fcc-account-plan-section-subtitle mb-0"><?= l('account_plan.cancel.subheader') ?></p>
-            </div>
-
-            <div class="fcc-account-plan-actions">
-                <?php if($stripe_portal_available): ?>
-                    <a href="<?= htmlspecialchars($stripe_portal_url, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary">
-                        <?= l('account_plan.billing.portal_button') ?>
-                    </a>
-                <?php endif ?>
-
-                <a href="<?= url('account-plan/cancel_subscription' . \Altum\Csrf::get_url_query()) ?>" class="btn btn-outline-light fcc-account-plan-btn-secondary" onclick='return confirm(<?= json_encode(l('account_plan.cancel.confirm_message')) ?>)'>
-                    <?= l('account_plan.cancel.cancel') ?>
-                </a>
-            </div>
-        </section>
+        </details>
     <?php endif ?>
 </div>
 
 <style>
     .fcc-account-plan-page {
+        --plan-text: #f1f5fb;
+        --plan-muted: #b3c0d3;
+        --plan-border: rgba(165, 189, 220, .18);
         padding-bottom: 3rem;
     }
-
+    .fcc-account-plan-page [id] { scroll-margin-top: 2rem; }
+    .fcc-account-plan-page .btn { white-space: normal; min-height: 44px; }
+    .fcc-account-plan-page :is(a, button, summary):focus-visible { outline: 3px solid #5bc8bb; outline-offset: 4px; }
+    .fcc-account-plan-page [hidden] { display: none !important; }
+    .fcc-account-plan-heading { margin: .5rem 0 1.5rem; }
+    .fcc-account-plan-heading h1 { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 750; letter-spacing: -.035em; margin: 0 0 .5rem; }
+    .fcc-account-plan-heading p { margin: 0; color: var(--gray-600, #64748b); line-height: 1.6; }
+    .fcc-account-plan-eyebrow { color: #86e2d4; font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 750; margin-bottom: .75rem; }
+    .fcc-account-plan-heading .fcc-account-plan-eyebrow { color: #168578; }
     .fcc-account-plan-hero,
     .fcc-account-plan-card,
-    .fcc-account-plan-billing-alert,
     .fcc-account-plan-section,
-    .fcc-account-plan-cancel-card {
-        position: relative;
-        overflow: hidden;
-        border-radius: 28px;
-        border: 1px solid rgba(110, 142, 196, 0.18);
-        background:
-            radial-gradient(circle at top right, rgba(72, 230, 210, 0.13), transparent 26%),
-            radial-gradient(circle at bottom left, rgba(76, 132, 255, 0.12), transparent 30%),
-            linear-gradient(180deg, rgba(14, 24, 45, 0.98), rgba(10, 17, 32, 0.98));
-        box-shadow: 0 26px 70px rgba(3, 10, 24, 0.36);
-        color: #ecf7ff;
+    .fcc-account-plan-billing-alert {
+        border: 1px solid var(--plan-border);
+        border-radius: 22px;
+        background: #131f32;
+        color: var(--plan-text);
     }
-
     .fcc-account-plan-hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.35fr) minmax(300px, .95fr);
-        gap: 1.5rem;
+        grid-template-columns: minmax(0, 1.15fr) minmax(300px, 1fr);
         padding: 2rem;
-    }
-
-    .fcc-account-plan-hero::before,
-    .fcc-account-plan-card::before,
-    .fcc-account-plan-billing-alert::before,
-    .fcc-account-plan-section::before,
-    .fcc-account-plan-cancel-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent 26%);
-        pointer-events: none;
-    }
-
-    .fcc-account-plan-billing-alert {
-        display: grid;
-        grid-template-columns: 58px minmax(0, 1fr);
-        grid-template-areas:
-            "icon content"
-            "icon actions";
-        align-items: start;
-        gap: 1rem 1.35rem;
-        margin-bottom: 1.5rem;
-        padding: 1.4rem 1.55rem;
-        border-color: rgba(255, 213, 113, 0.3);
-        background:
-            linear-gradient(135deg, rgba(54, 38, 20, 0.98), rgba(19, 24, 38, 0.98) 56%, rgba(10, 18, 32, 0.98));
-    }
-
-    .fcc-account-plan-billing-alert.is-critical {
-        border-color: rgba(255, 119, 119, 0.34);
-        background:
-            linear-gradient(135deg, rgba(58, 25, 29, 0.98), rgba(22, 24, 38, 0.98) 58%, rgba(10, 18, 32, 0.98));
-    }
-
-    .fcc-account-plan-billing-alert__icon {
-        grid-area: icon;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 58px;
-        height: 58px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: #ffe49a;
-        font-size: 1.35rem;
-    }
-
-    .fcc-account-plan-billing-alert__content {
-        grid-area: content;
-        min-width: 0;
-    }
-
-    .fcc-account-plan-billing-alert .fcc-account-plan-eyebrow {
-        margin-bottom: .35rem;
-        letter-spacing: .12em;
-    }
-
-    .fcc-account-plan-billing-alert .fcc-account-plan-section-title {
-        max-width: 780px;
-        margin-bottom: .55rem;
-        font-size: 1.8rem;
-        line-height: 1.12;
-        letter-spacing: 0;
-    }
-
-    .fcc-account-plan-billing-alert .fcc-account-plan-section-subtitle {
-        max-width: 840px;
-        font-size: 1rem;
-        line-height: 1.55;
-    }
-
-    .fcc-account-plan-billing-alert__meta,
-    .fcc-account-plan-billing-steps,
-    .fcc-account-plan-billing-alert__actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .75rem;
-    }
-
-    .fcc-account-plan-billing-alert__meta {
-        margin-top: .85rem;
-        color: rgba(247, 237, 209, 0.86);
-        font-size: .92rem;
-    }
-
-    .fcc-account-plan-billing-alert__meta span,
-    .fcc-account-plan-billing-steps div {
-        display: inline-flex;
-        align-items: center;
-        gap: .45rem;
-        border-radius: 999px;
-        padding: .55rem .75rem;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.11);
-    }
-
-    .fcc-account-plan-billing-steps {
-        margin-top: 1rem;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        max-width: 860px;
-    }
-
-    .fcc-account-plan-billing-steps div {
-        min-height: 52px;
-        justify-content: flex-start;
-        color: rgba(255,255,255,0.88);
-        font-size: .9rem;
-        line-height: 1.35;
-    }
-
-    .fcc-account-plan-billing-steps span {
-        flex: 0 0 auto;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 22px;
-        height: 22px;
-        border-radius: 999px;
-        background: rgba(255, 213, 113, 0.18);
-        color: #ffe49a;
-        font-weight: 900;
-        font-size: .78rem;
-    }
-
-    .fcc-account-plan-billing-alert__actions {
-        grid-area: actions;
-        justify-content: flex-start;
-        align-items: center;
-        margin-top: .1rem;
-    }
-
-    .fcc-account-plan-billing-alert__actions .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 48px;
-        border-radius: 16px;
-        padding-left: 1.05rem;
-        padding-right: 1.05rem;
-        font-size: .98rem;
-        letter-spacing: 0;
-        text-align: center;
-        white-space: normal;
-    }
-
-    .fcc-account-plan-eyebrow,
-    .fcc-account-plan-rail-label {
-        display: inline-flex;
-        align-items: center;
-        gap: .45rem;
-        font-size: .76rem;
-        text-transform: uppercase;
-        letter-spacing: .16em;
-        font-weight: 800;
-        color: #8ceee2;
-        margin-bottom: .95rem;
-    }
-
-    .fcc-account-plan-title {
-        font-size: clamp(2rem, 4.2vw, 3.35rem);
-        line-height: .98;
-        letter-spacing: -.05em;
-        margin-bottom: 1rem;
-        color: #f7fbff;
-    }
-
-    .fcc-account-plan-subtitle,
-    .fcc-account-plan-section-subtitle,
-    .fcc-account-plan-card-description,
-    .fcc-account-plan-metric-note,
-    .fcc-account-plan-status-line,
-    .fcc-account-plan-price-label {
-        color: rgba(219, 232, 247, 0.78);
-    }
-
-    .fcc-account-plan-subtitle {
-        max-width: 62ch;
-        font-size: 1.04rem;
-        line-height: 1.7;
-        margin-bottom: 1.25rem;
-    }
-
-    .fcc-account-plan-badges,
-    .fcc-account-plan-rail,
-    .fcc-account-plan-actions,
-    .fcc-account-plan-price-chips,
-    .fcc-account-plan-feature-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .75rem;
-    }
-
-    .fcc-account-plan-badge,
-    .fcc-account-plan-rail-pill,
-    .fcc-account-plan-price-chip,
-    .fcc-account-plan-feature-pill,
-    .fcc-account-plan-discount-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        padding: .72rem 1rem;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(153, 183, 225, 0.18);
-        color: #f3fbff;
-        font-size: .92rem;
-        line-height: 1.2;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-
-    .fcc-account-plan-badge.is-active,
-    .fcc-account-plan-rail-pill.is-current {
-        background: linear-gradient(135deg, rgba(80, 219, 203, 0.22), rgba(78, 129, 255, 0.14));
-        border-color: rgba(124, 232, 220, 0.4);
-    }
-
-    .fcc-account-plan-badge.is-recommended,
-    .fcc-account-plan-rail-pill.is-recommended,
-    .fcc-account-plan-price-chip.is-recommended,
-    .fcc-account-plan-feature-pill.is-recommended,
-    .fcc-account-plan-discount-pill {
-        background: linear-gradient(135deg, rgba(255, 214, 110, 0.18), rgba(81, 226, 209, 0.18));
-        border-color: rgba(255, 225, 138, 0.28);
-    }
-
-    .fcc-account-plan-rail-pill {
-        font-weight: 700;
-        padding: .68rem .95rem;
-    }
-
-    .fcc-account-plan-actions {
-        margin-top: 1.45rem;
-    }
-
-    .fcc-account-plan-btn-primary,
-    .fcc-account-plan-btn-secondary {
-        border-radius: 18px;
-        padding: .95rem 1.35rem;
-        font-weight: 800;
-        letter-spacing: -.01em;
-    }
-
-    .fcc-account-plan-btn-primary {
-        border: 0;
-        color: #062322;
-        background: linear-gradient(135deg, #62f2df 0%, #4fd7cb 40%, #7ad0ff 100%);
-        box-shadow: 0 18px 32px rgba(79, 215, 203, 0.22);
-    }
-
-    .fcc-account-plan-btn-primary:hover,
-    .fcc-account-plan-btn-primary:focus {
-        color: #04191c;
-        transform: translateY(-1px);
-        box-shadow: 0 22px 38px rgba(79, 215, 203, 0.28);
-    }
-
-    .fcc-account-plan-btn-secondary {
-        border-color: rgba(181, 213, 248, 0.22);
-        background: rgba(255,255,255,0.04);
-        color: #eff9ff;
-    }
-
-    .fcc-account-plan-btn-secondary:hover,
-    .fcc-account-plan-btn-secondary:focus {
-        background: rgba(255,255,255,0.08);
-        color: #fff;
-        border-color: rgba(181, 213, 248, 0.34);
-    }
-
-    .fcc-account-plan-hero__metrics {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-    }
-
-    .fcc-account-plan-metric-card {
-        border-radius: 22px;
-        padding: 1.2rem;
-        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
-        border: 1px solid rgba(161, 192, 235, 0.12);
-        min-height: 148px;
-    }
-
-    .fcc-account-plan-metric-label {
-        font-size: .78rem;
-        text-transform: uppercase;
-        letter-spacing: .14em;
-        color: rgba(178, 208, 239, 0.72);
-        margin-bottom: .8rem;
-        font-weight: 700;
-    }
-
-    .fcc-account-plan-metric-value {
-        font-size: clamp(1.45rem, 3vw, 2.3rem);
-        line-height: 1;
-        font-weight: 900;
-        letter-spacing: -.05em;
-        margin-bottom: .55rem;
-        color: #ffffff;
-    }
-
-    .fcc-account-plan-card {
-        height: 100%;
-        padding: 1.6rem;
-    }
-
-    .fcc-account-plan-card.is-recommended {
-        border-color: rgba(125, 239, 224, 0.28);
-        box-shadow: 0 30px 80px rgba(3, 12, 28, 0.42), 0 0 0 1px rgba(125, 239, 224, 0.08);
-    }
-
-    .fcc-account-plan-card-topline,
-    .fcc-account-plan-card-header,
-    .fcc-account-plan-cancel-card,
-    .fcc-account-plan-empty-state {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-    }
-
-    .fcc-account-plan-card-badge {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        padding: .55rem .9rem;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(163, 192, 234, 0.16);
-        font-size: .78rem;
-        text-transform: uppercase;
-        letter-spacing: .14em;
-        font-weight: 800;
-        color: #ddf8f3;
-    }
-
-    .fcc-account-plan-card-badge.is-recommended {
-        background: linear-gradient(135deg, rgba(255, 214, 110, 0.22), rgba(79, 215, 203, 0.14));
-        border-color: rgba(255, 225, 138, 0.28);
-        color: #fff4c6;
-    }
-
-    .fcc-account-plan-card-title,
-    .fcc-account-plan-section-title {
-        font-size: clamp(1.45rem, 3vw, 2.15rem);
-        line-height: 1.04;
-        letter-spacing: -.04em;
-        margin-bottom: .55rem;
-        color: #f8fbff;
-    }
-
-    .fcc-account-plan-price-box {
-        min-width: 118px;
-        text-align: right;
-        padding: .8rem .85rem;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(163, 192, 234, 0.14);
-    }
-
-    .fcc-account-plan-price-box.is-recommended {
-        background: linear-gradient(180deg, rgba(255, 232, 168, 0.14), rgba(85, 221, 207, 0.08));
-        border-color: rgba(255, 225, 138, 0.22);
-    }
-
-    .fcc-account-plan-price-overline {
-        font-size: .66rem;
-        text-transform: uppercase;
-        letter-spacing: .14em;
-        color: rgba(255, 242, 194, 0.78);
-        margin-bottom: .15rem;
-        font-weight: 800;
-    }
-
-    .fcc-account-plan-price-main {
-        font-size: clamp(1.25rem, 2.2vw, 1.95rem);
-        line-height: .98;
-        font-weight: 900;
-        letter-spacing: -.05em;
-        color: #ffffff;
-    }
-
-    .fcc-account-plan-price-box .fcc-account-plan-price-main {
-        display: inline-block;
-        max-width: 100%;
-        word-break: break-word;
-    }
-
-    .fcc-account-plan-status-line {
-        display: flex;
-        align-items: center;
-        gap: .75rem;
-        margin: 1rem 0 1.15rem;
-        padding: .95rem 1rem;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(163, 192, 234, 0.12);
-        font-size: .95rem;
-    }
-
-    .fcc-account-plan-status-line strong {
-        color: #fff;
-    }
-
-    .fcc-account-plan-card-section-title {
-        margin: 1.2rem 0 .9rem;
-        font-size: .92rem;
-        text-transform: uppercase;
-        letter-spacing: .14em;
-        color: rgba(179, 210, 239, 0.76);
-        font-weight: 800;
-    }
-
-    .fcc-account-plan-feature-pill {
-        justify-content: flex-start;
-        text-align: left;
-        padding: .8rem 1rem;
-    }
-
-    .fcc-account-plan-cta-wrap {
-        margin-top: 1.2rem;
-    }
-
-    .fcc-account-plan-trial-note {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: .35rem;
-        margin-top: .85rem;
-        padding: .8rem .95rem;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 225, 138, 0.18);
-        background: linear-gradient(135deg, rgba(255, 214, 110, 0.12), rgba(79, 215, 203, 0.08));
-        color: #fff2c8;
-        font-size: .92rem;
-        text-align: center;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-
-    .fcc-account-plan-details {
-        margin-top: 1.3rem;
-        border-radius: 20px;
-        border: 1px solid rgba(163, 192, 234, 0.12);
-        background: rgba(3, 11, 24, 0.18);
-        overflow: hidden;
-    }
-
-    .fcc-account-plan-details summary {
-        list-style: none;
-        cursor: pointer;
-        padding: 1rem 1.1rem;
-        font-weight: 700;
-        color: #eef8ff;
-    }
-
-    .fcc-account-plan-details summary::-webkit-details-marker {
-        display: none;
-    }
-
-    .fcc-account-plan-details-content {
-        padding: 0 1.1rem 1.1rem;
-    }
-
-    .fcc-account-plan-details--comparison {
-        margin-top: 1.2rem;
-    }
-
-    .fcc-account-plan-details-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-    }
-
-    .fcc-account-plan-details-column {
-        border-radius: 18px;
-        padding: 1rem;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(163, 192, 234, 0.1);
-    }
-
-    .fcc-account-plan-details-column.is-recommended {
-        background: linear-gradient(180deg, rgba(255, 232, 168, 0.08), rgba(79, 215, 203, 0.04));
-        border-color: rgba(255, 225, 138, 0.18);
-    }
-
-    .fcc-account-plan-details-plan-label {
-        display: inline-flex;
-        align-items: center;
-        margin-bottom: 1rem;
-        border-radius: 999px;
-        padding: .55rem .85rem;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(163, 192, 234, 0.14);
-        font-size: .78rem;
-        text-transform: uppercase;
-        letter-spacing: .14em;
-        font-weight: 800;
-        color: #eef9ff;
-    }
-
-    .fcc-account-plan-details-plan-label.is-recommended {
-        background: linear-gradient(135deg, rgba(255, 214, 110, 0.18), rgba(79, 215, 203, 0.12));
-        border-color: rgba(255, 225, 138, 0.22);
-        color: #fff3cb;
-    }
-
-    .fcc-account-plan-details-content ul.list-style-none {
-        margin-bottom: 0;
-    }
-
-    .fcc-account-plan-details-content ul.list-style-none li {
-        color: rgba(228, 239, 251, 0.9);
-    }
-
-    .fcc-account-plan-section {
-        margin-top: 1.75rem;
-        padding: 1.6rem;
-    }
-
-    .fcc-account-plan-compare-table {
-        margin-top: 1.25rem;
-        display: grid;
-        grid-template-columns: minmax(220px, 1.2fr) repeat(2, minmax(0, 1fr));
-        border-radius: 24px;
-        overflow: hidden;
-        border: 1px solid rgba(163, 192, 234, 0.12);
-    }
-
-    .fcc-account-plan-compare-head,
-    .fcc-account-plan-compare-cell {
-        padding: 1rem 1.05rem;
-        background: rgba(255,255,255,0.03);
-        border-bottom: 1px solid rgba(163, 192, 234, 0.08);
-        border-right: 1px solid rgba(163, 192, 234, 0.08);
-    }
-
-    .fcc-account-plan-compare-head {
-        font-size: .8rem;
-        text-transform: uppercase;
-        letter-spacing: .14em;
-        font-weight: 800;
-        color: rgba(191, 218, 246, 0.76);
-        background: rgba(255,255,255,0.05);
-    }
-
-    .fcc-account-plan-compare-head.is-recommended,
-    .fcc-account-plan-compare-cell.is-recommended {
-        background: linear-gradient(180deg, rgba(255, 232, 168, 0.08), rgba(79, 215, 203, 0.04));
-    }
-
-    .fcc-account-plan-compare-feature,
-    .fcc-account-plan-compare-feature-name {
-        font-weight: 700;
-        color: #f1f8ff;
-    }
-
-    .fcc-account-plan-compare-badge,
-    .fcc-account-plan-compare-value {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 92px;
-        border-radius: 999px;
-        padding: .55rem .85rem;
-        font-weight: 700;
-    }
-
-    .fcc-account-plan-compare-badge.is-on {
-        background: rgba(89, 232, 203, 0.12);
-        color: #b9fff0;
-        border: 1px solid rgba(89, 232, 203, 0.18);
-    }
-
-    .fcc-account-plan-compare-badge.is-off {
-        background: rgba(255,255,255,0.05);
-        color: rgba(207, 222, 239, 0.72);
-        border: 1px solid rgba(163, 192, 234, 0.12);
-    }
-
-    .fcc-account-plan-compare-value {
-        background: rgba(118, 202, 255, 0.08);
-        border: 1px solid rgba(118, 202, 255, 0.16);
-        color: #d8f2ff;
-    }
-
-    .fcc-account-plan-empty-state,
-    .fcc-account-plan-cancel-card {
-        padding: 1.6rem;
-    }
-
-    .fcc-account-plan-empty-state i,
-    .fcc-account-plan-cancel-card i {
-        font-size: 1.5rem;
-        color: #8ceee2;
-    }
-
-    .fcc-account-plan-cancel-card {
-        margin-top: 1.75rem;
-        align-items: center;
-    }
-
+        gap: 2rem;
+        background: radial-gradient(ellipse at 0 0, rgba(53, 173, 158, .13), transparent 60%), #101c2e;
+        box-shadow: 0 12px 32px rgba(9, 20, 38, .12);
+    }
+    .fcc-account-plan-hero__content { min-width: 0; align-self: center; }
+    .fcc-account-plan-plan-name { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem 1rem; margin-bottom: .75rem; }
+    .fcc-account-plan-plan-name h2 { color: #fff; font-size: clamp(1.8rem, 3.4vw, 2.65rem); letter-spacing: -.04em; font-weight: 750; margin: 0; overflow-wrap: anywhere; }
+    .fcc-account-plan-badge { display: inline-flex; padding: .4rem .65rem; border-radius: 8px; background: #27344a; color: #dbe4ef; font-size: .75rem; font-weight: 650; }
+    .fcc-account-plan-badge.is-on, .fcc-account-plan-badge.is-lifetime { background: #183e3d; color: #a9eddd; }
+    .fcc-account-plan-badge.is-trial { background: #203c57; color: #bae3ff; }
+    .fcc-account-plan-badge.is-attention { background: #4b3a25; color: #ffe0a0; }
+    .fcc-account-plan-subtitle, .fcc-account-plan-card-description, .fcc-account-plan-section-subtitle { color: var(--plan-muted); font-size: .94rem; line-height: 1.65; }
+    .fcc-account-plan-subtitle { margin-bottom: 1.25rem; }
+    .fcc-account-plan-facts { display: flex; flex-wrap: wrap; gap: 1.15rem 1.75rem; padding: 1.25rem 0; margin: 0; border-top: 1px solid var(--plan-border); }
+    .fcc-account-plan-facts dt { color: var(--plan-muted); font-size: .77rem; font-weight: 400; margin-bottom: .3rem; }
+    .fcc-account-plan-facts dd { color: var(--plan-text); margin: 0; font-size: .95rem; font-weight: 650; }
+    .fcc-account-plan-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .5rem; }
+    .fcc-account-plan-text-link { display: inline-flex; align-items: center; min-height: 44px; color: #9de3da; font-size: .84rem; font-weight: 650; text-decoration: underline; text-underline-offset: 4px; }
+    .fcc-account-plan-text-link:hover { color: #d5fff9; }
+    .fcc-account-plan-management { padding: 1.4rem; background: rgba(255,255,255,.045); border: 1px solid var(--plan-border); border-radius: 16px; align-self: start; min-width: 0; }
+    .fcc-account-plan-management h2 { color: #fff; font-size: 1.05rem; font-weight: 700; line-height: 1.4; margin-bottom: .65rem; }
+    .fcc-account-plan-management p { color: var(--plan-muted); font-size: .86rem; line-height: 1.6; margin-bottom: 1rem; }
+    .fcc-account-plan-management-links { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .fcc-account-plan-page .fcc-account-plan-btn-primary,
+    .fcc-account-plan-page .fcc-account-plan-btn-secondary,
+    .fcc-account-plan-page .fcc-account-plan-btn-danger { border-radius: 10px; padding: .7rem 1rem; font-size: .86rem; font-weight: 650; line-height: 1.45; box-shadow: none; }
+    .fcc-account-plan-page .fcc-account-plan-btn-primary { background: #84e0d1; border: 1px solid #84e0d1; color: #092925; }
+    .fcc-account-plan-page .fcc-account-plan-btn-primary:hover { background: #a5ecdf; color: #092925; }
+    .fcc-account-plan-page .fcc-account-plan-btn-secondary { border: 1px solid #50617a; background: transparent; color: #e9f0f9; }
+    .fcc-account-plan-page .fcc-account-plan-btn-secondary:hover { background: #304059; color: #fff; }
+    .fcc-account-plan-page .fcc-account-plan-btn-danger { border: 1px solid #b86d78; background: rgba(228, 105, 122, .09); color: #ffbdc5; }
+    .fcc-account-plan-page .fcc-account-plan-btn-danger:hover { background: rgba(228, 105, 122, .2); color: #ffe7eb; }
+    .fcc-account-plan-cancellation { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--plan-border); }
+    .fcc-account-plan-cancellation > summary { display: block; width: 100%; cursor: pointer; text-align: center; list-style: none; }
+    .fcc-account-plan-cancellation > summary::-webkit-details-marker { display: none; }
+    .fcc-account-plan-confirmation { margin-top: 1rem; }
+    .fcc-account-plan-confirmation h3 { font-size: 1rem; color: #fff; margin-bottom: .6rem; }
+    .fcc-account-plan-confirmation form { display: flex; flex-wrap: wrap; gap: .65rem; }
+    .fcc-account-plan-confirmation form .btn { flex: 1 1 160px; }
+    .fcc-account-plan-no-renewal { display: flex; align-items: baseline; color: #a8d5c9; font-size: .81rem; line-height: 1.55; margin-top: 1rem; }
+    .fcc-account-plan-card { height: 100%; padding: 1.6rem; }
+    .fcc-account-plan-card.is-recommended { background: #18283a; border-color: #3d665f; }
+    .fcc-account-plan-card-title, .fcc-account-plan-section-title { color: #f5f8fd; font-size: 1.3rem; font-weight: 700; line-height: 1.3; margin-bottom: .6rem; letter-spacing: -.02em; }
+    .fcc-account-plan-card-header, .fcc-account-plan-card-topline { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
+    .fcc-account-plan-card-header > div:first-child { min-width: 0; }
+    .fcc-account-plan-usage { display: flex; flex-wrap: wrap; gap: .7rem 1.5rem; color: var(--plan-muted); font-size: .83rem; padding: .75rem 0; }
+    .fcc-account-plan-usage strong { color: #f5f8fd; font-size: 1.25rem; font-weight: 650; margin-right: .3rem; }
+    .fcc-account-plan-card-section-title { margin: 1rem 0 .75rem; color: #bdc9db; font-size: .78rem; font-weight: 650; }
+    .fcc-account-plan-feature-pills, .fcc-account-plan-price-chips { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .fcc-account-plan-feature-pill { padding: .55rem .7rem; background: rgba(255,255,255,.035); border: 1px solid var(--plan-border); border-radius: 8px; color: #e1eaf6; font-size: .81rem; }
+    .fcc-account-plan-price-chip, .fcc-account-plan-discount-pill { padding: .4rem .6rem; background: #263c4a; border-radius: 6px; font-size: .75rem; color: #d5eee8; }
+    .fcc-account-plan-discount-pill { margin-bottom: .75rem; }
+    .fcc-account-plan-price-box { flex-shrink: 0; text-align: right; }
+    .fcc-account-plan-price-main { font-size: 1.5rem; color: #fff; font-weight: 750; letter-spacing: -.03em; }
+    .fcc-account-plan-price-label, .fcc-account-plan-price-overline { color: var(--plan-muted); font-size: .74rem; }
+    .fcc-account-plan-cta-wrap { margin-top: 1.25rem; }
+    .fcc-account-plan-trial-note { margin-top: .7rem; color: #c7dbd2; line-height: 1.5; text-align: center; font-size: .79rem; }
+    .fcc-account-plan-details { margin-top: 1.25rem; border-top: 1px solid var(--plan-border); }
+    .fcc-account-plan-details > summary { cursor: pointer; color: #c4d1e3; padding: 1rem 0 .3rem; font-size: .85rem; font-weight: 650; }
+    .fcc-account-plan-details-content { padding-top: 1rem; }
+    .fcc-account-plan-details-content ul { margin-bottom: 0; }
+    .fcc-account-plan-details-content li { color: #d5deeb; }
+    .fcc-account-plan-details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+    .fcc-account-plan-details-plan-label { color: #a5e0d5; font-size: .9rem; font-weight: 700; margin-bottom: 1rem; }
+    .fcc-account-plan-section { margin-top: 1.5rem; padding: 1.6rem; }
+    .fcc-account-plan-comparison > summary { cursor: pointer; list-style: none; position: relative; padding-right: 2rem; }
+    .fcc-account-plan-comparison > summary::-webkit-details-marker { display: none; }
+    .fcc-account-plan-comparison > summary::after { content: '+'; position: absolute; right: 0; top: 0; color: #9de3da; font-size: 1.6rem; }
+    .fcc-account-plan-comparison[open] > summary::after { content: '−'; }
+    .fcc-account-plan-comparison > summary > span { display: block; }
+    .fcc-account-plan-comparison > summary .fcc-account-plan-section-subtitle { margin-bottom: 0; font-size: .85rem; }
+    .fcc-account-plan-table-wrap { margin-top: 1.25rem; overflow-x: auto; border: 1px solid var(--plan-border); border-radius: 12px; }
+    .fcc-account-plan-compare-table { width: 100%; border-collapse: collapse; font-size: .86rem; table-layout: fixed; }
+    .fcc-account-plan-compare-table th, .fcc-account-plan-compare-table td { padding: .85rem; border-bottom: 1px solid var(--plan-border); text-align: center; overflow-wrap: anywhere; }
+    .fcc-account-plan-compare-table thead th { background: #24364b; color: #fff; font-size: .8rem; }
+    .fcc-account-plan-compare-table th:first-child { width: 48%; text-align: left; }
+    .fcc-account-plan-compare-table tbody th { font-weight: 500; color: #d4dfed; }
+    .fcc-account-plan-compare-table tbody tr:last-child > * { border-bottom: 0; }
+    .fcc-account-plan-compare-table td:last-child { background: rgba(119, 211, 184, .045); }
+    .fcc-account-plan-compare-badge { display: inline-flex; align-items: center; gap: .3rem; }
+    .fcc-account-plan-compare-badge.is-on { color: #a2e5cf; }
+    .fcc-account-plan-compare-badge.is-off { color: #aab8cd; }
+    .fcc-account-plan-compare-value { color: #c9e6ff; font-weight: 600; }
+    .fcc-account-plan-billing-alert { display: grid; grid-template-columns: 40px minmax(0,1fr); grid-template-areas: "icon content" ". actions"; gap: 1rem; margin-top: 1.5rem; padding: 1.5rem; border-color: #816742; background: #302b24; }
+    .fcc-account-plan-billing-alert.is-critical { background: #32242a; border-color: #98616c; }
+    .fcc-account-plan-billing-alert__icon { grid-area: icon; color: #f4d49c; font-size: 1.5rem; }
+    .fcc-account-plan-billing-alert__content { grid-area: content; min-width: 0; }
+    .fcc-account-plan-billing-alert__actions { grid-area: actions; display: flex; flex-wrap: wrap; gap: .6rem; }
+    .fcc-account-plan-billing-alert__meta { margin-top: .8rem; font-size: .85rem; color: #f4d49c; }
+    .fcc-account-plan-billing-steps { display: flex; flex-wrap: wrap; gap: .7rem 1.1rem; margin-top: 1rem; font-size: .8rem; color: #dfd7cc; }
+    .fcc-account-plan-billing-steps span { display: inline-flex; align-items: center; justify-content: center; width: 23px; height: 23px; margin-right: .4rem; border-radius: 50%; background: rgba(255,255,255,.09); color: #f4d49c; }
     @media (max-width: 1199.98px) {
-        .fcc-account-plan-hero {
-            grid-template-columns: 1fr;
-        }
+        .fcc-account-plan-hero { gap: 1.25rem; padding: 1.5rem; grid-template-columns: minmax(0,1fr) minmax(285px,1fr); }
+        .fcc-account-plan-facts { gap: 1rem; }
     }
-
-    @media (max-width: 991.98px) {
-        .fcc-account-plan-billing-alert {
-            grid-template-columns: 1fr;
-            grid-template-areas:
-                "icon"
-                "content"
-                "actions";
-            align-items: stretch;
-        }
-
-        .fcc-account-plan-billing-alert__actions {
-            justify-content: flex-start;
-        }
-
-        .fcc-account-plan-billing-steps {
-            grid-template-columns: 1fr;
-        }
-
-        .fcc-account-plan-compare-table {
-            grid-template-columns: 1fr;
-        }
-
-        .fcc-account-plan-compare-head.fcc-account-plan-compare-feature {
-            display: none;
-        }
-
-        .fcc-account-plan-compare-head {
-            border-right: 0;
-        }
-
-        .fcc-account-plan-compare-cell {
-            border-right: 0;
-        }
-
-        .fcc-account-plan-compare-feature-name {
-            padding-bottom: .35rem;
-            border-top: 1px solid rgba(163, 192, 234, 0.1);
-        }
-    }
-
     @media (max-width: 767.98px) {
-        .fcc-account-plan-hero,
-        .fcc-account-plan-card,
-        .fcc-account-plan-billing-alert,
-        .fcc-account-plan-section,
-        .fcc-account-plan-cancel-card {
-            padding: 1.25rem;
-            border-radius: 24px;
-        }
-
-        .fcc-account-plan-card-header,
-        .fcc-account-plan-empty-state,
-        .fcc-account-plan-cancel-card {
-            flex-direction: column;
-        }
-
-        .fcc-account-plan-details-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .fcc-account-plan-price-box {
-            width: 100%;
-            text-align: left;
-        }
-
-        .fcc-account-plan-hero__metrics {
-            grid-template-columns: 1fr;
-        }
+        .fcc-account-plan-heading { margin: .25rem 0 1rem; }
+        .fcc-account-plan-heading p { font-size: .9rem; }
+        .fcc-account-plan-hero { grid-template-columns: 1fr; padding: 1.15rem; gap: 1rem; }
+        .fcc-account-plan-hero, .fcc-account-plan-card, .fcc-account-plan-section, .fcc-account-plan-billing-alert { border-radius: 16px; }
+        .fcc-account-plan-management { padding: 1rem; }
+        .fcc-account-plan-subtitle { margin-bottom: .75rem; }
+        .fcc-account-plan-facts { padding: 1rem 0 .5rem; gap: .85rem 1.4rem; }
+        .fcc-account-plan-management-links > .btn { flex: 1 1 130px; }
+        .fcc-account-plan-card, .fcc-account-plan-section, .fcc-account-plan-billing-alert { padding: 1.15rem; }
+        .fcc-account-plan-card-title, .fcc-account-plan-section-title { font-size: 1.15rem; }
+        .fcc-account-plan-details-grid { grid-template-columns: 1fr; }
+        .fcc-account-plan-compare-table { font-size: .77rem; }
+        .fcc-account-plan-compare-table th, .fcc-account-plan-compare-table td { padding: .75rem .4rem; }
+        .fcc-account-plan-compare-table th:first-child { width: 44%; }
+        .fcc-account-plan-compare-badge { flex-direction: column; gap: .1rem; }
+        .fcc-account-plan-billing-alert { grid-template-columns: 1fr; grid-template-areas: "icon" "content" "actions"; }
+        .fcc-account-plan-billing-alert__actions > .btn { width: 100%; }
+    }
+    @media (max-width: 359.98px) {
+        .fcc-account-plan-card-header { flex-direction: column; }
+        .fcc-account-plan-price-box { text-align: left; }
     }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const scrollLinks = document.querySelectorAll('[data-scroll-target]');
+        const page = document.querySelector('.fcc-account-plan-page');
+        if(!page) return;
 
-        scrollLinks.forEach(link => {
+        page.querySelectorAll('[data-scroll-target]').forEach(link => {
             link.addEventListener('click', event => {
-                const targetSelector = link.getAttribute('data-scroll-target');
-                const targetElement = targetSelector ? document.querySelector(targetSelector) : null;
-
-                if(!targetElement) {
-                    return;
-                }
-
-                const currentUrl = new URL(window.location.href);
-                const targetUrl = new URL(link.href, window.location.origin);
-
-                if(currentUrl.pathname !== targetUrl.pathname) {
-                    return;
-                }
-
+                const target = page.querySelector(link.getAttribute('data-scroll-target'));
+                if(!target) return;
                 event.preventDefault();
-                targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
-                window.history.replaceState({}, '', targetUrl.toString());
+                if(target.tagName === 'DETAILS') target.open = true;
+                target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+                window.history.replaceState({}, '', link.href);
+            });
+        });
+        if(window.location.hash === '#fcc-plan-compare') {
+            const comparison = page.querySelector('#fcc-plan-compare');
+            if(comparison) comparison.open = true;
+        }
+
+        const cancellation = page.querySelector('#fcc-cancel-subscription');
+        const keepButton = page.querySelector('[data-keep-subscription]');
+        if(cancellation && keepButton) {
+            keepButton.hidden = false;
+            keepButton.addEventListener('click', () => {
+                cancellation.open = false;
+                cancellation.querySelector('summary').focus();
+            });
+        }
+        page.querySelectorAll('[data-cancel-subscription-form]').forEach(form => {
+            form.addEventListener('submit', event => {
+                if(form.dataset.submitting) {
+                    event.preventDefault();
+                    return;
+                }
+                form.dataset.submitting = 'true';
+                form.setAttribute('aria-busy', 'true');
+                form.querySelector('button[type="submit"]').disabled = true;
+            });
+        });
+        window.addEventListener('pageshow', () => {
+            page.querySelectorAll('[data-cancel-subscription-form]').forEach(form => {
+                delete form.dataset.submitting;
+                form.removeAttribute('aria-busy');
+                form.querySelector('button[type="submit"]').disabled = false;
             });
         });
     });
