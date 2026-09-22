@@ -712,7 +712,7 @@ function fc_get_forever_click_identity_context(array $payload = []): ?array {
 }
 
 function fc_cleanup_forever_click_integrity_data(): void {
-    fc_ensure_forever_click_integrity_tables();
+    fc_ensure_forever_click_qualification_schema();
 
     $cutoff_datetime = (new \DateTime())->modify('-' . fc_get_forever_click_integrity_retention_days() . ' days')->format('Y-m-d H:i:s');
 
@@ -720,9 +720,99 @@ function fc_cleanup_forever_click_integrity_data(): void {
     database()->query("DELETE FROM `forever_click_integrity_suspicious` WHERE `datetime` < '{$cutoff_datetime}'");
 }
 
+/* FC-2026-09-22: freeze classification once; retain all original columns for rollback. */
+function fc_ensure_forever_click_qualification_schema(): void {
+    static $ready = false;
+    if($ready) return;
+    $column = database()->query("SHOW COLUMNS FROM `track_links` LIKE 'fcc_click_kind'")->fetch_assoc();
+    if($column && $column['Default'] === 'none') {
+        $ready = true;
+        return;
+    }
+    $lock = database()->query("SELECT GET_LOCK('fcc_click_qualification_v1', 30) AS acquired")->fetch_assoc();
+    if((int) ($lock['acquired'] ?? 0) !== 1) throw new \RuntimeException('Click qualification migration is busy');
+    try {
+        fc_ensure_forever_click_integrity_tables();
+        fc_ensure_track_links_visitor_key_schema();
+        $column = database()->query("SHOW COLUMNS FROM `track_links` LIKE 'fcc_click_kind'")->fetch_assoc();
+        if($column && $column['Default'] === 'none') { $ready = true; return; }
+        if(!$column) {
+            if(!database()->query("ALTER TABLE `track_links`
+                ADD `fcc_click_kind` VARCHAR(32) NULL DEFAULT NULL,
+                ADD `fcc_parent_link_id` INT UNSIGNED NULL DEFAULT NULL,
+                ADD `fcc_integrity_accept_id` BIGINT UNSIGNED NULL DEFAULT NULL,
+                ADD INDEX `fcc_integrity_accept` (`fcc_integrity_accept_id`)
+            ")) throw new \RuntimeException('Could not add click qualification snapshot');
+        }
+        $index = database()->query("SHOW INDEX FROM `forever_click_integrity_accepts` WHERE Key_name = 'fcc_track_match'");
+        if(!$index->num_rows && !database()->query("ALTER TABLE `forever_click_integrity_accepts` ADD INDEX `fcc_track_match` (`user_id`, `accepted_datetime`, `biolink_block_id`, `link_id`)")) {
+            throw new \RuntimeException('Could not index historical click reconciliation');
+        }
+        $valid_destination = \Altum\Link::get_forever_destination_condition_sql('a.destination_url');
+        $legacy_types = "'" . implode("','", \Altum\Link::get_fcc_results_qualified_block_types()) . "'";
+        /* Only matched acceptance evidence may promote an ordinary historical link.
+           Older events without retained evidence keep their previous classification. */
+        $sql = "UPDATE `track_links` t
+            LEFT JOIN `biolinks_blocks` b ON b.biolink_block_id = t.biolink_block_id
+            LEFT JOIN `forever_click_integrity_accepts` a
+              ON a.user_id = t.user_id AND a.accepted_datetime = t.datetime
+              AND a.biolink_block_id <=> t.biolink_block_id AND a.link_id <=> t.link_id
+              AND BINARY a.visitor_key <=> BINARY t.visitor_key
+            SET t.fcc_click_kind = CASE
+                WHEN t.is_unique <> 1 THEN 'none'
+                WHEN a.integrity_accept_id IS NOT NULL THEN CASE WHEN {$valid_destination} THEN
+                    CONCAT(CASE WHEN a.source_type = 'blog_cta' THEN 'blog' WHEN a.source_type = 'biolink_block' THEN 'app' ELSE 'direct' END,
+                        CASE WHEN a.click_type IN ('business','blog_forever_business','link_forever_shop') THEN '_registration' ELSE '_shop' END)
+                    ELSE 'none' END
+                WHEN t.utm_medium = 'blog_cta_business' THEN 'blog_registration'
+                WHEN t.utm_medium = 'blog_cta_product' THEN 'blog_shop'
+                WHEN b.type IN ({$legacy_types}) THEN CASE WHEN b.type = 'link_forever_shop' THEN 'app_registration' ELSE 'app_shop' END
+                ELSE 'none' END,
+                t.fcc_parent_link_id = b.link_id,
+                t.fcc_integrity_accept_id = a.integrity_accept_id
+            WHERE t.fcc_click_kind IS NULL";
+        if(!database()->query($sql)) throw new \RuntimeException('Could not reconcile historical clicks');
+        /* This default is also the durable migration-complete marker. New non-Forever
+           events are unqualified even if their caller supplies a forged UTM medium. */
+        if(!database()->query("ALTER TABLE `track_links` MODIFY `fcc_click_kind` VARCHAR(32) NULL DEFAULT 'none'")) {
+            throw new \RuntimeException('Could not finalize click qualification migration');
+        }
+        $ready = true;
+    } finally {
+        database()->query("SELECT RELEASE_LOCK('fcc_click_qualification_v1')");
+    }
+}
+
 function fc_process_monitored_forever_click(array $payload): array {
-    fc_ensure_forever_click_integrity_tables();
-    fc_ensure_track_links_visitor_key_schema();
+    /* Serialize acceptance per collaborator, and never consume a visitor's slot
+       unless the immutable qualified track row and acceptance both commit. */
+    if(!\Altum\Link::is_monitored_forever_destination_url($payload['destination_url'] ?? '')) {
+        return ['accepted' => false, 'ignored' => true];
+    }
+    fc_ensure_forever_click_qualification_schema();
+    $user_id = (int) ($payload['user_id'] ?? 0);
+    if($user_id <= 0) return ['accepted' => false, 'ignored' => true];
+    $lock_name = 'fcc_forever_click_' . $user_id;
+    $lock = database()->query("SELECT GET_LOCK('{$lock_name}', 5) AS acquired")->fetch_assoc();
+    if((int) ($lock['acquired'] ?? 0) !== 1) {
+        error_log('FCC click acceptance lock unavailable');
+        return ['accepted' => false, 'retryable' => true];
+    }
+    try {
+        db()->startTransaction();
+        $result = fc_record_monitored_forever_click($payload);
+        if(!db()->commit()) throw new \RuntimeException('Could not commit qualified click');
+        return $result;
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        error_log('FCC qualified click transaction failed');
+        return ['accepted' => false, 'retryable' => true];
+    } finally {
+        database()->query("SELECT RELEASE_LOCK('{$lock_name}')");
+    }
+}
+
+function fc_record_monitored_forever_click(array $payload): array {
 
     $user_id = (int) ($payload['user_id'] ?? 0);
     $project_id = isset($payload['project_id']) ? (int) $payload['project_id'] : null;
@@ -755,6 +845,7 @@ function fc_process_monitored_forever_click(array $payload): array {
         $identity_hash = database()->real_escape_string((string) $context['identity_hash']);
         $matched_accept = db()
             ->where('user_id', $user_id)
+            ->where("EXISTS (SELECT 1 FROM track_links qt WHERE qt.fcc_integrity_accept_id = forever_click_integrity_accepts.integrity_accept_id AND qt.fcc_click_kind <> 'none' AND qt.is_unique = 1)")
             ->where('identity_hash', $identity_hash)
             ->where('accepted_datetime', $retention_start_datetime, '>=')
             ->orderBy('accepted_datetime', 'DESC')
@@ -769,6 +860,7 @@ function fc_process_monitored_forever_click(array $payload): array {
         $network_hash = database()->real_escape_string((string) $context['network_hash']);
         $matched_accept = db()
             ->where('user_id', $user_id)
+            ->where("EXISTS (SELECT 1 FROM track_links qt WHERE qt.fcc_integrity_accept_id = forever_click_integrity_accepts.integrity_accept_id AND qt.fcc_click_kind <> 'none' AND qt.is_unique = 1)")
             ->where('network_hash', $network_hash)
             ->where('accepted_datetime', $network_start_datetime, '>=')
             ->orderBy('accepted_datetime', 'DESC')
@@ -851,7 +943,7 @@ function fc_process_monitored_forever_click(array $payload): array {
         ];
     }
 
-    db()->insert('forever_click_integrity_accepts', [
+    $accept_id = db()->insert('forever_click_integrity_accepts', [
         'user_id' => $user_id,
         'link_id' => $link_id,
         'biolink_block_id' => $biolink_block_id,
@@ -881,7 +973,12 @@ function fc_process_monitored_forever_click(array $payload): array {
         'last_attempt_datetime' => $now_datetime,
     ]);
 
-    db()->insert('track_links', [
+    if(!$accept_id) throw new \RuntimeException('Could not persist click acceptance');
+    $parent_link_id = $biolink_block_id ? db()->where('biolink_block_id', $biolink_block_id)->getValue('biolinks_blocks', 'link_id') : null;
+    $track_id = db()->insert('track_links', [
+        'fcc_click_kind' => \Altum\Link::get_forever_click_kind($source_type, $click_type),
+        'fcc_parent_link_id' => $parent_link_id,
+        'fcc_integrity_accept_id' => $accept_id,
         'user_id' => $user_id,
         'link_id' => $link_id,
         'biolink_block_id' => $biolink_block_id,
@@ -902,6 +999,8 @@ function fc_process_monitored_forever_click(array $payload): array {
         'is_unique' => 1,
         'datetime' => $now_datetime,
     ]);
+
+    if(!$track_id) throw new \RuntimeException('Could not persist qualified click');
 
     if($biolink_block_id) {
         db()->where('biolink_block_id', $biolink_block_id)->update('biolinks_blocks', ['clicks' => db()->inc()]);

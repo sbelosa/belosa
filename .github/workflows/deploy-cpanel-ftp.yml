@@ -22,6 +22,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    services:
+      click-test-db:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: local-click-test-only
+          MARIADB_DATABASE: click_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,7 +43,7 @@ jobs:
         with:
           php-version: '8.3'
           # Custom code: FC-2026-09-14: Render the real registration CAPTCHA in release tests
-          extensions: gd, mbstring
+          extensions: gd, mbstring, mysqli
           # /Custom code: FC-2026-09-14
           coverage: none
 
@@ -71,6 +83,44 @@ jobs:
           php scripts/test_request_performance_guards.php
           php scripts/test_user_plan_expiration_guard.php
           php scripts/test_vip_funnel_persistence_guards.php
+
+      - name: Verify immutable Forever click qualification
+        env:
+          FCC_TEST_DB_HOST: 127.0.0.1
+          FCC_TEST_DB_PASSWORD: local-click-test-only
+        run: php scripts/test_forever_click_qualification.php
+
+      # FTP is not an atomic directory switch. Install backward-compatible helpers
+      # before controllers begin reading the immutable qualification columns.
+      - name: Prepare click qualification prerequisites
+        run: |
+          mkdir -p click-prerequisites/link click-prerequisites/tracking
+          cp app/helpers/Link.php click-prerequisites/link/
+          cp app/helpers/automations.php click-prerequisites/tracking/
+
+      - name: Deploy click destination helpers
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./click-prerequisites/link/
+          server-dir: /public_html/app/helpers/
+          state-name: .ftp-deploy-sync-state-click-link.json
+          dangerous-clean-slate: false
+
+      - name: Deploy click tracking and schema helpers
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./click-prerequisites/tracking/
+          server-dir: /public_html/app/helpers/
+          state-name: .ftp-deploy-sync-state-click-tracking.json
+          dangerous-clean-slate: false
 
       - name: Deploy app/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

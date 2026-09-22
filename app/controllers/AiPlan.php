@@ -3128,27 +3128,9 @@ class AiPlan extends Controller {
 
     private function get_ai_growth_signal_payload(array $app_structure_payload, int $current_clicks_30d): array {
         $main_app = $this->get_main_app_for_review($app_structure_payload) ?? [];
-        $performance = $this->get_app_review_performance_snapshot($main_app);
-        $signal_7d = $this->get_ai_growth_signal_window_payload($main_app, 7);
-        $shop_contacts = (int) ($performance['shop_contacts_30d'] ?? $current_clicks_30d);
-        $whatsapp_contacts = (int) ($performance['whatsapp_contacts_30d'] ?? 0);
-        $funnel_registrations = (int) ($performance['funnel_registrations_30d'] ?? 0);
-        $ai_chat_leads = (int) ($performance['ai_chat_leads_30d'] ?? 0);
-        $growth_signal_30d = $shop_contacts + $whatsapp_contacts + $funnel_registrations + $ai_chat_leads;
-
-        return [
-            'growth_signal_30d' => $growth_signal_30d,
-            'growth_signal_7d' => (int) ($signal_7d['growth_signal'] ?? 0),
-            'shop_contacts_30d' => $shop_contacts,
-            'shop_contacts_7d' => (int) ($signal_7d['shop_contacts'] ?? 0),
-            'whatsapp_contacts_30d' => $whatsapp_contacts,
-            'whatsapp_contacts_7d' => (int) ($signal_7d['whatsapp_contacts'] ?? 0),
-            'funnel_registrations_30d' => $funnel_registrations,
-            'funnel_registrations_7d' => (int) ($signal_7d['funnel_registrations'] ?? 0),
-            'ai_chat_leads_30d' => $ai_chat_leads,
-            'ai_chat_leads_7d' => (int) ($signal_7d['ai_chat_leads'] ?? 0),
-            'main_app_performance' => $performance,
-        ];
+        $payload = fcc_ai_get_user_growth_signal_snapshot((int) $this->user->user_id);
+        $payload['main_app_performance'] = $this->get_app_review_performance_snapshot($main_app);
+        return $payload;
     }
 
     private function get_ai_growth_access_payload($preferences, array $app_structure_payload, int $current_clicks_30d): array {

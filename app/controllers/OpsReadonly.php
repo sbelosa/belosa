@@ -722,6 +722,7 @@ class OpsReadonly extends Controller {
                 'is_weekly_check_passed' => $is_weekly_check_passed,
             ],
             'public_signal_summary' => [
+                'qualification_version' => (int) ($public_signal_summary['qualification_version'] ?? 0),
                 'growth_signal_30d' => (int) ($public_signal_summary['growth_signal_30d'] ?? 0),
                 'growth_signal_7d' => (int) ($public_signal_summary['growth_signal_7d'] ?? 0),
                 'app_clicks_30d' => (int) ($public_signal_summary['app_clicks_30d'] ?? 0),

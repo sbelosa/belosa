@@ -1485,11 +1485,38 @@ class Link {
         ];
     }
 
+    /* FC-2026-09-22: immutable, shared qualification for every public threshold. */
     public static function get_fcc_results_qualified_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias): string {
-        $qualified_block_types_sql = "'" . implode("','", self::get_fcc_results_qualified_block_types()) . "'";
-        $qualified_blog_mediums_sql = "'" . implode("','", self::get_fcc_results_qualified_blog_mediums()) . "'";
+        // Compatibility while the FTP release installs the shared tracking helper.
+        if(!function_exists('fc_ensure_forever_click_qualification_schema')) {
+            $types = "'" . implode("','", self::get_fcc_results_qualified_block_types()) . "'";
+            $mediums = "'" . implode("','", self::get_fcc_results_qualified_blog_mediums()) . "'";
+            return "({$biolinks_blocks_alias}.`type` IN ({$types}) OR {$track_links_alias}.`utm_medium` IN ({$mediums}))";
+        }
+        fc_ensure_forever_click_qualification_schema();
+        return "({$track_links_alias}.`fcc_click_kind` IN ('app_shop','app_registration','blog_shop','blog_registration','direct_shop','direct_registration'))";
+    }
 
-        return "((COALESCE({$biolinks_blocks_alias}.`type`, '') IN ({$qualified_block_types_sql})) OR (COALESCE({$track_links_alias}.`utm_medium`, '') IN ({$qualified_blog_mediums_sql})))";
+    public static function get_fcc_click_channel_condition_sql(string $alias, string $channel): string {
+        fc_ensure_forever_click_qualification_schema();
+        $kinds = $channel === 'blog' ? "'blog_shop','blog_registration'" : "'app_shop','app_registration','direct_shop','direct_registration'";
+        return "({$alias}.`fcc_click_kind` IN ({$kinds}))";
+    }
+
+    public static function get_forever_destination_pattern(): string {
+        /* Anchored authority: no substring domains, credentials, or arbitrary ?id=. */
+        return '^https?://([a-z0-9-]+[.])*(foreverliving[.]com|foreverlivingproducts[.]com|thealoeveraco[.]shop|flpshop[.]ba|foreveralbania[.]com)(:80|:443)?([/?#]|$)';
+    }
+
+    public static function get_forever_destination_condition_sql(string $expression): string {
+        $pattern = database()->real_escape_string(self::get_forever_destination_pattern());
+        return "(LOWER(TRIM(COALESCE({$expression}, ''))) REGEXP '{$pattern}')";
+    }
+
+    public static function get_forever_click_kind(string $source_type, string $click_type): string {
+        $channel = $source_type === 'blog_cta' ? 'blog' : ($source_type === 'biolink_block' ? 'app' : 'direct');
+        $kind = in_array($click_type, ['business', 'blog_forever_business', 'link_forever_shop'], true) ? 'registration' : 'shop';
+        return $channel . '_' . $kind;
     }
 
     public static function get_monitored_forever_outbound_types(): array {
@@ -1509,36 +1536,8 @@ class Link {
 
     public static function is_monitored_forever_destination_url($url): bool {
         $url = trim((string) $url);
-
-        if($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) {
-            return false;
-        }
-
-        $host = parse_url($url, PHP_URL_HOST);
-        $host = is_string($host) ? mb_strtolower(preg_replace('/^www\./', '', $host) ?? $host) : '';
-
-        if($host === '') {
-            return false;
-        }
-
-        if($host === 'thealoeveraco.shop') {
-            return true;
-        }
-
-        if(strpos($host, 'foreverliving') !== false || strpos($host, 'foreverlivingproducts') !== false) {
-            return true;
-        }
-
-        $query = parse_url($url, PHP_URL_QUERY);
-        if(is_string($query) && $query !== '') {
-            parse_str($query, $query_parameters);
-
-            if(isset($query_parameters['fboId']) || isset($query_parameters['id'])) {
-                return true;
-            }
-        }
-
-        return false;
+        return filter_var($url, FILTER_VALIDATE_URL) !== false
+            && preg_match('~' . self::get_forever_destination_pattern() . '~i', $url) === 1;
     }
 
     public static function get_monitored_forever_destination_signature($url): ?string {
@@ -1584,15 +1583,21 @@ class Link {
     }
 
     public static function get_forever_shop_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $block_types_sql): string {
-        $blog_tracking_medium = self::get_blog_cta_tracking_medium('product');
-
-        return "(({$biolinks_blocks_alias}.`type` IN ({$block_types_sql})) OR ({$track_links_alias}.`utm_medium` = '{$blog_tracking_medium}'))";
+        if(!function_exists('fc_ensure_forever_click_qualification_schema')) {
+            $medium = self::get_blog_cta_tracking_medium('product');
+            return "({$biolinks_blocks_alias}.`type` IN ({$block_types_sql}) OR {$track_links_alias}.`utm_medium` = '{$medium}')";
+        }
+        fc_ensure_forever_click_qualification_schema();
+        return "({$track_links_alias}.`fcc_click_kind` IN ('app_shop','blog_shop','direct_shop'))";
     }
 
     public static function get_forever_registration_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $block_types_sql): string {
-        $blog_tracking_medium = self::get_blog_cta_tracking_medium('business');
-
-        return "(({$biolinks_blocks_alias}.`type` IN ({$block_types_sql})) OR ({$track_links_alias}.`utm_medium` = '{$blog_tracking_medium}'))";
+        if(!function_exists('fc_ensure_forever_click_qualification_schema')) {
+            $medium = self::get_blog_cta_tracking_medium('business');
+            return "({$biolinks_blocks_alias}.`type` IN ({$block_types_sql}) OR {$track_links_alias}.`utm_medium` = '{$medium}')";
+        }
+        fc_ensure_forever_click_qualification_schema();
+        return "({$track_links_alias}.`fcc_click_kind` IN ('app_registration','blog_registration','direct_registration'))";
     }
 
     public static function get_forever_outbound_click_condition_sql(string $track_links_alias, string $biolinks_blocks_alias, string $shop_block_types_sql, string $registration_block_types_sql): string {

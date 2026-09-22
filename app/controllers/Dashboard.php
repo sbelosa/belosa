@@ -450,8 +450,10 @@ class Dashboard extends Controller {
         $qualified_forever_block_types_sql = "'" . implode("','", $qualified_forever_block_types) . "'";
         $qualified_blog_mediums = [$blog_product_medium, $blog_business_medium];
         $qualified_blog_mediums_sql = "'" . implode("','", $qualified_blog_mediums) . "'";
-        $qualified_click_condition = "((`biolinks_blocks`.`type` IN ({$qualified_forever_block_types_sql})) OR (`track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql})))";
+        $qualified_click_condition = \Altum\Link::get_fcc_results_qualified_click_condition_sql('`track_links`', '`biolinks_blocks`');
         $unique_track_links_condition = " AND `track_links`.`is_unique` = 1";
+        $app_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'app');
+        $blog_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'blog');
 
         $track_clicks_total = (int) db()->where('user_id', $this->user->user_id)->getValue('track_links', 'COUNT(`id`)');
         $track_clicks_unique_total = (int) (db()->where('user_id', $this->user->user_id)->getValue('track_links', 'SUM(`is_unique`)') ?? 0);
@@ -488,13 +490,13 @@ class Dashboard extends Controller {
             WHERE `track_links`.`user_id` = {$this->user->user_id}
               AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
               {$unique_track_links_condition}
-              AND `biolinks_blocks`.`type` IN ({$qualified_forever_block_types_sql})")->fetch_object()->total;
+              AND {$app_qualified_condition_sql}")->fetch_object()->total;
         $blog_qualified_clicks_30d = (int) database()->query("SELECT COUNT(*) AS `total`
             FROM `track_links`
             WHERE `track_links`.`user_id` = {$this->user->user_id}
               AND `track_links`.`datetime` >= '{$thirty_days_start_datetime}'
               {$unique_track_links_condition}
-              AND `track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql})")->fetch_object()->total;
+              AND {$blog_qualified_condition_sql}")->fetch_object()->total;
         $funnel_public_signal_30d = vip_funnel_get_public_qualification_signal_payload($this->user->user_id, $thirty_days_start_datetime);
         $funnel_public_signal_prev_30d = vip_funnel_get_public_qualification_signal_payload($this->user->user_id, $previous_thirty_days_start_datetime, $thirty_days_start_datetime);
         $qualified_clicks_30d += (int) ($funnel_public_signal_30d['total'] ?? 0);
@@ -775,8 +777,8 @@ class Dashboard extends Controller {
 
         $signal_chart_clicks_result = database()->query("SELECT
             DATE(`track_links`.`datetime`) AS `day`,
-            SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$qualified_forever_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
-            SUM(CASE WHEN `track_links`.`utm_medium` IN ({$qualified_blog_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
+            SUM(CASE WHEN {$app_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+            SUM(CASE WHEN {$blog_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
             SUM(CASE WHEN {$forever_registration_condition} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `registration_clicks`
             FROM `track_links`
             LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`

@@ -1822,7 +1822,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $product_medium = db()->escape($blog_mediums['product']);
         $business_medium = db()->escape($blog_mediums['business']);
 
-        return "({$track_links_alias}.`utm_medium` IN ('{$product_medium}', '{$business_medium}') AND {$track_links_alias}.`utm_campaign` LIKE 'blog_post:%')";
+        return \Altum\Link::get_fcc_click_channel_condition_sql($track_links_alias, 'blog');
     }
 
     private function get_country_table_key(?string $country_code): string {
@@ -2829,6 +2829,7 @@ class AdminLeaderOperatingSystem extends Controller {
     }
 
     private function get_blog_cta_mediums(): array {
+        fc_ensure_forever_click_qualification_schema();
         return [
             'product' => \Altum\Link::get_blog_cta_tracking_medium('product'),
             'business' => \Altum\Link::get_blog_cta_tracking_medium('business'),
@@ -2982,7 +2983,7 @@ class AdminLeaderOperatingSystem extends Controller {
         LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
         WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
           AND `users`.`type` = 0
-          AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}')")->fetch_object();
+          AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration')")->fetch_object();
 
         if($summary) {
             $payload['total_clicks'] = (int) ($summary->total_clicks ?? 0);
@@ -2999,7 +3000,7 @@ class AdminLeaderOperatingSystem extends Controller {
         LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
         WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
           AND `users`.`type` = 0
-          AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}')
+          AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration')
         GROUP BY `track_links`.`user_id`, `users`.`name`
         ORDER BY `total` DESC, `track_links`.`user_id` DESC
         LIMIT 5");
@@ -3023,7 +3024,7 @@ class AdminLeaderOperatingSystem extends Controller {
         LEFT JOIN `blog_posts` ON `blog_posts`.`blog_post_id` = CAST(SUBSTRING_INDEX(`track_links`.`utm_campaign`, ':', -1) AS UNSIGNED)
         WHERE `track_links`.`datetime` >= '{$period_start_datetime}'
           AND `users`.`type` = 0
-          AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}')
+          AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration')
         GROUP BY `blog_post_id`, `blog_posts`.`title`, `blog_posts`.`url`
         ORDER BY `total` DESC, `blog_post_id` DESC
         LIMIT 5");
@@ -4553,12 +4554,13 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         $app_webshop_block_types_sql = $this->get_team_app_webshop_block_types_sql();
+        $app_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'app');
         $blog_referral_click_condition = $this->get_team_blog_referral_click_condition_sql('`track_links`');
 
         $result = database()->query("SELECT
             DATE(`track_links`.`datetime`) AS `date_key`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`link_id` IS NOT NULL AND `track_links`.`biolink_block_id` IS NULL AND `links`.`type` = 'biolink' THEN 1 ELSE 0 END) AS `app_visits`,
-            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$app_webshop_block_types_sql}) THEN 1 ELSE 0 END) AS `app_shop_clicks`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$app_qualified_condition_sql} THEN 1 ELSE 0 END) AS `app_shop_clicks`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$blog_referral_click_condition} THEN 1 ELSE 0 END) AS `blog_clicks`
         FROM `track_links`
         LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
@@ -4616,13 +4618,14 @@ class AdminLeaderOperatingSystem extends Controller {
     private function get_team_country_signal_matrix_payload(int $period_days, string $period_key): array {
         $period_start_datetime = $this->get_period_start_datetime($period_days);
         $app_webshop_block_types_sql = $this->get_team_app_webshop_block_types_sql();
+        $app_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'app');
         $blog_referral_click_condition = $this->get_team_blog_referral_click_condition_sql('`track_links`');
         $rows_map = [];
 
         $clicks_result = database()->query("SELECT
             UPPER(TRIM(COALESCE(`track_links`.`country_code`, ''))) AS `country_code`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`link_id` IS NOT NULL AND `track_links`.`biolink_block_id` IS NULL AND `links`.`type` = 'biolink' THEN 1 ELSE 0 END) AS `app_visits`,
-            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `biolinks_blocks`.`type` IN ({$app_webshop_block_types_sql}) THEN 1 ELSE 0 END) AS `app_shop_clicks`,
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$app_qualified_condition_sql} THEN 1 ELSE 0 END) AS `app_shop_clicks`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$blog_referral_click_condition} THEN 1 ELSE 0 END) AS `blog_clicks`
         FROM `track_links`
         LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
@@ -4734,7 +4737,7 @@ class AdminLeaderOperatingSystem extends Controller {
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$outbound_condition} THEN 1 ELSE 0 END) AS `clicks`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$shop_condition} THEN 1 ELSE 0 END) AS `shop_clicks`,
             SUM(CASE WHEN `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registrations`,
-            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}') THEN 1 ELSE 0 END) AS `blog_forever`
+            SUM(CASE WHEN `track_links`.`is_unique` = 1 AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration') THEN 1 ELSE 0 END) AS `blog_forever`
         FROM `track_links`
         LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
         LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
@@ -4967,9 +4970,9 @@ class AdminLeaderOperatingSystem extends Controller {
                 SUM(CASE WHEN `track_links`.`datetime` >= '{$start_7d}' AND `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registrations_7d`,
                 SUM(CASE WHEN `track_links`.`datetime` >= '{$start_30d}' AND `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registrations_30d`,
                 SUM(CASE WHEN `track_links`.`datetime` >= '{$start_90d}' AND `track_links`.`is_unique` = 1 AND {$registration_condition} THEN 1 ELSE 0 END) AS `registrations_90d`,
-                SUM(CASE WHEN `track_links`.`datetime` >= '{$start_7d}' AND `track_links`.`is_unique` = 1 AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}') THEN 1 ELSE 0 END) AS `blog_7d`,
-                SUM(CASE WHEN `track_links`.`datetime` >= '{$start_30d}' AND `track_links`.`is_unique` = 1 AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}') THEN 1 ELSE 0 END) AS `blog_30d`,
-                SUM(CASE WHEN `track_links`.`datetime` >= '{$start_90d}' AND `track_links`.`is_unique` = 1 AND `track_links`.`utm_medium` IN ('{$product_medium}', '{$business_medium}') THEN 1 ELSE 0 END) AS `blog_90d`
+                SUM(CASE WHEN `track_links`.`datetime` >= '{$start_7d}' AND `track_links`.`is_unique` = 1 AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration') THEN 1 ELSE 0 END) AS `blog_7d`,
+                SUM(CASE WHEN `track_links`.`datetime` >= '{$start_30d}' AND `track_links`.`is_unique` = 1 AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration') THEN 1 ELSE 0 END) AS `blog_30d`,
+                SUM(CASE WHEN `track_links`.`datetime` >= '{$start_90d}' AND `track_links`.`is_unique` = 1 AND `track_links`.`fcc_click_kind` IN ('blog_shop','blog_registration') THEN 1 ELSE 0 END) AS `blog_90d`
             FROM `track_links`
             LEFT JOIN `users` ON `track_links`.`user_id` = `users`.`user_id`
             LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`

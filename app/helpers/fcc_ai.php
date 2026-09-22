@@ -1821,6 +1821,10 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
         return $payload;
     }
 
+    $public_signal = fcc_ai_get_user_public_visibility_signal_snapshot($user_id);
+    $payload['growth_signal_30d'] = $public_signal['growth_signal_30d'];
+    $payload['growth_signal_7d'] = $public_signal['growth_signal_7d'];
+
     if($link_id <= 0) {
         $link_id = (int) (fc_get_user_main_biolink_id($user_id) ?? 0);
     }
@@ -1831,6 +1835,7 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
         return $payload;
     }
 
+    fc_ensure_forever_click_qualification_schema();
     $tracked_blocks = [
         'shop' => [],
         'whatsapp' => [],
@@ -1922,9 +1927,15 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
             }
         }
 
+        $shop_signal = database()->query("SELECT COUNT(*) AS total FROM track_links
+            WHERE user_id = {$user_id} AND fcc_parent_link_id = {$link_id}
+              AND is_unique = 1 AND fcc_click_kind IN ('app_shop','app_registration')
+              AND datetime >= '{$period_start_datetime}'")->fetch_object();
+        $payload['shop_contacts_' . $period_key] = (int) ($shop_signal->total ?? 0);
+
         $chat_leads = fcc_ai_get_chat_lead_counts_by_link_ids([$link_id], $period_start_datetime);
         $payload['ai_chat_leads_' . $period_key] = (int) ($chat_leads[$link_id] ?? 0);
-        $payload['growth_signal_' . $period_key] = (int) (
+        $payload['engagement_signal_' . $period_key] = (int) (
             (int) ($payload['shop_contacts_' . $period_key] ?? 0)
             + (int) ($payload['whatsapp_contacts_' . $period_key] ?? 0)
             + (int) ($payload['funnel_registrations_' . $period_key] ?? 0)
@@ -1937,6 +1948,7 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
 
 function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array {
     $payload = [
+        'qualification_version' => 1,
         'qualified_clicks_30d' => 0,
         'qualified_clicks_7d' => 0,
         'app_clicks_30d' => 0,
@@ -1970,6 +1982,8 @@ function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array 
         return database()->real_escape_string((string) $value);
     }, $blog_mediums)) . "'";
     $qualified_click_condition_sql = \Altum\Link::get_fcc_results_qualified_click_condition_sql('`track_links`', '`biolinks_blocks`');
+    $app_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'app');
+    $blog_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'blog');
 
     $periods = [
         '30d' => (new \DateTimeImmutable())->sub(new \DateInterval('P29D'))->format('Y-m-d 00:00:00'),
@@ -1979,8 +1993,8 @@ function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array 
     foreach($periods as $period_key => $period_start_datetime) {
         $result = database()->query("SELECT
                 SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
-                SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$qualified_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
-                SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`
+                SUM(CASE WHEN {$app_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+                SUM(CASE WHEN {$blog_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`
             FROM `track_links`
             LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`
             WHERE `track_links`.`user_id` = {$user_id}

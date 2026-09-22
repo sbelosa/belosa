@@ -125,6 +125,8 @@ class FccResults extends Controller {
         $blog_forever_mediums = \Altum\Link::get_fcc_results_qualified_blog_mediums();
         $blog_forever_mediums_sql = "'" . implode("','", $blog_forever_mediums) . "'";
         $qualified_click_condition_sql = \Altum\Link::get_fcc_results_qualified_click_condition_sql('`track_links`', '`biolinks_blocks`');
+        $app_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'app');
+        $blog_qualified_condition_sql = \Altum\Link::get_fcc_click_channel_condition_sql('`track_links`', 'blog');
         $active_pro_user_condition_sql = $this->get_active_pro_leaderboard_user_condition_sql('`users`', get_date());
 
         $periods = [];
@@ -146,8 +148,8 @@ class FccResults extends Controller {
             $leaderboard = [];
             $leaderboard_result = database()->query("SELECT `users`.`user_id`, `users`.`name`,
                 SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
-                SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
-                SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_forever_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
+                SUM(CASE WHEN {$app_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+                SUM(CASE WHEN {$blog_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
                 SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits`
                 FROM `users`
                 LEFT JOIN `track_links` ON `track_links`.`user_id` = `users`.`user_id` AND `track_links`.`datetime` >= '{$period_start_datetime}'
@@ -238,8 +240,8 @@ class FccResults extends Controller {
 
             $current_user_totals_result = database()->query("SELECT
                 SUM(CASE WHEN {$qualified_click_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `qualified_clicks`,
-                SUM(CASE WHEN `biolinks_blocks`.`type` IN ({$forever_shop_block_types_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
-                SUM(CASE WHEN `track_links`.`utm_medium` IN ({$blog_forever_mediums_sql}) AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
+                SUM(CASE WHEN {$app_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `app_clicks`,
+                SUM(CASE WHEN {$blog_qualified_condition_sql} AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `blog_clicks`,
                 SUM(CASE WHEN `links`.`type` = 'biolink' AND `track_links`.`is_unique` = 1 THEN 1 ELSE 0 END) AS `biolink_visits`
                 FROM `track_links`
                 LEFT JOIN `biolinks_blocks` ON `track_links`.`biolink_block_id` = `biolinks_blocks`.`biolink_block_id`

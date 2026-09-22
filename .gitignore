@@ -49,3 +49,6 @@
 **/__MACOSX/
 **/.AppleDouble
 **/._*
+
+!scripts/test_forever_click_qualification.php
+!docs/forever-click-qualification-2026-09-22.md
