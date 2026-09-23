@@ -783,6 +783,48 @@ function fc_ensure_forever_click_qualification_schema(): void {
     }
 }
 
+/* FC-2026-09-23: neutral explanations, including legacy stored events. */
+function fc_forever_click_explanation(string $reason): array {
+    $messages = [
+        'qualified' => ['Priznato za 30-dnevni rezultat', 'Valjan Forever odlazak pribrojen je rezultatu.'],
+        'unqualified' => ['Odredište nije kvalificirano', 'Sačuvani zapis odredišta ne zadovoljava pravilo za kvalificirani Forever klik.'],
+        'rapid_repeat_same_target' => ['Ponovljeni odlazak na isto odredište', 'Prethodni odlazak već je priznat. Ovaj ponovljeni zahtjev ne donosi dodatni bod.'],
+        'repeat_same_target_30d' => ['Ponovljeni odlazak na isto odredište', 'Prethodni odlazak već je priznat prema pravilu ponavljanja. Novi bod nije dodan.'],
+        'repeat_identity_other_target' => ['Ponovljeni posjetitelj — već priznat', 'Prepoznati posjetitelj već ima priznat Forever odlazak kod ovog suradnika u zadnjih 30 dana. Drugo odredište ne donosi dodatni bod.'],
+        'same_network_signature' => ['Podudaranje mreže i uređaja', 'Mrežni i uređajski potpis podudara se s priznatim odlaskom u zadnjih 7 dana. To ne dokazuje da se radi o istoj osobi ili prijevari.'],
+    ];
+    $message = $messages[$reason] ?? ['Nije dodatno pribrojeno', 'Dostupni zapis ne sadrži dovoljno podataka za preciznije objašnjenje.'];
+    return ['title' => $message[0], 'text' => $message[1]];
+}
+
+/* Only the authenticated user's controller supplies this ID. Never return visitor data. */
+function fc_get_forever_click_activity(int $user_id): array {
+    if($user_id <= 0) return [];
+    fc_ensure_forever_click_qualification_schema();
+    $start = (new \DateTimeImmutable())->modify('-29 days')->format('Y-m-d 00:00:00');
+    $sql = "SELECT * FROM (
+        (SELECT t.datetime, CASE WHEN t.fcc_click_kind = 'none' THEN 'unqualified' ELSE 'qualified' END AS reason_key,
+                CASE WHEN t.fcc_click_kind LIKE 'blog_%' THEN 'Blog' ELSE 'Aplikacija / poveznica' END AS source
+         FROM track_links t WHERE t.user_id = {$user_id} AND t.is_unique = 1 AND t.datetime >= '{$start}'
+           AND (t.fcc_click_kind <> 'none' OR t.fcc_integrity_accept_id IS NOT NULL)
+         ORDER BY t.datetime DESC LIMIT 20)
+        UNION ALL
+        (SELECT s.datetime, s.reason_key, CASE WHEN s.source_type = 'blog_cta' THEN 'Blog' ELSE 'Aplikacija / poveznica' END AS source
+         FROM forever_click_integrity_suspicious s WHERE s.user_id = {$user_id} AND s.datetime >= '{$start}'
+         ORDER BY s.datetime DESC LIMIT 20)
+    ) events ORDER BY datetime DESC LIMIT 20";
+    $result = database()->query($sql);
+    $rows = [];
+    while($row = $result->fetch_assoc()) {
+        $message = fc_forever_click_explanation($row['reason_key']);
+        $time = new \DateTimeImmutable($row['datetime'], new \DateTimeZone('UTC'));
+        $rows[] = ['time' => $time->setTimezone(new \DateTimeZone('Europe/Zagreb'))->format('d.m.Y. H:i:s'),
+            'source' => $row['source'], 'accepted' => $row['reason_key'] === 'qualified',
+            'title' => $message['title'], 'text' => $message['text']];
+    }
+    return $rows;
+}
+
 function fc_process_monitored_forever_click(array $payload): array {
     /* Serialize acceptance per collaborator, and never consume a visitor's slot
        unless the immutable qualified track row and acceptance both commit. */
@@ -878,23 +920,18 @@ function fc_record_monitored_forever_click(array $payload): array {
         $same_target = (string) ($matched_accept->target_signature ?? '') === (string) $target_signature;
         $blocked_attempts = (int) ($matched_accept->blocked_attempts ?? 0) + 1;
 
-        if($same_target && $minutes_since_last_accept !== null && $minutes_since_last_accept <= 60) {
+        if($match_type === 'network') {
+            $reason_key = 'same_network_signature';
+        } elseif($same_target && $minutes_since_last_accept !== null && $minutes_since_last_accept <= 60) {
             $reason_key = 'rapid_repeat_same_target';
-            $reason_title = 'Ponovljeni klik na isti Forever link u kratkom roku';
-            $reason_text = sprintf('Isti identitet je vec imao priznat klik, a zatim je ponovno otvorio isti target nakon %s min. Klik je blokiran i ne pribraja se statistici.', $minutes_since_last_accept);
         } elseif($same_target) {
             $reason_key = 'repeat_same_target_30d';
-            $reason_title = 'Isti identitet je vec priznat za ovaj Forever target';
-            $reason_text = 'Klik je blokiran jer je isti identitet vec imao priznat outbound klik prema ovom Forever targetu unutar zadnjih 30 dana.';
-        } elseif($match_type === 'network') {
-            $reason_key = 'same_network_signature';
-            $reason_title = 'Ista mreza i uredaj pokusavaju generirati novi klik';
-            $reason_text = 'Klik je blokiran jer se isti IP/uredaj potpis vec pojavio kao priznati Forever outbound klik za ovog suradnika u zadnjih 7 dana.';
         } else {
             $reason_key = 'repeat_identity_other_target';
-            $reason_title = 'Isti identitet pokusava nabiti vise Forever klikova';
-            $reason_text = 'Klik je blokiran jer je isti identitet vec imao priznat Forever outbound klik za ovog suradnika, a dodatni klikovi se ne zbrajaju.';
         }
+        $explanation = fc_forever_click_explanation($reason_key);
+        $reason_title = $explanation['title'];
+        $reason_text = $explanation['text'];
 
         db()->where('integrity_accept_id', (int) $matched_accept->integrity_accept_id)->update('forever_click_integrity_accepts', [
             'blocked_attempts' => $blocked_attempts,
@@ -931,7 +968,7 @@ function fc_record_monitored_forever_click(array $payload): array {
             'reason_key' => $reason_key,
             'reason_title' => $reason_title,
             'reason_text' => $reason_text,
-            'reason_details' => $last_accepted_datetime ? ('Zadnji priznati klik: ' . $last_accepted_datetime . ' · Blokirani pokusaji: ' . $blocked_attempts) : null,
+            'reason_details' => $last_accepted_datetime ? ('Zadnji priznati klik: ' . $last_accepted_datetime . ' · Dodatno nepribrojeni zahtjevi: ' . $blocked_attempts) : null,
             'datetime' => $now_datetime,
         ]);
 

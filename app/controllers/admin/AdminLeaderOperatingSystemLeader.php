@@ -1706,6 +1706,14 @@ class AdminLeaderOperatingSystemLeader extends Controller {
             ->orderBy('datetime', 'DESC')
             ->get('forever_click_integrity_suspicious') ?? [];
 
+        // Re-label historical rows without altering the audit evidence in storage.
+        foreach($suspicious_rows as $row) {
+            $explanation = fc_forever_click_explanation((string) ($row->reason_key ?? ''));
+            $row->reason_title = $explanation['title'];
+            $row->reason_text = $explanation['text'];
+            $row->reason_details = 'Ponovljeni zahtjev ili mrežno podudaranje nije samo po sebi dokaz prijevare.';
+        }
+
         foreach(array_slice($suspicious_rows, 0, 15) as $row) {
             $recent_attempts[] = [
                 'datetime' => (string) ($row->datetime ?? ''),

@@ -1886,6 +1886,7 @@ $dashboard_format_cc = static function($value): string {
                     <div class="dashboard-growth-aside-row">
                         <span><?= l('dashboard.growth.outbound_clicks_label') ?></span>
                         <strong id="dashboard_growth_signal_30d">0</strong>
+                        <a class="d-block small mt-2" href="<?= url('fcc-results#objasnjenje-klikova') ?>">Kako se računaju klikovi? Pogledaj svoj dnevnik.</a>
                     </div>
                     <div class="dashboard-growth-aside-row">
                         <span><?= l('dashboard.growth.ai_status_label') ?></span>

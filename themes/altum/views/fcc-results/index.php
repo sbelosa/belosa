@@ -408,6 +408,33 @@
         </div>
     </div>
 
+    <section class="card fcc-card mb-3" id="objasnjenje-klikova" aria-labelledby="click-explanation-title">
+        <div class="card-body">
+            <h2 class="h5" id="click-explanation-title">Kako se računaju moji klikovi?</h2>
+            <p>Pragovi <strong>15+ i 50+</strong> koriste isti rezultat za posljednjih 30 kalendarskih dana. Sedmodnevna provjera zaseban je pokazatelj. Stariji klikovi izlaze iz razdoblja pa se rezultat može smanjiti i kada stižu novi klikovi.</p>
+            <p>Računa se kvalificirani odlazak preko FCC-a na provjereno Forever odredište, preko običnog ili namjenskog gumba ili bloga. Sam posjet aplikaciji i izravno otvaranje vanjskog webshop linka izvan FCC praćenja nisu takav klik. Odredište koje nije kvalificirano ne donosi bod.</p>
+            <p>Prepoznati posjetitelj može donijeti jedan priznat Forever klik po suradniku unutar 30 dana, neovisno o odredištu. Postojeće pravilo mreže i uređaja može spriječiti dodatno pribrajanje tijekom 7 dana. Zajednička mreža može pripadati različitim ljudima: <strong>nepribrojeni pokušaj nije dokaz prijevare</strong>. To ne sprječava otvaranje webshopa.</p>
+            <p class="small text-muted">Ako je prikazan i kvalifikacijski doprinos VIP funnela, on je zasebna stavka ukupnog signala; ovaj dnevnik prikazuje samo Forever klikove.</p>
+            <details>
+                <summary class="font-weight-bold">Moji posljednji događaji i razlozi obračuna</summary>
+                <p class="small text-muted mt-2">Najviše 20 posljednjih dostupnih događaja iz 30-dnevnog razdoblja. Vremena događaja: Europe/Zagreb. Granice kalendarskog razdoblja slijede vrijeme sustava (UTC). Ovo nije popis svih posjeta ni identifikacija osoba. Događaj koji nije stigao do FCC-a ne može se prikazati; stariji nepotpuni zapisi ne omogućuju uvijek objašnjenje. Prikaz ne sadrži IP adrese ni identifikatore posjetitelja.</p>
+                <?php if(empty($data->click_activity)): ?>
+                    <p class="mb-0">Nema dostupnih događaja za ovo razdoblje.</p>
+                <?php else: ?>
+                    <div class="table-responsive"><table class="table table-sm">
+                        <caption class="sr-only">Osobni dnevnik obračuna Forever klikova</caption>
+                        <thead><tr><th scope="col">Datum i vrijeme</th><th scope="col">Izvor</th><th scope="col">Ishod i objašnjenje</th></tr></thead>
+                        <tbody><?php foreach($data->click_activity as $event): ?><tr>
+                            <td class="text-nowrap"><?= htmlspecialchars($event['time'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($event['source'], ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><strong><?= htmlspecialchars($event['title'], ENT_QUOTES, 'UTF-8') ?></strong><br /><span class="small"><?= htmlspecialchars($event['text'], ENT_QUOTES, 'UTF-8') ?></span></td>
+                        </tr><?php endforeach ?></tbody>
+                    </table></div>
+                <?php endif ?>
+            </details>
+        </div>
+    </section>
+
     <div class="row m-n2">
         <div class="col-12 col-xl-8 p-2">
             <div class="card fcc-card h-100 shadow-sm">

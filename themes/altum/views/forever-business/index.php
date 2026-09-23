@@ -396,7 +396,7 @@ $format_change = static function(float $value): string {
                         <div class="d-flex align-items-center">
                             <span class="fb-vip-schedule-icon mr-3"><i class="fas fa-video"></i></span>
                             <div>
-                                <strong class="d-block">Marketing plan · svake nedjelje u 18:00</strong>
+                                <strong class="d-block">Marketing plan · svake nedjelje u 19:00</strong>
                                 <span class="fb-vip-note small"><?= !empty($vip_marketing_plan['next_at_display']) ? 'Sljedeći termin: ' . htmlspecialchars($vip_marketing_plan['next_at_display']) . '.' : 'Poveznica i kratke upute objavljuju se u VIP WhatsApp grupi.' ?></span>
                             </div>
                         </div>
@@ -415,7 +415,7 @@ $format_change = static function(float $value): string {
                     <div class="fb-vip-preview mt-4 <?= $vip_can_access ? '' : 'is-locked' ?>">
                         <div class="fb-vip-preview-grid" <?= !$vip_can_access ? 'aria-hidden="true"' : '' ?>>
                             <div class="fb-vip-feature"><i class="fas fa-route mb-3"></i><strong class="d-block mb-2">30 koraka po razini</strong><p class="mb-0">Jedan korak dnevno, uz dodatni nedjeljni Marketing plan. Svaka nova razina kreće od svojeg 1. koraka.</p></div>
-                            <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Nedjeljni Marketing plan</strong><p class="mb-0">Svake nedjelje u 18:00 pozivaš osobe zainteresirane za poslovanje.</p></div>
+                            <div class="fb-vip-feature"><i class="fas fa-users mb-3"></i><strong class="d-block mb-2">Nedjeljni Marketing plan</strong><p class="mb-0">Svake nedjelje u 19:00 pozivaš osobe zainteresirane za poslovanje.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-comments mb-3"></i><strong class="d-block mb-2">VIP podrška</strong><p class="mb-0">Kratki podsjetnici, primjeri i podrška kada zapneš.</p></div>
                             <div class="fb-vip-feature"><i class="fas fa-chart-pie mb-3"></i><strong class="d-block mb-2">Tvoj 4 Core napredak</strong><p class="mb-0">Pratiš dovršene korake i samoprijavljene radnje; prihod, pozicija i CC rezultat nisu zajamčeni.</p></div>
                         </div>
@@ -540,7 +540,7 @@ $format_change = static function(float $value): string {
                             <?php if(!empty($action['track_goal']) && empty($action['is_weekly_plan'])): ?><div class="small text-muted mb-3"><strong>Fokus tvojeg edukacijskog smjera:</strong> <?= htmlspecialchars($action['track_goal']) ?></div><?php endif ?>
                             <?php if(empty($action['is_daily_complete']) && empty($action['is_program_complete'])): ?><div class="small text-muted mb-3"><strong>Naš stil:</strong> javi se osobno, govori svojim riječima i slušaj više nego što objašnjavaš. Kada je tema proizvod ili posao, prirodno reci da si Forever suradnik i osloni se na aktualne informacije, bez obećavanja zdravstvenog rezultata ili zarade. Primjeri su inspiracija — prilagodi ih odnosu koji već imaš s osobom.</div><?php endif ?>
                             <?php if(!empty($action['is_weekly_plan'])): ?>
-                                <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 18:00</strong><span class="d-block small mt-1">Pridruži se nekoliko minuta ranije i pripremi popis svojih gostiju.</span><?php if(!empty($vip_marketing_plan['url'])): ?><a href="<?= htmlspecialchars($vip_marketing_plan['url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2">Otvori Marketing plan</a><?php endif ?></div>
+                                <div class="fb-weekly-plan mb-3"><strong><i class="fas fa-video mr-1"></i> Danas u 19:00</strong><span class="d-block small mt-1">Pridruži se nekoliko minuta ranije i pripremi popis svojih gostiju.</span><?php if(!empty($vip_marketing_plan['url'])): ?><a href="<?= htmlspecialchars($vip_marketing_plan['url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2">Otvori Marketing plan</a><?php endif ?></div>
                             <?php endif ?>
                             <?php if(!empty($action['instruction'])): ?><p class="mb-2"><?= htmlspecialchars($action['instruction']) ?></p><?php endif ?>
                             <?php if(!empty($action['checklist'])): ?><ol class="pl-3 mb-3"><?php foreach($action['checklist'] as $item): ?><li class="mb-1"><?= htmlspecialchars($item) ?></li><?php endforeach ?></ol><?php endif ?>
@@ -629,7 +629,7 @@ $format_change = static function(float $value): string {
                             </form>
                         <?php elseif(!empty($action['is_preview'])): ?><div class="alert alert-info mb-0"><i class="fas fa-eye mr-1"></i> Ovo je sigurna pretpregledna verzija. Dovršavanje zadatka je isključeno.</div>
                         <?php elseif(!empty($action['is_daily_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-1"></i> Današnji zadatak je spremljen. Sljedeći se otključava u ponoć.</div>
-                        <?php elseif(!empty($action['is_waiting_for_event_completion'])): ?><div class="alert alert-warning mb-0"><i class="fas fa-clock mr-1"></i> Pripremu možeš odraditi sada. Potvrda prisustva i follow-upa otvara se nakon završetka Marketing plana u <?= htmlspecialchars((string) ($action['marketing_plan']['completion_available_at_display'] ?? '19:30')) ?>.</div>
+                        <?php elseif(!empty($action['is_waiting_for_event_completion'])): ?><div class="alert alert-warning mb-0"><i class="fas fa-clock mr-1"></i> Pripremu možeš odraditi sada. Potvrda prisustva i follow-upa otvara se nakon završetka Marketing plana u <?= htmlspecialchars((string) ($action['marketing_plan']['completion_available_at_display'] ?? '20:30')) ?>.</div>
                         <?php elseif(!empty($action['is_program_complete'])): ?><div class="alert alert-success mb-0"><i class="fas fa-trophy mr-1"></i> Svih 30 koraka ove edukacijske razine uspješno je završeno.</div>
                         <?php else: ?><div class="alert alert-info mb-0"><i class="fas fa-info-circle mr-1"></i> Ovaj korak trenutačno nije dostupan za potvrdu. Osvježi stranicu ili se javi podršci ako se poruka ponovi.</div><?php endif ?>
 

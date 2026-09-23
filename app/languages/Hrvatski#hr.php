@@ -1449,7 +1449,7 @@ return [
 	'fcc_results.homepage_spotlight_notice_before' => 'Na stranici',
 	'fcc_results.homepage_spotlight_notice_after' => 'prikazuju se javne glavne aplikacije koje drže 15+ u 30 dana. Kad suradnik dođe do 50+ u 30 dana, ulazi i u jači krug preporučenih sponzora za naslovnicu, ako član uključi javni prikaz i admin ga odobri.',
 	'fcc_results.proof_note' => 'FCC Rezultati služe kao metrički pregled aktivnosti. Istaknute aplikacije prikazuju 15+ / 30d javne primjere, dok 50+ / 30d dodatno jača put prema preporučenim sponzorima na naslovnici.',
-	'fcc_results.metrics_note' => 'Za kvalifikaciju i poredak zbrajaju se jedinstveni klikovi na Forever Living i webshop blokove iz FCC aplikacija te jedinstveni blog -> Forever klikovi koji nose tvoj referral i UTM oznake. Desno dodatno pratiš i kontakte iz funnela i AI chata kao signal interesa.',
+	'fcc_results.metrics_note' => 'Za pragove i poredak računaju se kvalificirani Forever odlasci preko običnih i namjenskih gumba te blogova, uz zaštitu od ponavljanja. Sama UTM oznaka ne daje bod. Kvalifikacijski doprinos VIP funnela prikazan je zasebno; ostali kontakti iz funnela i AI chata služe kao pokazatelj interesa.',
 	'fcc_results.metrics_info.title' => 'Kako se računa',
 	'fcc_results.metrics_info.position' => 'Pozicija: mjesto na listi prema kvalificiranim klikovima u odabranom periodu (7 ili 30 dana).',
 	'fcc_results.metrics_info.shop_clicks' => 'Kvalificirani klikovi: računaju se jedinstveni klikovi na Forever Living i webshop blokove iz FCC aplikacija te jedinstveni blog -> Forever klikovi koji nose tvoj referral i UTM oznake.',

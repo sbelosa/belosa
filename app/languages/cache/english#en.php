@@ -1462,7 +1462,7 @@ return [
 	'fcc_results.homepage_spotlight_notice_before' => 'On the',
 	'fcc_results.homepage_spotlight_notice_after' => 'page you see public main apps that hold 15+ in 30 days. When a collaborator reaches 50+ in 30 days, they move into the stronger homepage recommended sponsor circle, as long as public display is enabled and approved by admin.',
 	'fcc_results.proof_note' => 'FCC Results show the activity metrics. Featured Apps are the public 15+ / 30d examples, while 50+ / 30d further strengthens the path toward homepage recommended sponsors.',
-	'fcc_results.metrics_note' => 'Qualification and ranking combine unique clicks on Forever Living and webshop blocks inside FCC apps with unique blog -> Forever clicks that carry your referral and UTM tags. On the right, you also track contacts from the funnel and AI chat as an extra signal of interest.',
+	'fcc_results.metrics_note' => 'Thresholds and rankings count qualified Forever visits through ordinary and dedicated buttons and blogs, with repeat protection. A UTM tag alone does not earn a point. The VIP funnel qualification contribution is shown separately; other funnel and AI chat contacts indicate interest.',
 	'fcc_results.metrics_info.title' => 'How it is calculated',
 	'fcc_results.metrics_info.position' => 'Position: your place in the list based on qualified clicks in the selected period (7 or 30 days).',
 	'fcc_results.metrics_info.shop_clicks' => 'Qualified clicks: unique clicks on Forever Living and webshop blocks from FCC apps plus unique blog -> Forever clicks with your referral and UTM tags.',

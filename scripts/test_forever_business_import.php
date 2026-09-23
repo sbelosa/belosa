@@ -87,7 +87,7 @@ $assertions = [
     'runtime schema verifies every launch table, starting-track field and per-level sequence while preserving legacy help flags' => str_contains($helper, 'forever_business_runtime_schema_v20260901_3') && str_contains($helper, '$required_tables') && str_contains($helper, "'starting_track_key'") && str_contains($helper, "'starting_track_reason'") && str_contains($helper, "'starting_track_decided_at'") && str_contains($helper, "'sequence_position'") && str_contains($helper, 'forever_business_outcome_user_track_idx') && str_contains($helper, "WHEN `action_key` = 'vip26_activator_d01' THEN NULL") && str_contains($helper, 'Legacy VIP help requests could not be preserved.') && str_contains($helper, '`outcome`.`needs_help` = 1'),
     'Leader program copy requires full Manager and official August 4 CC' => str_contains($vip_tasks, 'punim, priznatim statusom Managera') && str_contains($vip_tasks, 'službeno potvrđenim `4 CC Active` signalom za kolovoz 2026'),
     '4 CC member copy and runtime language caches explain the inclusive fallback' => str_contains($hr_language, 'Personal CC već je dio Total Active CC-a') && str_contains($hr_language_cache, 'Personal CC već je dio Total Active CC-a') && str_contains($en_language, 'Personal CC is already included in Total Active CC') && str_contains($en_language_cache, 'Personal CC is already included in Total Active CC'),
-    'weekly Marketing plan is fixed to Sunday at 18:00 Zagreb time' => str_contains($helper, "'weekday' => 7") && str_contains($helper, "setTime(18, 0)") && str_contains($view, 'svake nedjelje u 18:00'),
+    'weekly Marketing plan uses Sunday at 19:00 Zagreb time from 27 September' => str_contains($helper, "'weekday' => 7") && str_contains($helper, "'2026-09-27' ? 19 : 18") && str_contains($view, 'svake nedjelje u 19:00'),
     'qualified members receive the confirmed VIP WhatsApp link' => str_contains($helper, 'G0Mxgm8yXfrIDAOxNqPbmw') && str_contains($view, 'Pridruži se VIP grupi'),
     'Marketing plan starts on 6 September and exposes the confirmed webinar link' => str_contains($helper, "new \\DateTimeImmutable('2026-09-06 18:00:00'") && str_contains($helper, 'https://forevercard.club/vip-edukacija') && str_contains($view, 'Otvori Marketing plan'),
     'VIP email queue is idempotent, prevents invalid or stale recipients from starving the batch and is processed by cron' => str_contains($helper, 'forever_business_vip_email_deliveries') && str_contains($helper, 'recipient_unavailable: inactive account or invalid email') && str_contains($helper, 'qualification_unavailable: eligibility or linkage no longer valid') && str_contains($helper, "LEFT(COALESCE(`last_error`, ''), 22) = 'recipient_unavailable:'") && str_contains($helper, "LEFT(COALESCE(`last_error`, ''), 26) = 'qualification_unavailable:'") && str_contains($helper, 'forever_business_process_vip_email_notifications') && str_contains(file_get_contents($root . '/app/controllers/Cron.php'), 'forever_business_process_vip_email_notifications(25)'),
@@ -352,7 +352,7 @@ $already_minimum_quick_action = forever_business_get_action(array_merge($starter
 $simulated_regular_steps = 0;
 $simulated_total_tasks = 0;
 $simulated_completion_date = '';
-$simulated_day = new DateTimeImmutable('2026-09-01 20:00:00', new DateTimeZone('Europe/Zagreb'));
+$simulated_day = new DateTimeImmutable('2026-09-01 21:00:00', new DateTimeZone('Europe/Zagreb'));
 for($iteration = 0; $iteration < 60 && $simulated_regular_steps < 30; $iteration++, $simulated_day = $simulated_day->modify('+1 day')) {
     $simulated_action = forever_business_get_action($starter_member, null, $simulated_regular_steps, false, $simulated_day, false);
     if(empty($simulated_action['can_complete'])) continue;
@@ -708,6 +708,19 @@ $rule_assertions = [
     'a hard previous step automatically reduces the next explicit numeric quick target without misclassifying a mentor simulation' => !empty($adapted_builder_action['is_adaptively_simplified']) && ($adapted_builder_action['target'] ?? 0) === 20 && ($adapted_builder_action['quick_target'] ?? 0) === 3 && str_contains((string) ($adapted_builder_action['fallback'] ?? ''), 'Edukacija / trening'),
     'adaptive copy is not shown and a reviewed fallback is preserved when the quick target is already one' => empty($already_minimum_quick_action['is_adaptively_simplified']) && ($already_minimum_quick_action['quick_target'] ?? 0) === 1 && str_contains((string) ($already_minimum_quick_action['fallback'] ?? ''), 'jedan check-in'),
 ];
+
+// Schedule boundaries after the approved one-hour move, including DST.
+$z = new DateTimeZone('Europe/Zagreb');
+$before_new_start = forever_business_get_marketing_plan_state(new DateTimeImmutable('2026-09-27 18:59:59', $z));
+$new_live = forever_business_get_marketing_plan_state(new DateTimeImmutable('2026-09-27 19:00:00', $z));
+$before_new_end = forever_business_get_marketing_plan_state(new DateTimeImmutable('2026-09-27 20:29:59', $z));
+$new_end = forever_business_get_marketing_plan_state(new DateTimeImmutable('2026-09-27 20:30:00', $z));
+$winter = forever_business_get_marketing_plan_state(new DateTimeImmutable('2026-10-25 19:00:00', $z));
+$change_week = forever_business_get_marketing_plan_state(new DateTimeImmutable('2026-09-20 20:00:00', $z));
+$rule_assertions['new webinar starts at 19 and completion opens only at 20:30'] = !$before_new_start['is_live_window'] && $new_live['is_live_window'] && !$before_new_end['can_record_outcome'] && $new_end['can_record_outcome'];
+$rule_assertions['next Sunday advances at event end and remains 19 local time across DST'] = $new_end['next_at_iso'] === '2026-10-04T19:00:00+02:00' && $winter['is_live_window'] && $winter['next_at_iso'] === '2026-10-25T19:00:00+01:00';
+$rule_assertions['change-week next occurrence is 19 while historical event remains 18'] = $change_week['time_label'] === '18:00' && $change_week['next_at_iso'] === '2026-09-27T19:00:00+02:00';
+$rule_assertions['education, future emails and task invitations contain no old published time'] = !str_contains($view, '18:00') && !str_contains(file_get_contents($root . '/app/config/forever_business_vip_tasks.php'), '18:00') && !str_contains(forever_business_vip_build_email_message((object) ['name'=>'Test'], ['is_launched'=>true], 'qualified')['body'], '18:00');
 
 $failed_rules = array_keys(array_filter($rule_assertions, static fn($passed) => !$passed));
 if($failed_rules) {

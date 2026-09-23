@@ -15,9 +15,9 @@ Početak programa: 1. rujna 2026.
 - Dostupan službeni signal preuzima se iz FLP360 rubrike `4 CC Active` i FCC ga ne nadjačava. Samo kada službeni signal za razdoblje nedostaje, koristi se uključivi pomoćni izračun od najmanje 1 Personal CC i 4 Total Active CC u matičnoj poslovnoj regiji; Personal CC već je dio Total Active CC-a i ne zbraja se ponovno.
 - Suradnik vidi samo vlastite bodove, zadatak i rezultate.
 - Na ekranu se prikazuje samo jedan aktivan zadatak i suradnik može potvrditi najviše jedan VIP zadatak u jednom kalendarskom danu prema vremenskoj zoni Europe/Zagreb. Ako ga osoba ne dovrši taj dan, ostaje aktivan pri sljedećoj prijavi.
-- Svake nedjelje zadatak povezan s tjednim Marketing planom u 18:00 ima prednost, neovisno o tome na kojem je rednom koraku suradnik. Priprema je dostupna cijeli dan, ali rezultat se može potvrditi tek nakon završetka predviđenog termina u 19:30. Kada je nedjeljni zadatak potvrđen, novi redovni zadatak otvara se tek sljedećeg dana.
+- Svake nedjelje zadatak povezan s tjednim Marketing planom u 19:00 ima prednost, neovisno o tome na kojem je rednom koraku suradnik. Priprema je dostupna cijeli dan, ali rezultat se može potvrditi tek nakon završetka predviđenog termina u 20:30. Kada je nedjeljni zadatak potvrđen, novi redovni zadatak otvara se tek sljedećeg dana.
 - Pristup VIP WhatsApp grupi: https://chat.whatsapp.com/G0Mxgm8yXfrIDAOxNqPbmw?mode=gi_t
-- Tjedni Marketing plan: svake nedjelje u 18:00, počevši 6. rujna 2026., na https://forevercard.club/vip-edukacija
+- Tjedni Marketing plan: svake nedjelje u 19:00, s novim terminom od 27. rujna 2026., na https://forevercard.club/vip-edukacija
 - Nakon svake uspješne sinkronizacije FCC provjerava treba li osobu prebaciti na višu razinu.
 - Svaka edukacijska razina ima vlastitih 30 redovnih koraka. Kada potvrđeni rezultat otvori višu razinu, ona kreće od 1. koraka, a svi ranije dovršeni zadaci i rezultati ostaju spremljeni. Nedjeljni zadaci ne preskaču nijedan redovni korak. Novi mjesec ne spušta osobu na nižu razinu niti briše napredak samo zato što mjesečni CC ponovno kreće od nule.
 - Svaki redovni zadatak traje približno 10–25 minuta. Kada je puni korak prevelik, odaberi kraću verziju i zadrži ritam. Ako zapneš, mentor ti može pomoći pronaći sljedeći mali korak.
@@ -47,13 +47,13 @@ Cilj razine: kreni bez pritiska i bez potrebe da već imaš kupce ili pripremlje
 |---:|---|---|---|
 | 1 | Productivity | Postavi svoj FCC link u bio na društvenoj mreži koju koristiš. U FCC Aplikacijama kopiraj link svoje glavne aplikacije, dodaj ga u bio ili opis barem jednog profila i nakon spremanja otvori ga iz javnog prikaza kako bi provjerio/la da radi. | Link glavne FCC aplikacije postavljen je i provjeren na barem jednom društvenom profilu. |
 | 2 | Productivity | Napravi svoj prvi mali krug: zapiši tri osobe koje prirodno poznaješ i uz svaku jednu temu o kojoj ste već razgovarali. Danas im se još ne moraš javiti. | Zapisane su tri osobe i za svaku postoji jedna prirodna tema za razgovor. |
-| 3 | Recruitment | Upoznaj se s nedjeljnim Marketing planom u 18:00 i odaberi jednu osobu kojoj bi poslovna informacija mogla biti korisna. | Termin ti je jasan i jedna odgovarajuća osoba nalazi se na popisu za poziv. |
+| 3 | Recruitment | Upoznaj se s nedjeljnim Marketing planom u 19:00 i odaberi jednu osobu kojoj bi poslovna informacija mogla biti korisna. | Termin ti je jasan i jedna odgovarajuća osoba nalazi se na popisu za poziv. |
 | 4 | Recruitment | Odaberi jednu osobu iz svojeg malog kruga i pošalji joj kratku, toplu poruku svojim riječima. Napiši zašto si se sjetio/la baš nje i pitaj želi li čuti kratku informaciju koja bi joj mogla biti korisna. | Poslana je jedna topla, osobna poruka i zabilježeno je kako je razgovor završio. |
 | 5 | Productivity | Pripremi jedan story iz vlastitog iskustva: pokaži što koristiš, kako se uklapa u tvoju rutinu i što ti se osobno sviđa. Možeš ga objaviti javno, podijeliti samo s užim krugom ili ga danas spremiti kao nacrt. | Story je spremljen kao nacrt, podijeljen privatno ili objavljen. |
 | 6 | Development | Zastani na deset minuta i pogledaj što ti je dosad bilo lako, gdje si zapeo/la i o kojem proizvodu najradije razgovaraš. | Zapisao/la si jednu malu pobjedu, jednu prepreku i proizvod o kojem želiš učiti dalje. |
 | 7 | Retention | Ako već imaš osobe koje koriste Forever putem tvoje preporuke, javi se dvjema i pitaj kako im ide s proizvodom te treba li im tvoja pomoć. Ako ih još nemaš, nastavi jedan raniji razgovor ili s mentorom uvježbaj kako ćeš podržati svojeg prvog kupca. | Obavljena su dva korisnička check-ina ili, ako još nemaš dvije takve osobe, jedan koristan nastavak razgovora ili jedna mentorska vježba. |
 | 8 | Recruitment | Započni tri nova razgovora pitanjem povezanim s nečim što je osoba ranije spomenula. Najprije saslušaj, a zatim ponudi jednu korisnu informaciju ako je želi. | Započeta su tri prirodna razgovora i zabilježeno je kako su završili. |
-| 9 | Recruitment | Odaberi jednu osobu kojoj bi poslovna prezentacija mogla odgovarati i pošalji osobni poziv za sljedeću nedjelju u 18:00. | Poslan je jedan poziv s točnim terminom. |
+| 9 | Recruitment | Odaberi jednu osobu kojoj bi poslovna prezentacija mogla odgovarati i pošalji osobni poziv za sljedeću nedjelju u 19:00. | Poslan je jedan poziv s točnim terminom. |
 | 10 | Recruitment | Pripremi doček gosta za nedjeljni Marketing plan: kratku poruku prije početka i jedno follow-up pitanje nakon prezentacije. | Poruka i pitanje su spremljeni i spremni za korištenje. |
 | 11 | Recruitment | Napravi follow-up s osobom koju si pozvao/la ili s jednom osobom s liste. Ponudi samo jedan sljedeći korak. | Jedan razgovor ima jasan ishod: da, ne sada ili termin. |
 | 12 | Productivity | Za dvije osobe pripremi po jednu jednostavnu preporuku koja odgovara temi koju su spomenule i njihovu budžetu. Uključi proizvod ili rutinu te točan način korištenja iz aktualne Forever upute. | Pripremljene su dvije jasne i osobno prilagođene preporuke. |
@@ -86,7 +86,7 @@ Cilj razine: uz najmanje 1 osobni CC izgraditi potreban ukupni Active CC kroz st
 |---:|---|---|---|
 | 1 | Productivity | Postavi link svoje glavne FCC aplikacije na jedan društveni profil. Otvori FCC Aplikacije, kopiraj link glavne aplikacije i dodaj ga u bio ili opis profila na mreži koju već koristiš. Uz link napiši kratak, jasan opis i nakon spremanja provjeri otvara li se iz javnog prikaza profila. | Jedan društveni profil ima spremljen i provjeren link tvoje glavne FCC aplikacije. |
 | 2 | Productivity | Na papir ili u svoje bilješke zapiši 15 ljudi koje poznaješ i razvrstaj teme o kojima ste već razgovarali na njegu, svakodnevnu rutinu i ostalo. Izdvoji osobe s kojima možeš najprirodnije nastaviti razgovor. | Odabrano je 15 ljudi i za svakoga je jasna prirodna tema razgovora. |
-| 3 | Recruitment | Pozovi dvije osobe na sljedeći nedjeljni Marketing plan u 18:00 i potvrdi da znaju gdje će dobiti poveznicu. | Dva personalizirana poziva su poslana. |
+| 3 | Recruitment | Pozovi dvije osobe na sljedeći nedjeljni Marketing plan u 19:00 i potvrdi da znaju gdje će dobiti poveznicu. | Dva personalizirana poziva su poslana. |
 | 4 | Recruitment | Napravi tri follow-upa, dajući prednost gostima, a zatim ljudima koji su već pokazali najviše interesa. | Tri razgovora imaju jasan završetak ili sljedeći korak. |
 | 5 | Productivity | Provedi tri kratka razgovora o temi koju je osoba već spomenula. Saslušaj je i, ako želi prijedlog, ponudi jednu jednostavnu Forever rutinu ili praktičan savjet koji joj odgovara. | Završena su tri korisna razgovora i, gdje je zatraženo, ponuđena je jedna jasna preporuka ili praktičan savjet. |
 | 6 | Development | Pogledaj posljednjih sedam dana: koliko si razgovora vodio/la, koliko je ljudi tražilo preporuku i koliko je novih kupaca došlo. Odaberi jednu vještinu koju želiš poboljšati idući tjedan. | Tri broja i jedna vještina za idući tjedan su jasni. |
@@ -125,7 +125,7 @@ Cilj razine: zadržati potvrđenu 4 CC aktivnost, graditi nove razgovore i kvali
 |---:|---|---|---|
 | 1 | Development | Odaberi jedan najslabiji 4 Core pokazatelj i postavi brojčani cilj za prvih 30 redovnih koraka. | Odabrano je područje, početno stanje i cilj. |
 | 2 | Productivity | Odaberi 20 ljudi koje poznaješ i složi svoj osobni radni pregled: kupci, potencijalni kupci, ljudi otvoreni za poslovnu informaciju i ljudi kojima se zasad nećeš javljati. | Dvadeset ljudi raspoređeno je u jasne skupine za prirodan daljnji rad. |
-| 3 | Recruitment | Pozovi tri osobe na sljedeći nedjeljni Marketing plan u 18:00 i provjeri kome termin odgovara. | Poslana su tri osobna poziva i zabilježeni su odgovori pristigli do potvrde zadatka. |
+| 3 | Recruitment | Pozovi tri osobe na sljedeći nedjeljni Marketing plan u 19:00 i provjeri kome termin odgovara. | Poslana su tri osobna poziva i zabilježeni su odgovori pristigli do potvrde zadatka. |
 | 4 | Recruitment | Javi se ukupno pet osoba, prvo svojim gostima, a zatim ljudima koji su već pokazali interes. Za svaki razgovor odaberi jednostavan završetak: dogovoren nastavak, kasnije, nije zainteresiran/a ili bez odgovora. | Pet razgovora ima jasan sljedeći korak ili ugodan završetak. |
 | 5 | Productivity | Objavi kvalitetan story ili kratki video iz vlastitog iskustva. Pokaži kako koristiš proizvod prema aktualnoj Forever uputi i završi pitanjem. | Sadržaj je objavljen i na reakcije pristigle do potvrde zadatka odgovoreno je osobno. |
 | 6 | Development | Pregledaj tjedne brojeve i odaberi jednu aktivnost koja ti je dobro išla i koju želiš ponoviti idući tjedan. | Odabrana je jedna jednostavna radnja za ponavljanje. |
@@ -164,7 +164,7 @@ Cilj razine: voditi ljude bez oduzimanja samostalnosti, povećati broj kvalitetn
 |---:|---|---|---|
 | 1 | Development | Odaberi do osam ljudi iz tima koji žele tvoju podršku. Sa svakom osobom dogovori jedan mali, ostvariv cilj; ako ih je manje, radi kvalitetno sa stvarnim brojem. | Tvoja mentorska grupa i po jedan sljedeći cilj za svaku osobu su jasni. |
 | 2 | Development | Osobno pozdravi tri polaznika, provjeri razumiju li FCC i pomogni im otvoriti prvi zadatak. | Tri osobe znaju gdje vide svoj sljedeći korak. |
-| 3 | Recruitment | Napravi kratku provjeru poziva tima za sljedeći nedjeljni Marketing plan u 18:00. Zapiši koliko je gostiju potvrdilo dolazak te tko će se nakon plana javiti svakom gostu, kojim će pitanjem prepoznati njegov interes i koji mu sljedeći korak može ponuditi. | Provjera je završena; broj potvrđenih gostiju je jasan, a za svakog gosta određeni su suradnik, početno pitanje i mogući sljedeći korak. |
+| 3 | Recruitment | Napravi kratku provjeru poziva tima za sljedeći nedjeljni Marketing plan u 19:00. Zapiši koliko je gostiju potvrdilo dolazak te tko će se nakon plana javiti svakom gostu, kojim će pitanjem prepoznati njegov interes i koji mu sljedeći korak može ponuditi. | Provjera je završena; broj potvrđenih gostiju je jasan, a za svakog gosta određeni su suradnik, početno pitanje i mogući sljedeći korak. |
 | 4 | Recruitment | Provjeri je li se osoba koja je gosta pozvala već javila nakon Marketing plana. Pomozi joj oblikovati razgovor tamo gdje joj treba podrška. | Follow-up plan je pregledan i za svakog otvorenog gosta jasan je sljedeći korak. |
 | 5 | Productivity | Pomozi dvjema osobama pripremiti story ili preporuku iz vlastitog iskustva i aktualnih Forever informacija. Neka sadržaj zvuči kao one, a ne kao unaprijed napisana reklama. | Dvije osobe imaju prirodan, jasan i spreman sadržaj. |
 | 6 | Development | Napravi desetominutni pregled ritma grupe: zeleno = korak u zadnja tri dana, žuto = treba malu pomoć, crveno = bez koraka sedam dana. Zatim se javi do dvjema osobama kojima tvoja podrška danas može najviše pomoći. | Pregled ritma je završen i dogovorena su najviše dva konkretna razgovora podrške. |
@@ -246,7 +246,7 @@ Cilj razine: vratiti osobu u jednostavan, održiv ritam bez osjećaja krivnje i 
 
 ## Poziv na marketing plan
 
-> Bok! U nedjelju u 18:00 imamo kratko online predstavljanje o radu s Forever proizvodima, podršci kupcima i poslovnoj mogućnosti, kao i podršci koju dobivaju novi suradnici. Sjetio/la sam se tebe zbog ____. Ako ti zvuči zanimljivo, rado ću ti poslati link pa možeš poslušati i vidjeti ima li ti smisla.
+> Bok! U nedjelju u 19:00 imamo kratko online predstavljanje o radu s Forever proizvodima, podršci kupcima i poslovnoj mogućnosti, kao i podršci koju dobivaju novi suradnici. Sjetio/la sam se tebe zbog ____. Ako ti zvuči zanimljivo, rado ću ti poslati link pa možeš poslušati i vidjeti ima li ti smisla.
 
 ## Follow-up nakon marketing plana
 
@@ -286,6 +286,6 @@ Cilj razine: vratiti osobu u jednostavan, održiv ritam bez osjećaja krivnje i 
 
 ## Kratka potvrda prije marketing plana
 
-> Bok! Samo kratko provjeravam odgovara li ti još nedjelja u 18:00. Ako se nešto promijenilo, nema problema — samo mi javi 😊
+> Bok! Samo kratko provjeravam odgovara li ti još nedjelja u 19:00. Ako se nešto promijenilo, nema problema — samo mi javi 😊
 
 VIP_TASKS;

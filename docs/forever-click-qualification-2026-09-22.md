@@ -25,3 +25,11 @@ Revert this release's code commit and redeploy the preceding code through the st
 ## Known boundaries
 
 Historical clicks with expired or absent acceptance evidence cannot be safely reclassified as ordinary Forever links. Technical visitor IDs are not verified people. Network deduplication remains unchanged in this release as requested. SQL/transaction behavior assumes InnoDB as used by the application and tests. Deliberate analytics-data deletion is distinct from editing a button; retained snapshots do not override an explicit deletion of the underlying event.
+
+## 23 September: transparent explanations and webinar schedule
+
+FCC Results now explains qualification and displays at most 20 of the authenticated user's recent accepted/non-counted events. The dashboard links to the explanation. No visitor identifiers, IP addresses, target URLs or device details enter this personal view. Legacy admin events use neutral labels at render time; original audit storage remains unchanged. Network matches are now labelled as such even when the destination repeats, without changing eligibility rules.
+
+Sunday Marketing plan moves to 19:00 Europe/Zagreb starting 27 September 2026. The existing 90-minute duration moves task completion to 20:30. Historical occurrences retain their original time. Education screens, task catalog and invitation examples, dynamically generated daily action, and future qualification email content are updated. Pending education emails build their content at send time; previously delivered emails are not resent or rewritten.
+
+Validation covers privacy isolation, reason labels, actual activity SQL, start/end boundaries, next event rollover, daylight saving time, historical schedule preservation, education rule tests, all release guards, and PHP lint.

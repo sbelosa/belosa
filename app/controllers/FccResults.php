@@ -335,6 +335,7 @@ class FccResults extends Controller {
         $ai_stage = $ai_signal_30d >= $ai_vip_threshold ? 'vip' : ($ai_signal_30d >= $ai_active_threshold ? 'active' : 'starter');
 
         $data = [
+            'click_activity' => fc_get_forever_click_activity((int) $this->user->user_id),
             'selected_period' => $selected_period,
             'periods' => $periods,
             'min_qualified_clicks' => $min_qualified_clicks,

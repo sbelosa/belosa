@@ -2294,7 +2294,8 @@ function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = nu
         ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
         : new \DateTimeImmutable('now', $timezone);
     $first_event = new \DateTimeImmutable('2026-09-06 18:00:00', $timezone);
-    $calendar_sunday = $current_time->modify('sunday this week')->setTime(18, 0);
+    $calendar_sunday = $current_time->modify('sunday this week');
+    $calendar_sunday = $calendar_sunday->setTime($calendar_sunday->format('Y-m-d') >= '2026-09-27' ? 19 : 18, 0);
     $this_event = $calendar_sunday < $first_event ? $first_event : $calendar_sunday;
     $is_event_date = $current_time->format('Y-m-d') === $this_event->format('Y-m-d');
     $event_end = $this_event->modify('+90 minutes');
@@ -2302,12 +2303,13 @@ function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = nu
 
     if($current_time >= $event_end) {
         $next_event = $this_event->modify('+1 week');
+        $next_event = $next_event->setTime($next_event->format('Y-m-d') >= '2026-09-27' ? 19 : 18, 0);
     }
 
     return [
         'weekday' => 7,
         'weekday_label' => 'svake nedjelje',
-        'time_label' => '18:00',
+        'time_label' => $this_event->format('H:i'),
         'timezone' => 'Europe/Zagreb',
         'first_at_iso' => $first_event->format(\DateTimeInterface::ATOM),
         'is_today' => $is_event_date && $current_time->format('Y-m-d') >= $first_event->format('Y-m-d'),
@@ -2316,7 +2318,7 @@ function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = nu
         'completion_available_at_iso' => $event_end->format(\DateTimeInterface::ATOM),
         'completion_available_at_display' => $event_end->format('H:i'),
         'next_at_iso' => $next_event->format(\DateTimeInterface::ATOM),
-        'next_at_display' => 'nedjelja, ' . $next_event->format('d.m.Y.') . ' u 18:00',
+        'next_at_display' => 'nedjelja, ' . $next_event->format('d.m.Y.') . ' u ' . $next_event->format('H:i'),
         'url' => forever_business_vip_webinar_url(),
     ];
 }
@@ -2348,7 +2350,7 @@ Tvoj potvrđeni osobni promet za <strong>' . $period_label . '</strong> iznosi <
 1. Na stranici <strong>Moj Forever</strong> vidiš svoje potvrđene CC bodove i jedan jasan zadatak za taj dan.<br />
 2. Zadatak ostaje otvoren dok ga ne dovršiš. Nakon potvrde, sljedeći korak otvara se idućeg dana.<br />
 3. Zadaci se izmjenjuju kroz sva četiri područja 4 Corea: Recruitment, Retention, Productivity i Development.<br />
-4. Svake nedjelje u 18:00 održava se online Marketing plan na koji možeš pozvati osobe zainteresirane za Forever poslovanje.<br />
+4. Svake nedjelje u 19:00 (Europe/Zagreb) održava se online Marketing plan na koji možeš pozvati osobe zainteresirane za Forever poslovanje.<br />
 5. VIP WhatsApp grupa služi za kratke obavijesti, pitanja i podršku tijekom izvršavanja zadataka.<br /><br />
 
 <div style="margin:20px 0;">
@@ -2356,7 +2358,7 @@ Tvoj potvrđeni osobni promet za <strong>' . $period_label . '</strong> iznosi <
     <a href="' . $whatsapp_url . '" style="display:inline-block;margin:0 8px 8px 0;padding:13px 18px;border-radius:10px;background:#25D366;color:#082b18;text-decoration:none;font-weight:700;">Pridruži se VIP WhatsApp grupi</a>
 </div>
 
-<strong>Tjedni Marketing plan:</strong> svake nedjelje u 18:00, počevši 6. rujna 2026.<br />
+<strong>Tjedni Marketing plan:</strong> svake nedjelje u 19:00 (Europe/Zagreb); novi termin vrijedi od 27. rujna 2026.<br />
 Izravna poveznica: <a href="' . $webinar_url . '">' . $webinar_url . '</a><br /><br />
 
 Za početak otvori Moj Forever, provjeri svoje bodove i pročitaj prvi zadatak. Ako ti nešto nije jasno, napiši pitanje u VIP grupu.<br /><br />
@@ -3347,10 +3349,10 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         return [
             'core' => $leader ? 'Development' : 'Recruitment',
             'key' => 'vip26_sunday_' . $current_time->format('Ymd'),
-            'title' => 'Marketing plan danas u 18:00',
+            'title' => 'Marketing plan danas u ' . $marketing_plan['time_label'],
             'instruction' => $leader
-                ? 'Provjeri jesu li gosti i suradnici koji su ih pozvali spremni, dogovori podršku prije i nakon prezentacije te se pridruži tjednom Marketing planu u 18:00.'
-                : 'Pošalji posljednju osobnu potvrdu svojim gostima, pridruži se Marketing planu u 18:00 i nakon prezentacije dogovori njihov sljedeći korak.',
+                ? 'Provjeri jesu li gosti i suradnici koji su ih pozvali spremni, dogovori podršku prije i nakon prezentacije te se pridruži tjednom Marketing planu u ' . $marketing_plan['time_label'] . '.'
+                : 'Pošalji posljednju osobnu potvrdu svojim gostima, pridruži se Marketing planu u ' . $marketing_plan['time_label'] . ' i nakon prezentacije dogovori njihov sljedeći korak.',
             'checklist' => $leader
                 ? ['Potvrdi popis gostiju i suradnike koji su ih pozvali.', 'Provjeri tko može samostalno voditi nastavak razgovora i kome je potrebna tvoja podrška.', 'Nakon plana dogovorite sljedeći korak za svakog gosta koji ga želi.']
                 : ['Potvrdi gostima termin i pošalji detalje.', 'Pridruži se nekoliko minuta ranije.', 'Nakon prezentacije pitaj gosta što mu je bilo najzanimljivije.'],
@@ -3366,7 +3368,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
                 : 'Ako danas nemaš gosta, pridruži se radi vlastitog učenja, zapiši jednu korisnu ideju i pripremi osobni poziv za sljedeću nedjelju.',
             'message_example' => '',
             /* Success includes attendance and post-event follow-up, so a
-             * Sunday date alone can never unlock completion before 19:30. */
+             * Sunday date alone can never unlock completion before the scheduled 90-minute event ends. */
             'can_complete' => !empty($marketing_plan['can_record_outcome']),
             'is_waiting_for_event_completion' => empty($marketing_plan['can_record_outcome']),
             'sequence_position' => min(30, $completed_total + 1),
