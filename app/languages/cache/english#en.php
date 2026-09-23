@@ -1499,7 +1499,7 @@ return [
 	'fcc_results.ai_widget.unlocked_short' => 'Unlocked',
 	'fcc_results.ai_widget.active_benefits' => 'At 15 you unlock a stronger AI rhythm inside Your growth plan: an active weekly plan and recurring AI app review.',
 	'fcc_results.ai_widget.vip_benefits' => 'At 50 you move into a stronger status for the homepage and the recommended sponsors area. This counts as a continuity and experience signal inside FCC.',
-	'fcc_results.ai_widget.pro_note' => 'If you are on the Pro package, Your growth plan uses a wider growth signal. In addition to clicks, WhatsApp contacts, funnel registrations, and AI chat contacts can also be included.',
+	'fcc_results.ai_widget.pro_note' => 'Your growth plan and FCC Results use the same qualification signal for the 15+ and 50+ thresholds. WhatsApp and AI chat contacts provide additional context about interest but do not add points to these thresholds.',
 	'fcc_results.ai_widget.pro_required_note' => 'For the full AI unlock flow inside Your growth plan you need an active Pro package. Here you still see the progress of your qualified signal.',
 	'fcc_results.ai_widget.featured_note_7d' => '15+ in 30 days puts you on the Featured Apps list, while 50+ in 30 days moves you toward homepage recommended sponsors. This 7-day screen serves only as a weekly rhythm check.',
 	'fcc_results.ai_widget.featured_note_7d_unlocked' => 'You already have 50+ in 30 days and are in the stronger recommended sponsor zone. If you also hold 15+ in 7 days, you confirm a stable weekly rhythm.',

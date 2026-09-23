@@ -1407,7 +1407,7 @@ return [
 	'fcc_results.ai_widget.unlocked_short' => 'Otključano',
 	'fcc_results.ai_widget.active_benefits' => 'Na pragu 15 otključavaš jači AI ritam u rubrici Tvoj plan rasta: aktivni tjedni plan i redovni AI pregled aplikacije.',
 	'fcc_results.ai_widget.vip_benefits' => 'Na pragu 50 ulaziš u jači status za naslovnicu i rubriku preporučenih sponzora. To se računa kao signal kontinuiteta i iskustva na FCC-u.',
-	'fcc_results.ai_widget.pro_note' => 'Ako si na Pro paketu, Tvoj plan rasta koristi širi signal rasta. Uz klikove se dodatno mogu uračunati i WhatsApp kontakti, funnel registracije i AI chat kontakti.',
+	'fcc_results.ai_widget.pro_note' => 'Tvoj plan rasta i FCC Rezultati koriste isti kvalifikacijski signal za pragove 15+ i 50+. WhatsApp i AI chat kontakti dodatno opisuju interes, ali se ne pribrajaju tim pragovima.',
 	'fcc_results.ai_widget.pro_required_note' => 'Za puni AI tijek otključavanja u rubrici Tvoj plan rasta trebaš aktivan Pro paket. Ovdje i dalje vidiš napredak svog kvalificiranog signala.',
 	'fcc_results.ai_widget.featured_note_7d' => '15+ u 30 dana vodi te na popis Istaknutih aplikacija, a 50+ u 30 dana prema preporučenim sponzorima na naslovnici. Ovaj 7d prikaz služi samo kao tjedna provjera ritma.',
 	'fcc_results.ai_widget.featured_note_7d_unlocked' => 'Imaš 50+ u 30 dana i time si u jačoj zoni preporučenih sponzora. Ako uz to držiš i 15+ u 7 dana, potvrđuješ stabilan tjedni ritam.',
