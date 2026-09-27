@@ -22,4 +22,15 @@ for name in names:
   if d.get('status')!='LINKED':raise SystemExit('A sponsor batch requires review')
 if linked_count!=30:raise SystemExit('Expected 30 reviewed sponsor links')
 print('VERIFIED_SPONSOR_LINKS '+str(linked_count))
+roots=[n for n in ftp.nlst() if 'sponsor-root-' in n and n.endswith(('.done','.failed'))]
+root_count=0;root_visible=0;root_direct=0
+for name in roots:
+ b=io.BytesIO();ftp.retrbinary('RETR '+name,b.write);d=json.loads(b.getvalue())
+ print(json.dumps({'root_batch':name.split('/')[-1],'status':d.get('status'),'count':d.get('count',len(d.get('linked',[]))),'direct':d.get('direct'),'visible':d.get('visible'),'error':d.get('error')}))
+ if d.get('status')!='LINKED':raise SystemExit('Canonical sponsor batch requires review')
+ root_count+=d.get('count',0);root_visible=max(root_visible,d.get('visible',0));root_direct=max(root_direct,d.get('direct',0))
+if roots:
+ if len(roots)!=3 or root_count!=29 or root_visible!=54 or root_direct!=29:raise SystemExit('Canonical sponsor batches not complete yet')
+ print('VERIFIED_CANONICAL_SPONSOR direct=29 visible=54')
+else:print('CANONICAL_SPONSOR_INSTALLER_STAGED_AWAITING_PRIVATE_INPUT')
 ftp.quit()

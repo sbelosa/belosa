@@ -15,7 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate the private CLI installer
-        run: php -l release-sponsor/sponsor-release.php
+        run: |
+          php -l release-sponsor/sponsor-release.php
+          php -l release-sponsor/sponsor-root.php
       - name: Transfer only the guarded installer outside the web root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
