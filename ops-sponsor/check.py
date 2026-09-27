@@ -22,7 +22,11 @@ for name in names:
   if d.get('status')!='LINKED':raise SystemExit('A sponsor batch requires review')
 if linked_count!=30:raise SystemExit('Expected 30 reviewed sponsor links')
 print('VERIFIED_SPONSOR_LINKS '+str(linked_count))
-roots=[n for n in ftp.nlst() if 'sponsor-root-' in n and n.endswith(('.done','.failed'))]
+for attempt in range(30):
+ roots=[n for n in ftp.nlst() if 'sponsor-root-' in n and n.endswith(('.done','.failed'))]
+ if len(roots)>=3:break
+ time.sleep(4)
+if len(roots)<3:raise SystemExit('Canonical sponsor linking has not finished')
 root_count=0;root_visible=0;root_direct=0
 for name in roots:
  b=io.BytesIO();ftp.retrbinary('RETR '+name,b.write);d=json.loads(b.getvalue())
