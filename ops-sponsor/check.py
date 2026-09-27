@@ -2,7 +2,7 @@ import os,ftplib,io,json,time
 ftp=ftplib.FTP();ftp.connect(os.environ['FTP_SERVER'],int(os.environ.get('FTP_PORT') or 21),timeout=30);ftp.login(os.environ['FTP_USERNAME'],os.environ['FTP_PASSWORD']);ftp.cwd('/fcc-release-20260927')
 for attempt in range(12):
  names=ftp.nlst()
- status=[x for x in names if x.split('/')[-1] in ('sponsor-release.done','sponsor-release.failed')]
+ status=[x for x in names if x.split('/')[-1] in ('sponsor-release-v2.done','sponsor-release-v2.failed')]
  if status:break
  time.sleep(10)
 if not status:raise SystemExit('Installer has not completed yet')
