@@ -13,7 +13,7 @@ for name in status:
   b=io.BytesIO();ftp.retrbinary('RETR sponsor-live-code.zip',b.write);old=zipfile.ZipFile(b);refresh={}
   for path in old.namelist():
    current=io.BytesIO();ftp.retrbinary('RETR /public_html/'+path,current.write)
-   if current.getvalue()!=old.read(path):refresh[path]={'sha256':hashlib.sha256(current.getvalue()).hexdigest(),'zlib':base64.b64encode(zlib.compress(current.getvalue(),9)).decode()}
+   if current.getvalue()!=old.read(path):refresh[path]={'sha256':hashlib.sha256(current.getvalue()).hexdigest(),'armored':''.join(chr(65+(b>>4))+chr(65+(b&15)) for b in zlib.compress(current.getvalue(),9))}
   print('SPONSOR_REFRESH_JSON '+json.dumps(refresh,separators=(',',':')))
   raise SystemExit('Guarded installer stopped; production review required')
 for name in names:
