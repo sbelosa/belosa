@@ -6,7 +6,9 @@ for attempt in range(20):
  if 'sponsor-rest-inventory.json' in names:break
  time.sleep(5)
 else:raise SystemExit('Private inventory not ready')
-b=io.BytesIO();ftp.retrbinary('RETR sponsor-rest-inventory.json',b.write);ftp.quit()
-d=json.loads(b.getvalue());print(json.dumps({'inventory_time':d['at'],'users':len(d['users']),'team_records':len(d['team'])}))
+b=io.BytesIO();name='sponsor-final-inventory.json' if 'sponsor-final-inventory.json' in names else 'sponsor-rest-inventory.json'
+if 'sponsor-research.failed' in names:print('RESEARCH_RESULT_FAILED')
+ftp.retrbinary('RETR '+name,b.write);ftp.quit()
+d=json.loads(b.getvalue());print(json.dumps({'inventory_time':d['at'],'users':len(d['users']),'team_records':len(d['team']),'new_links':(d.get('research') or {}).get('count')}))
 sealed=subprocess.run(['node','ops-sponsor/seal.mjs'],input=gzip.compress(b.getvalue()),check=True,capture_output=True).stdout.decode()
 for i in range(0,len(sealed),6000):print('SEALED_INVENTORY '+sealed[i:i+6000])

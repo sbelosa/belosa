@@ -18,6 +18,8 @@ jobs:
         run: |
           php -l release-sponsor/sponsor-release.php
           php -l release-sponsor/sponsor-root.php
+          php -l release-sponsor/sponsor-research.php
+          php -l release-sponsor/sponsor-final-inventory.php
       - name: Transfer only the guarded installer outside the web root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
