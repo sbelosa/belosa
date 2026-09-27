@@ -2,7 +2,7 @@ name: Stage sponsor module for reviewed production install
 on:
   push:
     branches: [codex/sponsor-production-package]
-    paths: ['release-sponsor/**', '.github/workflows/stage-sponsor-package.yml']
+    paths: ['release-sponsor/**', 'ops-sponsor/**', '.github/workflows/stage-sponsor-package.yml']
 permissions:
   contents: read
 concurrency:
@@ -27,3 +27,10 @@ jobs:
           server-dir: /fcc-release-20260927/
           state-name: .ftp-deploy-sync-state-sponsor-installer.json
           dangerous-clean-slate: false
+      - name: Verify private installer result without publishing account data
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-sponsor/check.py
