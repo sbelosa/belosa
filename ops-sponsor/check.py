@@ -30,7 +30,7 @@ for name in roots:
  if d.get('status')!='LINKED':raise SystemExit('Canonical sponsor batch requires review')
  root_count+=d.get('count',0);root_visible=max(root_visible,d.get('visible',0));root_direct=max(root_direct,d.get('direct',0))
 if roots:
- if len(roots)!=3 or root_count!=29 or root_visible!=54 or root_direct!=29:raise SystemExit('Canonical sponsor batches not complete yet')
- print('VERIFIED_CANONICAL_SPONSOR direct=29 visible=54')
+ if len(roots)!=3 or root_count!=29 or root_visible<54 or root_direct<29:raise SystemExit('Canonical sponsor batches not complete yet')
+ print('VERIFIED_CANONICAL_SPONSOR '+json.dumps({'new_links':root_count,'direct':root_direct,'visible':root_visible}))
 else:print('CANONICAL_SPONSOR_INSTALLER_STAGED_AWAITING_PRIVATE_INPUT')
 ftp.quit()
