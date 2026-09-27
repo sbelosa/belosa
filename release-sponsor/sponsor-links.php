@@ -27,5 +27,9 @@ try {
   if(fcc_team_edge($uid,fcc_team_graph())!==$sid)throw new RuntimeException('Verification failed');
   $result['linked'][]=[$uid,$sid];
  }
+ // A confirmed sponsor also needs a contact record to enter their own business phone.
+ foreach(array_unique(array_column($plan,1)) as $sid)if(!fcc_team_record((int)$sid)) {
+  fcc_team_admin_save(1,(int)$sid,['team_version'=>0,'team_sponsor_id'=>0,'team_is_manager'=>!empty($g[$sid]['manager'])?1:0,'team_reason'=>'FCC račun izravnog sponzora provjeren kroz potvrđeno povezivanje 27.09.2026. Poslovni telefon potvrđuje vlasnik računa.']);
+ }
  $result['count']=count($result['linked']);$result['status']='LINKED';file_put_contents($prefix.'.done',json_encode($result));
 }catch(Throwable $e){$result['error']=$e->getMessage();file_put_contents($prefix.'.failed',json_encode($result));}
