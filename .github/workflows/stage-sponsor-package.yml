@@ -1,0 +1,29 @@
+name: Stage sponsor module for reviewed production install
+on:
+  push:
+    branches: [codex/sponsor-production-package]
+    paths: ['release-sponsor/**', '.github/workflows/stage-sponsor-package.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate the private CLI installer
+        run: php -l release-sponsor/sponsor-release.php
+      - name: Transfer only the guarded installer outside the web root
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-sponsor/
+          server-dir: /fcc-release-20260927/
+          state-name: .ftp-deploy-sync-state-sponsor-installer.json
+          dangerous-clean-slate: false
