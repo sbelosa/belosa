@@ -6,7 +6,7 @@ if(!preg_match('/^[a-f0-9]{64}$/D',$expected))exit(1);
 $plan=json_decode(gzdecode(base64_decode($encoded,true)),true,512,JSON_THROW_ON_ERROR);
 if(!is_array($plan)||count($plan)>15)exit(1);
 $key=substr(hash('sha256',$encoded.$expected),0,16);$prefix='sponsor-links-'.$key;
-$lock=fopen($prefix.'.lock','c');if(!$lock||!flock($lock,LOCK_EX|LOCK_NB))exit;
+$lock=fopen('sponsor-links-global.lock','c');if(!$lock||!flock($lock,LOCK_EX|LOCK_NB))exit;
 if(is_file($prefix.'.done')||is_file($prefix.'.failed'))exit;
 $result=['at'=>gmdate('c'),'linked'=>[]];
 try {
