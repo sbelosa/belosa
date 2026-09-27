@@ -36,3 +36,10 @@ jobs:
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
         run: python3 ops-sponsor/check.py
+      - name: Retrieve private inventory using local public encryption key
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-sponsor/read-rest.py
