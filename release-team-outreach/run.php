@@ -22,12 +22,15 @@ try {
   $aliases=fcc_team_visible_members(278,$graph);$main=fcc_team_visible_members(555,$graph);
   $free=0;foreach(fcc_partner_rows('SELECT user_id FROM users WHERE status=1') as $u)if(!fcc_pro_has_access((int)$u['user_id'])){if(fcc_team_outreach_context((int)$u['user_id'])!==[])throw new RuntimeException('Free context leak');$free++;}
   $before=fcc_partner_one('SELECT COUNT(*) n FROM fcc_team_outreach');
+  // Supply the URL normally initialized by the HTTP front controller.
+  if(!defined('ASSETS_FULL_URL'))define('ASSETS_FULL_URL',SITE_URL.'themes/altum/assets/');
   // Read-only view render catches integration errors without changing any member or message.
   $h='fcc_partner_h';$uid=$actor;$data=(object)['team'=>fcc_team_page($actor,['member'=>$subject]),'form_key'=>str_repeat('0',32)];$token='';$request='';
   ob_start();require $root.'themes/altum/views/partner/team.php';$html=ob_get_clean();
   if(!str_contains($html,'data-team-outreach')||!str_contains($html,'Pripremi s Coachom')||!str_contains($html,'tel:'.$target['phone']))throw new RuntimeException('Rendered profile incomplete');
   $after=fcc_partner_one('SELECT COUNT(*) n FROM fcc_team_outreach');if($before['n']!==$after['n'])throw new RuntimeException('Read check wrote activity');
   $webinar=$page['webinar'];
+  if(is_file('outreach.failed'))rename('outreach.failed','outreach.resolved');
   file_put_contents('verification.done',json_encode(['at'=>gmdate('c'),'contact_target_verified'=>true,'render_verified'=>true,'free_accounts_checked'=>$free,'main_members'=>count($main),'coowner_members'=>count($aliases),'webinar_available'=>(bool)$webinar,'webinar_date'=>$webinar['when']??null,'message_rows_changed'=>false]));
  }
 }catch(Throwable $e){file_put_contents('outreach.failed',json_encode(['class'=>get_class($e),'message'=>$e->getMessage()]));}
