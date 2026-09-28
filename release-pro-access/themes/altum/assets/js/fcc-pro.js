@@ -2,6 +2,7 @@
  'use strict';
  const source=document.getElementById('fcc-pro-config');if(!source)return;
  let config;try{config=JSON.parse(source.textContent);}catch{return;}
+ if(config.active)return;
  const modal=document.getElementById('fcc-pro-dialog'),base=new URL(config.base);
  let opener=null;
  const featureFor=anchor=>{

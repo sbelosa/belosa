@@ -94,7 +94,7 @@ if(\Altum\Router::$controller_key === 'link' && ($this->link->type ?? null) === 
     <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-pro.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-pro.css') ?>">
 </head>
 
-<body data-fcc-page="<?= htmlspecialchars(\Altum\Router::$path==='admin'?'admin':\Altum\Router::$controller_key,ENT_QUOTES) ?>" class="<?= $fp_tool_context ? 'fp-tool-page' : '' ?> <?= fcc_partner_enabled() && \Altum\Router::$controller_key === 'blog' ? 'fcc-library-mode' : '' ?> <?= l('direction') == 'rtl' ? 'rtl' : null ?> app <?= fcc_partner_enabled() ? 'fcc-partner-mode' : '' ?> <?= \Altum\ThemeStyle::get() == 'dark' ? 'cc--darkmode' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
+<body data-fcc-pro-active="<?= fcc_pro_has_access((int)$this->user->user_id) ? '1' : '0' ?>" data-fcc-page="<?= htmlspecialchars(\Altum\Router::$path==='admin'?'admin':\Altum\Router::$controller_key,ENT_QUOTES) ?>" class="<?= $fp_tool_context ? 'fp-tool-page' : '' ?> <?= fcc_partner_enabled() && \Altum\Router::$controller_key === 'blog' ? 'fcc-library-mode' : '' ?> <?= l('direction') == 'rtl' ? 'rtl' : null ?> app <?= fcc_partner_enabled() ? 'fcc-partner-mode' : '' ?> <?= \Altum\ThemeStyle::get() == 'dark' ? 'cc--darkmode' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
     <?php if(!empty(settings()->custom->body_content)): ?>
         <?= settings()->custom->body_content ?>
     <?php endif ?>

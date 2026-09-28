@@ -11,13 +11,13 @@
   },
   {
     "path": "themes/altum/assets/css/fcc-pro.css",
-    "sha256": "705825bbd41e81eaa8fe6f598c1ca25ed2096bf6a74c55ad47cd0b915ac16b79",
-    "before": null
+    "sha256": "2ca429f8d6689ff5e74939100b4896488d5c02dfe0cdf43ca9bac31d4ee61354",
+    "before": "705825bbd41e81eaa8fe6f598c1ca25ed2096bf6a74c55ad47cd0b915ac16b79"
   },
   {
     "path": "themes/altum/assets/js/fcc-pro.js",
-    "sha256": "eed8dc05d3700320a2b53d13ff17a41c2912340bade53b96f530bec8487a117c",
-    "before": null
+    "sha256": "cf542ff8d91c8db48b3155cf860750b8ff474c7d138ebb04e81739a329777da2",
+    "before": "eed8dc05d3700320a2b53d13ff17a41c2912340bade53b96f530bec8487a117c"
   },
   {
     "path": "app/init.php",
@@ -48,8 +48,8 @@
     "path": "app/helpers/fcc_partner_journey.php",
     "patches": [
       {
-        "old": " return $u;\n}\nfunction fcc_journey_pro(object $u): bool {\n return (int)$u->type===1 || (!empty($u->plan_settings->ai_growth_plan_is_enabled) &&\n  (fcc_ai_is_plan_expiration_active((string)$u->plan_expiration_date)||fcc_ai_is_billing_grace_active($u->extra)));\n}\nfunction fcc_journey_channels(): array { return ['whatsapp'=>'WhatsApp','instagram'=>'Instagram','facebook'=>'Facebook','email'=>'E-mail','conversation'=>'Razgovor uživo']; }\nfunction fcc_journey_profile(object $u): array {\n",
-        "new": " return $u;\n}\nfunction fcc_journey_pro(object $u): bool {\n return fcc_pro_has_access((int)$u->user_id);\n}\nfunction fcc_journey_channels(): array { return ['whatsapp'=>'WhatsApp','instagram'=>'Instagram','facebook'=>'Facebook','email'=>'E-mail','conversation'=>'Razgovor uživo']; }\nfunction fcc_journey_profile(object $u): array {\n"
+        "old": " return $u;\n}\nfunction fcc_journey_pro(object $u): bool {\n return (int)$u->type===1 || (!empty($u->plan_settings->ai_growth_plan_is_enabled) &&\n  (fcc_ai_is_plan_expiration_active((string)$u->plan_expiration_date)||fcc_ai_is_billing_grace_active($u->extra)));\n}\nfunction fcc_journey_channels(): array { return ['whatsapp'=>'WhatsApp','instagram'=>'Instagram','facebook'=>'Facebook','email'=>'E-mail','conversation'=>'Razgovor u\u017eivo']; }\nfunction fcc_journey_profile(object $u): array {\n",
+        "new": " return $u;\n}\nfunction fcc_journey_pro(object $u): bool {\n return fcc_pro_has_access((int)$u->user_id);\n}\nfunction fcc_journey_channels(): array { return ['whatsapp'=>'WhatsApp','instagram'=>'Instagram','facebook'=>'Facebook','email'=>'E-mail','conversation'=>'Razgovor u\u017eivo']; }\nfunction fcc_journey_profile(object $u): array {\n"
       }
     ]
   },
@@ -74,8 +74,8 @@
   },
   {
     "path": "themes/altum/views/partner/index.php",
-    "sha256": "08944b1955e0ff4dbabea5c66578f525344e04c07877e23599c8640f90bb542d",
-    "before": "35c48349bc1723150dc223cc65577f740cc1a10322d9bf4651cf8739d941b284"
+    "sha256": "6ee41288774ba3ead69fa7d00ac88d0aea93311dd9a1f3d4e7868d608587f25c",
+    "before": "08944b1955e0ff4dbabea5c66578f525344e04c07877e23599c8640f90bb542d"
   },
   {
     "path": "themes/altum/views/partner/package.php",
@@ -94,7 +94,7 @@
   },
   {
     "path": "themes/altum/views/app_wrapper.php",
-    "sha256": "eae4c323c985554670ad6879070b7749c7e8a132eeda2084db9cfdbd4c4cc8bd",
-    "before": "f2d9a972933ffb0c5a72a7b7a885fda03dfcc358dcd094d8515cecc2eae3cc1f"
+    "sha256": "188a11e8d97f94c2d28433f09d4592c8a324748053dfed84adef04225cf1035b",
+    "before": "eae4c323c985554670ad6879070b7749c7e8a132eeda2084db9cfdbd4c4cc8bd"
   }
 ]
