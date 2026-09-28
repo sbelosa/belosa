@@ -1,0 +1,11 @@
+[
+  "app/controllers/Partner.php",
+  "app/helpers/fcc_team.php",
+  "app/helpers/fcc_coach_mentor.php",
+  "app/helpers/fcc_partner_journey.php",
+  "themes/altum/views/partner/team.php",
+  "themes/altum/views/partner/index.php",
+  "themes/altum/views/partner/journey-pilot-step.php",
+  "themes/altum/views/partner/journey90.php",
+  "themes/altum/assets/css/fcc-team.css"
+]
