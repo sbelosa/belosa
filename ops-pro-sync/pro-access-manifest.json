@@ -1,0 +1,100 @@
+[
+  {
+    "path": "app/helpers/fcc_pro.php",
+    "sha256": "5d6ea08c0cc5ee6ebc8d502d9e900b72bbb0bec6137ed0c3f6e88906089e0b26",
+    "before": null
+  },
+  {
+    "path": "themes/altum/views/partner/pro-upgrade.php",
+    "sha256": "7b534bd664292b8ec3e74aabfc0e5d558b5c80417aaeb9d569fd81b7f2e48558",
+    "before": null
+  },
+  {
+    "path": "themes/altum/assets/css/fcc-pro.css",
+    "sha256": "705825bbd41e81eaa8fe6f598c1ca25ed2096bf6a74c55ad47cd0b915ac16b79",
+    "before": null
+  },
+  {
+    "path": "themes/altum/assets/js/fcc-pro.js",
+    "sha256": "eed8dc05d3700320a2b53d13ff17a41c2912340bade53b96f530bec8487a117c",
+    "before": null
+  },
+  {
+    "path": "app/init.php",
+    "sha256": "ee454f7b7e68aec0312c98bdc0feb5db0a4b7cc57b294f8b1d5347fa3bec6632",
+    "before": "da0590a6dfc7e99eadf3633ea7c67c55da1529c9a6eaa654ba72b0353f54266c"
+  },
+  {
+    "path": "app/controllers/Partner.php",
+    "sha256": "c5e3cee7f77b4bf5996b75966199f972500f37bb0a6a1b87b5ffdedc74da09ed",
+    "before": "5f2628f3e4c58d5f0bbc7df8f0f24d801a78259440aab728ebb369f55a9281e7"
+  },
+  {
+    "path": "app/helpers/fcc_team.php",
+    "sha256": "6805d85edb70af54b7e94e5fd34e58a12fc87e913e701d7095e84959f623c1e8",
+    "before": "c1d7185b77e74b931d14e1cc239625350c74f38288c1adc24f4fe7fad88eb911"
+  },
+  {
+    "path": "app/helpers/fcc_team_notifications.php",
+    "sha256": "684f799f6271a1f02cfafb97df733333f5f0d2edbb2e7d20e9b7b9746d2fec38",
+    "before": "8f8fea9ae7555df0f7f50b2daf2249543213dc145d3266117c5c36f7d99aa1b0"
+  },
+  {
+    "path": "app/helpers/fcc_team_work.php",
+    "sha256": "f03e3e59d3798de4996658b572244167b61fb7f4d62dae7fa416bc4fa48caf39",
+    "before": "023bb9aeab8898ed11ca63ed42156a5e4e73eb7b5a93949d49226ab4f8cef533"
+  },
+  {
+    "path": "app/helpers/fcc_partner_journey.php",
+    "patches": [
+      {
+        "old": " return $u;\n}\nfunction fcc_journey_pro(object $u): bool {\n return (int)$u->type===1 || (!empty($u->plan_settings->ai_growth_plan_is_enabled) &&\n  (fcc_ai_is_plan_expiration_active((string)$u->plan_expiration_date)||fcc_ai_is_billing_grace_active($u->extra)));\n}\nfunction fcc_journey_channels(): array { return ['whatsapp'=>'WhatsApp','instagram'=>'Instagram','facebook'=>'Facebook','email'=>'E-mail','conversation'=>'Razgovor uživo']; }\nfunction fcc_journey_profile(object $u): array {\n",
+        "new": " return $u;\n}\nfunction fcc_journey_pro(object $u): bool {\n return fcc_pro_has_access((int)$u->user_id);\n}\nfunction fcc_journey_channels(): array { return ['whatsapp'=>'WhatsApp','instagram'=>'Instagram','facebook'=>'Facebook','email'=>'E-mail','conversation'=>'Razgovor uživo']; }\nfunction fcc_journey_profile(object $u): array {\n"
+      }
+    ]
+  },
+  {
+    "path": "app/helpers/fcc_ai.php",
+    "patches": [
+      {
+        "old": "}\n\nfunction fcc_ai_user_has_active_growth_pro($user): bool {\n    if(\\Altum\\Authentication::is_admin()) {\n        return true;\n    }\n",
+        "new": "}\n\nfunction fcc_ai_user_has_active_growth_pro($user): bool {\n    if(function_exists('fcc_pro_has_access')) {\n        return fcc_pro_has_access(is_numeric($user)?(int)$user:(int)($user->user_id??0));\n    }\n    if(\\Altum\\Authentication::is_admin()) {\n        return true;\n    }\n"
+      }
+    ]
+  },
+  {
+    "path": "app/helpers/fcc_team_insights.php",
+    "sha256": "13f31c054009287d5234156f580eb3670da2e5eed3fe5ff28d27e54a32d236c8",
+    "before": "4e9c3dd40cab9dec495811104663931df66ed80e8d0568e57ca5f56a3f46da1a"
+  },
+  {
+    "path": "app/helpers/fcc_team_accounts.php",
+    "sha256": "d1e9c6999aea945bf298cca3d7bf77012db3bd71541b28df159058af976791da",
+    "before": "723c0d54241f7bea40da99b4a9cdf6f339b92d77df8356ff2cbfea8e707a7aef"
+  },
+  {
+    "path": "themes/altum/views/partner/index.php",
+    "sha256": "08944b1955e0ff4dbabea5c66578f525344e04c07877e23599c8640f90bb542d",
+    "before": "35c48349bc1723150dc223cc65577f740cc1a10322d9bf4651cf8739d941b284"
+  },
+  {
+    "path": "themes/altum/views/partner/package.php",
+    "sha256": "615e555b803c9bba24a19fdf4e8d1d485ce0ed4702918a6ef5bf6697c200cefa",
+    "before": "5c28060c294cf237dc3616263808813a00010de8f3d8ec598597fc4c5697cc02"
+  },
+  {
+    "path": "themes/altum/views/partner/tools.php",
+    "sha256": "a1e8af10c404ebd11e3d5634bb13c36779531543990e60b2854776b81996f01e",
+    "before": "24e3ef6a9b3959a53e3d483eecadf4a0f1ea3523e63143cb77a3a51489723430"
+  },
+  {
+    "path": "themes/altum/views/partner/navigation.php",
+    "sha256": "32d57ed697c222750f52c33ce20fbcc663cae1ded248ab22122bee61fa432177",
+    "before": "8fbe078228c17daa80e1a9dc7c408bf6daf7880a3bd5291ffb8cd0463a3e9f82"
+  },
+  {
+    "path": "themes/altum/views/app_wrapper.php",
+    "sha256": "eae4c323c985554670ad6879070b7749c7e8a132eeda2084db9cfdbd4c4cc8bd",
+    "before": "f2d9a972933ffb0c5a72a7b7a885fda03dfcc358dcd094d8515cecc2eae3cc1f"
+  }
+]

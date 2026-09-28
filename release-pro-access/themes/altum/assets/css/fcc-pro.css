@@ -1,0 +1,17 @@
+.fcc-pro-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px 7px;border:1px solid #dcd4a8;border-radius:6px;background:#f7f1d7;color:#524824;line-height:1.3;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.08em;vertical-align:middle;margin-left:7px;white-space:nowrap}
+.fcc-pro-dialog{box-sizing:border-box;width:min(460px,calc(100% - 32px));max-height:calc(100dvh - 40px);overflow:auto;margin:auto;padding:36px;border:1px solid #d7e6df;border-radius:24px;background:#fbfdfb;color:#153f35;box-shadow:0 24px 100px #06281b40;font-family:inherit}
+.fcc-pro-dialog::backdrop{background:#092f28a6;backdrop-filter:blur(3px)}
+.fcc-pro-dialog .fcc-pro-badge{margin:0 0 22px;padding:5px 10px}
+.fcc-pro-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border:0;border-radius:50%;background:#edf3ef;color:#174e40;font-size:24px;cursor:pointer}
+.fcc-pro-eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;color:#567568;margin:0 0 10px}
+.fcc-pro-dialog h2{font-size:29px;line-height:1.16;letter-spacing:-.03em;margin:0 0 16px;color:inherit}
+.fcc-pro-dialog p{line-height:1.65}.fcc-pro-dialog #fcc-pro-description{font-size:15px;color:#456456;margin:0 0 22px}
+.fcc-pro-included{font-size:13px;padding:14px 0;border-top:1px solid #dde8e1;margin-bottom:14px}.fcc-pro-included span{color:#287561;margin-right:8px}
+.fcc-pro-action{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;border:0;border-radius:12px;background:#155746;color:#fff!important;font-size:14px;font-weight:700;text-decoration:none!important}
+.fcc-pro-later{display:block;width:100%;padding:14px;border:0;background:transparent;color:#365e50;font:inherit;font-size:13px;cursor:pointer}
+.fcc-pro-note{margin:4px 0 0;font-size:11px;color:#637b70;text-align:center}
+.fcc-pro-dialog :focus-visible,.fcc-pro-upgrade-banner a:focus-visible{outline:3px solid #b3973d;outline-offset:3px}
+.fcc-pro-upgrade-banner{padding:24px 28px;border:1px solid #d6dec5;border-radius:18px;background:linear-gradient(130deg,#edf5ec,#faf7e8);margin:0 0 24px;color:#244f3e}
+.fcc-pro-upgrade-banner h2{font-size:22px;margin:10px 0}.fcc-pro-upgrade-banner p{max-width:700px;margin-bottom:0}.fcc-pro-upgrade-banner .fcc-pro-badge{margin-left:0}
+.fp-nav-link>.fcc-pro-badge{margin-left:auto}.fp-menu-item h2 .fcc-pro-badge{vertical-align:middle}.fcc-pro-upgrade-banner a{display:inline-block;margin-top:15px;font-weight:700}
+@media(max-width:480px){.fcc-pro-dialog{padding:30px 24px}.fcc-pro-dialog h2{font-size:26px}.fcc-pro-upgrade-banner{padding:22px}}
