@@ -12,3 +12,4 @@ for name in ['migration.done','verification.done','outreach.failed']:
 ftp.quit()
 
 # Final production verification after the outreach publication.
+# Recheck after CLI asset initialization.
