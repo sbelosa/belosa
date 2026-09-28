@@ -31,6 +31,7 @@ import {
     parseFlpTimestamp,
     payloadHasExplicitError,
     prepareRegisteredFccAccounts,
+    partitionRegisteredRecords,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
@@ -1351,3 +1352,11 @@ assert.doesNotThrow(()=>verifyRegisteredStatusPeriod({status:'success',metric:'s
 assert.throws(()=>verifyRegisteredStatusPeriod({status:'success',metric:'status',period:'2026-08-01',summary:{active_4cc:25}},'2026-09'),/razdoblje/);
 assert.throws(()=>verifyRegisteredStatusPeriod({status:'error',metric:'status',period:'2026-09-01'},'2026-09'),/razdoblje/);
 console.log('International account and registered status checks passed.');
+
+const partialPartition=partitionRegisteredRecords([{fboId:'001999999997'},{fboId:'490999999997'}],new Map([['001999999997',{personalCc:0}]]),new Map([['001999999997',{}],['490999999997',{personalCc:null,metricPeriod:null}]]));
+assert.equal(partialPartition.uploadAccounts.length,1);
+assert.deepEqual(partialPartition.preservedRecords.get('490999999997'),{personalCc:null,metricPeriod:null});
+assert.throws(()=>partitionRegisteredRecords([{fboId:'001999999997'}],new Map(),new Map()),/potvrđenih/);
+assert.throws(()=>partitionRegisteredRecords([{fboId:'001999999997'}],new Map([['490999999997',{}]]),new Map()),/popisu/);
+assert.throws(()=>partitionRegisteredRecords([{fboId:'001999999997'},{fboId:'490999999997'}],new Map([['001999999997',{}]]),new Map()),/početni/);
+console.log('Partial sync partition safety checks passed.');

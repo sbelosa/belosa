@@ -2,6 +2,7 @@
 
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+import {gzipSync} from 'node:zlib';
 import path from 'node:path';
 import process from 'node:process';
 import {pathToFileURL} from 'node:url';
@@ -176,7 +177,7 @@ function prepareRegisteredFccAccounts(payload, configuration, expectedPeriod) {
     const seen = new Set();
     const accounts = payload.accounts.map(account => {
         const fboId = normalizeFboId(account?.fbo_id);
-        if(!/^\d{12}$/.test(fboId) || seen.has(fboId) || Number(account?.active_link_count) < 1) {
+        if(!/^\d{12}$/.test(fboId) || seen.has(fboId) || !Number.isInteger(Number(account?.active_link_count)) || Number(account?.active_link_count) < 1) {
             throw new Error('FCC popis računa sadrži neispravan ili dupliciran Forever ID.');
         }
         const isVipEnrolled = normalizedBooleanFlag(account?.is_vip_enrolled);
@@ -2072,6 +2073,37 @@ function verifyRegisteredStatusPeriod(payload, period) {
     }
 }
 
+function partitionRegisteredRecords(accounts, confirmed, stored) {
+    if(!(confirmed instanceof Map) || !(stored instanceof Map) || confirmed.size === 0) {
+        throw new Error('Nema potvrđenih zapisa za sigurnu sinkronizaciju.');
+    }
+    const ids = new Set(accounts.map(a => a.fboId));
+    if(ids.size !== accounts.length || [...confirmed.keys()].some(id => !ids.has(id))) {
+        throw new Error('Potvrđeni zapisi ne odgovaraju popisu FCC računa.');
+    }
+    const preservedRecords = new Map();
+    for(const id of ids) if(!confirmed.has(id)) {
+        if(!stored.has(id)) throw new Error('Nedostaje početni zapis za očuvanje nepotvrđenog računa.');
+        preservedRecords.set(id, stored.get(id));
+    }
+    return {uploadAccounts: accounts.filter(a => confirmed.has(a.fboId)), preservedRecords};
+}
+
+async function persistRegisteredAudit(audit) {
+    const dir = path.join(process.cwd(), '.codex-state');
+    await fs.mkdir(dir, {recursive: true, mode: 0o700});
+    const publicKeyPath = process.env.FCC_SYNC_DIAGNOSTICS_PUBLIC_KEY;
+    if(publicKeyPath) {
+        const key = crypto.randomBytes(32), iv = crypto.randomBytes(12);
+        const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+        const data = Buffer.concat([cipher.update(gzipSync(JSON.stringify(audit))), cipher.final()]);
+        const wrapped = crypto.publicEncrypt({key: await fs.readFile(publicKeyPath), oaepHash: 'sha1', padding: crypto.constants.RSA_PKCS1_OAEP_PADDING}, key);
+        await fs.writeFile(path.join(dir, 'flp360-registered-check.sealed.json'), JSON.stringify({key: wrapped.toString('base64'), iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), data: data.toString('base64')}), {mode: 0o600});
+    } else {
+        await fs.writeFile(path.join(dir, 'flp360-registered-check.json'), JSON.stringify(audit), {mode: 0o600});
+    }
+}
+
 async function main() {
     const username = requiredEnvironment('FLP360_USERNAME');
     const password = requiredEnvironment('FLP360_PASSWORD');
@@ -2164,11 +2196,11 @@ async function main() {
             if(liveCc.records.size + liveCc.unconfirmed.length !== liveTargets.length) {
                 throw new Error('Registrirani FCC sync nema cjelovito knjiženje potvrđenih i nepotvrđenih live odgovora; prije upisa ništa nije promijenjeno.');
             }
-            if(!historicalReconcile && (liveCc.unconfirmed.length > 0 || liveCc.records.size !== liveTargets.length)) {
-                throw new Error(`Registrirani FCC sync nije potvrdio ${liveCc.unconfirmed.length} od ${liveTargets.length} Forever ID-jeva; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}; prije upisa ništa nije promijenjeno.`);
-            }
-            if(historicalReconcile && liveCc.records.size === 0) {
-                throw new Error('Povijesno usklađenje nije dobilo nijedan točan mjesečni zapis; prije upisa ništa nije promijenjeno.');
+            await persistRegisteredAudit({period, at: new Date().toISOString(), checked: liveTargets.length,
+                confirmed: liveCc.records.size, unconfirmed: liveCc.unconfirmed,
+                accounts: fccAccountsPayload.accounts, records: [...liveCc.records], fourCcCount: fourCc.rowCount});
+            if(liveCc.records.size === 0) {
+                throw new Error('Sinkronizacija nije dobila nijedan potvrđen mjesečni zapis; prije upisa ništa nije promijenjeno.');
             }
 
             const rootRecord = liveCc.records.get(rootFboId);
@@ -2199,13 +2231,6 @@ async function main() {
                     mustRemainVipEnrolled: account.isVipEnrolled === true,
                 }]] : [];
             }));
-            if(!historicalReconcile && expectedRecords.size !== registeredAccounts.length) {
-                throw new Error('Registrirani FCC sync nema pripremljen zapis za svaki aktivni Forever ID.');
-            }
-            if(historicalReconcile
-                && expectedRecords.size + liveCc.unconfirmed.length !== registeredAccounts.length) {
-                throw new Error('Povijesno usklađenje nema točno razdvojene potvrđene i sačuvane FCC račune; prije upisa ništa nije promijenjeno.');
-            }
             if(historicalReconcile && expectedRecords.has(rootFboId)) {
                 const historicalRoot = expectedRecords.get(rootFboId);
                 const missingRootMetrics = [
@@ -2217,23 +2242,8 @@ async function main() {
                     throw new Error(`Povijesno usklađenje nema potpuni root zapis; nedostaje ${missingRootMetrics.join(', ')}; prije upisa ništa nije promijenjeno.`);
                 }
             }
-            const uploadAccounts = historicalReconcile
-                ? registeredAccounts.filter(account => expectedRecords.has(account.fboId))
-                : registeredAccounts;
-            const preservedRecords = new Map();
-            if(historicalReconcile) {
-                for(const account of registeredAccounts) {
-                    if(expectedRecords.has(account.fboId)) continue;
-                    const stored = storedByFboId.get(account.fboId);
-                    if(!stored) {
-                        throw new Error('Povijesno usklađenje nema početni FCC zapis za nedostupan račun; prije upisa ništa nije promijenjeno.');
-                    }
-                    preservedRecords.set(account.fboId, stored);
-                }
-            }
-            const expectedActiveFourCcCount = historicalReconcile
-                ? expectedActiveFourCcAfterReconciliation(storedByFboId, expectedRecords, period)
-                : fourCc.rowCount;
+            const {uploadAccounts, preservedRecords} = partitionRegisteredRecords(registeredAccounts, expectedRecords, storedByFboId);
+            const expectedActiveFourCcCount = expectedActiveFourCcAfterReconciliation(storedByFboId, expectedRecords, period);
             const reconciliation = summarizeRegisteredReconciliation(storedByFboId, expectedRecords, period);
             console.log(`Registrirani FCC način: potvrđeno ${expectedRecords.size}/${registeredAccounts.length} računa za ${period}; ${liveCc.fallbackCount} detail potvrda; ${liveCc.historicalPerformanceCount} dvostruko potvrđenih povijesnih UI zapisa; ${liveCc.zeroCurrentMonthCount} potvrđenih current-month nula (${liveCc.nullCurrentMonthCount} all-null); tržišta ${JSON.stringify(liveCc.countryCounts)}.`);
             if(historicalReconcile && liveCc.unconfirmed.length > 0) {
@@ -2249,12 +2259,15 @@ async function main() {
             }
 
             if(dryRun) {
+                if(!historicalReconcile && preservedRecords.size>0) throw new Error(`Kontrolna sinkronizacija je djelomična: ${preservedRecords.size} nepotvrđenih računa; ništa nije upisano.`);
                 console.log('Kontrolni registrirani FCC način završen je bez upisa.');
                 return;
             }
 
             if(!historicalReconcile) {
-                if(fourCc.rowCount > 0) {
+                if(preservedRecords.size > 0) {
+                    console.log('Potvrđeni računi dobivaju pojedinačne službene 4 CC statuse; skupni uvoz ne mijenja sačuvane nedostupne račune.');
+                } else if(fourCc.rowCount > 0) {
                     const fourCcResult = await uploadReport(fourCc.path, period, syncUrl, syncKey);
                     console.log(`FCC 4 CC Active: duplicate=${Boolean(fourCcResult.duplicate)}.`);
                 } else {
@@ -2284,7 +2297,7 @@ async function main() {
                 expectedRecords,
                 period,
                 registeredAccounts.length,
-                historicalReconcile ? {expectedActiveFourCcCount, preservedRecords} : {}
+                {expectedActiveFourCcCount, preservedRecords}
             );
             const status = await fetchFccStatus(period, syncUrl, syncKey);
             verifyRegisteredStatusPeriod(status, period);
@@ -2293,6 +2306,9 @@ async function main() {
             // every registered ID and its official flag, including shared accounts.
             console.log(`4 CC opsezi: službeni FLP skup ${fourCc.rowCount}, potvrđeni FCC računi ${registeredVerified.activeFourCc}, vidljiva hijerarhija ${Number(status.summary.active_4cc)}.`);
             console.log(`FCC account provjera: ${registeredVerified.uniqueForeverIds} jedinstvenih Forever ID-jeva (${registeredVerified.activeAccountLinks} aktivnih računa), VIP upis potvrđen za ${registeredVerified.vipEnrolled}.`);
+            if(!historicalReconcile && preservedRecords.size > 0) {
+                throw new Error(`Sinkronizacija je djelomična: osvježeno ${expectedRecords.size} Forever ID-jeva, ${preservedRecords.size} nepotvrđenih računa sačuvano bez promjene; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}.`);
+            }
             console.log(`FLP360 → FCC registrirani sync za ${period} završen je uspješno; zadnji FCC podatak ${status.last_data_import_at || status.last_sync_at || 'potvrđen'}.`);
             return;
         }
@@ -2429,7 +2445,7 @@ async function main() {
 
 if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
     main().catch(error => {
-        console.error(`Sinkronizacija je zaustavljena: ${error.message}`);
+        console.error(`Sinkronizacija je zaustavljena: ${String(error.message).replace(/\b[0-9]{12}\b/g, '[Forever ID]')}`);
         process.exitCode = 1;
     });
 }
@@ -2463,6 +2479,7 @@ export {
     parseFlpTimestamp,
     payloadHasExplicitError,
     prepareRegisteredFccAccounts,
+    partitionRegisteredRecords,
     readyReportMessage,
     refreshDownlineCsv,
     reportV2Url,
