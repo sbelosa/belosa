@@ -16,6 +16,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate the private CLI installer
         run: |
+          php -l release-sponsor/shared-runner.php
+          php -l release-sponsor/shared-inventory.php
           php -l release-sponsor/sponsor-release.php
           php -l release-sponsor/sponsor-root.php
           php -l release-sponsor/sponsor-research.php
@@ -50,4 +52,4 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
-        run: python3 ops-sponsor/read-gen-final.py
+        run: python3 ops-sponsor/read-shared.py
