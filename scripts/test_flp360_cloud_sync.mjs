@@ -43,6 +43,7 @@ import {
     validateFourCcRows,
     validateXlsx,
     verifyFccAccounts,
+    verifyRegisteredStatusPeriod,
     verifyFccStatus,
     zagrebPeriod,
     zagrebPeriodParts,
@@ -182,7 +183,7 @@ assert.throws(() => prepareRegisteredFccAccounts({
 }, {operatingCountryCode: 'HUN'}, '2026-08'), /dupliciran/);
 assert.throws(() => prepareRegisteredFccAccounts({
     status: 'success', metric: 'fcc_accounts', period: '2026-08-01', summary: {unique_forever_ids: 1},
-    accounts: [{fbo_id: '000000360790', country_code: 'RS', active_link_count: 1}],
+    accounts: [{fbo_id: '00000036079', country_code: 'RS', active_link_count: 1}],
 }, {operatingCountryCode: 'HUN'}, '2026-08'), /neispravan/);
 assert.throws(() => prepareRegisteredFccAccounts({
     status: 'success', metric: 'fcc_accounts', period: '2026-08-01', summary: {unique_forever_ids: 1},
@@ -1340,3 +1341,13 @@ if(fourCcPath) assert.ok((await validateXlsx(fourCcPath, '4 CC Active')).bytes >
 console.log('FLP360 cloud sync checks passed.');
 
 /* /Custom code: FC-2026-08-13 */
+
+// International accounts and distinct registered/hierarchy scopes.
+for(const fbo of ['001999999997','490999999997','440999999997','389999999997']) {
+ const r=prepareRegisteredFccAccounts({status:'success',metric:'fcc_accounts',period:'2026-09-01',summary:{unique_forever_ids:1},accounts:[{fbo_id:fbo,active_link_count:2,country_code:'DE',is_vip_enrolled:false}]},{operatingCountryCode:'HUN'},'2026-09');
+ assert.equal(r[0].fboId,fbo);assert.equal(r[0].activeLinkCount,2);
+}
+assert.doesNotThrow(()=>verifyRegisteredStatusPeriod({status:'success',metric:'status',period:'2026-09-01',summary:{active_4cc:23}},'2026-09'));
+assert.throws(()=>verifyRegisteredStatusPeriod({status:'success',metric:'status',period:'2026-08-01',summary:{active_4cc:25}},'2026-09'),/razdoblje/);
+assert.throws(()=>verifyRegisteredStatusPeriod({status:'error',metric:'status',period:'2026-09-01'},'2026-09'),/razdoblje/);
+console.log('International account and registered status checks passed.');

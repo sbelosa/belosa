@@ -1,0 +1,48 @@
+name: Publish and verify international FCC synchronization
+on:
+  push:
+    branches: [codex/sponsor-production-package]
+    paths: ['ops-pro-sync/sync-helper.py', 'release-pro-sync/sync-helper.php', '.github/workflows/pro-sync-verify.yml']
+permissions:
+  contents: read
+concurrency:
+  group: flp360-fcc-production-sync
+  cancel-in-progress: false
+jobs:
+  helper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: deploy-cpanel-ftp-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - run: php -l release-pro-sync/sync-helper.php
+      - name: Publish verified account normalization
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-pro-sync/sync-helper.py
+  sync:
+    needs: helper
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/test_flp360_cloud_sync.mjs
+      - run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify current FLP360 records and reconcile all active FCC IDs
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_SYNC_REGISTERED_ONLY: '1'
+        run: node scripts/flp360_cloud_sync.mjs

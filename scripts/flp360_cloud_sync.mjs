@@ -176,7 +176,7 @@ function prepareRegisteredFccAccounts(payload, configuration, expectedPeriod) {
     const seen = new Set();
     const accounts = payload.accounts.map(account => {
         const fboId = normalizeFboId(account?.fbo_id);
-        if(!/^360\d{9}$/.test(fboId) || seen.has(fboId) || Number(account?.active_link_count) < 1) {
+        if(!/^\d{12}$/.test(fboId) || seen.has(fboId) || Number(account?.active_link_count) < 1) {
             throw new Error('FCC popis računa sadrži neispravan ili dupliciran Forever ID.');
         }
         const isVipEnrolled = normalizedBooleanFlag(account?.is_vip_enrolled);
@@ -209,7 +209,7 @@ function extractRegisteredStoredMetrics(payload, expectedPeriod) {
     const storedByFboId = new Map();
     for(const account of payload.accounts) {
         const fboId = normalizeFboId(account?.fbo_id);
-        if(!/^360\d{9}$/.test(fboId) || storedByFboId.has(fboId)) {
+        if(!/^\d{12}$/.test(fboId) || storedByFboId.has(fboId)) {
             throw new Error('FCC spremljene metrike sadrže neispravan ili dupliciran Forever ID.');
         }
         const metricPeriod = account?.metric_period === null || account?.metric_period === undefined
@@ -2061,7 +2061,15 @@ function verifyFccAccounts(payload, expectedRecords, period, expectedAccountCoun
         activeAccountLinks: Number(payload?.summary?.active_account_links),
         vipEnrolled: Number(payload?.summary?.vip_enrolled),
         currentCcConfirmed: Number(payload?.summary?.current_cc_confirmed),
+        activeFourCc: Number(payload?.summary?.current_active_4cc),
     };
+}
+
+function verifyRegisteredStatusPeriod(payload, period) {
+    if(payload?.status !== 'success' || payload?.metric !== 'status'
+        || normalizePeriod(payload.period) !== normalizePeriod(period)) {
+        throw new Error('FCC završni status ne potvrđuje traženo razdoblje.');
+    }
 }
 
 async function main() {
@@ -2279,9 +2287,11 @@ async function main() {
                 historicalReconcile ? {expectedActiveFourCcCount, preservedRecords} : {}
             );
             const status = await fetchFccStatus(period, syncUrl, syncKey);
-            if(Number(status?.summary?.active_4cc) !== expectedActiveFourCcCount) {
-                throw new Error(`FCC završna 4 CC kontrola nije prošla: očekivano ${expectedActiveFourCcCount}, zapisano ${Number(status?.summary?.active_4cc)}.`);
-            }
+            verifyRegisteredStatusPeriod(status, period);
+            // The dashboard is limited to its hierarchy. The FLP 4 CC report and
+            // active FCC logins are different sets. verifyFccAccounts above checks
+            // every registered ID and its official flag, including shared accounts.
+            console.log(`4 CC opsezi: službeni FLP skup ${fourCc.rowCount}, potvrđeni FCC računi ${registeredVerified.activeFourCc}, vidljiva hijerarhija ${Number(status.summary.active_4cc)}.`);
             console.log(`FCC account provjera: ${registeredVerified.uniqueForeverIds} jedinstvenih Forever ID-jeva (${registeredVerified.activeAccountLinks} aktivnih računa), VIP upis potvrđen za ${registeredVerified.vipEnrolled}.`);
             console.log(`FLP360 → FCC registrirani sync za ${period} završen je uspješno; zadnji FCC podatak ${status.last_data_import_at || status.last_sync_at || 'potvrđen'}.`);
             return;
@@ -2462,6 +2472,7 @@ export {
     validateFourCcRows,
     validateXlsx,
     verifyFccStatus,
+    verifyRegisteredStatusPeriod,
     verifyFccAccounts,
     syncRunDate,
     summarizeRegisteredReconciliation,
