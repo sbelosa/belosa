@@ -1,0 +1,23 @@
+name: Stage isolated team outreach schema migration
+on:
+  push:
+    branches: [codex/sponsor-production-package]
+    paths: ['ops-team-outreach/stage.py', 'release-team-outreach/schema.sql', 'release-team-outreach/run.php', '.github/workflows/team-outreach-stage.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage private CLI migration and verification
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-team-outreach/stage.py
