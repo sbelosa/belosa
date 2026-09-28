@@ -186,6 +186,10 @@ function prepareRegisteredFccAccounts(payload, configuration, expectedPeriod) {
         return {
             fboId,
             countryCode: resolveFccAccountCountryCode(account?.country_code, configuration),
+            // Registration residence can differ from the issuing FLP market.
+            // These are lookup candidates only; every response must still pass
+            // the exact identity and period checks before any metric is saved.
+            countryCandidates: ({'389': ['BGR'], '410': ['CHE'], '490': ['DEU']})[fboId.slice(0, 3)] || [],
             activeLinkCount: Number(account.active_link_count),
             totalActiveCcYtd: optionalNonNegativeCc(account?.total_active_cc_ytd, 'FCC total_active_cc_ytd'),
             nonManagerCcYtd: optionalNonNegativeCc(account?.non_manager_cc_ytd, 'FCC non_manager_cc_ytd'),

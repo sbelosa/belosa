@@ -112,9 +112,9 @@ const registeredAccounts = prepareRegisteredFccAccounts({
     ],
 }, {homeCountryCode: 'HRV', operatingCountryCode: 'HUN'}, '2026-08');
 assert.deepEqual(registeredAccounts, [
-    {fboId: '360001651915', countryCode: 'BIH', activeLinkCount: 1, totalActiveCcYtd: 81.125, nonManagerCcYtd: 42.5, leadershipCcYtd: 7.25, isVipEnrolled: true},
-    {fboId: '360000000002', countryCode: 'DEU', activeLinkCount: 2, totalActiveCcYtd: null, nonManagerCcYtd: null, leadershipCcYtd: null, isVipEnrolled: false},
-    {fboId: '360000000099', countryCode: 'HUN', activeLinkCount: 1, totalActiveCcYtd: null, nonManagerCcYtd: null, leadershipCcYtd: null, isVipEnrolled: false},
+    {fboId: '360001651915', countryCode: 'BIH', countryCandidates: [], activeLinkCount: 1, totalActiveCcYtd: 81.125, nonManagerCcYtd: 42.5, leadershipCcYtd: 7.25, isVipEnrolled: true},
+    {fboId: '360000000002', countryCode: 'DEU', countryCandidates: [], activeLinkCount: 2, totalActiveCcYtd: null, nonManagerCcYtd: null, leadershipCcYtd: null, isVipEnrolled: false},
+    {fboId: '360000000099', countryCode: 'HUN', countryCandidates: [], activeLinkCount: 1, totalActiveCcYtd: null, nonManagerCcYtd: null, leadershipCcYtd: null, isVipEnrolled: false},
 ]);
 const storedMetrics = extractRegisteredStoredMetrics({
     status: 'success', metric: 'fcc_accounts', period: '2026-08-01',
@@ -1360,3 +1360,10 @@ assert.throws(()=>partitionRegisteredRecords([{fboId:'001999999997'}],new Map(),
 assert.throws(()=>partitionRegisteredRecords([{fboId:'001999999997'}],new Map([['490999999997',{}]]),new Map()),/popisu/);
 assert.throws(()=>partitionRegisteredRecords([{fboId:'001999999997'},{fboId:'490999999997'}],new Map([['001999999997',{}]]),new Map()),/početni/);
 console.log('Partial sync partition safety checks passed.');
+
+for(const [prefix,market,residence] of [['389','BGR','RS'],['410','CHE','GB'],['490','DEU','AT']]) {
+ const [account]=prepareRegisteredFccAccounts({status:'success',metric:'fcc_accounts',period:'2026-09-01',summary:{unique_forever_ids:1},accounts:[{fbo_id:prefix+'999999997',active_link_count:1,country_code:residence,is_vip_enrolled:false}]},{homeCountryCode:'HRV',operatingCountryCode:'HUN'},'2026-09');
+ assert.deepEqual(account.countryCandidates,[market]);
+ assert.notEqual(account.countryCode,market);
+}
+console.log('Residence and issuing market fallback checks passed.');
