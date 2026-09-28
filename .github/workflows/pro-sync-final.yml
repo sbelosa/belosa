@@ -1,0 +1,24 @@
+name: Verify production PRO gates and synchronized account coverage
+on:
+  push:
+    branches: [codex/sponsor-production-package]
+    paths: ['ops-pro-sync/final.py', 'release-pro-sync/final.php', '.github/workflows/pro-sync-final.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - run: php -l release-pro-sync/final.php
+      - name: Read only audit encrypted to the local client key
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-pro-sync/final.py
