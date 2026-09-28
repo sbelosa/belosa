@@ -1,0 +1,39 @@
+name: Stage mobile design and retired billing fix
+on:
+  push:
+    branches: [codex/mobile-billing-production]
+    paths: ['release-mobile-billing/**', 'ops-mobile-billing/**', '.github/workflows/stage-mobile-billing.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate guarded CLI installer and bundled PHP
+        run: |
+          php -l release-mobile-billing/mobile-billing-install.php
+          unzip -q release-mobile-billing/mobile-billing-code.zip -d /tmp/reviewed-mobile-code
+          find /tmp/reviewed-mobile-code -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Stage reviewed files outside public web root
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-mobile-billing/
+          server-dir: /fcc-release-20260927/
+          state-name: .ftp-deploy-sync-state-mobile-billing.json
+          dangerous-clean-slate: false
+      - name: Verify guarded deployment result
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-mobile-billing/check.py
