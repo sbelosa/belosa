@@ -18,6 +18,9 @@ jobs:
         run: |
           php -l release-sponsor/shared-runner.php
           php -l release-sponsor/shared-inventory.php
+          php -l release-sponsor/shared-release.php
+          php -l release-sponsor/shared-final.php
+          unzip -t release-sponsor/shared-payload.zip
           php -l release-sponsor/sponsor-release.php
           php -l release-sponsor/sponsor-root.php
           php -l release-sponsor/sponsor-research.php

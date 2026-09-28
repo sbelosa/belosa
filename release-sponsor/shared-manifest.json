@@ -1,0 +1,49 @@
+{
+  "plan_sha256": "a666f60dbc49d2af775e2ee048ca71a913c878f7bdca46b852722aca8a004ad9",
+  "files": {
+    "app/helpers/fcc_team.php": {
+      "before": "866770a32b59d6b28f780171c6c1f31964d1c8f62fc567350636282e100b8753",
+      "after": "c1d7185b77e74b931d14e1cc239625350c74f38288c1adc24f4fe7fad88eb911"
+    },
+    "app/helpers/fcc_team_accounts.php": {
+      "before": null,
+      "after": "723c0d54241f7bea40da99b4a9cdf6f339b92d77df8356ff2cbfea8e707a7aef"
+    },
+    "app/helpers/fcc_team_insights.php": {
+      "before": null,
+      "after": "4e9c3dd40cab9dec495811104663931df66ed80e8d0568e57ca5f56a3f46da1a"
+    },
+    "app/helpers/fcc_team_notifications.php": {
+      "before": "0bd4afa01a117d7d3f79566664d88e7c21b4dd02ce2fb8a66f5d88b321a12b10",
+      "after": "8f8fea9ae7555df0f7f50b2daf2249543213dc145d3266117c5c36f7d99aa1b0"
+    },
+    "app/helpers/fcc_team_work.php": {
+      "before": "d0f237a8acc4954825486170d0f3642a433867dd4c4960b7834a7ff99c779d4e",
+      "after": "023bb9aeab8898ed11ca63ed42156a5e4e73eb7b5a93949d49226ab4f8cef533"
+    },
+    "app/helpers/fcc_coach_mentor.php": {
+      "before": "efef8d07a425cc90c856903a35a7d5136a6a7df977bf0fd5eecba5461dc4034d",
+      "after": "44a7df9ba752682249e0494a39b608b5f270f406a7b5de9eb7d61e277e9e224d"
+    },
+    "app/config/fcc_coach_mentor.hr.txt": {
+      "before": "1c92ee1b4adb55a0a637859cc245dcfcfd8a12843dd469811da029716a6b1284",
+      "after": "005d1375fb7307a80594b662c158cf1b1a8618f32dacd5bc0066e0c7e8b158a3"
+    },
+    "themes/altum/views/partner/team.php": {
+      "before": "13697f04c50c64bc113cdd73402ed4f33eca8d5150869cc056dba89aa341724f",
+      "after": "185d5f065a6f572513b702a3b7fae82020aebbfa67ba7e1a32e33a91b15703b3"
+    },
+    "themes/altum/assets/css/fcc-team.css": {
+      "before": "7fa99b8217c9f86b2daaea18f95652a18578d4008f491edc9a4a19e569907b0c",
+      "after": "33964cb33dcc5460ea5b1f9db53ac229d920797dcb492e624ac2a9ad2f95e617"
+    },
+    "themes/altum/views/admin/partials/sponsor-fields.php": {
+      "before": "4ed4788038e2802904f4830e3fae352b6691286c306f24cfb3ea5ce720bf96cf",
+      "after": "f4d90d7f378e8f5c50dedf7884b840acff9cd7e194884ffcd3441dacfa93bf56"
+    },
+    "scripts/migrations/partner/020_team_shared_accounts.sql": {
+      "before": null,
+      "after": "677f6ec0df588d053baf5726e06ab781312e090a75f4e45794394498730373da"
+    }
+  }
+}
