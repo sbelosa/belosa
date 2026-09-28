@@ -23,6 +23,7 @@ jobs:
           php -l release-sponsor/sponsor-gen-inventory.php
           php -l release-sponsor/sponsor-gen-links.php
           php -l release-sponsor/sponsor-gen-final.php
+          php -l release-sponsor/sponsor-gen-cleanup.php
           php -l release-sponsor/sponsor-phone-inspect.php
           php -l release-sponsor/sponsor-phone-release.php
       - name: Transfer only the guarded installer outside the web root

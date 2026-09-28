@@ -17,3 +17,17 @@ print(json.dumps({'at':d.get('at'),'users':len(d.get('users',[])),'team':len(d.g
 sealed=subprocess.run(['node','ops-sponsor/seal.mjs'],input=gzip.compress(b.getvalue()),check=True,capture_output=True).stdout.decode()
 for i in range(0,len(sealed),6000):print('SEALED_GEN_FINAL '+sealed[i:i+6000])
 if name.endswith('.failed'):raise SystemExit('Private contact release failed; encrypted details available')
+
+ftp=connect()
+for attempt in range(60):
+ try:names=ftp.nlst()
+ except (TimeoutError,OSError,ftplib.Error):
+  try:ftp.close()
+  except Exception:pass
+  ftp=connect();continue
+ if 'sponsor-gen-cleanup.done' in names or 'sponsor-gen-cleanup.failed' in names:break
+ time.sleep(5)
+else:raise SystemExit('Cleanup result not ready')
+name='sponsor-gen-cleanup.failed' if 'sponsor-gen-cleanup.failed' in names else 'sponsor-gen-cleanup.done'
+b=io.BytesIO();ftp.retrbinary('RETR '+name,b.write);ftp.quit();print('GEN_CLEANUP '+b.getvalue().decode())
+if name.endswith('.failed'):raise SystemExit('Temporary job cleanup needs attention')

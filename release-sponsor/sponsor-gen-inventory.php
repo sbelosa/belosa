@@ -1,6 +1,7 @@
 <?php
 /** Private, read-only sponsor inventory. No credentials or raw contacts are exported. */
 if(PHP_SAPI!=='cli')exit(1);umask(0077);chdir(__DIR__);
+if(is_file('sponsor-gen-links.done')&&is_file('sponsor-gen-cleanup.php')){require __DIR__.'/sponsor-gen-cleanup.php';exit;}
 if(is_file('sponsor-gen-links.sealed.json')&&is_file('sponsor-gen-links.php')){require __DIR__.'/sponsor-gen-links.php';exit;}
 if(is_file('sponsor-gen-inventory-v3.done')||is_file('sponsor-gen-inventory-v3.failed'))exit;
 $lock=fopen('sponsor-gen-inventory-v3.lock','c');if(!$lock||!flock($lock,LOCK_EX|LOCK_NB))exit;
