@@ -1,0 +1,72 @@
+[
+  {
+    "path": "app/helpers/fcc_team_outreach.php",
+    "before": null,
+    "sha256": "c12e040878032db987041f3d6c25045fc4548cac083335a70e3b117442b955d5"
+  },
+  {
+    "path": "themes/altum/assets/js/fcc-team-outreach.js",
+    "before": null,
+    "sha256": "9a1061e431aa16fe0705fd61a2373bf4e3ebb992613a0789417b5b9c4e67077b"
+  },
+  {
+    "path": "themes/altum/views/partner/team-outreach-due.php",
+    "before": null,
+    "sha256": "8eb56678cb962337eeae222b6099719ebf66bae3dafcd9698f24d2a63041d9e8"
+  },
+  {
+    "path": "themes/altum/views/partner/team-outreach.php",
+    "before": null,
+    "sha256": "20767e14f147a379435744c6096be99a8f02e51f0f83f8e064b872e9d613ac1e"
+  },
+  {
+    "path": "themes/altum/views/partner/team-support-guide.php",
+    "before": null,
+    "sha256": "bd52e3b20404b0f7153296669d61581dc08f47d82f96160482f1c4a464b43196"
+  },
+  {
+    "path": "app/helpers/fcc_team.php",
+    "before": "6805d85edb70af54b7e94e5fd34e58a12fc87e913e701d7095e84959f623c1e8",
+    "sha256": "040df64564657a431c1a14b422e6ae9d639d4fdf0555154cbc5c22d6741b2f70"
+  },
+  {
+    "path": "app/controllers/Partner.php",
+    "before": "c5e3cee7f77b4bf5996b75966199f972500f37bb0a6a1b87b5ffdedc74da09ed",
+    "sha256": "d15685da53a8385c078fa622b50aeba91afa80910ec7f199cfa2150c490ff685"
+  },
+  {
+    "path": "app/helpers/fcc_coach_mentor.php",
+    "before": "44a7df9ba752682249e0494a39b608b5f270f406a7b5de9eb7d61e277e9e224d",
+    "sha256": "65568839151080f58b03621a38a0c81262e31a47f73b1405e7a4cafe8324349b"
+  },
+  {
+    "path": "app/helpers/fcc_partner_journey.php",
+    "before": "4e61620fbda82b2a2c8f52952fc3ebc06bee4bb61f23eebe782868544313aaf8",
+    "sha256": "7f211c0d5c2c644c07fc60b55f8bfe45fe4e6f4c208241cc834a684ddf033a2b"
+  },
+  {
+    "path": "themes/altum/assets/css/fcc-team.css",
+    "before": "33964cb33dcc5460ea5b1f9db53ac229d920797dcb492e624ac2a9ad2f95e617",
+    "sha256": "fb98bf20500ddac3f4e6119a8dedca1987161c6a86a33c9747bccd6371e14b08"
+  },
+  {
+    "path": "themes/altum/views/partner/index.php",
+    "before": "6ee41288774ba3ead69fa7d00ac88d0aea93311dd9a1f3d4e7868d608587f25c",
+    "sha256": "01241f48e72640aefe3cc3ca31c5510f2a7a358af8e4312776271d0e722e459d"
+  },
+  {
+    "path": "themes/altum/views/partner/journey-pilot-step.php",
+    "before": "d79fa90581064c8372434470c6ea9996f0143c41fb3b8ecae6c9a7629d18b181",
+    "sha256": "a87d1f8dfcd4749c5eb7039dfde97dffbb0d8a78c4cd49654a78e11b7266a80f"
+  },
+  {
+    "path": "themes/altum/views/partner/journey90.php",
+    "before": "d113dddc6340bf970fef32eb70d8a7155bcd05807c6e6ffffbb0bc5a78446fda",
+    "sha256": "84b9c803986a0856c1be89fbb09a2c89b2bc9a13b3ffde7f0ccc64024824511d"
+  },
+  {
+    "path": "themes/altum/views/partner/team.php",
+    "before": "185d5f065a6f572513b702a3b7fae82020aebbfa67ba7e1a32e33a91b15703b3",
+    "sha256": "6977768147ecf6428c78ce14c8c5565961ba3158b1c212732082d2e6cbf856b2"
+  }
+]

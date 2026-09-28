@@ -1,0 +1,23 @@
+name: Publish reviewed team outreach and aligned member overview
+on:
+  push:
+    branches: [codex/sponsor-production-package]
+    paths: ['ops-team-outreach/publish.py', 'ops-team-outreach/manifest.json', 'release-team-outreach/files/**', '.github/workflows/team-outreach-publish.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate, back up, publish and verify only reviewed changes
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 ops-team-outreach/publish.py
