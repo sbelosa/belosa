@@ -10,3 +10,5 @@ for name in ['migration.done','verification.done','outreach.failed']:
  data=json.loads(b.getvalue());print(name+' '+json.dumps(data))
  if name=='outreach.failed':raise SystemExit('Private verification failed')
 ftp.quit()
+
+# Final production verification after the outreach publication.

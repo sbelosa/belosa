@@ -1,8 +1,8 @@
 [
   {
     "path": "app/helpers/fcc_team_outreach.php",
-    "before": null,
-    "sha256": "c12e040878032db987041f3d6c25045fc4548cac083335a70e3b117442b955d5"
+    "before": "c12e040878032db987041f3d6c25045fc4548cac083335a70e3b117442b955d5",
+    "sha256": "84acd29d767a2ea1909c67225c7ae661902510fd2331c6d6a68da5f856475eb7"
   },
   {
     "path": "themes/altum/assets/js/fcc-team-outreach.js",
