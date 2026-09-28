@@ -21,6 +21,8 @@ jobs:
           php -l release-sponsor/sponsor-research.php
           php -l release-sponsor/sponsor-final-inventory.php
           php -l release-sponsor/sponsor-gen-inventory.php
+          php -l release-sponsor/sponsor-gen-links.php
+          php -l release-sponsor/sponsor-gen-final.php
           php -l release-sponsor/sponsor-phone-inspect.php
           php -l release-sponsor/sponsor-phone-release.php
       - name: Transfer only the guarded installer outside the web root
@@ -47,4 +49,4 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
-        run: python3 ops-sponsor/read-gen-inventory.py
+        run: python3 ops-sponsor/read-gen-final.py
