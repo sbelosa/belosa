@@ -1844,6 +1844,25 @@ async function uploadFourCoreSnapshot(snapshot, syncUrl, syncKey) {
     return payload;
 }
 
+export function ccPublicationRecords(records) {
+    return [...records.values()].map(record => ({fbo_id: record.fboId,
+        personal_cc: record.personalCc, total_cc: record.totalCc,
+        total_active_cc: record.totalActiveCc, is_4cc_active: record.isFourCcActive ? 1 : 0}));
+}
+async function publishConfirmedCc(records, period, syncUrl, syncKey) {
+    const values = ccPublicationRecords(records);
+    const batchKey = crypto.createHash('sha256').update(JSON.stringify({period, values, at: new Date().toISOString()})).digest('hex');
+    const response = await fetch(syncUrl, {method: 'POST', headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'X-FCC-Forever-Sync-Key': syncKey,
+    }, body: new URLSearchParams({metric: 'cc_publish', report_period: period,
+        batch_key: batchKey, records: JSON.stringify(values)})});
+    const result = await response.json();
+    if(!response.ok || result.status !== 'success' || result.metric !== 'cc_publish')
+        throw new Error('Potvrđena povijest CC bodova nije objavljena: ' + (result.error?.message || response.status));
+    console.log(`FCC CC povijest: ${result.changed || 0} promjena u potvrđenom učitavanju.`);
+}
+
 async function uploadMemberLiveCc(record, isFourCcActive, period, syncUrl, syncKey) {
     const form = new URLSearchParams({
         metric: 'member_cc',
@@ -2313,6 +2332,7 @@ async function main() {
             if(!historicalReconcile && preservedRecords.size > 0) {
                 throw new Error(`Sinkronizacija je djelomična: osvježeno ${expectedRecords.size} Forever ID-jeva, ${preservedRecords.size} nepotvrđenih računa sačuvano bez promjene; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}.`);
             }
+            if(!historicalReconcile) await publishConfirmedCc(expectedRecords, period, syncUrl, syncKey);
             console.log(`FLP360 → FCC registrirani sync za ${period} završen je uspješno; zadnji FCC podatak ${status.last_data_import_at || status.last_sync_at || 'potvrđen'}.`);
             return;
         }
@@ -2440,6 +2460,7 @@ async function main() {
         if(unconfirmedRegisteredAccountCount > 0) {
             throw new Error(`Sinkronizacija je djelomična: ${unconfirmedRegisteredAccountCount} aktivnih valjanih FCC Forever ID-jeva nema potvrđen aktualni FLP360 CC.`);
         }
+        await publishConfirmedCc(registeredExpectedRecords, period, syncUrl, syncKey);
         console.log(`FLP360 → FCC live sinkronizacija za ${period} završena je uspješno.`);
     } finally {
         await context.close();
