@@ -1,0 +1,4 @@
+ALTER TABLE fcc_team_outreach
+ ADD COLUMN IF NOT EXISTS copied_at DATETIME NULL,
+ ADD COLUMN IF NOT EXISTS confirmation_dismissed_at DATETIME NULL,
+ ADD COLUMN IF NOT EXISTS deleted_at DATETIME NULL;

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "app/config/team-outreach-locales.json",
+    "before": null,
+    "sha256": "f2feed92d933ed5ba1b1e698f7d4b2c610833d77bbb2cc1700749eaab4c40435"
+  },
+  {
+    "path": "app/helpers/fcc_team_outreach_locale.php",
+    "before": null,
+    "sha256": "3685c00a2fd5a50bc9ffaa04140e5ee898bda44624cbafefa46d71279f2409ad"
+  },
+  {
+    "path": "themes/altum/assets/js/fcc-team-outreach-v2.js",
+    "before": null,
+    "sha256": "5013a8b76f03c12960b7a24f948b583a0c5639657d32eff5b4bc3cad7b51f081"
+  },
+  {
+    "path": "themes/altum/assets/css/fcc-team.css",
+    "before": "e273b57920b966b5c8e1532dc9f9775faf08afbbb4c8cd2462c5a0bffcd7f43b",
+    "sha256": "dfdd7eea3e394b810a1e04c7105ecdef6435b0427bc3e8b133211eb274030616"
+  },
+  {
+    "path": "themes/altum/views/partner/team-outreach-item.php",
+    "before": null,
+    "sha256": "2c793c90b17eb37fbd2a6a15b46cf52d808afb6ec9d4a7c7e02c88656a3c832f"
+  },
+  {
+    "path": "app/helpers/fcc_team_outreach.php",
+    "before": "2dce49d12c37b63ea5c6efd2065a3307ac582c8f74a7e6e5fbd9377b004730d5",
+    "sha256": "b22b5c39d61c8e07f88ed1a18e7ade3f399f5abac5613a43a566d92cd9e0be95"
+  },
+  {
+    "path": "themes/altum/views/partner/team-outreach-due.php",
+    "before": "c6d1fe493de18b72d43947a26f042e3e809100c4e4be6210293c7ec2aa0568d6",
+    "sha256": "62beb79fce2a94d266893f8a3f14466d5f745bd74fe0ccbfa7ed9fefebe46c95"
+  },
+  {
+    "path": "themes/altum/views/partner/team-outreach.php",
+    "before": "e844ff42a1c190ab3b17580ec556267995e81110d6712ebf3868da61f6b40b40",
+    "sha256": "a8b3bbbf17dd0220e7116a0e4fcdbd729aa6c776bfdade8d5dd65036a8826b1d"
+  }
+]

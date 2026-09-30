@@ -1,0 +1,48 @@
+<?php
+require dirname(__DIR__).'/local/sponsor-team-fixtures.php';
+$r=[];$checks=[];
+$ok=function($v,$label)use(&$checks){if(!$v)throw new RuntimeException($label);$checks[]=$label;};
+$reject=function($fn,$label)use($ok){try{$fn();}catch(InvalidArgumentException $e){$ok(true,$label);return;}throw new RuntimeException($label);};
+try {
+ $r=fcc_team_qa_create();$actor=$r['sponsor'];$member=$r['member'];
+ fcc_team_qa_assign($member,$actor,false,['team_phone'=>'+385990000002','team_contact_confirmed'=>1]);
+ $target=fcc_team_outreach_target($actor,$member);
+ $base=['member_id'=>$member,'request_key'=>bin2hex(random_bytes(16)),'purpose'=>'checkin','message'=>'Poruka za provjeru čćžđš <script>','due_date'=>fcc_partner_today(),'contact_stamp'=>$target['contact_stamp']];
+ $call=function($op,$row=null,$extra=[])use($actor,$base){return fcc_team_outreach_mutate($actor,array_merge($base,$row?['draft_id'=>$row['id'],'version'=>$row['version'],'message'=>$row['message']]:[],['operation'=>$op],$extra))['draft'];};
+ $row=$call('copy');$ok($row['state']==='pending'&&$row['copied_at']&&!$row['opened_at']&&!$row['sent_self_reported_at'],'Copy records preparation without claiming opening or sending');
+ $ok(count(fcc_team_outreach_history($actor,0,true))===1,'Copied pending message creates a check sending reminder');
+ $reject(fn()=>$call('confirm',$row,['message'=>'Edited after copy']),'Changed text cannot confirm the prior copied snapshot');
+ $row=$call('not_sent',$row);$ok($row['state']==='draft'&&$row['copied_at']&&$row['confirmation_dismissed_at'],'Not sent returns to draft while preserving copy evidence');
+ $ok(fcc_team_outreach_history($actor,0,true)===[],'Draft has no conversation reminder');
+ $row=$call('copy',$row);$ok($row['state']==='pending'&&!$row['confirmation_dismissed_at'],'Copying again explicitly resumes confirmation');
+ $pending=$row;$row=$call('confirm',$row);$ok($row['state']==='sent'&&!$row['opened_at'],'Copied message can be personally confirmed without WhatsApp opening');
+ $ok(fcc_team_outreach_history($actor,0,true)[0]['reminder_label']===fcc_team_outreach_t('check_outcome'),'Confirmed message reminder asks about conversation outcome');
+ $reject(fn()=>$call('not_sent',$row),'Confirmed message requires explicit undo operation');
+ $reject(fn()=>$call('remove',$pending),'Stale tab cannot remove a newly confirmed record');
+ $sent=$row;$row=$call('unconfirm',$row);$ok($row['state']==='draft'&&!$row['sent_self_reported_at'],'Undo clears current sending confirmation');
+ $ok(fcc_team_outreach_history($actor,0,true)===[],'Undo suppresses the old conversation reminder');
+ $ctx=fcc_team_outreach_context($actor);$ok(!$ctx['recent'][0]['sent_self_reported_at']&&$ctx['recent'][0]['confirmation_dismissed_at'],'Coach sees the corrected status');
+ $reject(fn()=>$call('unconfirm',$row),'A second undo cannot invent a prior confirmation');
+ $row=$call('open',$row);$ok($row['state']==='pending','Opening after undo starts pending confirmation');
+ $row=$call('confirm',$row);$row=$call('remove',$row);
+ $ok($row['state']==='removed'&&$row['sent_self_reported_at'],'Removal preserves reversible original evidence');
+ $ok(fcc_team_outreach_history($actor)===[]&&fcc_team_outreach_history($actor,0,true)===[],'Removed record is absent from active history and reminders');
+ $ok(fcc_team_outreach_context($actor)['recent']===[],'Removed record is absent from Coach context');
+ $ok(count(fcc_team_outreach_history($actor,$member,false,null,true))===1,'Owner can retrieve removed records');
+ foreach(['confirm','copy','save','open','followup','close','remove'] as $op)$reject(fn()=>$call($op,$row),'Removed record rejects '.$op);
+ foreach(['restore','remove','unconfirm'] as $op)$reject(fn()=>fcc_team_outreach_mutate($r['manager'],array_merge($base,['draft_id'=>$row['id'],'version'=>$row['version'],'operation'=>$op])),'Another sender cannot '.$op.' private history');
+ $removed=$row;$row=$call('restore',$row);$ok($row['state']==='sent'&&!$row['deleted_at']&&$row['message']===$removed['message'],'Restore retains exact original message and sending status');
+ $ok(count(fcc_team_outreach_history($actor,0,true))===1,'Restore reactivates the saved reminder');
+ $reject(fn()=>$call('restore',$removed),'Stale restore cannot overwrite newer state');
+ $row=$call('close',$row,['outcome'=>'Završeno']);$row=$call('unconfirm',$row);
+ $ok($row['state']==='draft'&&$row['closed_at']&&$row['outcome']==='Završeno','Undo also works for closed records without losing the outcome');
+ $row=$call('remove',$row);$row=$call('restore',$row);$ok($row['closed_at']&&fcc_team_outreach_history($actor,0,true)===[],'Restoring completed followup does not restart reminders');
+ $ai=array_merge($base,['situation'=>'Pomoc','request_key'=>bin2hex(random_bytes(16))]);
+ $airow=fcc_team_outreach_generate($actor,$ai,fn()=>['success'=>true,'content'=>json_encode(['guidance'=>'Pomoc','recipient_message'=>'Bok! Trebas pomoc?'])])['draft'];
+ $airow=$call('remove',$airow);$reject(fn()=>fcc_team_outreach_generate($actor,$ai,fn()=>throw new RuntimeException('Must not call AI')),'AI retry cannot reveal a removed record');
+ $row=$call('remove',$row);fcc_team_qa_assign($member,$r['other']);
+ $ok(fcc_team_outreach_history($actor,$member,false,null,true)===[],'Removed history remains private after reassignment');
+ $reject(fn()=>$call('restore',$row),'Reassigned relationship cannot restore old history');
+ foreach(['hr','en','sl','de','es'] as $locale)$ok(count(fcc_team_outreach_copy($locale))===count(fcc_team_outreach_copy('en')),'Complete new outreach copy in '.$locale);
+ echo json_encode(['passed'=>count($checks),'checks'=>$checks],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)."\n";
+}finally{if($r){$ids=array_values($r);fcc_partner_query('DELETE FROM fcc_team_outreach WHERE actor_user_id IN ('.implode(',',$ids).')');fcc_team_qa_cleanup($ids);}}

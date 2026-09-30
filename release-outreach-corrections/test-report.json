@@ -1,0 +1,23 @@
+{
+  "automated": {
+    "existing_outreach": 32,
+    "corrections_privacy_context": 42,
+    "http_integration": 23
+  },
+  "browser": [
+    "Copy preserves full Unicode text and creates pending state",
+    "Later hides prompt and preserves pending across reload",
+    "Not sent returns record to drafts",
+    "Personal confirmation moves record into confirmed group",
+    "Undo confirmation returns to draft",
+    "Removal requires visible in-page confirmation",
+    "Removed record moves to removed group",
+    "Restore returns original status",
+    "Reload of pending record asks for personal confirmation",
+    "Desktop and 390 pixel mobile views inspected",
+    "390 pixel document has no horizontal overflow",
+    "360 pixel layout visually inspected"
+  ],
+  "production": "Eight files verified byte for byte, CSS and JavaScript return HTTP 200, profile renders with all three groups, browser console has no errors, existing records preserved and original worker restored",
+  "local_fixture_cleanup": true
+}

@@ -1,0 +1,14 @@
+{
+  "production_files_verified": [
+    "app/config/team-outreach-locales.json",
+    "app/helpers/fcc_team_outreach_locale.php",
+    "themes/altum/assets/js/fcc-team-outreach-v2.js",
+    "themes/altum/assets/css/fcc-team.css",
+    "themes/altum/views/partner/team-outreach-item.php",
+    "app/helpers/fcc_team_outreach.php",
+    "themes/altum/views/partner/team-outreach-due.php",
+    "themes/altum/views/partner/team-outreach.php"
+  ],
+  "public_assets_http_200_and_exact": true,
+  "worker_restored": true
+}
