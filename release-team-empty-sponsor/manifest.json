@@ -1,0 +1,15 @@
+{
+  "status": "published",
+  "published_at": "20260930T122510Z",
+  "backup": "/fcc-release-20260927/team-empty-sponsor-20260930T122510Z",
+  "files": {
+    "themes/altum/assets/css/fcc-team.css": {
+      "before_sha256": "dfdd7eea3e394b810a1e04c7105ecdef6435b0427bc3e8b133211eb274030616",
+      "sha256": "e93e98e379283d4e13804d99e2115ba99954d12871d80494cd5d149437d28fc9"
+    },
+    "themes/altum/views/partner/team.php": {
+      "before_sha256": "a0c08376975436e0b74dfe4f24f1bbd9e743c6dd2773fa1785c3cf9e9cc65e65",
+      "sha256": "35d87b86dd3c8ae57eb7adf8bd3246f911d143d3c746ddd2f4a2b990f7b224f7"
+    }
+  }
+}
