@@ -1,0 +1,19 @@
+{
+  "status": "published",
+  "published_at": "20260930T124742Z",
+  "backup": "/fcc-release-20260927/mobile-invite-date-20260930T124742Z",
+  "files": {
+    "themes/altum/assets/css/fcc-partner-share.css": {
+      "before_sha256": "d391458fc97b2686da52eefa2585f0501cae32eccab6f8e7c8228aa1553d37c7",
+      "sha256": "c0cfa40d0bd75cfa859c050ecfc4b3d6827eef71fb34482e6e6bb8200ae98470"
+    },
+    "themes/altum/assets/js/fcc-team-outreach-v2.js": {
+      "before_sha256": "5013a8b76f03c12960b7a24f948b583a0c5639657d32eff5b4bc3cad7b51f081",
+      "sha256": "7e814fd8dd4e89788a9e3cfd5ed0df14f2a7d640076cd6ef207b6afc3fe64160"
+    },
+    "themes/altum/views/partner/team-outreach.php": {
+      "before_sha256": "a8b3bbbf17dd0220e7116a0e4fcdbd729aa6c776bfdade8d5dd65036a8826b1d",
+      "sha256": "6a7e3817bde35b20e1ffabadbf035b1abcfb34ad66cb8fe101f6cb32c8e67d22"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+--- a/themes/altum/assets/css/fcc-partner-share.css
++++ b/themes/altum/assets/css/fcc-partner-share.css
+@@ -93,3 +93,12 @@
+ .fp-invite-records{display:inline-block;margin-top:18px;font-size:12px;color:#386b58}
+ @media(max-width:600px){.fp-invite-options>summary{padding:12px;font-size:12px}.fp-invite-options-body{padding:13px}.fp-invite-options .fp-form{gap:13px}}
+ .fp-invite-options-tail{display:flex;align-items:center;gap:8px;flex-shrink:0}.fp-invite-options-tail>span:last-child{transition:transform .15s}.fp-invite-options[open] .fp-invite-options-tail>span:last-child{transform:rotate(180deg)}
++
++/* Constrain the root scroller too: body clipping alone still allows iOS sideways panning. */
++@media(max-width:800px){
++ html:has(.fp-webinar-invite){overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}
++ body.fcc-partner-mode:has(.fp-webinar-invite){max-width:100%;touch-action:pan-y pinch-zoom}
++ .fp-webinar-invite{overflow-wrap:anywhere}
++ .fp-webinar-invite :is(.fp-invite-picker-field,.fp-invite-picker-control,.fp-invite-options-body,.fp-share-coach-body){min-width:0;max-width:100%;box-sizing:border-box}
++ .fp-webinar-invite :is(input,select,textarea){min-width:0;max-width:100%;box-sizing:border-box}
++}
+--- a/themes/altum/assets/js/fcc-team-outreach-v2.js
++++ b/themes/altum/assets/js/fcc-team-outreach-v2.js
+@@ -52,7 +52,7 @@
+   sync();
+  }
+  function reset() {
+-  draft = null; requestKey = key(); message.value = config.templates[purpose]; due.value = '';
++  draft = null; requestKey = key(); message.value = config.templates[purpose]; due.value = due.defaultValue;
+   one('[data-team-guidance]').hidden = true; one('[data-team-continue]').hidden = true; sync();
+  }
+  function renderHistory(value) {
+@@ -111,8 +111,11 @@
+     try { await navigator.clipboard.writeText(message.value.trim()); }
+     catch { message.focus(); message.select(); throw new Error(c('copy_error')); }
+    }
++   const selectedDue = due.value;
+    const result = await request(operation, operation === 'ai' ? {request_key: key(), draft_id: '0'} : {});
+-   resume(result.draft); renderHistory(result.draft); say(result.notice);
++   resume(result.draft);
++   if (operation === 'ai') due.value = selectedDue;
++   renderHistory(result.draft); say(result.notice);
+    if (result.whatsapp_url) {
+     const link = one('[data-team-continue]'); link.href = result.whatsapp_url; link.hidden = false;
+     if (tab && !tab.closed) tab.location.replace(result.whatsapp_url);
+--- a/themes/altum/views/partner/team-outreach.php
++++ b/themes/altum/views/partner/team-outreach.php
+@@ -1,6 +1,7 @@
+ <?php defined('ALTUMCODE') || die();
+ if(!$outreach['ready']): ?><p><?= htmlspecialchars(fcc_t('Priprema poruka uskoro će biti dostupna.'), ENT_QUOTES, 'UTF-8') ?></p><?php return; endif;
+ $ot=$outreach['target'];
++$outreachToday=new DateTimeImmutable(fcc_partner_today(),new DateTimeZone('Europe/Zagreb'));
+ \Altum\Event::add_content('<script defer src="'.ASSETS_FULL_URL.'js/fcc-team-outreach-v2.js?v='.filemtime(ASSETS_PATH.'js/fcc-team-outreach-v2.js').'"></script>','head');
+ ?>
+ <div class="ft-outreach" data-team-outreach data-endpoint="<?= url('partner/team') ?>" data-member="<?= $subject ?>" data-contact-stamp="<?= $h($ot['contact_stamp']) ?>" data-phone-available="<?= $ot['phone']?'1':'0' ?>">
+@@ -13,7 +14,7 @@
+    <div class="ft-outreach-actions"><button type="button" class="fp-button" data-team-open <?= !$ot['phone']?'disabled':'' ?>><i class="fab fa-whatsapp" aria-hidden="true"></i> <?= htmlspecialchars(fcc_t('Otvori WhatsApp'), ENT_QUOTES, 'UTF-8') ?></button><button type="button" class="fp-button fp-button-outline" data-team-copy><?= htmlspecialchars(fcc_t('Kopiraj poruku'), ENT_QUOTES, 'UTF-8') ?></button><button type="button" class="fp-text-button" data-team-save><?= htmlspecialchars(fcc_t('Spremi nacrt'), ENT_QUOTES, 'UTF-8') ?></button></div>
+    <p class="fp-muted"><?= $ot['phone']?fcc_t('Otvara se broj ').$h($ot['phone']).' s cijelim upisanim tekstom.':fcc_t('WhatsApp će biti dostupan kada suradnik ima potvrđen poslovni broj.') ?> <?= htmlspecialchars(fcc_t('Poruku šalješ osobno.'), ENT_QUOTES, 'UTF-8') ?></p>
+    <div class="ft-outreach-confirm" data-team-confirm-panel hidden role="region" aria-label="<?= $h(fcc_team_outreach_t('question')) ?>"><strong><?= $h(fcc_team_outreach_t('question')) ?></strong><p><b><?= $h($p['name']) ?></b> · <span data-team-draft-status></span></p><blockquote class="ft-confirm-text" data-team-confirm-text></blockquote><p><?= $h(fcc_team_outreach_t('confirm_hint')) ?></p><div class="ft-outreach-actions"><button type="button" class="fp-button" data-team-confirm><?= $h(fcc_team_outreach_t('confirm')) ?></button><button type="button" class="fp-button fp-button-outline" data-team-not_sent><?= $h(fcc_team_outreach_t('not_sent')) ?></button><button type="button" class="fp-text-button" data-team-later><?= $h(fcc_team_outreach_t('later')) ?></button></div><a class="fp-link" target="_blank" rel="noopener" data-team-continue hidden><?= htmlspecialchars(fcc_t('Nastavi u WhatsApp'), ENT_QUOTES, 'UTF-8') ?></a></div>
+-   <label class="ft-followup-label"><?= htmlspecialchars(fcc_t('Kada želiš provjeriti kako je prošlo?'), ENT_QUOTES, 'UTF-8') ?><input type="date" data-team-due min="<?= $h(fcc_partner_today()) ?>"></label><small><?= $h(fcc_team_outreach_t('reminder_hint')) ?></small>
++   <label class="ft-followup-label"><?= htmlspecialchars(fcc_t('Kada želiš provjeriti kako je prošlo?'), ENT_QUOTES, 'UTF-8') ?><input type="date" data-team-due min="<?= $h($outreachToday->format('Y-m-d')) ?>" value="<?= $h($outreachToday->modify('+3 days')->format('Y-m-d')) ?>"></label><small><?= $h(fcc_team_outreach_t('reminder_hint')) ?></small>
+   </div>
+   <aside class="ft-outreach-coach">
+    <span class="fp-eyebrow"><?= htmlspecialchars(fcc_t('POMOĆ TVOJEG COACHA'), ENT_QUOTES, 'UTF-8') ?></span><h3><?= htmlspecialchars(fcc_t('Pronađi dobar početak.'), ENT_QUOTES, 'UTF-8') ?></h3><p><?= htmlspecialchars(fcc_t('Opiši što znaš i kakvu podršku želiš ponuditi. Coach uzima u obzir zabilježeni napredak i dostupne CC podatke.'), ENT_QUOTES, 'UTF-8') ?></p>

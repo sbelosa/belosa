@@ -1,0 +1,14 @@
+{
+  "date_default": true,
+  "team_http": true,
+  "webinar_http": true,
+  "picker_present": true,
+  "message_present": true,
+  "php_lint": true,
+  "js_syntax": true,
+  "mobile_360_width": 360,
+  "mobile_430_width": 430,
+  "custom_date_saved": "2026-10-07",
+  "production_default_date": "2026-10-03",
+  "production_assets_match": true
+}
