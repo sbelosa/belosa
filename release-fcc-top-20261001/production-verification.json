@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "checks": [
+    "Published bytes verified: app/config/fcc_top_locales.php",
+    "Published bytes verified: app/helpers/fcc_top.php",
+    "Published bytes verified: themes/altum/assets/css/fcc-top.css",
+    "Published bytes verified: themes/altum/views/partner/top.php",
+    "Published bytes verified: themes/altum/views/partner/top-settings.php",
+    "Published bytes verified: app/helpers/fcc_partner.php",
+    "Published bytes verified: app/helpers/fcc_partner_notifications.php",
+    "Published bytes verified: app/controllers/Partner.php",
+    "Published bytes verified: themes/altum/views/partner/index.php",
+    "Original notification worker restored",
+    "Production guest must sign in",
+    "Production stylesheet served"
+  ]
+}

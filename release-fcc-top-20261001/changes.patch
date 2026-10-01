@@ -1,0 +1,656 @@
+--- a/app/config/fcc_top_locales.php
++++ b/app/config/fcc_top_locales.php
+@@ -0,0 +1,398 @@
++<?php
++defined('ALTUMCODE') || die();
++return json_decode(<<<'JSON'
++{
++ "title": {
++  "hr": "FCC Top 10",
++  "en": "FCC Top 10",
++  "sl": "FCC Top 10",
++  "de": "FCC Top 10",
++  "es": "FCC Top 10"
++ },
++ "intro": {
++  "hr": "Prepoznaj dobar rad. Prati vlastiti napredak.",
++  "en": "Recognise good work. Follow your own progress.",
++  "sl": "Prepoznaj dobro delo. Spremljaj svoj napredek.",
++  "de": "Gute Arbeit anerkennen. Den eigenen Fortschritt verfolgen.",
++  "es": "Reconoce el buen trabajo. Sigue tu progreso."
++ },
++ "menu_description": {
++  "hr": "Rang liste, proknjiženi CC i moj napredak.",
++  "en": "Rankings, posted CC and my progress.",
++  "sl": "Lestvice, knjižene točke CC in moj napredek.",
++  "de": "Ranglisten, verbuchte CC und mein Fortschritt.",
++  "es": "Clasificaciones, CC contabilizados y mi progreso."
++ },
++ "personal_cc": {
++  "hr": "Osobni CC",
++  "en": "Personal CC",
++  "sl": "Osebni CC",
++  "de": "Persönliche CC",
++  "es": "CC personales"
++ },
++ "total_cc": {
++  "hr": "Ukupni CC iz FLP360",
++  "en": "Total CC from FLP360",
++  "sl": "Skupni CC iz FLP360",
++  "de": "Gesamte CC aus FLP360",
++  "es": "CC totales de FLP360"
++ },
++ "recommendations": {
++  "hr": "Poslane preporuke proizvoda",
++  "en": "Product recommendations sent",
++  "sl": "Poslana priporočila izdelkov",
++  "de": "Gesendete Produktempfehlungen",
++  "es": "Recomendaciones de productos enviadas"
++ },
++ "invitations": {
++  "hr": "Potvrđeno slanje pozivnica",
++  "en": "Confirmed invitation sending",
++  "sl": "Potrjeno pošiljanje vabil",
++  "de": "Bestätigter Einladungsversand",
++  "es": "Envío de invitaciones confirmado"
++ },
++ "registrations": {
++  "hr": "Potvrđene prijave gostiju",
++  "en": "Verified guest registrations",
++  "sl": "Potrjene prijave gostov",
++  "de": "Bestätigte Gastanmeldungen",
++  "es": "Inscripciones verificadas de invitados"
++ },
++ "conversations": {
++  "hr": "Pokrenute komunikacije",
++  "en": "Conversations started",
++  "sl": "Začeti pogovori",
++  "de": "Begonnene Gespräche",
++  "es": "Conversaciones iniciadas"
++ },
++ "education": {
++  "hr": "Završeni koraci edukacije",
++  "en": "Completed learning steps",
++  "sl": "Zaključeni izobraževalni koraki",
++  "de": "Abgeschlossene Lernschritte",
++  "es": "Pasos de formación completados"
++ },
++ "consistency": {
++  "hr": "Dani aktivnog rada",
++  "en": "Days of active work",
++  "sl": "Dnevi aktivnega dela",
++  "de": "Tage mit aktiver Arbeit",
++  "es": "Días de trabajo activo"
++ },
++ "personal_cc_help": {
++  "hr": "Proknjiženi osobni CC iz posljednje potvrđene FLP360 sinkronizacije za odabrani mjesec.",
++  "en": "Posted personal CC from the latest verified FLP360 sync for the selected month.",
++  "sl": "Knjiženi osebni CC iz zadnje potrjene sinhronizacije FLP360 za izbrani mesec.",
++  "de": "Verbuchte persönliche CC aus der letzten bestätigten FLP360 Synchronisierung für den gewählten Monat.",
++  "es": "CC personales contabilizados de la última sincronización verificada de FLP360 del mes seleccionado."
++ },
++ "total_cc_help": {
++  "hr": "Izvorno polje Total CC. Osobni CC se ne dodaje ponovno. Ovo nije zaseban izračun sponzorskih CC.",
++  "en": "The original Total CC field. Personal CC is not added again. This is not a separate calculation of sponsorship CC.",
++  "sl": "Izvirno polje Total CC. Osebnih CC ne prištevamo ponovno. To ni ločen izračun sponzorskih CC.",
++  "de": "Das ursprüngliche Feld Total CC. Persönliche CC werden nicht erneut addiert. Dies ist keine separate Berechnung von Sponsoring CC.",
++  "es": "El campo original Total CC. No se vuelven a sumar los CC personales. No es un cálculo separado de CC de patrocinio."
++ },
++ "recommendations_help": {
++  "hr": "Slanje potvrđeno u programu Moj put, uz kontakt i preporuku. Isti kontakt i proizvod broje se jednom u razdoblju. Nepovezane preporuke nisu uključene.",
++  "en": "Sending confirmed in My journey, linked to a contact and recommendation. The same contact and product count once per period. Unlinked recommendations are excluded.",
++  "sl": "Pošiljanje potrjeno v Moji poti, povezano s kontaktom in priporočilom. Isti kontakt in izdelek štejeta enkrat v obdobju. Nepovezana priporočila so izključena.",
++  "de": "In Mein Weg bestätigter Versand mit Kontakt und Empfehlung. Derselbe Kontakt und dasselbe Produkt zählen einmal pro Zeitraum. Nicht zugeordnete Empfehlungen zählen nicht.",
++  "es": "Envío confirmado en Mi recorrido con contacto y recomendación. El mismo contacto y producto cuentan una vez por periodo. Se excluyen recomendaciones sin vincular."
++ },
++ "invitations_help": {
++  "hr": "Suradnik je označio da je poslao pozivnicu imenovanom kontaktu. Isti kontakt i događaj broje se jednom. Kopiranje i otvaranje WhatsAppa ne broje se.",
++  "en": "The member confirmed sending an invitation to a named contact. Each contact and event count once. Copying and opening WhatsApp do not count.",
++  "sl": "Sodelavec je potrdil pošiljanje vabila imenovanemu kontaktu. Isti kontakt in dogodek štejeta enkrat. Kopiranje in odpiranje WhatsAppa ne štejeta.",
++  "de": "Das Mitglied hat den Versand an einen benannten Kontakt bestätigt. Kontakt und Veranstaltung zählen einmal. Kopieren und Öffnen von WhatsApp zählen nicht.",
++  "es": "El colaborador confirmó el envío a un contacto identificado. Cada contacto y evento cuentan una vez. Copiar y abrir WhatsApp no cuentan."
++ },
++ "registrations_help": {
++  "hr": "Gost je potvrdio adresu e pošte. Probne, vlastite, otkazane i prijave za provjeru nisu uključene. Prijava nije dokaz dolaska.",
++  "en": "The guest verified their email address. Demo, self, cancelled and review flagged registrations are excluded. Registration does not prove attendance.",
++  "sl": "Gost je potrdil elektronski naslov. Poskusne, lastne, odpovedane in prijave za pregled so izključene. Prijava ni dokaz udeležbe.",
++  "de": "Der Gast hat seine E Mail Adresse bestätigt. Testanmeldungen, eigene, stornierte und zu prüfende Anmeldungen sind ausgeschlossen. Eine Anmeldung belegt keine Teilnahme.",
++  "es": "El invitado verificó su correo electrónico. Se excluyen pruebas, autorregistros, cancelaciones e inscripciones pendientes de revisión. La inscripción no demuestra asistencia."
++ },
++ "conversations_help": {
++  "hr": "Broj različitih kontakata s potvrđenim javljanjem ili radnjom u programu. Jedan kontakt broji se jednom u razdoblju. Odgovor druge osobe nije potvrđen ovim brojem.",
++  "en": "Distinct contacts with a confirmed contact action or journey action. Each contact counts once per period. This number does not confirm a reply.",
++  "sl": "Različni kontakti s potrjenim javljanjem ali dejanjem v programu. Vsak šteje enkrat v obdobju. Število ne potrjuje odgovora.",
++  "de": "Verschiedene Kontakte mit bestätigter Kontaktaufnahme oder Programmaktion. Jeder Kontakt zählt einmal pro Zeitraum. Die Zahl bestätigt keine Antwort.",
++  "es": "Contactos distintos con una acción de contacto o del programa confirmada. Cada contacto cuenta una vez por periodo. La cifra no confirma una respuesta."
++ },
++ "education_help": {
++  "hr": "Jedinstveni završeni koraci, uključujući priznatu vježbu. Otvaranje lekcije ne računa se kao završetak.",
++  "en": "Unique completed steps, including accepted practice. Opening a lesson does not count as completion.",
++  "sl": "Edinstveni zaključeni koraki, vključno s priznano vajo. Odprtje lekcije ne šteje kot zaključek.",
++  "de": "Einmalige abgeschlossene Schritte einschließlich anerkannter Übungen. Das Öffnen einer Lektion zählt nicht als Abschluss.",
++  "es": "Pasos completados únicos, incluida la práctica aceptada. Abrir una lección no cuenta como completarla."
++ },
++ "consistency_help": {
++  "hr": "Različiti dani s potvrđenom komunikacijom, prema zagrebačkom vremenu.",
++  "en": "Distinct days with confirmed contact activity, using Zagreb time.",
++  "sl": "Različni dnevi s potrjeno komunikacijo po zagrebškem času.",
++  "de": "Verschiedene Tage mit bestätigter Kontaktaktivität nach Zagreber Zeit.",
++  "es": "Días distintos con actividad de contacto confirmada, según la hora de Zagreb."
++ },
++ "period": {
++  "hr": "Razdoblje aktivnosti",
++  "en": "Activity period",
++  "sl": "Obdobje aktivnosti",
++  "de": "Aktivitätszeitraum",
++  "es": "Periodo de actividad"
++ },
++ "days": {
++  "hr": "{n} dana",
++  "en": "{n} days",
++  "sl": "{n} dni",
++  "de": "{n} Tage",
++  "es": "{n} días"
++ },
++ "cc_month": {
++  "hr": "Mjesec za CC",
++  "en": "CC month",
++  "sl": "Mesec za CC",
++  "de": "Monat für CC",
++  "es": "Mes de CC"
++ },
++ "apply": {
++  "hr": "Prikaži",
++  "en": "Show",
++  "sl": "Prikaži",
++  "de": "Anzeigen",
++  "es": "Mostrar"
++ },
++ "own": {
++  "hr": "Moj rezultat",
++  "en": "My result",
++  "sl": "Moj rezultat",
++  "de": "Mein Ergebnis",
++  "es": "Mi resultado"
++ },
++ "own_rank": {
++  "hr": "Moje mjesto među svim aktivnim rezultatima: {n}.",
++  "en": "My place among all positive results: {n}.",
++  "sl": "Moje mesto med vsemi pozitivnimi rezultati: {n}.",
++  "de": "Mein Platz unter allen positiven Ergebnissen: {n}.",
++  "es": "Mi puesto entre todos los resultados positivos: {n}."
++ },
++ "you": {
++  "hr": "Ti",
++  "en": "You",
++  "sl": "Ti",
++  "de": "Du",
++  "es": "Tú"
++ },
++ "private_cc": {
++  "hr": "Iznos je privatan",
++  "en": "Amount is private",
++  "sl": "Znesek je zaseben",
++  "de": "Betrag ist privat",
++  "es": "El importe es privado"
++ },
++ "no_score": {
++  "hr": "Još nema rezultata za rangiranje.",
++  "en": "No result to rank yet.",
++  "sl": "Rezultata za uvrstitev še ni.",
++  "de": "Noch kein Ergebnis für die Rangliste.",
++  "es": "Todavía no hay resultados para clasificar."
++ },
++ "empty": {
++  "hr": "Još nema vidljivih sudionika u ovoj kategoriji. Svoju vidljivost možeš uključiti u postavkama.",
++  "en": "No visible participants in this category yet. You can enable your visibility in settings.",
++  "sl": "V tej kategoriji še ni vidnih udeležencev. Vidnost lahko vključiš v nastavitvah.",
++  "de": "Noch keine sichtbaren Teilnehmer in dieser Kategorie. Du kannst deine Sichtbarkeit in den Einstellungen aktivieren.",
++  "es": "Todavía no hay participantes visibles en esta categoría. Puedes activar tu visibilidad en los ajustes."
++ },
++ "rules": {
++  "hr": "Kako se broji",
++  "en": "How results are counted",
++  "sl": "Kako štejemo",
++  "de": "Wie gezählt wird",
++  "es": "Cómo se contabiliza"
++ },
++ "privacy": {
++  "hr": "Računaju se svi aktivni računi, neovisno o paketu. Imena prikazujemo samo uz uključenu vidljivost. Prikazani poredak odnosi se na vidljive sudionike. Jednaki rezultati dijele mjesto.",
++  "en": "All active accounts count, regardless of plan. Names appear only when visibility is enabled. Displayed rankings are among visible participants. Equal results share a place.",
++  "sl": "Štejejo vsi aktivni računi ne glede na paket. Imena prikazujemo le ob vključeni vidnosti. Prikazana lestvica velja za vidne udeležence. Enaki rezultati delijo mesto.",
++  "de": "Alle aktiven Konten zählen unabhängig vom Tarif. Namen erscheinen nur bei aktivierter Sichtbarkeit. Die angezeigte Rangliste gilt für sichtbare Teilnehmer. Gleiche Ergebnisse teilen sich einen Platz.",
++  "es": "Cuentan todas las cuentas activas, independientemente del plan. Los nombres aparecen solo con visibilidad activada. La clasificación mostrada incluye participantes visibles. Los empates comparten puesto."
++ },
++ "cc_privacy": {
++  "hr": "Zajednički Forever broj računa se jednom. Za prikaz zajedničkog imena svi povezani računi trebaju uključiti vidljivost. CC se prikazuju po mjesecu i nisu dokaz kupnje preko FCC poveznice.",
++  "en": "A shared Forever number counts once. Every linked account must enable visibility to display the shared name. CC are monthly and do not prove a purchase through an FCC link.",
++  "sl": "Skupna Forever številka šteje enkrat. Za prikaz skupnega imena morajo vsi povezani računi vključiti vidnost. CC so mesečni in niso dokaz nakupa prek povezave FCC.",
++  "de": "Eine gemeinsame Forever Nummer zählt einmal. Alle verknüpften Konten müssen für den gemeinsamen Namen die Sichtbarkeit aktivieren. CC gelten monatlich und belegen keinen Kauf über einen FCC Link.",
++  "es": "Un número Forever compartido cuenta una vez. Todas las cuentas vinculadas deben activar la visibilidad para mostrar el nombre compartido. Los CC son mensuales y no demuestran compras a través de enlaces FCC."
++ },
++ "sync": {
++  "hr": "Potvrđena CC sinkronizacija: {at}.",
++  "en": "Verified CC sync: {at}.",
++  "sl": "Potrjena sinhronizacija CC: {at}.",
++  "de": "Bestätigte CC Synchronisierung: {at}.",
++  "es": "Sincronización CC verificada: {at}."
++ },
++ "awaiting": {
++  "hr": "Za ovaj mjesec još nema potvrđene CC sinkronizacije. Možeš odabrati prethodni mjesec.",
++  "en": "No verified CC sync for this month yet. You can select the previous month.",
++  "sl": "Za ta mesec še ni potrjene sinhronizacije CC. Izbereš lahko prejšnji mesec.",
++  "de": "Für diesen Monat liegt noch keine bestätigte CC Synchronisierung vor. Du kannst den Vormonat wählen.",
++  "es": "Todavía no hay sincronización CC verificada de este mes. Puedes seleccionar el mes anterior."
++ },
++ "freshness": {
++  "hr": "Aktivnosti su iz evidencije do {at}. Vrijeme: Zagreb.",
++  "en": "Activities are recorded through {at}. Time: Zagreb.",
++  "sl": "Aktivnosti so zabeležene do {at}. Čas: Zagreb.",
++  "de": "Aktivitäten sind bis {at} erfasst. Zeit: Zagreb.",
++  "es": "Actividades registradas hasta {at}. Hora: Zagreb."
++ },
++ "settings": {
++  "hr": "Vidljivost i osobni ciljevi",
++  "en": "Visibility and personal goals",
++  "sl": "Vidnost in osebni cilji",
++  "de": "Sichtbarkeit und persönliche Ziele",
++  "es": "Visibilidad y objetivos personales"
++ },
++ "visible": {
++  "hr": "Prikaži moje ime na FCC Top listama",
++  "en": "Show my name on FCC Top rankings",
++  "sl": "Prikaži moje ime na lestvicah FCC Top",
++  "de": "Meinen Namen in FCC Top Ranglisten anzeigen",
++  "es": "Mostrar mi nombre en las clasificaciones FCC Top"
++ },
++ "visible_help": {
++  "hr": "Isključivanje odmah uklanja tvoje ime. Vlastiti rezultati ostaju dostupni u PRO pregledu.",
++  "en": "Turning this off immediately removes your name. Your own results remain available in the PRO overview.",
++  "sl": "Izklop takoj odstrani tvoje ime. Lastni rezultati ostanejo v pregledu PRO.",
++  "de": "Das Ausschalten entfernt deinen Namen sofort. Deine eigenen Ergebnisse bleiben in der PRO Übersicht verfügbar.",
++  "es": "Al desactivarlo, tu nombre se elimina inmediatamente. Tus resultados siguen disponibles en la vista PRO."
++ },
++ "weekly_notice": {
++  "hr": "Tjedni podsjetnik na moj napredak",
++  "en": "Weekly reminder to review my progress",
++  "sl": "Tedenski opomnik za moj napredek",
++  "de": "Wöchentliche Erinnerung an meinen Fortschritt",
++  "es": "Recordatorio semanal de mi progreso"
++ },
++ "milestone_notice": {
++  "hr": "Obavijest kada uđem među prvih 10",
++  "en": "Notify me when I enter the top 10",
++  "sl": "Obvesti me ob uvrstitvi med prvih 10",
++  "de": "Mich beim Eintritt in die Top 10 benachrichtigen",
++  "es": "Avisarme cuando entre en los primeros 10"
++ },
++ "notice_help": {
++  "hr": "Samo u FCC obavijestima, najviše dvije poruke tjedno. Prvo mjerenje postavlja početno stanje. Nema poruka za svaku promjenu mjesta.",
++  "en": "Only in the FCC inbox, at most two notices per week. The first measurement sets a baseline. No notice for every position change.",
++  "sl": "Samo v obvestilih FCC, največ dve sporočili na teden. Prva meritev določi izhodišče. Brez sporočil ob vsaki spremembi mesta.",
++  "de": "Nur im FCC Posteingang, höchstens zwei Hinweise pro Woche. Die erste Messung setzt den Ausgangswert. Kein Hinweis bei jeder Platzänderung.",
++  "es": "Solo en la bandeja de FCC, como máximo dos avisos semanales. La primera medición establece la referencia. Sin avisos por cada cambio de puesto."
++ },
++ "goals": {
++  "hr": "Moj cilj za 7 dana",
++  "en": "My goal for 7 days",
++  "sl": "Moj cilj za 7 dni",
++  "de": "Mein Ziel für 7 Tage",
++  "es": "Mi objetivo para 7 días"
++ },
++ "goals_help": {
++  "hr": "Početni brojevi su prijedlog. Prilagodi ih svojem vremenu. Ciljevi ne mijenjaju rang listu.",
++  "en": "The initial numbers are suggestions. Adjust them to your available time. Goals do not affect rankings.",
++  "sl": "Začetne številke so predlog. Prilagodi jih svojemu času. Cilji ne vplivajo na lestvico.",
++  "de": "Die Anfangswerte sind Vorschläge. Passe sie deiner verfügbaren Zeit an. Ziele beeinflussen die Rangliste nicht.",
++  "es": "Las cifras iniciales son sugerencias. Ajústalas a tu tiempo disponible. Los objetivos no afectan a la clasificación."
++ },
++ "save": {
++  "hr": "Spremi postavke",
++  "en": "Save settings",
++  "sl": "Shrani nastavitve",
++  "de": "Einstellungen speichern",
++  "es": "Guardar ajustes"
++ },
++ "progress": {
++  "hr": "Moj ritam u posljednjih 7 dana",
++  "en": "My pace over the last 7 days",
++  "sl": "Moj ritem v zadnjih 7 dneh",
++  "de": "Mein Tempo der letzten 7 Tage",
++  "es": "Mi ritmo de los últimos 7 días"
++ },
++ "start": {
++  "hr": "Napravi sljedeći korak",
++  "en": "Take the next step",
++  "sl": "Naredi naslednji korak",
++  "de": "Den nächsten Schritt machen",
++  "es": "Da el siguiente paso"
++ },
++ "private_label": {
++  "hr": "Samo za mene",
++  "en": "Only for me",
++  "sl": "Samo zame",
++  "de": "Nur für mich",
++  "es": "Solo para mí"
++ },
++ "rank_change": {
++  "hr": "Promjena mjesta od {date}: {n}.",
++  "en": "Position change since {date}: {n}.",
++  "sl": "Sprememba mesta od {date}: {n}.",
++  "de": "Platzänderung seit {date}: {n}.",
++  "es": "Cambio de puesto desde {date}: {n}."
++ },
++ "unavailable": {
++  "hr": "Pregled trenutačno nije dostupan. Pokušaj ponovno kasnije.",
++  "en": "The overview is temporarily unavailable. Try again later.",
++  "sl": "Pregled trenutno ni na voljo. Poskusi pozneje.",
++  "de": "Die Übersicht ist vorübergehend nicht verfügbar. Versuche es später erneut.",
++  "es": "La vista no está disponible temporalmente. Inténtalo más tarde."
++ },
++ "goal_error": {
++  "hr": "Cilj mora biti cijeli broj od 1 do 1000.",
++  "en": "A goal must be a whole number from 1 to 1000.",
++  "sl": "Cilj mora biti celo število od 1 do 1000.",
++  "de": "Ein Ziel muss eine ganze Zahl von 1 bis 1000 sein.",
++  "es": "El objetivo debe ser un número entero de 1 a 1000."
++ },
++ "conflict": {
++  "hr": "Postavke su promijenjene u drugom prozoru. Osvježi stranicu i pokušaj ponovno.",
++  "en": "Settings changed in another window. Refresh and try again.",
++  "sl": "Nastavitve so bile spremenjene v drugem oknu. Osveži in poskusi znova.",
++  "de": "Einstellungen wurden in einem anderen Fenster geändert. Aktualisiere die Seite und versuche es erneut.",
++  "es": "Los ajustes cambiaron en otra ventana. Actualiza e inténtalo de nuevo."
++ },
++ "weekly_title": {
++  "hr": "Tvoj tjedni pregled je spreman",
++  "en": "Your weekly overview is ready",
++  "sl": "Tvoj tedenski pregled je pripravljen",
++  "de": "Deine Wochenübersicht ist bereit",
++  "es": "Tu resumen semanal está listo"
++ },
++ "weekly_body": {
++  "hr": "Pogledaj svoj napredak i odaberi sljedeći koristan korak.",
++  "en": "Review your progress and choose your next useful step.",
++  "sl": "Poglej svoj napredek in izberi naslednji koristen korak.",
++  "de": "Prüfe deinen Fortschritt und wähle den nächsten sinnvollen Schritt.",
++  "es": "Revisa tu progreso y elige el siguiente paso útil."
++ },
++ "milestone_title": {
++  "hr": "Novi ulazak među prvih 10",
++  "en": "A new top 10 achievement",
++  "sl": "Nova uvrstitev med prvih 10",
++  "de": "Neu in den Top 10",
++  "es": "Nuevo logro entre los primeros 10"
++ },
++ "milestone_body": {
++  "hr": "U jednoj kategoriji tvoj rezultat ušao je među prvih 10. Otvori svoj pregled za aktualno stanje.",
++  "en": "Your result entered the top 10 in a category. Open your overview for the current position.",
++  "sl": "V eni kategoriji se je tvoj rezultat uvrstil med prvih 10. Odpri pregled za trenutno stanje.",
++  "de": "Dein Ergebnis ist in einer Kategorie in die Top 10 gekommen. Öffne die Übersicht für den aktuellen Stand.",
++  "es": "Tu resultado entró en los primeros 10 de una categoría. Abre la vista para consultar la posición actual."
++ },
++ "no_activity": {
++  "hr": "Za ovo razdoblje još nema potvrđenih rezultata prema pravilima ove kategorije.",
++  "en": "No confirmed results meet this category’s rules for this period yet.",
++  "sl": "Za to obdobje še ni potrjenih rezultatov po pravilih te kategorije.",
++  "de": "Für diesen Zeitraum gibt es noch keine bestätigten Ergebnisse nach den Regeln dieser Kategorie.",
++  "es": "Todavía no hay resultados confirmados que cumplan las reglas de esta categoría para este periodo."
++ }
++}
++JSON, true);
+--- a/app/helpers/fcc_top.php
++++ b/app/helpers/fcc_top.php
+@@ -0,0 +1,112 @@
++<?php
++defined('ALTUMCODE') || die();
++
++function fcc_top_t(string $key,array $vars=[],?string $locale=null): string {
++ static $copy; $copy??=require __DIR__.'/../config/fcc_top_locales.php';
++ return strtr($copy[$key][fcc_locale($locale)]??$copy[$key]['en']??$key,$vars);
++}
++function fcc_top_ready(): bool {
++ static $ready;return $ready??=(bool)fcc_partner_one("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='fcc_top_state'");
++}
++function fcc_top_profile(int $uid): array {
++ return (fcc_top_ready()?fcc_partner_one('SELECT * FROM fcc_top_profiles WHERE user_id=?',[$uid]):null)??['visible'=>0,'weekly_notice'=>0,'milestone_notice'=>0,'recommendations_goal'=>3,'invitations_goal'=>5,'education_goal'=>3,'version'=>0];
++}
++function fcc_top_save(int $uid,array $input): void {
++ if(!fcc_top_ready())throw new InvalidArgumentException(fcc_top_t('unavailable'));
++ $values=[];foreach(['visible','weekly_notice','milestone_notice'] as $key)$values[]=empty($input[$key])?0:1;
++ foreach(['recommendations_goal','invitations_goal','education_goal'] as $key){$v=filter_var($input[$key]??null,FILTER_VALIDATE_INT);if($v===false||$v<1||$v>1000)throw new InvalidArgumentException(fcc_top_t('goal_error'));$values[]=$v;}
++ database()->begin_transaction();
++ try {
++  fcc_partner_query('INSERT IGNORE INTO fcc_top_profiles(user_id) VALUES(?)',[$uid]);
++  $old=fcc_partner_one('SELECT * FROM fcc_top_profiles WHERE user_id=? FOR UPDATE',[$uid]);
++  if((int)$old['version']!==(int)($input['version']??-1))throw new InvalidArgumentException(fcc_top_t('conflict'));
++  fcc_partner_query('UPDATE fcc_top_profiles SET visible=?,weekly_notice=?,milestone_notice=?,recommendations_goal=?,invitations_goal=?,education_goal=?,version=version+1,updated_at=UTC_TIMESTAMP() WHERE user_id=?',array_merge($values,[$uid]));
++  if($values[2]&&!$old['milestone_notice'])fcc_partner_query('DELETE FROM fcc_top_state WHERE user_id=?',[$uid]);
++  if(!$values[1]||!$values[2])fcc_partner_query("UPDATE fcc_partner_notifications SET read_at=COALESCE(read_at,UTC_TIMESTAMP()) WHERE user_id=? AND ((?=0 AND event_key LIKE 'top:weekly:%') OR (?=0 AND event_key LIKE 'top:milestone:%'))",[$uid,$values[1],$values[2]]);
++  database()->commit();
++ }catch(Throwable $e){database()->rollback();throw $e;}
++}
++function fcc_top_window(int $days,?DateTimeImmutable $now=null): array {
++ $days=in_array($days,[7,30,60],true)?$days:30;$now=($now??new DateTimeImmutable('now'))->setTimezone(new DateTimeZone('Europe/Zagreb'));
++ return ['days'=>$days,'from'=>$now->setTime(0,0)->modify('-'.($days-1).' days')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),'to'=>$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),'day'=>$now->format('Y-m-d')];
++}
++function fcc_top_categories(): array { return ['personal_cc','total_cc','recommendations','invitations','registrations','conversations','education','consistency']; }
++/** Competition ranks: equal values share a place, then skip the occupied positions. */
++function fcc_top_rank(array $rows): array {
++ $rows=array_values(array_filter($rows,static fn($r)=>isset($r['score'])&&is_numeric($r['score'])&&is_finite((float)$r['score'])&&round((float)$r['score'],3)>0));
++ usort($rows,static fn($a,$b)=>round((float)$b['score'],3)<=>round((float)$a['score'],3)?:strcmp($a['entity'],$b['entity']));
++ $last=null;$rank=0;foreach($rows as $i=>&$r){$score=round((float)$r['score'],3);if($score!==$last)$rank=$i+1;$r['position']=$rank;$last=$score;}unset($r);return $rows;
++}
++/** Safe view model. No identifiers, contacts or another person's CC reach HTML or JSON. */
++function fcc_top_public(array $rows,string $category,int $uid): array {
++ $cc=in_array($category,['personal_cc','total_cc'],true);$visible=fcc_top_rank(array_values(array_filter($rows,static fn($r)=>$r['visible'])));$out=[];
++ foreach($visible as $r){if($r['position']>10||count($out)>=10)break;$out[]=['name'=>$r['name'],'position'=>$r['position'],'score'=>$cc?null:(int)$r['score'],'own'=>in_array($uid,$r['uids'],true)];}return $out;
++}
++function fcc_top_own(array $rows,int $uid): array {
++ foreach($rows as $r)if(in_array($uid,$r['uids'],true))return ['score'=>$r['score'],'position'=>$r['position'],'entity'=>$r['entity']];
++ return ['score'=>null,'position'=>null,'entity'=>null];
++}
++function fcc_top_dataset(int $days,string $month,?DateTimeImmutable $now=null): array {
++ $w=fcc_top_window($days,$now);$current=substr($w['day'],0,7).'-01';$previous=(new DateTimeImmutable($current))->modify('-1 month')->format('Y-m-d');
++ $month=in_array($month,[$current,$previous],true)?$month:$current;
++ $users=[];$groups=[];
++ $expr=forever_business_user_fbo_sql_expression('u.preferences');
++ foreach(fcc_partner_rows("SELECT u.user_id,u.name,$expr fbo,COALESCE(p.visible,0) visible,COALESCE(m.is_privacy_requested,0) private FROM users u LEFT JOIN fcc_top_profiles p ON p.user_id=u.user_id LEFT JOIN forever_business_members m ON m.fbo_id=$expr WHERE u.status=1") as $r){
++  $uid=(int)$r['user_id'];$r['visible']=(bool)$r['visible']&&!$r['private'];$users[$uid]=$r;
++  if(preg_match('/^[0-9]{12}$/D',(string)$r['fbo']))$groups[$r['fbo']][]=$uid;
++ }
++ $scores=[];
++ // These are confirmed actions, not clicks on sharing controls. Deduplication is per person and article, or event.
++ $queries=[
++  'recommendations'=>"SELECT user_id,COUNT(*) n FROM (SELECT a.user_id,a.contact_id,COALESCE(p.article_id,0) article_id FROM fcc_partner_pilot_events e JOIN fcc_partner_activities a ON a.id=e.activity_id AND a.user_id=e.user_id JOIN fcc_partner_opportunities p ON p.id=e.opportunity_id AND p.user_id=e.user_id WHERE e.kind='message_sent' AND p.kind='product' AND a.contact_id IS NOT NULL AND e.created_at>=? AND e.created_at<=? UNION SELECT a.user_id,a.contact_id,0 FROM forever_business_daily_outcomes o JOIN fcc_partner_activities a ON a.id=o.interaction_id AND a.user_id=o.recorded_by_user_id WHERE o.status='done' AND o.result_type='recommendation' AND o.output_status='sent' AND a.contact_id IS NOT NULL AND a.created_at>=? AND a.created_at<=? AND NOT EXISTS(SELECT 1 FROM fcc_partner_pilot_events e WHERE e.activity_id=a.id)) q GROUP BY user_id",
++  'invitations'=>"SELECT a.user_id,COUNT(DISTINCT CONCAT(a.session_id,':',a.recipient_contact_id)) n FROM fcc_webinar_invite_attempts a JOIN fcc_webinar_sessions s ON s.id=a.session_id WHERE a.is_demo=0 AND s.is_demo=0 AND a.revoked_at IS NULL AND a.recipient_contact_id IS NOT NULL AND a.sent_self_reported_at>=? AND a.sent_self_reported_at<=? GROUP BY a.user_id",
++  'registrations'=>"SELECT r.user_id,COUNT(DISTINCT CONCAT(r.session_id,':',r.email_key)) n FROM fcc_webinar_registrations r JOIN fcc_webinar_sessions s ON s.id=r.session_id JOIN fcc_webinar_invite_attempts a ON a.id=r.attempt_id AND a.user_id=r.user_id WHERE r.is_demo=0 AND s.is_demo=0 AND r.is_self=0 AND r.needs_review=0 AND r.status='registered' AND a.revoked_at IS NULL AND a.is_demo=0 AND a.session_id=r.session_id AND r.email_verified_at>=? AND r.email_verified_at<=? GROUP BY r.user_id",
++  'conversations'=>"SELECT user_id,COUNT(DISTINCT contact_id) n FROM fcc_partner_activities WHERE contact_id IS NOT NULL AND kind IN ('contacted','journey_sent','journey_performed') AND created_at>=? AND created_at<=? GROUP BY user_id",
++  'education'=>"SELECT recorded_by_user_id user_id,COUNT(DISTINCT COALESCE(CONCAT('step:',journey_step_id),CONCAT('legacy:',action_key,':',action_date))) n FROM forever_business_daily_outcomes WHERE status='done' AND created_at>=? AND created_at<=? GROUP BY recorded_by_user_id",
++  'consistency'=>"SELECT user_id,created_at FROM fcc_partner_activities WHERE contact_id IS NOT NULL AND kind IN ('contacted','journey_sent','journey_performed') AND created_at>=? AND created_at<=?"
++ ];
++ foreach($queries as $key=>$sql){$params=[$w['from'],$w['to']];if($key==='recommendations')$params=array_merge($params,$params);foreach(fcc_partner_rows($sql,$params) as $r){if($key==='consistency'){$date=(new DateTimeImmutable($r['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('Y-m-d');$activeDays[(int)$r['user_id']][$date]=true;}else $scores[$key][(int)$r['user_id']]=(int)$r['n'];}}
++ foreach($activeDays??[] as $id=>$dates)$scores['consistency'][$id]=count($dates);
++
++ $cc=[];$sync=null;
++ if(fcc_cc_ready()){
++  foreach(fcc_partner_rows('SELECT s.* FROM fcc_cc_snapshots s JOIN (SELECT fbo_id,MAX(id) id FROM fcc_cc_snapshots WHERE period_month=? GROUP BY fbo_id) x ON x.id=s.id',[$month]) as $r){$cc[$r['fbo_id']]=$r;}
++  $sync=fcc_partner_one('SELECT MAX(published_at) at FROM fcc_cc_batches WHERE period_month=?',[$month])['at']??null;
++ }
++ $lists=[];
++ foreach(fcc_top_categories() as $cat){$rows=[];
++  if(in_array($cat,['personal_cc','total_cc'],true)){
++   foreach($groups as $fbo=>$ids){$r=$cc[$fbo]??null;if(!$r)continue;$names=[];$visible=true;foreach($ids as $id){$names[]=$users[$id]['name'];$visible=$visible&&$users[$id]['visible'];}$rows[]=['entity'=>hash('sha256','fbo:'.$fbo),'uids'=>$ids,'name'=>implode(' i ',$names),'visible'=>$visible,'score'=>$r[$cat]];}
++  }else foreach($users as $id=>$u)$rows[]=['entity'=>hash('sha256','uid:'.$id),'uids'=>[$id],'name'=>$u['name'],'visible'=>$u['visible'],'score'=>$scores[$cat][$id]??0];
++  $lists[$cat]=fcc_top_rank($rows);
++ }
++ return ['lists'=>$lists,'window'=>$w,'month'=>$month,'months'=>[$current,$previous],'sync'=>$sync,'cc_accounts'=>count($cc),'accounts'=>count($users),'scores'=>$scores,'cc'=>$cc,'users'=>$users];
++}
++function fcc_top_snapshot(array $dataset): void {
++ $batch=[];foreach($dataset['lists'] as $cat=>$rows){$period=in_array($cat,['personal_cc','total_cc'],true)?$dataset['month']:(string)$dataset['window']['days'];foreach($rows as $r)$batch[]=[$dataset['window']['day'],$cat,$period,$r['entity'],$r['position']];}
++ foreach(array_chunk($batch,100) as $chunk)fcc_partner_query('INSERT IGNORE INTO fcc_top_positions(day,category,period_key,entity_key,position) VALUES'.implode(',',array_fill(0,count($chunk),'(?,?,?,?,?)')),array_merge(...$chunk));
++}
++function fcc_top_page(int $uid,int $days,string $month): array {
++ if(!fcc_pro_has_access($uid))throw new RuntimeException('PRO required');
++ $d=fcc_top_dataset($days,$month);fcc_top_snapshot($d);$cards=[];
++ foreach($d['lists'] as $key=>$rows){$own=fcc_top_own($rows,$uid);$period=in_array($key,['personal_cc','total_cc'],true)?$d['month']:(string)$d['window']['days'];$old=$own['entity']?fcc_partner_one('SELECT position,day FROM fcc_top_positions WHERE category=? AND period_key=? AND entity_key=? AND day<? ORDER BY day DESC LIMIT 1',[$key,$period,$own['entity'],$d['window']['day']]):null;
++  $value=$own['score'];if($value===null&&!in_array($key,['personal_cc','total_cc'],true))$value=0;
++  if($value===null&&isset($d['users'][$uid]))$value=$d['cc'][$d['users'][$uid]['fbo']][$key]??null;
++  $cards[$key]=['rows'=>fcc_top_public($rows,$key,$uid),'own'=>['score'=>$value,'position'=>$own['position'],'movement'=>$old?(int)$old['position']-(int)$own['position']:null,'comparison_day'=>$old['day']??null],'count'=>count($rows)];
++ }
++ $week=$days===7?$d:fcc_top_dataset(7,$d['month']);$weekly=[];foreach(['recommendations','invitations','education'] as $cat)$weekly[$cat]=$week['scores'][$cat][$uid]??0;
++ return ['cards'=>$cards,'days'=>$d['window']['days'],'month'=>$d['month'],'months'=>$d['months'],'sync'=>$d['sync'],'cc_accounts'=>$d['cc_accounts'],'accounts'=>$d['accounts'],'weekly'=>$weekly,'profile'=>fcc_top_profile($uid),'at'=>$d['window']['to']];
++}
++/** Optional inbox notices only. First observation sets a baseline, and at most two notices are created per week. */
++function fcc_top_notify_user(int $uid,DateTimeImmutable $now): void {
++ if(!fcc_top_ready()||(int)$now->format('G')<9||(int)$now->format('G')>=21)return;
++ $p=fcc_top_profile($uid);if((!$p['weekly_notice']&&!$p['milestone_notice'])||!fcc_pro_has_access($uid))return;
++ $day=$now->format('Y-m-d');$state=fcc_partner_one('SELECT * FROM fcc_top_state WHERE user_id=?',[$uid]);if(($state['checked_day']??'')===$day)return;
++ static $datasets=[];$key=$day;$d=$datasets[$key]??=fcc_top_dataset(30,substr($day,0,7).'-01',$now);
++ $ranks=[];foreach($d['lists'] as $cat=>$rows)$ranks[$cat]=count($rows)>=10?fcc_top_own($rows,$uid)['position']:null;
++ $old=json_decode($state['ranks_json']??'{}',true)?:[];$week=$now->format('o-W');
++ if($p['weekly_notice']&&$now->format('N')==='1')fcc_partner_notify($uid,'top:weekly:'.$week,'service',fcc_top_t('weekly_title'),fcc_top_t('weekly_body'),'partner/top',604800);
++ $entered=false;if($state)foreach($ranks as $cat=>$rank){if(in_array($cat,['personal_cc','total_cc'],true)&&($state['month_key']??'')!==$d['month'])continue;if($rank!==null&&$rank<=10&&(($old[$cat]??null)===null||$old[$cat]>10))$entered=true;}
++ if($p['milestone_notice']&&$entered)fcc_partner_notify($uid,'top:milestone:'.$week,'service',fcc_top_t('milestone_title'),fcc_top_t('milestone_body'),'partner/top',604800);
++ fcc_partner_query('INSERT INTO fcc_top_state(user_id,checked_day,month_key,ranks_json) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE checked_day=VALUES(checked_day),month_key=VALUES(month_key),ranks_json=VALUES(ranks_json)',[$uid,$day,$d['month'],json_encode($ranks)]);
++}
+--- a/themes/altum/assets/css/fcc-top.css
++++ b/themes/altum/assets/css/fcc-top.css
+@@ -0,0 +1,3 @@
++.ft-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:32px;border-radius:24px;color:#fff;background:linear-gradient(118deg,#123f34,#216a53);margin-bottom:24px;box-shadow:0 14px 40px #123f3414}.ft-hero h1{font-size:clamp(30px,5vw,44px);letter-spacing:-1.2px;margin:7px 0 10px;color:inherit}.ft-hero p{color:#e3f2e8;font-size:17px;margin:0}.ft-hero .fp-eyebrow{color:#d4eabe}.ft-hero .fp-button{white-space:normal;text-align:center;flex-shrink:0}.ft-filters{display:flex;gap:16px;align-items:end;flex-wrap:wrap}.ft-filters label{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:650}.ft-filters select{min-width:170px;border:1px solid #d8e3dc;border-radius:12px;padding:11px 36px 11px 14px;background:#fff;color:#193b30;font:inherit;min-height:46px}.ft-status{font-size:12px;line-height:1.8;color:#63756b;margin:18px 0 24px}.ft-progress{margin-bottom:24px}.ft-private{font-size:11px;color:#47675a;background:#edf4ee;border-radius:100px;padding:7px 11px}.ft-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0}.ft-goals>div{display:flex;flex-direction:column;gap:9px}.ft-goals span{font-size:13px;color:#536b5e}.ft-goals strong{font-size:25px;line-height:1.2;color:#173e30}.ft-goals small{font-size:15px;color:#718378;font-weight:500}.ft-goals progress{width:100%;height:7px;border:0;border-radius:9px;background:#edf2ed;accent-color:#42825c}.ft-goals progress::-webkit-progress-bar{background:#edf2ed;border-radius:9px}.ft-goals progress::-webkit-progress-value{background:#42825c;border-radius:9px}.ft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}.ft-card{min-width:0;padding:24px}.ft-card-head{display:flex;align-items:center;gap:13px;min-height:63px;margin-bottom:20px}.ft-card-head h2{font-size:18px;margin:5px 0 0;line-height:1.3}.ft-icon{background:#edf4ed;color:#386445;border-radius:13px;display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px}.ft-icon svg{width:22px;height:22px}.ft-own{display:flex;justify-content:space-between;gap:14px;padding:16px;border-radius:15px;background:#f4f7f2;margin-bottom:14px}.ft-own>div{display:flex;flex-direction:column;gap:6px}.ft-own span{font-size:11px;color:#576e5e}.ft-own strong{font-size:24px;line-height:1.1;color:#193c2e;overflow-wrap:anywhere}.ft-own-rank{max-width:52%;justify-content:center}.ft-own-rank small{font-size:10px;color:#607569;line-height:1.5}.ft-list{list-style:none;margin:0;padding:0}.ft-list li{display:flex;align-items:center;gap:12px;min-height:53px;border-bottom:1px solid #edf0ec;padding:9px 4px}.ft-place{flex:0 0 29px;width:29px;height:29px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#6a776f;background:#f3f5f2}.ft-place.ft-medal{background:#f3eddc;color:#846627}.ft-name{flex:1;min-width:0;font-size:13px;font-weight:550;overflow-wrap:anywhere;line-height:1.4}.ft-name small{display:block;color:#397c58;font-size:10px}.ft-score{font-size:16px;color:#214b35}.ft-is-me{background:#f2f8f1;border-radius:8px}.ft-hidden{display:inline-block;width:52px;text-align:center}.ft-hidden>span{filter:blur(3px);letter-spacing:3px;color:#648270;user-select:none}.ft-empty{min-height:150px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:22px 12px;color:#70816f}.ft-empty>span{font-size:26px;color:#b6c9af}.ft-empty p{font-size:13px;line-height:1.6;max-width:300px;margin:10px 0 0}.ft-rules{margin-top:14px;font-size:12px;color:#637368}.ft-rules summary{cursor:pointer;min-height:32px;display:list-item;padding:7px 0}.ft-rules p{line-height:1.75;margin-top:10px}.ft-explanation{margin-top:24px}.ft-explanation h2{font-size:18px}.ft-explanation p{font-size:13px;line-height:1.8;color:#66766b}.fp-section-top>.fp-page-heading{display:none}.ft-filters select:focus-visible,.ft-rules summary:focus-visible{outline:3px solid #91b98c;outline-offset:3px}@media(max-width:700px){.ft-hero{padding:24px;align-items:flex-start;flex-direction:column;gap:18px}.ft-hero .fp-button{font-size:13px}.ft-grid{grid-template-columns:1fr;gap:16px}.ft-card{padding:20px}.ft-goals{grid-template-columns:1fr;gap:18px}.ft-goals>div{display:grid;grid-template-columns:1fr auto;align-items:center}.ft-goals progress{grid-column:1/-1}.ft-goals strong{font-size:21px}.ft-filters{gap:10px}.ft-filters label{flex:1;min-width:120px}.ft-filters select{min-width:0;width:100%;padding-right:22px}.ft-private{max-width:110px;text-align:center}.ft-progress .fp-section-title{gap:12px}.ft-progress h2{font-size:18px}.ft-filters button{min-height:44px}}
++
++body.fcc-partner-mode .fp-page .ft-hero h1{color:#fff!important;font-size:clamp(30px,5vw,44px)}body.fcc-partner-mode .fp-page .ft-hero p{color:#e3f2e8!important}body.fcc-partner-mode .fp-page .ft-hero .fp-eyebrow{color:#d4eabe!important}
+--- a/themes/altum/views/partner/top.php
++++ b/themes/altum/views/partner/top.php
+@@ -0,0 +1,15 @@
++<?php defined('ALTUMCODE') || die();
++$t='fcc_top_t';$h='fcc_partner_h';$top=$data->top??null;
++\Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-top.css?v='.filemtime(ASSETS_PATH.'css/fcc-top.css').'">','head');
++?>
++<section class="ft-hero"><div><span class="fp-eyebrow">FCC · PRO</span><h1><?= $h($t('title')) ?></h1><p><?= $h($t('intro')) ?></p></div><a class="fp-button fp-button-light" href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('settings')) ?></a></section>
++<?php if(!$top): ?><p class="fp-message" role="status"><?= $h($t('unavailable')) ?></p><?php return;endif ?>
++<form class="ft-filters" method="get"><label><?= $h($t('period')) ?><select name="days" data-is-not-custom-select><?php foreach([7,30,60] as $n): ?><option value="<?= $n ?>" <?= $top['days']===$n?'selected':'' ?>><?= $h($t('days',['{n}'=>$n])) ?></option><?php endforeach ?></select></label><label><?= $h($t('cc_month')) ?><select name="month" data-is-not-custom-select><?php foreach($top['months'] as $m): ?><option value="<?= $h($m) ?>" <?= $top['month']===$m?'selected':'' ?>><?= $h(substr($m,5,2).'/'.substr($m,0,4)) ?></option><?php endforeach ?></select></label><button class="fp-button" type="submit"><?= $h($t('apply')) ?></button></form>
++<p class="ft-status"><?= $h($top['sync']?$t('sync',['{at}'=>fcc_cc_time($top['sync'])]):$t('awaiting')) ?><br><?= $h($t('freshness',['{at}'=>fcc_cc_time($top['at'])])) ?></p>
++<section class="fp-panel ft-progress"><div class="fp-section-title"><h2><?= $h($t('progress')) ?></h2><span class="ft-private"><?= $h($t('private_label')) ?></span></div><div class="ft-goals"><?php foreach($top['weekly'] as $key=>$value): $goal=(int)$top['profile'][$key.'_goal']; ?><div><span><?= $h($t($key)) ?></span><strong><?= (int)$value ?> <small>/ <?= $goal ?></small></strong><progress value="<?= min($goal,$value) ?>" max="<?= $goal ?>" aria-label="<?= $h($t($key)) ?>"></progress></div><?php endforeach ?></div><a class="fp-link" href="<?= url('partner') ?>"><?= $h($t('start')) ?> →</a></section>
++<div class="ft-grid"><?php foreach($top['cards'] as $key=>$card):$cc=in_array($key,['personal_cc','total_cc'],true); ?>
++<section class="fp-panel ft-card"><div class="ft-card-head"><span class="ft-icon" aria-hidden="true"><?= fcc_partner_icon($cc?'chart':($key==='education'?'book':'people')) ?></span><div><span class="fp-eyebrow"><?= $cc?$h(substr($top['month'],5,2).'/'.substr($top['month'],0,4)):$h($t('days',['{n}'=>$top['days']])) ?></span><h2><?= $h($t($key)) ?></h2></div></div>
++<div class="ft-own"><div><span><?= $h($t('own')) ?></span><strong><?= $card['own']['score']===null?'…':($cc?fcc_cc_number($card['own']['score']).' CC':(int)$card['own']['score']) ?></strong></div><div class="ft-own-rank"><?php if($card['own']['position']!==null): ?><span><?= $h($t('own_rank',['{n}'=>$card['own']['position']])) ?></span><?php else: ?><span><?= $h($t('no_score')) ?></span><?php endif ?><?php if($card['own']['movement']!==null): ?><small><?= $h($t('rank_change',['{date}'=>$card['own']['comparison_day'],'{n}'=>($card['own']['movement']>0?'+':'').$card['own']['movement']])) ?></small><?php endif ?></div></div>
++<?php if(!$card['rows']): ?><div class="ft-empty"><span aria-hidden="true">✦</span><p><?= $h($t($card['count']?'empty':'no_activity')) ?></p></div><?php else: ?><ol class="ft-list" aria-label="<?= $h($t($key)) ?>"><?php foreach($card['rows'] as $row): ?><li value="<?= (int)$row['position'] ?>" class="<?= $row['own']?'ft-is-me':'' ?>"><span class="ft-place <?= $row['position']<=3?'ft-medal':'' ?>" aria-hidden="true"><?= (int)$row['position'] ?></span><span class="ft-name"><?= $h($row['name']) ?><?php if($row['own']): ?><small><?= $h($t('you')) ?></small><?php endif ?></span><?php if($cc): ?><span class="ft-hidden" aria-label="<?= $h($t('private_cc')) ?>" title="<?= $h($t('private_cc')) ?>"><span aria-hidden="true">••••</span></span><?php else: ?><strong class="ft-score"><?= (int)$row['score'] ?></strong><?php endif ?></li><?php endforeach ?></ol><?php endif ?>
++<details class="ft-rules"><summary><?= $h($t('rules')) ?></summary><p><?= $h($t($key.'_help')) ?></p></details></section><?php endforeach ?></div>
++<aside class="fp-panel ft-explanation"><h2><?= $h($t('rules')) ?></h2><p><?= $h($t('privacy')) ?></p><p><?= $h($t('cc_privacy')) ?></p><a class="fp-link" href="<?= url('fcc-results') ?>"><?= $h(fcc_t('FCC Rezultati')) ?> · 15+ / 50+ →</a></aside>
+--- a/themes/altum/views/partner/top-settings.php
++++ b/themes/altum/views/partner/top-settings.php
+@@ -0,0 +1,2 @@
++<?php defined('ALTUMCODE') || die();if(!fcc_top_ready())return;$topPrefs=fcc_top_profile($uid);$tt='fcc_top_t'; ?>
++<section id="fcc-top-settings" class="fp-panel" style="margin-top:24px"><div class="fp-section-title"><h2><?= $h($tt('title')) ?></h2><a class="fp-link" href="<?= url('partner/top') ?>"><?= $h($tt('apply')) ?> →</a></div><form method="post" class="fp-form"><?= $token ?><input type="hidden" name="action" value="top_settings"><input type="hidden" name="version" value="<?= (int)$topPrefs['version'] ?>"><h3><?= $h($tt('settings')) ?></h3><label class="fp-check-label"><input type="checkbox" name="visible" value="1" <?= $topPrefs['visible']?'checked':'' ?>> <?= $h($tt('visible')) ?></label><p class="fp-muted"><?= $h($tt('visible_help')) ?></p><?php foreach(['weekly_notice','milestone_notice'] as $field): ?><label class="fp-check-label"><input type="checkbox" name="<?= $field ?>" value="1" <?= $topPrefs[$field]?'checked':'' ?>> <?= $h($tt($field)) ?></label><?php endforeach ?><p class="fp-muted"><?= $h($tt('notice_help')) ?></p><h3><?= $h($tt('goals')) ?></h3><p class="fp-muted"><?= $h($tt('goals_help')) ?></p><div class="fp-form-grid"><?php foreach(['recommendations','invitations','education'] as $key): ?><label><?= $h($tt($key)) ?><input type="number" name="<?= $key ?>_goal" min="1" max="1000" required value="<?= (int)$topPrefs[$key.'_goal'] ?>"></label><?php endforeach ?></div><button class="fp-button" type="submit"><?= $h($tt('save')) ?></button></form></section>
+--- a/app/helpers/fcc_partner.php
++++ b/app/helpers/fcc_partner.php
+@@ -1,6 +1,7 @@
+ <?php
+ defined('ALTUMCODE') || die();
+ require_once __DIR__ . '/fcc_partner_tools.php';
++require_once __DIR__.'/fcc_top.php';
+ require_once __DIR__.'/fcc_reliability.php';
+ require_once __DIR__ . '/fcc_partner_rollout.php';
+ 
+--- a/app/helpers/fcc_partner_notifications.php
++++ b/app/helpers/fcc_partner_notifications.php
+@@ -66,6 +66,7 @@
+  $uid=(int)$u['user_id']; if(!fcc_partner_enabled($uid)) return;
+  fcc_team_refresh_notifications($uid);
+  fcc_cc_refresh_notifications($uid,$now);
++ try{fcc_top_notify_user($uid,$now);}catch(Throwable $e){error_log('FCC Top notices: '.get_class($e));}
+  $admin=(int)$u['type']>0;
+  $source=fcc_partner_rows("SELECT internal_notification_id,title,description,url,datetime,for_who FROM internal_notifications WHERE (user_id=? OR user_id IS NULL) AND (for_who='user' OR (?=1 AND for_who='admin')) ORDER BY internal_notification_id DESC LIMIT 100",[$uid,$admin?1:0]);
+  foreach($source as $n) {
+@@ -137,6 +138,7 @@
+   if(getenv('FCC_LOCAL')==='1'&&(str_starts_with($d['event_key']??'','webinar:')||str_starts_with($d['event_key']??'','business:')||str_starts_with($d['event_key']??'','team:'))) {
+    fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status='skipped',last_code='local_webinar_inbox',updated_at=UTC_TIMESTAMP() WHERE id=?",[(int)$d['id']]);continue;
+   }
++  if(str_starts_with($d['event_key']??'','top:')){fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status='skipped',last_code='inbox_only' WHERE id=?",[(int)$d['id']]);continue;}
+   $uid=(int)$d['user_id'];$p=fcc_partner_notification_preferences($uid);
+   if(!fcc_cc_notification_allowed($uid,$d)){fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status='skipped',last_code='preference_or_cc_scope_changed',updated_at=UTC_TIMESTAMP() WHERE id=?",[(int)$d['id']]);continue;}
+   if(!fcc_team_notification_allowed($uid,$d['event_key'])) {
+@@ -202,7 +204,7 @@
+   $users=fcc_partner_rows('SELECT user_id,type FROM users WHERE status=1 AND user_id>? ORDER BY user_id LIMIT 100',[$cursor]);
+   foreach($users as $u) fcc_partner_notification_sync_user($u,$now);
+   fcc_partner_notification_config_save('user_cursor',count($users)===100?(int)end($users)['user_id']:0);
+-  fcc_partner_query("INSERT IGNORE INTO fcc_partner_push_deliveries (notification_id,subscription_id,available_at,updated_at) SELECT n.id,s.id,UTC_TIMESTAMP(),UTC_TIMESTAMP() FROM fcc_partner_notifications n JOIN fcc_partner_push_subscriptions s ON s.user_id=n.user_id AND s.active=1 WHERE n.expires_at>UTC_TIMESTAMP() AND n.created_at>=s.created_at");
++  fcc_partner_query("INSERT IGNORE INTO fcc_partner_push_deliveries (notification_id,subscription_id,available_at,updated_at) SELECT n.id,s.id,UTC_TIMESTAMP(),UTC_TIMESTAMP() FROM fcc_partner_notifications n JOIN fcc_partner_push_subscriptions s ON s.user_id=n.user_id AND s.active=1 WHERE n.expires_at>UTC_TIMESTAMP() AND n.created_at>=s.created_at AND n.event_key NOT LIKE 'top:%'");
+   $stats=fcc_partner_push_deliver($now);
+   fcc_partner_notification_config_save(getenv('FCC_PHONE_PILOT')==='1'?'heartbeat_phone':'heartbeat',['at'=>gmdate('c'),'accounts'=>count($users),'transport'=>fcc_partner_push_mode(),'result'=>$stats]);
+   return $stats;
+@@ -215,6 +217,7 @@
+ 
+ /** Translate only system notification templates. User names, subjects and event titles remain verbatim. */
+ function fcc_partner_notification_display(array $notice,?string $locale=null): array {
++ if(str_starts_with($notice['event_key']??'','top:')){$kind=str_starts_with($notice['event_key'],'top:weekly:')?'weekly':'milestone';$notice['title']=fcc_top_t($kind.'_title',[],$locale);$notice['body']=fcc_top_t($kind.'_body',[],$locale);return $notice;}
+  if(str_starts_with($notice['event_key']??'','cc:')){$items=fcc_cc_notice_items((int)$notice['user_id'],(int)$notice['id']);$notice['title']=fcc_cc_t('digest_title',[],$locale);$notice['body']=$items?fcc_cc_digest_text($items,$locale):fcc_cc_t('notification_removed',[],$locale);return $notice;}
+  $locale=fcc_locale($locale);if(!in_array($locale,['sl','en','de','sr', 'sq', 'cnr', 'fr', 'es'],true))return $notice;
+  $key=(string)($notice['event_key']??'');
+--- a/app/controllers/Partner.php
++++ b/app/controllers/Partner.php
+@@ -5,7 +5,7 @@
+ class Partner extends Controller {
+  public function index() {
+   $section=(string)($this->params[0]??'today');
+-  $allowed=['today','contacts','share','cards','more','plan','education','team','notifications','settings','install','admin','preview','curriculum','webinars','points'];
++  $allowed=['today','contacts','share','cards','more','plan','education','team','notifications','settings','install','admin','preview','curriculum','webinars','points','top'];
+   if(!in_array($section,$allowed,true)) throw_404();
+   // Desktop device viewer is local tooling, never a production route.
+   if($section==='preview') {
+@@ -68,6 +68,7 @@
+    catch(\Throwable $e){error_log('Team outreach: '.get_class($e));http_response_code(500);echo json_encode(['ok'=>false,'message'=>fcc_t('Spremanje nije uspjelo. Tekst ostaje u obrascu. Pokušaj ponovno.')]);}
+    return;
+   }
++  if($section==='top'&&!fcc_pro_has_access($uid)) redirect(fcc_pro_upgrade_path());
+   if($section==='team'&&!fcc_pro_has_access($uid)) redirect(fcc_pro_upgrade_path('team'));
+   fcc_rollout_enter($uid);
+   if($_SERVER['REQUEST_METHOD']==='POST'&&($_POST['action']??'')==='push_connect') {
+@@ -208,6 +209,11 @@
+    $data['inbox']=fcc_partner_rows('SELECT * FROM fcc_partner_notifications WHERE user_id=? AND id<? AND (category<>\'admin\' OR ?=1) ORDER BY id DESC LIMIT 40',[$uid,$before,\Altum\Authentication::is_admin()?1:0]);
+    $data['inbox']=array_values(array_filter($data['inbox'],fn($n)=>fcc_cc_notification_allowed($uid,$n)));
+    $data['notification_preferences']=fcc_partner_notification_preferences($uid);
++  }
++  if($section==='top') {
++   $data['top']=null;
++   try {if(fcc_top_ready())$data['top']=fcc_top_page($uid,(int)($_GET['days']??30),(string)($_GET['month']??''));}
++   catch(\Throwable $e){error_log('FCC Top overview: '.get_class($e).': '.$e->getMessage());http_response_code(503);}
+   }
+   if($section==='admin') $data['admin']=fcc_partner_admin_overview();
+   if(fcc_journey_enabled($uid)&&$section==='today') {
+@@ -265,6 +271,7 @@
+ 
+  private function mutate(int $uid,string $section,array $input): string {
+   $action=(string)($input['action']??'');
++  if($action==='top_settings'){if($section!=='settings')throw new \InvalidArgumentException(fcc_top_t('conflict'));fcc_top_save($uid,$input);return 'partner/settings#fcc-top-settings';}
+   if($section==='share'&&$action==='invite_customize'){require_once APP_PATH.'helpers/fcc_unified_invite.php';return fcc_invite_customize($uid,$input);}
+   if(in_array($action,['team_work','team_contact'],true)) {
+    fcc_pro_require($uid);
+--- a/themes/altum/views/partner/index.php
++++ b/themes/altum/views/partner/index.php
+@@ -17,6 +17,7 @@
+  <?php if($section==='today'&&!empty($data->sponsor)): ?><section class="fp-panel" style="padding:16px 22px;margin-bottom:18px"><div class="fp-section-title" style="margin:0"><span><?= htmlspecialchars(fcc_t('Moj sponzor:'), ENT_QUOTES, 'UTF-8') ?> <strong><?= $h($data->sponsor['name']) ?></strong><?php if(!empty($data->sponsor['phone'])): ?> · <a href="tel:<?= $h($data->sponsor['phone']) ?>"><?= $h($data->sponsor['phone']) ?></a><?php endif ?></span><a class="fp-link" <?= fcc_pro_link($uid,'team','partner/team') ?>><?= htmlspecialchars(fcc_t('Moj tim i zajednički rad'), ENT_QUOTES, 'UTF-8') ?> <span class="fcc-pro-badge"><?= htmlspecialchars(fcc_t('PRO'), ENT_QUOTES, 'UTF-8') ?></span> →</a></div></section><?php endif ?>
+  <?php if($section==='today')require THEME_PATH.'views/partner/team-outreach-due.php'; ?>
+  <?php endif ?>
++ <?php if($section==='top')require THEME_PATH.'views/partner/top.php'; ?>
+  <?php if($section==='points')require THEME_PATH.'views/partner/cc-points.php'; ?>
+  <?php if($section==='today'&&in_array($data->journey_view??'today',['today','step'],true))require THEME_PATH.'views/partner/cc-summary.php'; ?>
+  <?php if($section==='today'&&fcc_journey_enabled()): require THEME_PATH.'views/partner/journey.php'; ?>
+@@ -76,14 +77,14 @@
+   <section class="fp-panel"><h2><?= $data->plan?fcc_t('Pripremi novi nacrt'):fcc_t('Složi plan u tri kratka koraka') ?></h2><form method="post" class="fp-form" data-ai-form><?= $token.$request ?><input type="hidden" name="action" value="plan_generate"><div class="fp-form-grid"><label><?= htmlspecialchars(fcc_t('Što ti je sada najvažnije?'), ENT_QUOTES, 'UTF-8') ?><select name="goal" data-is-not-custom-select><?php foreach(fcc_partner_goals() as $value=>$label): ?><option value="<?= $value ?>" <?= ($data->values['goal']??'product_sales')===$value?'selected':'' ?>><?= $label ?></option><?php endforeach ?></select></label><label><?= htmlspecialchars(fcc_t('Koliko vremena dnevno?'), ENT_QUOTES, 'UTF-8') ?><select name="minutes" data-is-not-custom-select><?php foreach([10,20,45] as $m): ?><option value="<?= $m ?>" <?= $m===(int)($data->values['minutes']??$this->user->preferences->partner->minutes??20)?'selected':'' ?>><?= $m ?> <?= htmlspecialchars(fcc_t('minuta'), ENT_QUOTES, 'UTF-8') ?></option><?php endforeach ?></select></label></div><label><?= htmlspecialchars(fcc_t('Što još želiš uzeti u obzir?'), ENT_QUOTES, 'UTF-8') ?><textarea name="focus" rows="3" maxlength="500" placeholder="<?= htmlspecialchars(fcc_t('Npr. početnik sam, najčešće koristim WhatsApp i želim dosljednost.'), ENT_QUOTES, 'UTF-8') ?>"><?= $h($data->values['focus']??'') ?></textarea><small><?= htmlspecialchars(fcc_t('Bez imena kupaca i privatnih ili zdravstvenih podataka.'), ENT_QUOTES, 'UTF-8') ?></small></label><button class="fp-button"><?= fcc_partner_icon('spark') ?> <?= htmlspecialchars(fcc_t('Izradi AI nacrt'), ENT_QUOTES, 'UTF-8') ?></button><span class="fp-ai-wait" hidden role="status"><?= htmlspecialchars(fcc_t('AI priprema tvoj nacrt. To može potrajati do pola minute…'), ENT_QUOTES, 'UTF-8') ?></span></form></section><?php else: ?><section class="fp-panel"><span class="fp-eyebrow"><?= htmlspecialchars(fcc_t('PRO POGODNOST'), ENT_QUOTES, 'UTF-8') ?></span><h2><?= htmlspecialchars(fcc_t('Tvoj cilj pretvori u mjesečni plan.'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('PRO uključuje AI nacrt plana, povezani Plan rasta i tjedni osvrt. Kontakti, kartica i osobni zadaci ostaju ti dostupni u Free paketu.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button" href="<?= url('account-plan') ?>"><?= htmlspecialchars(fcc_t('Usporedi Free i PRO'), ENT_QUOTES, 'UTF-8') ?></a></section><?php endif ?><a class="fp-link" href="<?= url('ai-plan') ?>"><?= htmlspecialchars(fcc_t('Tjedni osvrt, postojeći planovi i povijest →'), ENT_QUOTES, 'UTF-8') ?></a>
+  <?php endif ?>
+ 
+- <?php if($section==='more'): ?><?php if(\Altum\Authentication::is_admin()): ?><p><a class="fp-button" href="<?= url('partner/admin') ?>"><?= htmlspecialchars(fcc_t('Administratorski pregled →'), ENT_QUOTES, 'UTF-8') ?></a></p><?php endif ?><p class="fp-lead"><?= htmlspecialchars(fcc_t('Glavne radnje su ti uvijek pri ruci. Ostalo otvori kada ti zatreba.'), ENT_QUOTES, 'UTF-8') ?></p><div class="fp-menu-grid"><?php foreach([['card',fcc_cc_t('points'),fcc_cc_t('points_description'),'partner/points'],['bell',fcc_cc_t('notification_settings'),fcc_cc_t('notification_description'),'partner/notifications#preferences'],['people',fcc_event_hub_t('Seminari i događaji'),fcc_event_hub_t('Dan uspjeha, susreti uživo i tvoja prijava.'),'partner/share?type=events'],['bell',fcc_t('Webinari i događaji'),fcc_t('Nadolazeći susreti, pristup i podsjetnici.'),'partner/webinars'],['book',fcc_t('Moj put'),fcc_t('Zadatak, edukacija i pomoć na jednom mjestu.'),'partner'],['book',fcc_t('Video edukacija i pravila'),fcc_t('Šest videa, pravilnici i plan sa sponzorom.'),'partner?view=materials'],['people','Moj tim',fcc_t('Struktura, CC bodovi, napredak i zajednički rad.'),'partner/team'],['card','Rezultati',fcc_t('Klikovi i pravila brojanja.'),'fcc-results'],['card',fcc_t('Free i PRO paket'),fcc_t('Pogodnosti, naplata i jednostavno otkazivanje.'),'account-plan'],['settings',fcc_t('Moj račun'),fcc_t('Profil, pristup i postavke.'),'partner/settings']] as [$icon,$title,$desc,$url]): ?><a class="fp-panel fp-menu-item" <?= $url==='partner/team'?fcc_pro_link($uid,'team',$url):'href="'.url($url).'"' ?>><span class="fp-menu-icon"><?= fcc_partner_icon($icon) ?></span><h2><?= $title ?><?php if($url==='partner/team'): ?> <span class="fcc-pro-badge"><?= htmlspecialchars(fcc_t('PRO'), ENT_QUOTES, 'UTF-8') ?></span><?php endif ?></h2><p><?= $desc ?></p><?= fcc_partner_icon('arrow') ?></a><?php endforeach ?></div><div class="fp-filter-row"><a href="<?= url('partner/notifications') ?>"><?= htmlspecialchars(fcc_t('Obavijesti i podsjetnici'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('partner/install') ?>"><?= htmlspecialchars(fcc_t('Instalacija aplikacije'), ENT_QUOTES, 'UTF-8') ?></a></div><?php require THEME_PATH.'views/partner/tools.php'; ?><?php endif ?>
++ <?php if($section==='more'): ?><?php if(\Altum\Authentication::is_admin()): ?><p><a class="fp-button" href="<?= url('partner/admin') ?>"><?= htmlspecialchars(fcc_t('Administratorski pregled →'), ENT_QUOTES, 'UTF-8') ?></a></p><?php endif ?><p class="fp-lead"><?= htmlspecialchars(fcc_t('Glavne radnje su ti uvijek pri ruci. Ostalo otvori kada ti zatreba.'), ENT_QUOTES, 'UTF-8') ?></p><div class="fp-menu-grid"><?php foreach([['chart',fcc_top_t('title').' · PRO',fcc_top_t('menu_description'),'partner/top'],['card',fcc_cc_t('points'),fcc_cc_t('points_description'),'partner/points'],['bell',fcc_cc_t('notification_settings'),fcc_cc_t('notification_description'),'partner/notifications#preferences'],['people',fcc_event_hub_t('Seminari i događaji'),fcc_event_hub_t('Dan uspjeha, susreti uživo i tvoja prijava.'),'partner/share?type=events'],['bell',fcc_t('Webinari i događaji'),fcc_t('Nadolazeći susreti, pristup i podsjetnici.'),'partner/webinars'],['book',fcc_t('Moj put'),fcc_t('Zadatak, edukacija i pomoć na jednom mjestu.'),'partner'],['book',fcc_t('Video edukacija i pravila'),fcc_t('Šest videa, pravilnici i plan sa sponzorom.'),'partner?view=materials'],['people','Moj tim',fcc_t('Struktura, CC bodovi, napredak i zajednički rad.'),'partner/team'],['card','Rezultati',fcc_t('Klikovi i pravila brojanja.'),'fcc-results'],['card',fcc_t('Free i PRO paket'),fcc_t('Pogodnosti, naplata i jednostavno otkazivanje.'),'account-plan'],['settings',fcc_t('Moj račun'),fcc_t('Profil, pristup i postavke.'),'partner/settings']] as [$icon,$title,$desc,$url]): ?><a class="fp-panel fp-menu-item" <?= $url==='partner/team'?fcc_pro_link($uid,'team',$url):'href="'.url($url).'"' ?>><span class="fp-menu-icon"><?= fcc_partner_icon($icon) ?></span><h2><?= $title ?><?php if($url==='partner/team'): ?> <span class="fcc-pro-badge"><?= htmlspecialchars(fcc_t('PRO'), ENT_QUOTES, 'UTF-8') ?></span><?php endif ?></h2><p><?= $desc ?></p><?= fcc_partner_icon('arrow') ?></a><?php endforeach ?></div><div class="fp-filter-row"><a href="<?= url('partner/notifications') ?>"><?= htmlspecialchars(fcc_t('Obavijesti i podsjetnici'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('partner/install') ?>"><?= htmlspecialchars(fcc_t('Instalacija aplikacije'), ENT_QUOTES, 'UTF-8') ?></a></div><?php require THEME_PATH.'views/partner/tools.php'; ?><?php endif ?>
+  <?php if($section==='notifications') require THEME_PATH.'views/partner/notifications.php'; ?>
+  <?php if($section==='team') require THEME_PATH.'views/partner/team.php'; ?>
+  <?php if($section==='settings'): ?>
+  <section class="fp-profile-summary"><span class="fp-profile-avatar"><?= $h(mb_substr($this->user->name,0,1)) ?></span><div><h2><?= $h($this->user->name) ?></h2><p><?= $h($this->user->email) ?></p></div><a class="fp-link" href="<?= url('logout') ?>"><?= htmlspecialchars(fcc_t('Odjavi se'), ENT_QUOTES, 'UTF-8') ?></a></section>
+  <div class="fp-menu-grid fp-settings-grid">
+  <?php foreach([['settings',fcc_t('Profil i sigurnost'),fcc_t('Telefon, osobni podaci, lozinka i zaštita računa.'),'account'],['card',fcc_t('Moj paket'),fcc_t('Free i PRO pogodnosti, naplata i otkazivanje pretplate.'),'account-plan'],['people',fcc_t('Pomoć i podrška'),fcc_t('Pošalji pitanje i prati odgovor na istom mjestu.'),'feedback-tickets'],['plus',fcc_t('Aplikacija na mobitelu'),fcc_t('Instaliraj FCC i prijavi se postojećim računom.'),'partner/install']] as [$icon,$title,$desc,$href]): ?><a class="fp-panel fp-menu-item" href="<?= url($href) ?>"><span class="fp-menu-icon"><?= fcc_partner_icon($icon) ?></span><h2><?= $title ?></h2><p><?= $desc ?></p><?= fcc_partner_icon('arrow') ?></a><?php endforeach ?>
+- </div><?php if(\Altum\Authentication::is_admin()): ?><a class="fp-button" href="<?= url('partner/admin') ?>"><?= htmlspecialchars(fcc_t('Administratorski pregled →'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
++ </div><?php require THEME_PATH.'views/partner/top-settings.php'; ?><?php if(\Altum\Authentication::is_admin()): ?><a class="fp-button" href="<?= url('partner/admin') ?>"><?= htmlspecialchars(fcc_t('Administratorski pregled →'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+  <?php endif ?>
+  <?php if($section==='admin') { if(fcc_journey_enabled()&&!empty($_GET['journey'])) require THEME_PATH.'views/partner/journey-admin.php'; else { require THEME_PATH.'views/partner/admin.php'; if(fcc_journey_enabled()) echo '<a class="fp-button" href="'.url('partner/admin?journey=1').'">Moj put · materijali i rezultati →</a>'; } } ?>
+  <div class="fp-toast" hidden role="status"></div>

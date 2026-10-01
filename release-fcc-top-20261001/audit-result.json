@@ -1,0 +1,116 @@
+{
+    "status": "ok",
+    "at": "2026-10-01T13:45:01+00:00",
+    "counts": {
+        "fcc_cc_snapshots": 1353,
+        "fcc_cc_batches": 3,
+        "fcc_partner_pilot_events": 90,
+        "fcc_partner_activities": 6,
+        "fcc_webinar_invite_attempts": 11,
+        "fcc_webinar_registrations": 4,
+        "forever_business_daily_outcomes": 463
+    },
+    "cc_periods": [
+        {
+            "period_month": "2026-09-01",
+            "published_at": "2026-09-30 04:42:14",
+            "record_count": 668
+        },
+        {
+            "period_month": "2026-10-01",
+            "published_at": "2026-10-01 04:54:54",
+            "record_count": 668
+        }
+    ],
+    "invites": {
+        "sent": "0",
+        "named": "0"
+    },
+    "outcomes": [
+        {
+            "result_type": null,
+            "output_status": null,
+            "n": 1
+        },
+        {
+            "result_type": "coaching",
+            "output_status": null,
+            "n": 25
+        },
+        {
+            "result_type": "contact",
+            "output_status": null,
+            "n": 8
+        },
+        {
+            "result_type": "content",
+            "output_status": null,
+            "n": 43
+        },
+        {
+            "result_type": "conversation",
+            "output_status": null,
+            "n": 28
+        },
+        {
+            "result_type": "customer_checkin",
+            "output_status": null,
+            "n": 23
+        },
+        {
+            "result_type": "event",
+            "output_status": null,
+            "n": 35
+        },
+        {
+            "result_type": "follow_up",
+            "output_status": null,
+            "n": 21
+        },
+        {
+            "result_type": "invitation",
+            "output_status": null,
+            "n": 54
+        },
+        {
+            "result_type": "no_response",
+            "output_status": null,
+            "n": 10
+        },
+        {
+            "result_type": "onboarding",
+            "output_status": null,
+            "n": 1
+        },
+        {
+            "result_type": "order",
+            "output_status": null,
+            "n": 4
+        },
+        {
+            "result_type": "other",
+            "output_status": null,
+            "n": 14
+        },
+        {
+            "result_type": "planning",
+            "output_status": null,
+            "n": 95
+        },
+        {
+            "result_type": "recommendation",
+            "output_status": null,
+            "n": 26
+        },
+        {
+            "result_type": "training",
+            "output_status": null,
+            "n": 31
+        },
+        {
+            "result_type": "training",
+            "output_status": "performed",
+            "n": 44
+        }
+    ]
+}

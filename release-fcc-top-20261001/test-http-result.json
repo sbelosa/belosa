@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "checks": 11,
+  "details": [
+    "Anonymous visitor must sign in",
+    "PRO page loads",
+    "Private response cannot be shared by caches",
+    "Selected window 7",
+    "Selected window 30",
+    "Selected window 60",
+    "Invalid CSRF cannot save",
+    "Zero goal rejected",
+    "Stale settings cannot overwrite newer changes",
+    "More links to Top",
+    "Existing click thresholds preserved"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+    "status": "passed",
+    "checks": 12,
+    "details": [
+        "Duplicate recommendation for one contact and article counts once",
+        "Duplicate invites count once; drafts, demo and revoked excluded",
+        "Only verified guest counts; demo, self, review and cancellation excluded",
+        "Multiple contact actions count as one conversation",
+        "Multiple actions count one active day without MySQL timezone tables",
+        "Shared Forever number counts exactly once",
+        "Shared CC remains hidden until every linked account opts in",
+        "Shared account appears once after all owners opt in",
+        "CC months never leak into another month",
+        "Events outside selected window are excluded",
+        "Daily rank snapshot is idempotent",
+        "Visibility never subscribes notifications"
+    ]
+}
