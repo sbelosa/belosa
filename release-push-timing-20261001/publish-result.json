@@ -1,0 +1,24 @@
+{
+    "status": "published",
+    "at_utc": "2026-10-01T12:51:01+00:00",
+    "files": 6,
+    "source_backup": "\/home\/forevercardclub\/fcc-release-20260927\/push-timing-20261001T125028Z\/before",
+    "queue_backup": "\/home\/forevercardclub\/fcc-release-20260927\/push-timing-20261001T125028Z\/pending-before.json",
+    "rescheduled_deliveries": 13,
+    "rescheduled_ids": [
+        3411,
+        3638,
+        3744,
+        4506,
+        4526,
+        4531,
+        4532,
+        4553,
+        4554,
+        4653,
+        4730,
+        4734,
+        4735
+    ],
+    "inbox_unchanged": true
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "path": "app/helpers/fcc_push_delivery.php",
+    "before": null,
+    "sha256": "44ba7bd9e4059288ad05e0b39554279014c57e8e11f8479368ed818eb392fbea"
+  },
+  {
+    "path": "app/helpers/fcc_partner_notifications.php",
+    "before": "d5cfb951e0f5aaa6d61e37ec2183d220db170c4ef38f03da43d5288c595a6dfc",
+    "sha256": "c499d1e74cc547cc905c5794d521273b37099eccb7a547adf77c2c42c042b92f"
+  },
+  {
+    "path": "app/helpers/fcc_cc_notifications.php",
+    "before": "10dc748d6dbcbb04a4ecb2997d5fb672211e28ecfc6b68bdeb1d1dd7bd0a98c4",
+    "sha256": "fe9d6196c360ec15759d5276cd7e9ff745e3f91ef1ed8a655c2c211d7b8a541b"
+  },
+  {
+    "path": "fcc-partner-sw.js",
+    "before": "0d627acc4b917682d01a24820808624ee54a2b65e3762bc630d9a28c70e1a6a9",
+    "sha256": "781d1f167cc004903c18bcd7648257b5b7e90dad1f3167cbbf2c23246c6a4892"
+  },
+  {
+    "path": "themes/altum/assets/js/fcc-partner-push.js",
+    "before": "f7ab3ff8dc9d9719d8869b8054f1537292c8ba08f50377a7e41255cb403e164e",
+    "sha256": "373df25d4ed6f09d8991b8b3a5b7c2f8f83e49bc7c9e7abc0290419e1bdd5f89"
+  },
+  {
+    "path": "themes/altum/views/partner/notifications.php",
+    "before": "b2a2413cde6629cdd8001b956fa48e7b1972b1d1464577d539e89386132b1b92",
+    "sha256": "80427bd7c27ed1f449631c82865f2fa72a530380da1955c7bdb60e7dd47014bd"
+  }
+]

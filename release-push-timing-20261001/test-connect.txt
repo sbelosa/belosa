@@ -1,0 +1,16 @@
+PASS Default permission never opens browser prompt without a click
+PASS Granted permission automatically synchronizes owner without another prompt
+PASS Granted device without subscription is registered automatically
+PASS Explicit opt-out is not changed by login
+PASS Denied permission never repeats the request
+PASS Dismissed permission sheet is not reported as enabled
+PASS iPhone browser shows install guidance without requesting permission
+PASS Installed iPhone can request permission from the enable action
+PASS Unavailable local transport never subscribes
+PASS Unsupported browser keeps inbox available without a global banner
+PASS Later hides only the prompt and remembers account-specific dismissal
+PASS Wrong existing worker is preserved
+PASS Key rotation requires explicit reconnect instead of silent removal
+PASS Failed server sync remains retryable and never claims enabled
+PASS Administrator preview never registers a device for the viewed member
+{"passed":15,"scope":"Offline real script with browser API doubles, no external provider or browser permission changes"}

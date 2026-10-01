@@ -1,0 +1,290 @@
+--- a/app/helpers/fcc_push_delivery.php
++++ b/app/helpers/fcc_push_delivery.php
+@@ -0,0 +1,90 @@
++<?php
++defined('ALTUMCODE') || die();
++
++/** Public type codes and counts replace arbitrary stored text on lock screens. CC details require explicit opt-in. */
++function fcc_push_kind(array $notice): string {
++    $key=$notice['event_key']??'';
++    foreach(['push-test:'=>'test','support:'=>'support','approval:'=>'approval','nfc:'=>'nfc','cc:'=>'cc','business:lead:'=>'contact_lead','business:daily:'=>'followup','webinar:registration:'=>'guest_registration','onboarding:team-group:'=>'team_group'] as $prefix=>$kind)if(str_starts_with($key,$prefix))return $kind;
++    if(str_starts_with($key,'webinar:calendar:')) {
++        $kind=substr($key,strrpos($key,':')+1);
++        if(in_array($kind,['cancelled','postponed','changed'],true))return 'webinar_'.$kind;
++        if(str_starts_with($kind,'reminder'))return 'webinar_reminder';
++    }
++    return in_array($notice['category']??'',['team','daily','service','admin','followup','tasks','education','webinar','cc'],true)?$notice['category']:'service';
++}
++
++/** A two minute device cooldown combines bursts without moving work to tomorrow. */
++function fcc_push_batch_due(array $batch,DateTimeImmutable $now): DateTimeImmutable {
++    foreach($batch as $item)if(in_array(fcc_push_kind($item),['test','daily','cc','followup','webinar','webinar_reminder','webinar_changed','webinar_cancelled','webinar_postponed'],true))return $now;
++    $last=fcc_partner_one("SELECT MAX(updated_at) at FROM fcc_partner_push_deliveries WHERE subscription_id=? AND status IN ('sent','simulated') AND updated_at<=?",[(int)$batch[0]['subscription_id'],$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s')]);
++    if(empty($last['at']))return $now;
++    $due=(new DateTimeImmutable($last['at'],new DateTimeZone('UTC')))->modify('+2 minutes');
++    // Do not delay an item beyond its useful lifetime.
++    foreach($batch as $item)if(strtotime($item['expires_at'].' UTC')<=$due->getTimestamp())return $now;
++    return $due>$now?$due:$now;
++}
++
++function fcc_push_payload(array $batch): array {
++    $first=$batch[0];$counts=[];
++    foreach($batch as $item){$kind=fcc_push_kind($item);$counts[$kind]=($counts[$kind]??0)+1;}
++    $path=count($batch)>1?'partner/notifications':(($first['category']??'')==='daily'?'partner':fcc_partner_notification_path($first['path']));
++    $payload=['schema'=>2,'kind'=>count($batch)>1?'summary':fcc_push_kind($first),'counts'=>$counts,'locale'=>fcc_locale($first['language']??'en'),'sound'=>!empty($first['sound']),'tag'=>'fcc-'.min(array_column($batch,'notification_id')),'url'=>url($path)];
++    if(count($batch)===1&&fcc_push_kind($first)==='cc'&&!empty($first['cc_details'])) {
++        $items=fcc_cc_notice_items((int)$first['user_id'],(int)$first['notification_id']);
++        if($items)$payload['ccDetails']=mb_substr(fcc_cc_digest_text($items,$payload['locale']),0,500);
++    }
++    return $payload;
++}
++
++function fcc_push_setting_copy(string $key,?string $locale=null): string {
++    $copy=[
++        'hr'=>[
++            'team_help'=>'Objedinjeni uspjesi izravnih suradnika. Push za webinar stiže nakon dvije potvrđene prijave. Istodobne obavijesti stižu u jednom sažetku.',
++            'timing'=>'Obavijesti stižu tijekom dana, a više istodobnih događaja u jednom sažetku. Između običnih obavijesti može proći do dvije minute. Podsjetnici na dnevni korak, CC i događaje zadržavaju svoje termine. Noćna tišina traje od 21:00 do 08:00 po zagrebačkom vremenu. Sve pojedinačne poruke ostaju ovdje.',
++            'sound'=>'Dopusti zvuk obavijesti',
++            'sound_help'=>'FCC traži uobičajeni zvuk uređaja. Glasnoću, dostupnost zvuka i način Fokus određuju telefon i preglednik. Za diskretan zvuk smanji glasnoću obavijesti u postavkama telefona.',
++            'test'=>'Probna obavijest stiže u sljedećem ciklusu slanja, obično unutar minute, izvan noćne tišine. Dostupna je jedna provjera na sat. Na iPhoneu otvori FCC preko ikone na početnom zaslonu.',
++            'timezone'=>'Zagrebačko vrijeme',
++        ],
++        'en'=>[
++            'team_help'=>'Combined progress from direct team members. Webinar progress arrives after two confirmed registrations. Simultaneous updates arrive in one summary.',
++            'timing'=>'Notifications arrive throughout the day. Simultaneous updates are combined into one summary. Regular notifications may wait up to two minutes between sends. Daily, CC and event reminders keep their scheduled times. Quiet hours run from 21:00 to 08:00 Zagreb time. Every individual message remains here.',
++            'sound'=>'Allow notification sound',
++            'sound_help'=>'FCC requests the device notification sound. Your phone and browser control sound availability, volume and Focus mode. Lower notification volume in your phone settings for a discreet sound.',
++            'test'=>'The test arrives in the next sending cycle, usually within a minute, outside quiet hours. One test per hour is available. On iPhone, open FCC using its Home Screen icon.',
++            'timezone'=>'Zagreb time',
++        ],
++        'sl'=>[
++            'team_help'=>'Združeni dosežki neposrednih sodelavcev. Obvestilo o webinarju prispe po dveh potrjenih prijavah. Sočasne novosti prispejo v enem povzetku.',
++            'timing'=>'Obvestila prihajajo čez dan. Sočasne novosti združimo v en povzetek. Med običajnimi obvestili lahko mineta do dve minuti. Dnevni opomniki, CC in dogodki ohranijo svoj urnik. Nočni mir traja od 21:00 do 08:00 po zagrebškem času. Vsa posamezna sporočila ostanejo tukaj.',
++            'sound'=>'Dovoli zvok obvestil',
++            'sound_help'=>'FCC zahteva običajni zvok naprave. Telefon in brskalnik določata razpoložljivost zvoka, glasnost in način Fokus. Za diskreten zvok znižaj glasnost obvestil v nastavitvah telefona.',
++            'test'=>'Preizkusno obvestilo prispe v naslednjem ciklu pošiljanja, običajno v eni minuti, izven nočnega miru. Na voljo je en preizkus na uro. Na iPhonu odpri FCC z ikono na začetnem zaslonu.',
++            'timezone'=>'Zagrebški čas',
++        ],
++        'de'=>[
++            'team_help'=>'Zusammengefasste Fortschritte direkter Teammitglieder. Webinarfortschritte werden ab zwei bestätigten Anmeldungen gemeldet. Gleichzeitige Neuigkeiten kommen in einer Zusammenfassung.',
++            'timing'=>'Benachrichtigungen kommen im Laufe des Tages. Gleichzeitige Neuigkeiten werden zusammengefasst. Zwischen normalen Benachrichtigungen können bis zu zwei Minuten liegen. Erinnerungen für den Tag, CC und Veranstaltungen behalten ihre Termine. Die Ruhezeit gilt von 21:00 bis 08:00 Uhr nach Zagreber Zeit. Alle einzelnen Nachrichten bleiben hier.',
++            'sound'=>'Benachrichtigungston erlauben',
++            'sound_help'=>'FCC fordert den üblichen Geräteton an. Telefon und Browser steuern die Verfügbarkeit, Lautstärke und den Fokusmodus. Für einen dezenten Ton senke die Lautstärke der Benachrichtigungen in den Telefoneinstellungen.',
++            'test'=>'Der Test kommt im nächsten Sendezyklus, normalerweise innerhalb einer Minute, außerhalb der Ruhezeit. Ein Test pro Stunde ist möglich. Öffne FCC auf dem iPhone über das Symbol auf dem Homebildschirm.',
++            'timezone'=>'Zagreber Zeit',
++        ],
++        'es'=>[
++            'team_help'=>'Progreso combinado de los colaboradores directos. El aviso del webinar llega tras dos inscripciones confirmadas. Las novedades simultáneas llegan en un resumen.',
++            'timing'=>'Las notificaciones llegan a lo largo del día. Las novedades simultáneas se agrupan en un resumen. Entre las notificaciones normales pueden pasar hasta dos minutos. Los recordatorios diarios, de CC y de eventos mantienen sus horarios. El horario de silencio es de 21:00 a 08:00, hora de Zagreb. Todos los mensajes individuales permanecen aquí.',
++            'sound'=>'Permitir sonido de notificaciones',
++            'sound_help'=>'FCC solicita el sonido habitual del dispositivo. El teléfono y el navegador controlan su disponibilidad, volumen y modo de concentración. Para un sonido discreto, baja el volumen de las notificaciones en los ajustes del teléfono.',
++            'test'=>'La prueba llega en el siguiente ciclo de envío, normalmente en un minuto, fuera del horario de silencio. Hay una prueba disponible por hora. En iPhone, abre FCC desde su icono en la pantalla de inicio.',
++            'timezone'=>'Hora de Zagreb',
++        ],
++    ];
++    $locale=fcc_locale($locale);if(in_array($locale,['sr','cnr'],true))$locale='hr';
++    return $copy[$locale][$key]??$copy['en'][$key]??'';
++}
++
++function fcc_push_inbox_label(array $notice): string {
++    $source=['contact_lead'=>'Novi upit o poslovnoj suradnji','guest_registration'=>'Nova prijava na webinar','team_group'=>'Poveži se s timom','followup'=>'Dogovorena javljanja'];
++    $kind=fcc_push_kind($notice);
++    return isset($source[$kind])?fcc_t($source[$kind]):(fcc_partner_notification_rules()[$notice['category']][0]??'FCC');
++}
+
+--- a/app/helpers/fcc_partner_notifications.php
++++ b/app/helpers/fcc_partner_notifications.php
+@@ -1,9 +1,10 @@
+ <?php
+ defined('ALTUMCODE') || die();
+ require_once __DIR__.'/fcc_cc.php';
++require_once __DIR__.'/fcc_push_delivery.php';
+ 
+ function fcc_partner_notification_rules(): array {
+- return ['cc'=>[fcc_cc_t('my_points_events'),fcc_cc_t('hour_note')]] + fcc_localize_copy(['team'=>['Napredak mojih suradnika','Objedinjeni uspjesi izravnih suradnika. Push za webinar od dvije potvrđene prijave, uz postojeće dnevno ograničenje.'], 'daily'=>['Moj dnevni korak','Jedan objedinjeni podsjetnik na program i dogovorena javljanja. Termin i pauzu uredi u Moj cilj.'], 'service'=>['Račun, pristup i rezultati','Postojeće obavijesti o odobrenju, paketu i pragovima klikova.'],
++ return ['cc'=>[fcc_cc_t('my_points_events'),fcc_cc_t('hour_note')]] + fcc_localize_copy(['team'=>['Napredak mojih suradnika',fcc_push_setting_copy('team_help')], 'daily'=>['Moj dnevni korak','Jedan objedinjeni podsjetnik na program i dogovorena javljanja. Termin i pauzu uredi u Moj cilj.'], 'service'=>['Račun, pristup i rezultati','Postojeće obavijesti o odobrenju, paketu i pragovima klikova.'],
+  'admin'=>['Administratorski red','Nova registracija, prva PRO aktivacija i NFC obrada iz postojećeg FCC-a.'],
+  'followup'=>['Dogovorena javljanja','Jedan dnevni sažetak dospjelih kontakata; bez kontakata koji ne žele javljanje.'],
+  'tasks'=>['Osobni zadaci','Jedan dnevni podsjetnik na otvorene dospjele zadatke.'],
+@@ -21,7 +22,7 @@
+  $row=fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid]);
+  $p=json_decode($row['preferences']??'{}',true)['partner_notifications']??[];
+  if(!isset($p['categories']['daily'])) $p['categories']['daily']=!isset($p['categories'])||!empty($p['categories']['education'])||!empty($p['categories']['followup'])||!empty($p['categories']['tasks']);
+- return fcc_cc_preferences($p)+['push'=>array_key_exists('push',$p)?!empty($p['push']):fcc_partner_enabled($uid), 'categories'=>array_merge(array_fill_keys(array_keys(fcc_partner_notification_rules()),true),$p['categories']??[])];
++ return fcc_cc_preferences($p)+['push'=>array_key_exists('push',$p)?!empty($p['push']):fcc_partner_enabled($uid), 'sound'=>!array_key_exists('sound',$p)||!empty($p['sound']), 'categories'=>array_merge(array_fill_keys(array_keys(fcc_partner_notification_rules()),true),$p['categories']??[])];
+ }
+ function fcc_partner_notification_path(string $path): string {
+  // Only same-site relative application URLs; no protocol-relative or backslash escape.
+@@ -127,9 +128,10 @@
+ }
+ function fcc_partner_push_deliver(DateTimeImmutable $now,?callable $transport=null): array {
+  $rules=fcc_partner_notification_config('rules',array_fill_keys(array_keys(fcc_partner_notification_rules()),true));
+- $stats=['sent'=>0,'simulated'=>0,'failed'=>0];
++ $now=$now->setTimezone(new DateTimeZone('Europe/Zagreb'));
++ $stats=['sent'=>0,'simulated'=>0,'failed'=>0];$batches=[];
+  fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status='pending' WHERE status='sending' AND updated_at<DATE_SUB(UTC_TIMESTAMP(),INTERVAL 10 MINUTE)");
+- $rows=fcc_partner_rows("SELECT d.*,n.user_id,n.category,n.created_at,n.expires_at,n.read_at,n.path,n.event_key,s.endpoint,s.p256dh,s.auth_key,s.active,s.user_id device_owner FROM fcc_partner_push_deliveries d JOIN fcc_partner_notifications n ON n.id=d.notification_id JOIN fcc_partner_push_subscriptions s ON s.id=d.subscription_id WHERE d.status='pending' AND d.available_at<=UTC_TIMESTAMP() ORDER BY CASE WHEN n.expires_at<=UTC_TIMESTAMP() THEN 0 WHEN n.category='webinar' THEN 1 WHEN n.category='service' THEN 2 ELSE 3 END,n.expires_at,d.id LIMIT 100");
++ $rows=fcc_partner_rows("SELECT d.*,n.user_id,n.category,n.created_at,n.expires_at,n.read_at,n.path,n.event_key,s.endpoint,s.p256dh,s.auth_key,s.active,s.user_id device_owner FROM fcc_partner_push_deliveries d JOIN fcc_partner_notifications n ON n.id=d.notification_id JOIN fcc_partner_push_subscriptions s ON s.id=d.subscription_id WHERE d.status='pending' AND d.available_at<=? ORDER BY CASE WHEN n.expires_at<=? THEN 0 WHEN n.category='webinar' THEN 1 WHEN n.category='service' THEN 2 ELSE 3 END,n.expires_at,d.id LIMIT 100",[$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s')]);
+  foreach($rows as $d) {
+   // Local webinar events stay in the inbox even when another feature tests phone push.
+   if(getenv('FCC_LOCAL')==='1'&&(str_starts_with($d['event_key']??'','webinar:')||str_starts_with($d['event_key']??'','business:')||str_starts_with($d['event_key']??'','team:'))) {
+@@ -154,31 +156,39 @@
+   }
+   if(str_starts_with($d['event_key'],'cc:')&&(int)$now->format('G')<$p['cc_hour']){fcc_partner_query('UPDATE fcc_partner_push_deliveries SET available_at=? WHERE id=?',[$now->setTime($p['cc_hour'],0)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),(int)$d['id']]);continue;}
+   if((int)$now->format('G')<8||(int)$now->format('G')>=21){$retry=((int)$now->format('G')<8?$now:$now->modify('+1 day'))->setTime(8,0)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');fcc_partner_query('UPDATE fcc_partner_push_deliveries SET available_at=? WHERE id=?',[$retry,(int)$d['id']]);continue;}
+-  $dayStart=$now->setTime(0,0)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+-  $daily=(int)(fcc_partner_one("SELECT COUNT(DISTINCT d.notification_id) n FROM fcc_partner_push_deliveries d JOIN fcc_partner_notifications n ON n.id=d.notification_id WHERE n.user_id=? AND d.status IN ('sent','simulated') AND d.updated_at>=?",[$uid,$dayStart])['n']??0);
+-  $already=(int)(fcc_partner_one("SELECT COUNT(*) n FROM fcc_partner_push_deliveries WHERE notification_id=? AND status IN ('sent','simulated')",[(int)$d['notification_id']])['n']??0);
+-  if(!$already&&$daily>=((int)$user['type']>0?5:3)){fcc_partner_query('UPDATE fcc_partner_push_deliveries SET available_at=? WHERE id=?',[$now->modify('+1 day')->setTime(8,0)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),(int)$d['id']]);continue;}
++  // Validate every item before grouping. A batch never crosses a subscription or account.
++  $d['language']=$user['language']??'en';$d['sound']=$p['sound'];$d['cc_details']=$p['cc_details'];
++  $batches[(int)$d['subscription_id']][]=$d;
++ }
++ foreach($batches as $batch) {
++  $d=$batch[0];
++  $retry=fcc_push_batch_due($batch,$now);
++  if($retry>$now) {
++   foreach($batch as $item)fcc_partner_query('UPDATE fcc_partner_push_deliveries SET available_at=? WHERE id=?',[$retry->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),(int)$item['id']]);
++   continue;
++  }
+   // An inbox-only worker must never consume a real device's pending delivery.
+-  if(!$transport&&!in_array(fcc_partner_push_mode(),['enabled','phone_pilot'],true)) continue;
+-  fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status='sending',attempts=attempts+1,updated_at=UTC_TIMESTAMP() WHERE id=?",[(int)$d['id']]);
+-  try {
+-   if($transport) $result=$transport($d);
++  if(!$transport&&!in_array(fcc_partner_push_mode(),['enabled','phone_pilot'],true))continue;
++  $ids=array_map(static fn($item)=>(int)$item['id'],$batch);$placeholders=implode(',',array_fill(0,count($ids),'?'));
++  fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status='sending',attempts=attempts+1,updated_at=UTC_TIMESTAMP() WHERE id IN ($placeholders)",$ids);
++  $d['payload']=fcc_push_payload($batch);$d['batch_ids']=$ids;
++  try {
++   if($transport)$result=$transport($d);
+    else {
+-    if(!fcc_partner_push_endpoint_valid($d['endpoint'])) throw new RuntimeException(fcc_t('Invalid endpoint.'));
++    if(!fcc_partner_push_endpoint_valid($d['endpoint']))throw new RuntimeException(fcc_t('Invalid endpoint.'));
+     $client=new \Minishlink\WebPush\WebPush(['VAPID'=>['subject'=>getenv('FCC_PUSH_SUBJECT'),'publicKey'=>fcc_partner_push_public_key(),'privateKey'=>getenv('FCC_PUSH_PRIVATE_KEY')]],[],10,['allow_redirects'=>false]);
+-    // No names, payment amounts, contact notes or health information on lock screens.
+-    $payload=json_encode(['title'=>'FCC Partner','body'=>fcc_t('Imaš novu obavijest u svojem radnom prostoru.',[],fcc_locale($user['language']??'en')),'tag'=>'fcc-'.$d['notification_id'],'url'=>url($d['category']==='daily'?'partner':fcc_partner_notification_path($d['path']))]);
+-    if(str_starts_with($d['event_key'],'cc:')){$items=fcc_cc_notice_items($uid,(int)$d['notification_id']);$locale=fcc_locale($user['language']??'en');$payload=json_encode(['title'=>fcc_cc_t('digest_title',[],$locale),'body'=>$p['cc_details']?fcc_cc_digest_text($items,$locale):fcc_cc_t('digest_generic',[],$locale),'tag'=>'fcc-cc-'.$d['notification_id'],'url'=>url('partner/points?updates=1')],JSON_UNESCAPED_UNICODE);}
+-    $report=$client->sendOneNotification(\Minishlink\WebPush\Subscription::create(['endpoint'=>$d['endpoint'],'keys'=>['p256dh'=>$d['p256dh'],'auth'=>$d['auth_key']]]),$payload,['TTL'=>min(3600,max(1,strtotime($d['expires_at'].' UTC')-$now->getTimestamp()))]);
++    $expiry=min(array_map(static fn($item)=>strtotime($item['expires_at'].' UTC'),$batch));
++    $report=$client->sendOneNotification(\Minishlink\WebPush\Subscription::create(['endpoint'=>$d['endpoint'],'keys'=>['p256dh'=>$d['p256dh'],'auth'=>$d['auth_key']]]),json_encode($d['payload'],JSON_UNESCAPED_UNICODE),['TTL'=>min(3600,max(1,$expiry-$now->getTimestamp()))]);
+     $result=$report->isSuccess()?'sent':($report->isSubscriptionExpired()?'expired':'retry');
+    }
+-   if($result==='expired') fcc_partner_query('UPDATE fcc_partner_push_subscriptions SET active=0,updated_at=UTC_TIMESTAMP() WHERE id=?',[(int)$d['subscription_id']]);
+-   $status=in_array($result,['sent','simulated'],true)?$result:($result==='expired'?'skipped':((int)$d['attempts']>=2?'failed':'pending'));
+-   fcc_partner_query('UPDATE fcc_partner_push_deliveries SET status=?,last_code=?,available_at=DATE_ADD(UTC_TIMESTAMP(),INTERVAL 15 MINUTE),updated_at=UTC_TIMESTAMP() WHERE id=?',[$status,$result,(int)$d['id']]);
+-   $stats[in_array($status,['sent','simulated'],true)?$status:'failed']++;
+-  } catch(Throwable $e) {
+-   fcc_partner_query("UPDATE fcc_partner_push_deliveries SET status=?,last_code='transport_error',available_at=DATE_ADD(UTC_TIMESTAMP(),INTERVAL 15 MINUTE),updated_at=UTC_TIMESTAMP() WHERE id=?",[(int)$d['attempts']>=2?'failed':'pending',(int)$d['id']]);$stats['failed']++;
++  }catch(Throwable $e){$result='transport_error';}
++  if($result==='expired')fcc_partner_query('UPDATE fcc_partner_push_subscriptions SET active=0,updated_at=UTC_TIMESTAMP() WHERE id=?',[(int)$d['subscription_id']]);
++  $accepted=in_array($result,['sent','simulated'],true);
++  foreach($batch as $item) {
++   $status=$accepted?$result:($result==='expired'?'skipped':((int)$item['attempts']>=2?'failed':'pending'));
++   fcc_partner_query('UPDATE fcc_partner_push_deliveries SET status=?,last_code=?,available_at=?,updated_at=? WHERE id=?',[$status,$accepted?$result.'_group:'.min($ids):$result,$now->modify('+15 minutes')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),(int)$item['id']]);
+   }
++  $stats[$accepted?$result:'failed']++;
+  }
+  return $stats;
+ }
+
+--- a/app/helpers/fcc_cc_notifications.php
++++ b/app/helpers/fcc_cc_notifications.php
+@@ -16,6 +16,7 @@
+ /** Settings apply both to generation and already queued deliveries. */
+ function fcc_cc_preferences_save(int $uid,array $input): void {
+     $before=fcc_partner_notification_preferences($uid);$p=$before;$p['push']=!empty($input['push']);
++    if(isset($input['sound_version']))$p['sound']=!empty($input['sound']);
+     foreach(fcc_partner_notification_rules() as $key=>$rule)$p['categories'][$key]=in_array(fcc_journey_enabled($uid)&&in_array($key,['followup','tasks','education'],true)?'daily':$key,(array)($input['categories']??[]),true);
+     if(isset($input['events_version'])){
+         foreach(fcc_cc_event_options() as $key){$on=in_array($key,(array)($input['events']??[]),true);if($on!==!empty($before['events'][$key]))$p['event_since'][$key]=gmdate('Y-m-d H:i:s');$p['events'][$key]=$on;}
+
+--- a/fcc-partner-sw.js
++++ b/fcc-partner-sw.js
+@@ -1,8 +1,8 @@
+ 'use strict';
+-const VERSION='fcc-partner-shell-v6';
++const VERSION='fcc-partner-shell-v7';
+ const OFFLINE='/partner-assets/offline.html';
+ const PUBLIC_ASSETS=[OFFLINE,'/partner-assets/fcc-app-192.png','/partner-assets/fcc-app-512.png'];
+-self.addEventListener('install',event=>event.waitUntil(caches.open(VERSION).then(cache=>cache.addAll(PUBLIC_ASSETS))));
++self.addEventListener('install',event=>event.waitUntil(caches.open(VERSION).then(cache=>cache.addAll(PUBLIC_ASSETS)).then(()=>self.skipWaiting())));
+ self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('fcc-partner-shell-')&&k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+ self.addEventListener('fetch',event=>{
+  const request=event.request,url=new URL(request.url);
+@@ -15,16 +15,34 @@
+ });
+ 
+ function fccNotificationPath(value){
+- try{const u=new URL(value,self.location.origin);if(u.origin===self.location.origin&&!u.username&&!u.password&&!u.hash){if(u.pathname==='/partner'&&(!u.search||/^\?view=(?:step|progress|goal|materials)$/.test(u.search)))return u.pathname+u.search;if(u.pathname==='/partner/team'&&(!u.search||/^\?member=[1-9][0-9]*$/.test(u.search)))return u.pathname+u.search;if(/^\/partner\/webinars\/[1-9][0-9]*$/.test(u.pathname)&&!u.search)return u.pathname;if(u.pathname==='/partner/contacts'&&/^\?id=[1-9][0-9]*$/.test(u.search))return u.pathname+u.search;}}catch{}
++ try{const u=new URL(value,self.location.origin);if(u.origin===self.location.origin&&!u.username&&!u.password&&!u.hash){if(u.pathname==='/partner'&&(!u.search||/^\?view=(?:step|progress|goal|materials)$/.test(u.search)))return u.pathname+u.search;if(u.pathname==='/partner/team'&&(!u.search||/^\?member=[1-9][0-9]*$/.test(u.search)))return u.pathname+u.search;if(u.pathname==='/partner/points'&&u.search==='?updates=1')return u.pathname+u.search;if(u.pathname==='/partner/education'&&!u.search)return u.pathname;if(u.pathname==='/partner/contacts'&&u.search==='?filter=due')return u.pathname+u.search;if(u.pathname==='/partner/share'&&u.search==='?type=webinar')return u.pathname+u.search;if(/^\/partner\/webinars\/[1-9][0-9]*$/.test(u.pathname)&&!u.search)return u.pathname;if(u.pathname==='/partner/contacts'&&/^\?id=[1-9][0-9]*$/.test(u.search))return u.pathname+u.search;}}catch{}
+  return '/partner/notifications';
+ }
++// Only these public system phrases may appear on a lock screen.
++const FCC_PUSH_COPY={"hr":{"summary":"Novosti u FCC-u","total":"Broj novih obavijesti: {n}.","open":"Otvori FCC za sve detalje.","types":{"service":["Račun i pristup","Imaš novu obavijest o računu, pristupu ili rezultatima. Otvori detalje u FCC-u."],"admin":["Administracija","Nova stavka čeka administratorsku provjeru. Otvori obavijesti za detalje."],"daily":["Moj dnevni korak","Vrijeme je za tvoj dnevni korak i dogovorena javljanja. Otvori današnji pregled."],"team":["Napredak tima","Zabilježen je novi napredak u tvojem timu. Otvori Moj tim za detalje."],"cc":["CC novosti","Dostupne su novosti o CC bodovima, aktivnosti ili rangu. Otvori pregled."],"followup":["Dogovoreno javljanje","Vrijeme je za dogovoreni razgovor. Provjeri dospjela javljanja."],"tasks":["Osobni zadaci","Provjeri otvorene zadatke kojima je stigao rok."],"education":["Edukacija","Tvoj sljedeći edukacijski korak čeka u FCC-u."],"webinar":["Novi događaj","U tvojem rasporedu dostupan je novi događaj. Provjeri termin i prijavu."],"webinar_reminder":["Podsjetnik na događaj","Približava se događaj u tvojem rasporedu. Provjeri termin i poveznicu za sudjelovanje."],"webinar_changed":["Promjena termina","Termin događaja je promijenjen. Provjeri novi datum i vrijeme."],"webinar_cancelled":["Otkazan događaj","Događaj je otkazan. Otvori raspored za detalje."],"webinar_postponed":["Odgođen događaj","Događaj je odgođen. Provjeri ažurirani raspored."],"support":["Pitanje za podršku","Novo pitanje čeka odgovor podrške. Otvori detalje u FCC-u."],"approval":["Provjera registracije","Nova registracija čeka administratorsku provjeru."],"nfc":["NFC kartica","Zahtjev za NFC karticu čeka obradu."],"test":["Probna obavijest","Obavijesti na ovom uređaju rade. Zvuk ovisi o postavkama telefona."],"contact_lead":["Novi poslovni upit","Stigao je novi upit o poslovnoj suradnji. Otvori kontakt i željeni način javljanja."],"guest_registration":["Nova prijava gosta","Stigla je prijava preko tvoje pozivnice. Otvori kontakt za detalje."],"team_group":["Poveži se s timom","Dostupna je poveznica za timsku grupu. Otvori obavijesti u FCC-u."]}},"en":{"summary":"FCC updates","total":"New notifications: {n}.","open":"Open FCC for all details.","types":{"service":["Account and access","There is an update about your account, access or results. Open FCC for details."],"admin":["Administration","A new item needs an administrator’s review. Open notifications for details."],"daily":["My daily step","It is time for your daily step and planned conversations. Open today’s overview."],"team":["Team progress","There is new progress in your team. Open My team for details."],"cc":["CC updates","Updates about CC points, activity or rank are available. Open the overview."],"followup":["Follow up","It is time for a planned conversation. Check your due follow ups."],"tasks":["Personal tasks","Check your open tasks that are due."],"education":["Education","Your next learning step is ready in FCC."],"webinar":["New event","A new event is available in your schedule. Check the time and registration."],"webinar_reminder":["Event reminder","An event in your schedule is approaching. Check the time and joining link."],"webinar_changed":["Schedule changed","An event time has changed. Check the new date and time."],"webinar_cancelled":["Event cancelled","An event has been cancelled. Open your schedule for details."],"webinar_postponed":["Event postponed","An event has been postponed. Check the updated schedule."],"support":["Support question","A new question is waiting for support. Open FCC for details."],"approval":["Registration review","A new registration is waiting for administrator review."],"nfc":["NFC card","An NFC card request is waiting to be processed."],"test":["Test notification","Notifications work on this device. Sound depends on your phone settings."],"contact_lead":["New business enquiry","A new business enquiry has arrived. Open the contact and their preferred way to connect."],"guest_registration":["New guest registration","Someone registered through your invitation. Open the contact for details."],"team_group":["Connect with your team","A team group link is available. Open your FCC notifications."]}},"sl":{"summary":"Novosti v FCC","total":"Število novih obvestil: {n}.","open":"Odpri FCC za vse podrobnosti.","types":{"service":["Račun in dostop","Imaš novo obvestilo o računu, dostopu ali rezultatih. Odpri podrobnosti v FCC."],"admin":["Administracija","Nova postavka čaka na pregled skrbnika. Odpri obvestila za podrobnosti."],"daily":["Moj dnevni korak","Čas je za tvoj dnevni korak in dogovorjene pogovore. Odpri današnji pregled."],"team":["Napredek ekipe","V tvoji ekipi je zabeležen nov napredek. Odpri Mojo ekipo za podrobnosti."],"cc":["Novosti CC","Na voljo so novosti o točkah CC, aktivnosti ali rangu. Odpri pregled."],"followup":["Dogovorjeno javljanje","Čas je za dogovorjeni pogovor. Preveri zapadla javljanja."],"tasks":["Osebne naloge","Preveri odprte naloge, ki so dosegle rok."],"education":["Izobraževanje","Tvoj naslednji izobraževalni korak te čaka v FCC."],"webinar":["Nov dogodek","Na tvojem urniku je nov dogodek. Preveri termin in prijavo."],"webinar_reminder":["Opomnik na dogodek","Bliža se dogodek na tvojem urniku. Preveri termin in povezavo za udeležbo."],"webinar_changed":["Sprememba termina","Termin dogodka se je spremenil. Preveri nov datum in uro."],"webinar_cancelled":["Odpovedan dogodek","Dogodek je odpovedan. Odpri urnik za podrobnosti."],"webinar_postponed":["Prestavljen dogodek","Dogodek je prestavljen. Preveri posodobljen urnik."],"support":["Vprašanje za podporo","Novo vprašanje čaka na odgovor podpore. Odpri podrobnosti v FCC."],"approval":["Pregled registracije","Nova registracija čaka na pregled skrbnika."],"nfc":["Kartica NFC","Zahteva za kartico NFC čaka na obdelavo."],"test":["Preizkusno obvestilo","Obvestila v tej napravi delujejo. Zvok je odvisen od nastavitev telefona."],"contact_lead":["Novo poslovno povpraševanje","Prispelo je novo povpraševanje o poslovnem sodelovanju. Odpri stik in želeni način javljanja."],"guest_registration":["Nova prijava gosta","Prispela je prijava prek tvojega povabila. Odpri stik za podrobnosti."],"team_group":["Poveži se z ekipo","Na voljo je povezava do skupine ekipe. Odpri obvestila v FCC."]}},"de":{"summary":"Neuigkeiten in FCC","total":"Neue Benachrichtigungen: {n}.","open":"Öffne FCC für alle Details.","types":{"service":["Konto und Zugang","Es gibt Neuigkeiten zu deinem Konto, Zugang oder deinen Ergebnissen. Öffne FCC für Details."],"admin":["Administration","Ein neuer Eintrag wartet auf die Prüfung durch einen Administrator. Öffne die Benachrichtigungen."],"daily":["Mein Tagesschritt","Es ist Zeit für deinen Tagesschritt und geplante Gespräche. Öffne die Tagesübersicht."],"team":["Teamfortschritt","In deinem Team gibt es neue Fortschritte. Öffne Mein Team für Details."],"cc":["CC Neuigkeiten","Neuigkeiten zu CC Punkten, Aktivität oder Rang sind verfügbar. Öffne die Übersicht."],"followup":["Geplantes Gespräch","Es ist Zeit für ein geplantes Gespräch. Prüfe deine fälligen Kontakte."],"tasks":["Persönliche Aufgaben","Prüfe deine offenen Aufgaben, die jetzt fällig sind."],"education":["Weiterbildung","Dein nächster Lernschritt wartet in FCC."],"webinar":["Neue Veranstaltung","Eine neue Veranstaltung ist in deinem Kalender verfügbar. Prüfe Termin und Anmeldung."],"webinar_reminder":["Terminerinnerung","Eine Veranstaltung in deinem Kalender rückt näher. Prüfe Uhrzeit und Zugangslink."],"webinar_changed":["Terminänderung","Ein Veranstaltungstermin wurde geändert. Prüfe das neue Datum und die Uhrzeit."],"webinar_cancelled":["Veranstaltung abgesagt","Eine Veranstaltung wurde abgesagt. Öffne deinen Kalender für Details."],"webinar_postponed":["Veranstaltung verschoben","Eine Veranstaltung wurde verschoben. Prüfe deinen aktualisierten Kalender."],"support":["Supportanfrage","Eine neue Supportanfrage wartet auf eine Antwort. Öffne FCC für Details."],"approval":["Registrierung prüfen","Eine neue Registrierung wartet auf die Prüfung durch einen Administrator."],"nfc":["NFC Karte","Eine Anfrage für eine NFC Karte wartet auf Bearbeitung."],"test":["Testbenachrichtigung","Benachrichtigungen funktionieren auf diesem Gerät. Der Ton hängt von den Telefoneinstellungen ab."],"contact_lead":["Neue Geschäftsanfrage","Eine neue Anfrage zur Zusammenarbeit ist eingegangen. Öffne den Kontakt und die gewünschte Kontaktart."],"guest_registration":["Neue Gastanmeldung","Eine Anmeldung über deine Einladung ist eingegangen. Öffne den Kontakt für Details."],"team_group":["Verbinde dich mit deinem Team","Ein Link zur Teamgruppe ist verfügbar. Öffne deine FCC Benachrichtigungen."]}},"es":{"summary":"Novedades en FCC","total":"Nuevas notificaciones: {n}.","open":"Abre FCC para ver todos los detalles.","types":{"service":["Cuenta y acceso","Hay una novedad sobre tu cuenta, acceso o resultados. Abre FCC para ver los detalles."],"admin":["Administración","Un nuevo elemento necesita revisión administrativa. Abre las notificaciones para ver los detalles."],"daily":["Mi paso diario","Es el momento de tu paso diario y las conversaciones previstas. Abre el resumen de hoy."],"team":["Progreso del equipo","Hay nuevos avances en tu equipo. Abre Mi equipo para ver los detalles."],"cc":["Novedades CC","Hay novedades sobre puntos CC, actividad o rango. Abre el resumen."],"followup":["Seguimiento acordado","Es el momento de una conversación acordada. Revisa los seguimientos pendientes."],"tasks":["Tareas personales","Revisa las tareas abiertas cuyo plazo ha llegado."],"education":["Formación","Tu siguiente paso de formación está listo en FCC."],"webinar":["Nuevo evento","Hay un nuevo evento en tu calendario. Revisa el horario y la inscripción."],"webinar_reminder":["Recordatorio de evento","Se acerca un evento de tu calendario. Revisa el horario y el enlace de acceso."],"webinar_changed":["Cambio de horario","Ha cambiado el horario de un evento. Revisa la nueva fecha y hora."],"webinar_cancelled":["Evento cancelado","Se ha cancelado un evento. Abre el calendario para ver los detalles."],"webinar_postponed":["Evento aplazado","Se ha aplazado un evento. Revisa el calendario actualizado."],"support":["Consulta de soporte","Una nueva consulta espera respuesta del soporte. Abre FCC para ver los detalles."],"approval":["Revisión de registro","Un nuevo registro espera revisión administrativa."],"nfc":["Tarjeta NFC","Una solicitud de tarjeta NFC espera su procesamiento."],"test":["Notificación de prueba","Las notificaciones funcionan en este dispositivo. El sonido depende de los ajustes del teléfono."],"contact_lead":["Nueva consulta de negocio","Ha llegado una consulta sobre colaboración. Abre el contacto y su forma de comunicación preferida."],"guest_registration":["Nuevo registro de invitado","Ha llegado un registro a través de tu invitación. Abre el contacto para ver los detalles."],"team_group":["Conecta con tu equipo","Hay un enlace disponible al grupo del equipo. Abre tus notificaciones de FCC."]}}};
++function fccPushPresentation(data) {
++ if(!data||typeof data!=='object')data={};
++ const locale=['sr','cnr'].includes(data.locale)?'hr':data.locale;
++ const copy=Object.hasOwn(FCC_PUSH_COPY,locale)?FCC_PUSH_COPY[locale]:FCC_PUSH_COPY.en;
++ let title='FCC Partner',body='Imaš novu obavijest u svojem radnom prostoru.';
++ if(data.schema===2) {
++  if(Object.hasOwn(copy.types,data.kind)){title='FCC · '+copy.types[data.kind][0];body=copy.types[data.kind][1];}
++  else if(data.kind==='summary'){
++   const counts=Object.entries(data.counts&&typeof data.counts==='object'?data.counts:{}).filter(([kind,n])=>Object.hasOwn(copy.types,kind)&&Number.isInteger(n)&&n>0&&n<=100);
++   const total=counts.reduce((n,item)=>n+item[1],0);
++   if(total>0&&total<=100){title=copy.summary;body=copy.total.replace('{n}',total)+' '+counts.slice(0,3).map(([kind,n])=>copy.types[kind][0]+': '+n).join('. ')+'. '+copy.open;}
++  }
++ }
++ // Only the server's explicit CC detail preference can enable personal CC text.
++ if(data.schema===2&&data.kind==='cc'&&typeof data.ccDetails==='string'&&data.ccDetails.length<=1000)body=data.ccDetails;
++ const options={body,icon:'/partner-assets/fcc-app-192.png',badge:'/partner-assets/fcc-app-192.png',tag:typeof data.tag==='string'?data.tag.slice(0,80):'fcc-partner',renotify:false,data:{url:fccNotificationPath(data.url)}};
++ if(data.schema===2){options.silent=data.sound===false;if(!options.silent)options.vibrate=[60];}
++ return {title,options};
++}
+ self.addEventListener('push',event=>{
+  let data={};try{data=event.data?.json()||{};}catch{}
+- // Keep lock-screen content generic even if an old server sends detailed text.
+- event.waitUntil(self.registration.showNotification('FCC Partner',{
+-  body:'Imaš novu obavijest u svojem radnom prostoru.',icon:'/partner-assets/fcc-app-192.png',badge:'/partner-assets/fcc-app-192.png',
+-  tag:typeof data.tag==='string'?data.tag.slice(0,80):'fcc-partner',data:{url:fccNotificationPath(data.url)}
+- }));
++ const presentation=fccPushPresentation(data);
++ event.waitUntil(self.registration.showNotification(presentation.title,presentation.options));
+ });
+ self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+
+--- a/themes/altum/assets/js/fcc-partner-push.js
++++ b/themes/altum/assets/js/fcc-partner-push.js
+@@ -44,6 +44,7 @@
+    let registration=await navigator.serviceWorker.getRegistration(scope);
+    if(registration&&[registration.active,registration.waiting,registration.installing].filter(Boolean).some(w=>w.scriptURL!==workerUrl))throw Error(window.fccT('Uređaj se nije mogao povezati. Otvori upute za instalaciju FCC-a.'));
+    if(!registration)registration=await navigator.serviceWorker.register(workerUrl,{scope,updateViaCache:'none'});
++   if(typeof registration.update==='function')registration.update().catch(()=>{});
+    await activated(registration);
+    const key=bytes(root.dataset.publicKey);
+    let subscription=await registration.pushManager.getSubscription();
+
+--- a/themes/altum/views/partner/notifications.php
++++ b/themes/altum/views/partner/notifications.php
+@@ -3,16 +3,17 @@
+ <section class="fp-panel">
+  <div class="fp-section-title fp-wrap-heading"><h2><?= htmlspecialchars(fcc_t('Tvoje obavijesti'), ENT_QUOTES, 'UTF-8') ?></h2><form method="post"><?= $token ?><input type="hidden" name="action" value="notifications_read"><button class="fp-text-button"><?= htmlspecialchars(fcc_t('Označi sve pročitanim'), ENT_QUOTES, 'UTF-8') ?></button></form></div>
+  <?php if(!$data->inbox): ?><p><?= htmlspecialchars(fcc_t('Još nema poruka. Nove obavijesti pojavit će se automatski.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
+- <div class="fp-inbox"><?php foreach($data->inbox as $n): $n=fcc_partner_notification_display($n); ?><article class="fp-notice <?= $n['read_at']?'':'is-unread' ?>"><div><small><?= $h(fcc_partner_notification_rules()[$n['category']][0]??'FCC') ?> · <?= $h($n['created_at']) ?> <?= htmlspecialchars(fcc_t('UTC'), ENT_QUOTES, 'UTF-8') ?></small><form method="post" data-notice-open><h3><?= $token ?><input type="hidden" name="action" value="notification_open"><input type="hidden" name="id" value="<?= (int)$n['id'] ?>"><button class="fp-text-button fp-notice-title"><?= $h($n['title']) ?></button></h3></form><p><?= $h($n['body']) ?></p></div><form method="post"><?= $token ?><input type="hidden" name="action" value="notification_read"><input type="hidden" name="id" value="<?= (int)$n['id'] ?>"><button class="fp-text-button" aria-label="<?= htmlspecialchars(fcc_t('Označi pročitano'), ENT_QUOTES, 'UTF-8') ?>" <?= $n['read_at']?'disabled':'' ?>><?= $n['read_at']?fcc_t('Pročitano'):'✓' ?></button></form></article><?php endforeach ?></div>
++ <div class="fp-inbox"><?php foreach($data->inbox as $n): $n=fcc_partner_notification_display($n); ?><article class="fp-notice <?= $n['read_at']?'':'is-unread' ?>"><div><small><?= $h(fcc_push_inbox_label($n)) ?> · <?= $h((new DateTimeImmutable($n['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('d. m. Y. H:i')) ?> <?= $h(fcc_push_setting_copy('timezone')) ?></small><form method="post" data-notice-open><h3><?= $token ?><input type="hidden" name="action" value="notification_open"><input type="hidden" name="id" value="<?= (int)$n['id'] ?>"><button class="fp-text-button fp-notice-title"><?= $h($n['title']) ?></button></h3></form><p><?= $h($n['body']) ?></p></div><form method="post"><?= $token ?><input type="hidden" name="action" value="notification_read"><input type="hidden" name="id" value="<?= (int)$n['id'] ?>"><button class="fp-text-button" aria-label="<?= htmlspecialchars(fcc_t('Označi pročitano'), ENT_QUOTES, 'UTF-8') ?>" <?= $n['read_at']?'disabled':'' ?>><?= $n['read_at']?fcc_t('Pročitano'):'✓' ?></button></form></article><?php endforeach ?></div>
+  <?php if(count($data->inbox)===40): ?><a class="fp-link" href="<?= url('partner/notifications?before='.(int)($data->inbox?end($data->inbox)['id']:0)) ?>"><?= htmlspecialchars(fcc_t('Starije poruke →'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+  <?php if(\Altum\Authentication::is_admin()): ?><a class="fp-link" href="<?= url('admin/internal-notifications') ?>"><?= htmlspecialchars(fcc_t('Izvorna administratorska povijest →'), ENT_QUOTES, 'UTF-8') ?></a><?php else: ?><a class="fp-link" href="<?= url('internal-notifications') ?>"><?= htmlspecialchars(fcc_t('Izvorna FCC povijest →'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+ </section>
+ <details class="fp-panel" data-partner-push open id="preferences"><summary><?= htmlspecialchars(fcc_t('Obavijesti na uređaju i moje postavke'), ENT_QUOTES, 'UTF-8') ?></summary>
+- <p><?= htmlspecialchars(fcc_t('Push se uključuje samo uz tvoju dozvolu. Dnevni zadatak, osobne obveze i dogovorena javljanja imaju jedan objedinjeni podsjetnik.'), ENT_QUOTES, 'UTF-8') ?> <a href="<?= url('partner?view=goal') ?>"><?= htmlspecialchars(fcc_t('Uredi termin ili pauzu'), ENT_QUOTES, 'UTF-8') ?></a><?= htmlspecialchars(fcc_t('. Mirno vrijeme je od 21:00 do 08:00 (Europe/Zagreb). Najviše 3 poruke dnevno, odnosno 5 za administratora. Sve poruke ostaju u inboxu.'), ENT_QUOTES, 'UTF-8') ?></p>
++ <p><?= htmlspecialchars(fcc_t('Push se uključuje samo uz tvoju dozvolu. Dnevni zadatak, osobne obveze i dogovorena javljanja imaju jedan objedinjeni podsjetnik.'), ENT_QUOTES, 'UTF-8') ?> <a href="<?= url('partner?view=goal') ?>"><?= htmlspecialchars(fcc_t('Uredi termin ili pauzu'), ENT_QUOTES, 'UTF-8') ?></a>.</p><p><?= $h(fcc_push_setting_copy('timing')) ?></p>
+  
+  <form method="post" data-push-form><?= $token ?><input type="hidden" name="action" value="push_subscribe"><input type="hidden" name="subscription"><button class="fp-button" type="button" data-push-enable><?= htmlspecialchars(fcc_t('Uključi na ovom uređaju'), ENT_QUOTES, 'UTF-8') ?></button></form><p role="status" class="fp-muted"></p>
+- <?php if($push_ready): ?><form method="post" class="fp-spaced"><?= $token ?><input type="hidden" name="action" value="push_test"><button class="fp-button fp-button-outline"><?= htmlspecialchars(fcc_t('Pošalji mi probnu obavijest'), ENT_QUOTES, 'UTF-8') ?></button></form><p class="fp-muted"><?= htmlspecialchars(fcc_t('Nakon dopuštenja možeš provjeriti primitak. Jedna provjera na sat, unutar dnevnog ograničenja i izvan mirnog vremena. Otvori ikonu aplikacije na iPhoneu, a zatim uključi uređaj.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
++ <?php if($push_ready): ?><form method="post" class="fp-spaced"><?= $token ?><input type="hidden" name="action" value="push_test"><button class="fp-button fp-button-outline"><?= htmlspecialchars(fcc_t('Pošalji mi probnu obavijest'), ENT_QUOTES, 'UTF-8') ?></button></form><p class="fp-muted"><?= $h(fcc_push_setting_copy('test')) ?></p><?php endif ?>
+  <form method="post" class="fp-form"><?= $token ?><input type="hidden" name="action" value="notification_preferences"><label class="fp-check-label"><input type="checkbox" name="push" value="1" <?= $np['push']?'checked':'' ?>> <?= htmlspecialchars(fcc_t('Dopuštam push na povezanim uređajima'), ENT_QUOTES, 'UTF-8') ?></label>
++ <input type="hidden" name="sound_version" value="1"><label class="fp-check-label"><input type="checkbox" name="sound" value="1" <?= $np['sound']?'checked':'' ?>><span><?= $h(fcc_push_setting_copy('sound')) ?><small><?= $h(fcc_push_setting_copy('sound_help')) ?></small></span></label>
+  <?php require THEME_PATH.'views/partner/cc-preferences.php'; ?>
+  <?php foreach(fcc_partner_notification_rules() as $key=>[$title,$desc]): if(in_array($key,['cc','team'],true)||($key==='admin'&&!\Altum\Authentication::is_admin())||(fcc_journey_enabled()&&in_array($key,['followup','tasks','education'],true)))continue; ?><label class="fp-check-label"><input type="checkbox" name="categories[]" value="<?= $key ?>" <?= !empty($np['categories'][$key])?'checked':'' ?>><span><?= $h($title) ?><small><?= $h($desc) ?></small></span></label><?php endforeach ?><button class="fp-button"><?= htmlspecialchars(fcc_t('Spremi postavke'), ENT_QUOTES, 'UTF-8') ?></button></form>
+  <form method="post" class="fp-spaced"><?= $token ?><input type="hidden" name="action" value="push_disable"><button class="fp-button fp-button-outline"><?= htmlspecialchars(fcc_t('Isključi push na svim mojim uređajima'), ENT_QUOTES, 'UTF-8') ?></button></form>

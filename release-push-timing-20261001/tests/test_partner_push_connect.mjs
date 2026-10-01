@@ -1,0 +1,38 @@
+import vm from 'node:vm';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const source=fs.readFileSync(new URL('../themes/altum/assets/js/fcc-partner-push.js',import.meta.url),'utf8');
+const flush=async()=>{for(let n=0;n<20;n++)await Promise.resolve();};
+function setup(options={}){
+ const el=()=>({hidden:false,disabled:false,textContent:'',events:{},addEventListener(name,cb){this.events[name]=cb;},setAttribute(){}});
+ const prompt=el();prompt.hidden=true;const button=el(),install=el(),status=el(),copy=el(),later=el(),manual=el();
+ const selectors={'[data-device-prompt]':prompt,'[data-device-enable]':button,'[data-device-install]':install,'[data-device-status]':status,'[data-device-copy]':copy,'[data-device-later]':later};
+ const key=Buffer.from([1,2,3]).toString('base64url');
+ const root={dataset:{user:'555',ready:'1',enabled:'1',publicKey:key,endpoint:'https://fcc.test/partner/notifications',token:'csrf',prompt:'1',...options.dataset},querySelector:s=>selectors[s]};
+ const counts={permission:0,subscribe:0,posts:[],register:0,unsubscribe:0};
+ const subscription={toJSON:()=>({endpoint:'https://fcm.googleapis.com/test',keys:{}}),options:{applicationServerKey:new Uint8Array(options.oldKey||[1,2,3]).buffer},unsubscribe:async()=>{counts.unsubscribe++;}};
+ const registration={active:{scriptURL:options.conflict?'https://fcc.test/other.js':'https://fcc.test/fcc-partner-sw.js'},pushManager:{getSubscription:async()=>options.noSubscription?null:subscription,subscribe:async()=>{counts.subscribe++;return subscription;}}};
+ const notification={permission:options.permission||'default',requestPermission:async()=>{counts.permission++;return notification.permission=options.answer||'granted';}};
+ const window={fccT:text=>text,isSecureContext:true,PushManager:{},Notification:notification,matchMedia:()=>({matches:!!options.standalone})};
+ if(options.unsupported)delete window.PushManager;
+ const storage=new Map(options.dismissed?[['fcc-push-later:555',String(Date.now()+100000)]]:[]);
+ vm.runInNewContext(source,{document:{querySelector:s=>s==='[data-fcc-device]'?root:s==='base'?{href:'https://fcc.test/'}:null,querySelectorAll:s=>s==='[data-push-enable]'?[manual]:[status]},window,Notification:notification,navigator:{userAgent:options.ios?'iPhone':'Desktop',serviceWorker:{getRegistration:async()=>registration,register:async()=>{counts.register++;return registration;}}},location:{origin:'https://fcc.test'},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},URL,URLSearchParams,Uint8Array,atob,Date,setTimeout,clearTimeout,fetch:async(url,init)=>{counts.posts.push({url,values:Object.fromEntries(init.body)});return {ok:!options.failed,json:async()=>options.failed?{ok:false,message:'Test error'}:{ok:true}};}});
+ return {counts,prompt,button,manual,status,copy,install,notification,root,later,storage};
+}
+let n=0;const test=async(name,fn)=>{await fn();n++;console.log('PASS '+name);};
+await test('Default permission never opens browser prompt without a click',async()=>{const t=setup();await flush();assert.equal(t.counts.permission,0);assert.equal(t.counts.posts.length,0);assert.equal(t.prompt.hidden,false);await t.button.events.click();await flush();assert.equal(t.counts.permission,1);assert.equal(t.counts.posts[0].values.automatic,'0');assert.equal(t.counts.posts[0].values.user_id,'555');assert.equal(t.counts.posts[0].values.token,'csrf');assert.equal(t.prompt.hidden,true);});
+await test('Granted permission automatically synchronizes owner without another prompt',async()=>{const t=setup({permission:'granted'});await flush();assert.equal(t.counts.permission,0);assert.equal(t.counts.posts.length,1);assert.equal(t.counts.posts[0].values.automatic,'1');assert.equal(t.button.disabled,true);});
+await test('Granted device without subscription is registered automatically',async()=>{const t=setup({permission:'granted',noSubscription:true});await flush();assert.equal(t.counts.subscribe,1);assert.equal(t.counts.posts.length,1);});
+await test('Explicit opt-out is not changed by login',async()=>{const t=setup({permission:'granted',dataset:{enabled:'0'}});await flush();assert.equal(t.counts.posts.length,0);assert.equal(t.prompt.hidden,true);await t.manual.events.click();await flush();assert.equal(t.counts.posts.length,1);});
+await test('Denied permission never repeats the request',async()=>{const t=setup({permission:'denied'});await flush();assert.equal(t.counts.permission,0);assert.equal(t.prompt.hidden,true);assert.equal(t.manual.disabled,true);});
+await test('Dismissed permission sheet is not reported as enabled',async()=>{const t=setup({answer:'default'});await t.button.events.click();await flush();assert.equal(t.counts.posts.length,0);assert.equal(t.button.disabled,false);assert.equal(t.prompt.hidden,false);});
+await test('iPhone browser shows install guidance without requesting permission',async()=>{const t=setup({ios:true});await flush();assert.equal(t.install.hidden,false);assert.equal(t.button.hidden,true);assert.equal(t.counts.permission,0);});
+await test('Installed iPhone can request permission from the enable action',async()=>{const t=setup({ios:true,standalone:true});await t.button.events.click();await flush();assert.equal(t.counts.permission,1);assert.equal(t.counts.posts.length,1);});
+await test('Unavailable local transport never subscribes',async()=>{const t=setup({permission:'granted',dataset:{ready:'0'}});await flush();assert.equal(t.counts.posts.length,0);assert.equal(t.manual.disabled,true);});
+await test('Unsupported browser keeps inbox available without a global banner',async()=>{const t=setup({unsupported:true});await flush();assert.equal(t.prompt.hidden,true);assert.equal(t.manual.disabled,true);});
+await test('Later hides only the prompt and remembers account-specific dismissal',async()=>{const t=setup();t.later.events.click();assert.equal(t.prompt.hidden,true);assert.ok(t.storage.get('fcc-push-later:555'));const again=setup({dismissed:true});assert.equal(again.prompt.hidden,true);});
+await test('Wrong existing worker is preserved',async()=>{const t=setup({permission:'granted',conflict:true});await flush();assert.equal(t.counts.posts.length,0);assert.equal(t.counts.register,0);});
+await test('Key rotation requires explicit reconnect instead of silent removal',async()=>{const t=setup({permission:'granted',oldKey:[4,5,6]});await flush();assert.equal(t.counts.unsubscribe,0);assert.equal(t.counts.posts.length,0);await t.button.events.click();await flush();assert.equal(t.counts.unsubscribe,1);assert.equal(t.counts.posts.length,1);});
+await test('Failed server sync remains retryable and never claims enabled',async()=>{const t=setup({permission:'granted',failed:true});await flush();assert.equal(t.status.textContent,'Test error');assert.equal(t.button.disabled,false);});
+await test('Administrator preview never registers a device for the viewed member',async()=>{const t=setup({permission:'granted',dataset:{delegated:'1'}});await flush();assert.equal(t.counts.posts.length,0);assert.equal(t.counts.subscribe,0);assert.equal(t.manual.disabled,true);});
+console.log(JSON.stringify({passed:n,scope:'Offline real script with browser API doubles, no external provider or browser permission changes'}));

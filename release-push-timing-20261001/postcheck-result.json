@@ -1,0 +1,109 @@
+{
+    "status": "ok",
+    "at_utc": "2026-10-01T12:53:01+00:00",
+    "mode": "enabled",
+    "heartbeat": {
+        "at": "2026-10-01T12:52:20+00:00",
+        "accounts": 100,
+        "transport": "enabled",
+        "result": {
+            "sent": 5,
+            "simulated": 0,
+            "failed": 0
+        }
+    },
+    "verified_files": 6,
+    "new_delivery_groups": [
+        {
+            "last_code": "sent_group:3411",
+            "status": "sent",
+            "items": 5,
+            "at_utc": "2026-10-01 12:52:06"
+        },
+        {
+            "last_code": "sent_group:4531",
+            "status": "sent",
+            "items": 3,
+            "at_utc": "2026-10-01 12:52:06"
+        },
+        {
+            "last_code": "sent_group:4532",
+            "status": "sent",
+            "items": 3,
+            "at_utc": "2026-10-01 12:52:06"
+        },
+        {
+            "last_code": "sent_group:4653",
+            "status": "sent",
+            "items": 1,
+            "at_utc": "2026-10-01 12:52:06"
+        },
+        {
+            "last_code": "sent_group:4730",
+            "status": "sent",
+            "items": 1,
+            "at_utc": "2026-10-01 12:52:06"
+        }
+    ],
+    "rescheduled": [
+        {
+            "status": "sent",
+            "last_code": "sent_group:3411",
+            "items": 5
+        },
+        {
+            "status": "sent",
+            "last_code": "sent_group:4531",
+            "items": 3
+        },
+        {
+            "status": "sent",
+            "last_code": "sent_group:4532",
+            "items": 3
+        },
+        {
+            "status": "sent",
+            "last_code": "sent_group:4653",
+            "items": 1
+        },
+        {
+            "status": "sent",
+            "last_code": "sent_group:4730",
+            "items": 1
+        }
+    ],
+    "pending": [
+        {
+            "category": "service",
+            "last_code": null,
+            "items": 2,
+            "next_utc": "2026-10-01 12:52:17",
+            "last_utc": "2026-10-01 12:52:17"
+        }
+    ],
+    "owner_devices": [
+        {
+            "active": 1,
+            "devices": 2
+        }
+    ],
+    "self_test": [
+        {
+            "status": "pending",
+            "last_code": null,
+            "at_utc": "2026-10-01 12:52:17"
+        },
+        {
+            "status": "pending",
+            "last_code": null,
+            "at_utc": "2026-10-01 12:52:17"
+        }
+    ],
+    "localized_copy": {
+        "hr": 6,
+        "en": 6,
+        "sl": 6,
+        "de": 6,
+        "es": 6
+    }
+}
