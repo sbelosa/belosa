@@ -1,0 +1,11 @@
+{
+    "status": "verified",
+    "started_at": "2026-10-01T14:06:01+00:00",
+    "database": {
+        "file": "database.sql.gz",
+        "tables": 150,
+        "bytes": 22769392,
+        "sha256": "2ecf7b1c1eea0ab7aed989378add083ac8b6604839c6f0e3e7c16e0cfbc620a9"
+    },
+    "finished_at": "2026-10-01T14:06:10+00:00"
+}

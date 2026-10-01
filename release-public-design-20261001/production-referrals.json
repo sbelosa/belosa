@@ -1,0 +1,44 @@
+[
+  {
+    "path": "/hr/blog/forever-aloe-vera-gel?ref=Marina&market=hr",
+    "new_design": true,
+    "referral_and_forever_id_preserved": true,
+    "destination_matches_stored_country_offer": true,
+    "existing_matching_market_unchanged": true
+  },
+  {
+    "path": "/hr/blog/forever-aloe-vera-gel?ref=Marina&market=de",
+    "new_design": true,
+    "referral_and_forever_id_preserved": true,
+    "destination_matches_stored_country_offer": true,
+    "existing_matching_market_unchanged": false
+  },
+  {
+    "path": "/hr/blog/marine-collagen?ref=Marina&market=hr",
+    "new_design": true,
+    "referral_and_forever_id_preserved": true,
+    "destination_matches_stored_country_offer": true,
+    "existing_matching_market_unchanged": true
+  },
+  {
+    "path": "/hr/blog/marine-collagen?ref=Marina&market=de",
+    "new_design": true,
+    "referral_and_forever_id_preserved": true,
+    "destination_matches_stored_country_offer": true,
+    "existing_matching_market_unchanged": false
+  },
+  {
+    "path": "/hr/blog/forever-argi?ref=Marina&market=hr",
+    "new_design": true,
+    "referral_and_forever_id_preserved": true,
+    "destination_matches_stored_country_offer": true,
+    "existing_matching_market_unchanged": true
+  },
+  {
+    "path": "/hr/blog/forever-argi?ref=Marina&market=de",
+    "new_design": true,
+    "referral_and_forever_id_preserved": true,
+    "destination_matches_stored_country_offer": true,
+    "existing_matching_market_unchanged": false
+  }
+]

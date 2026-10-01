@@ -1,0 +1,1633 @@
+{
+  "status": "PASS",
+  "at": "2026-10-01T14:09:32.415972+00:00",
+  "products": 115,
+  "pages": 230,
+  "verified_original_images": 113,
+  "retained_images": [
+    "fab-forever-active-boost",
+    "forever-jovance-mask-powder"
+  ],
+  "checks": [
+    "Unique product copy in both languages",
+    "Actual image dimensions and no upscaling",
+    "Metadata, canonical, alternate languages and Product identity",
+    "Price markup matches visible price and exact ordering link",
+    "Related products preserve country and owner",
+    "Ingredients, usage and original article details available",
+    "Local analytics disabled",
+    "Complete libraries in both languages"
+  ],
+  "results": [
+    {
+      "slug": "forever-aloe-peaches",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-peaches.webp?v=1790375085",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-blossom-herbal-tea",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-blossom-herbal-tea.webp?v=1790375085",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-vera-gel",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-vera-gel.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-freedom",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-freedom.webp?v=1790375090",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-berry-nectar",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-berry-nectar.webp?v=1790375085",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-mango",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-mango.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "fab-forever-active-boost",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/blog/5e44b8065331134725e5a0d7c9fe2b00.png",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-therm",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-therm.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-lean",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-lean.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fiber",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fiber.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fastbreak",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fastbreak.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-ultra",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-ultra.webp?v=1790375086",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-sensatiable",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-sensatiable.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-plant-protein",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-plant-protein.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "c9-forever-living-products",
+      "language": "hr",
+      "facts": 3,
+      "photo": "http://localhost:8095/uploads/product-editorial/c9-forever-living-products.webp?v=1790375098",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-dx4",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-dx4.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-f15",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-f15.webp?v=1790375086",
+      "offer_schema": false
+    },
+    {
+      "slug": "absorbent-d",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/absorbent-d.webp?v=1790375087",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-move",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-move.webp?v=1790375087",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bee-propolis",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bee-propolis.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-immune-gummy",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-immune-gummy.webp?v=1790375090",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-absorbent-c",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-absorbent-c.webp?v=1790375090",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-garlic-thyme",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-garlic-thyme.webp?v=1790375096",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fields-of-greens",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fields-of-greens.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-immublend",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-immublend.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-arctic-sea",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-arctic-sea.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-active-pro-b",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-active-pro-b.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-active-ha",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-active-ha.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-argi",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-argi.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-b12-plus",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-b12-plus.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bee-pollen",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bee-pollen.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bee-honey",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bee-honey.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-calcium",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-calcium.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-nutra-q10",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-nutra-q10.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-daily",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-daily.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-ivision",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-ivision.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-kids",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-kids.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-lycium-plus",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-lycium-plus.webp?v=1790375096",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-multi-maca",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-multi-maca.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-nature-min",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-nature-min.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "vitolize-women",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vitolize-women.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "vitolize-men",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vitolize-men.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-royal-jelly",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-royal-jelly.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloeturm",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloeturm.webp?v=1790375094",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-focus",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-focus.webp?v=1790375097",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-malosi",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-malosi.webp?v=1790375099",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-alofa",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-alofa.webp?v=1790375099",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-sunscreen",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-sunscreen.webp?v=1790375097",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-body-wash",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-body-wash.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-ever-shield",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-ever-shield.webp?v=1790375098",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-liquid-soap",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-liquid-soap.webp?v=1790375098",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bright",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bright.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic.webp?v=1790375104",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-lips",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-lips.webp?v=1790375099",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-first-spray",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-first-spray.webp?v=1790375100",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-vera-gelly",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-vera-gelly.webp?v=1790375100",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-avocado-soap",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-avocado-soap.webp?v=1790375100",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-jojoba-shampoo",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-jojoba-shampoo.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-jojoba-conditioner",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-jojoba-conditioner.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "gentleman-s-pride-aftershave",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/gentleman-s-pride-aftershave.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-hand-sanitizer",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-hand-sanitizer.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-replenishing-skin-oil",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-replenishing-skin-oil.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bio-cellulose-mask",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bio-cellulose-mask.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "deep-moisturizing-cream",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/deep-moisturizing-cream.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "protecting-day-lotion",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/protecting-day-lotion.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-nourishing-hair-oil",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-nourishing-hair-oil.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-hydrating-serum",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-hydrating-serum.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-awakening-eye-cream",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-awakening-eye-cream.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-smoothing-exfoliator",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-smoothing-exfoliator.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-by-forever-restoring-creme",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-by-forever-restoring-creme.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-infinite-firming-complex",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-infinite-firming-complex.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-by-forever-firming-serum",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-by-forever-firming-serum.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-hydrating-cleanser",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-hydrating-cleanser.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-by-forever-advanced-skincare",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-by-forever-advanced-skincare.webp?v=1790375111",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-scrub",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-scrub.webp?v=1790375102",
+      "offer_schema": false
+    },
+    {
+      "slug": "aloe-msm-gel",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-msm-gel.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-propolis-creme",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-propolis-creme.webp?v=1790375105",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-activator",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-activator.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-cooling-lotion",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-cooling-lotion.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-moisturizing-lotion",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-moisturizing-lotion.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-body-lotion",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-body-lotion.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic-aloe-soothing-gel-moisture",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic-aloe-soothing-gel-moisture.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic-aloe-gel-cleanser",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic-aloe-gel-cleanser.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic-gel-balancing-essence",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic-gel-balancing-essence.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-refining-gel-mask",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-refining-gel-mask.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-tightening-mask-powder",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-tightening-mask-powder.webp?v=1790375111",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-renewing-skin-creme",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-renewing-skin-creme.webp?v=1790375104",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bakuchiol",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bakuchiol.webp?v=1790375107",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-vitamin-c",
+      "language": "hr",
+      "facts": 3,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-vitamin-c.webp?v=1790375104",
+      "offer_schema": true
+    },
+    {
+      "slug": "marine-collagen",
+      "language": "hr",
+      "facts": 3,
+      "photo": "http://localhost:8095/uploads/product-editorial/marine-collagen.webp?v=1790375114",
+      "offer_schema": true
+    },
+    {
+      "slug": "marine-collagen",
+      "language": "en",
+      "facts": 3,
+      "photo": "http://localhost:8095/uploads/product-editorial/marine-collagen.webp?v=1790375114",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-vitamin-c",
+      "language": "en",
+      "facts": 3,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-vitamin-c.webp?v=1790375104",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bakuchiol",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bakuchiol.webp?v=1790375107",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-renewing-skin-creme",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-renewing-skin-creme.webp?v=1790375104",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-tightening-mask-powder",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-tightening-mask-powder.webp?v=1790375111",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-refining-gel-mask",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-refining-gel-mask.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic-aloe-gel-cleanser",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic-aloe-gel-cleanser.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic-gel-balancing-essence",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic-gel-balancing-essence.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic-aloe-soothing-gel-moisture",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic-aloe-soothing-gel-moisture.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-body-lotion",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-body-lotion.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-cooling-lotion",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-cooling-lotion.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-moisturizing-lotion",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-moisturizing-lotion.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-activator",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-activator.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-propolis-creme",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-propolis-creme.webp?v=1790375105",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-msm-gel",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-msm-gel.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-scrub",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-scrub.webp?v=1790375102",
+      "offer_schema": false
+    },
+    {
+      "slug": "infinite-hydrating-cleanser",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-hydrating-cleanser.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-by-forever-advanced-skincare",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-by-forever-advanced-skincare.webp?v=1790375111",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-infinite-firming-complex",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-infinite-firming-complex.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-smoothing-exfoliator",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-smoothing-exfoliator.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-by-forever-firming-serum",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-by-forever-firming-serum.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "infinite-by-forever-restoring-creme",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/infinite-by-forever-restoring-creme.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-awakening-eye-cream",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-awakening-eye-cream.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-hydrating-serum",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-hydrating-serum.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "protecting-day-lotion",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/protecting-day-lotion.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-nourishing-hair-oil",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-nourishing-hair-oil.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bio-cellulose-mask",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bio-cellulose-mask.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "deep-moisturizing-cream",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/deep-moisturizing-cream.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-replenishing-skin-oil",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-replenishing-skin-oil.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "gentleman-s-pride-aftershave",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/gentleman-s-pride-aftershave.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-jojoba-conditioner",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-jojoba-conditioner.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-jojoba-shampoo",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-jojoba-shampoo.webp?v=1790375103",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-hand-sanitizer",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-hand-sanitizer.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-avocado-soap",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-avocado-soap.webp?v=1790375100",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-vera-gelly",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-vera-gelly.webp?v=1790375100",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-first-spray",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-first-spray.webp?v=1790375100",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-lips",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-lips.webp?v=1790375099",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-liquid-soap",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-liquid-soap.webp?v=1790375098",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-logic",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-logic.webp?v=1790375104",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bright",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bright.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-ever-shield",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-ever-shield.webp?v=1790375098",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-body-wash",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-body-wash.webp?v=1790375101",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-sunscreen",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-sunscreen.webp?v=1790375097",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-alofa",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-alofa.webp?v=1790375099",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-malosi",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-malosi.webp?v=1790375099",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloeturm",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloeturm.webp?v=1790375094",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-focus",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-focus.webp?v=1790375097",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-royal-jelly",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-royal-jelly.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "vitolize-men",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vitolize-men.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-multi-maca",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-multi-maca.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "vitolize-women",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vitolize-women.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-nature-min",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-nature-min.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-lycium-plus",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-lycium-plus.webp?v=1790375096",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-kids",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-kids.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-ivision",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-ivision.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-daily",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-daily.webp?v=1790375093",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-nutra-q10",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-nutra-q10.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-calcium",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-calcium.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bee-honey",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bee-honey.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bee-pollen",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bee-pollen.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-active-ha",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-active-ha.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-b12-plus",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-b12-plus.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-argi",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-argi.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-immublend",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-immublend.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-active-pro-b",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-active-pro-b.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fields-of-greens",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fields-of-greens.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-garlic-thyme",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-garlic-thyme.webp?v=1790375096",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-arctic-sea",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-arctic-sea.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-absorbent-c",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-absorbent-c.webp?v=1790375090",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-immune-gummy",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-immune-gummy.webp?v=1790375090",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-bee-propolis",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-bee-propolis.webp?v=1790375092",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-move",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-move.webp?v=1790375087",
+      "offer_schema": true
+    },
+    {
+      "slug": "absorbent-d",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/absorbent-d.webp?v=1790375087",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-plant-protein",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-plant-protein.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-f15",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-f15.webp?v=1790375086",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-dx4",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-dx4.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-ultra",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-ultra.webp?v=1790375086",
+      "offer_schema": false
+    },
+    {
+      "slug": "c9-forever-living-products",
+      "language": "en",
+      "facts": 3,
+      "photo": "http://localhost:8095/uploads/product-editorial/c9-forever-living-products.webp?v=1790375098",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-sensatiable",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-sensatiable.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fastbreak",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fastbreak.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fiber",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fiber.webp?v=1790375102",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-lean",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-lean.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-therm",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-therm.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "fab-forever-active-boost",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/blog/5e44b8065331134725e5a0d7c9fe2b00.png",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-aloe-mango",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-mango.webp?v=1790375086",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-berry-nectar",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-berry-nectar.webp?v=1790375085",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-freedom",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-freedom.webp?v=1790375090",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-vera-gel",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-vera-gel.webp?v=1790375091",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-blossom-herbal-tea",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-blossom-herbal-tea.webp?v=1790375085",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-aloe-peaches",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-peaches.webp?v=1790375085",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fiber-fusion",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fiber-fusion.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fiber-fusion",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fiber-fusion.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-garcinia-plus",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-garcinia-plus.webp?v=1790375107",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-garcinia-plus",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-garcinia-plus.webp?v=1790375107",
+      "offer_schema": true
+    },
+    {
+      "slug": "fab-energy-drink",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/fab-energy-drink.webp?v=1790375107",
+      "offer_schema": true
+    },
+    {
+      "slug": "fab-energy-drink",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/fab-energy-drink.webp?v=1790375107",
+      "offer_schema": true
+    },
+    {
+      "slug": "argi-aloe-mini-tripack",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/argi-aloe-mini-tripack.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "argi-aloe-mini-tripack",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/argi-aloe-mini-tripack.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-mixed-four-pack",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-mixed-four-pack.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-mixed-four-pack",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-mixed-four-pack.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "vitamin-c-bakuchiol-combo",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vitamin-c-bakuchiol-combo.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "vitamin-c-bakuchiol-combo",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vitamin-c-bakuchiol-combo.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "vital5",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vital5.webp?v=1790375117",
+      "offer_schema": false
+    },
+    {
+      "slug": "vital5",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/vital5.webp?v=1790375117",
+      "offer_schema": false
+    },
+    {
+      "slug": "a-touch-of-forever",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/a-touch-of-forever.webp?v=1790375108",
+      "offer_schema": false
+    },
+    {
+      "slug": "a-touch-of-forever",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/a-touch-of-forever.webp?v=1790375108",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-algal-omega",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-algal-omega.webp?v=1790375108",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-algal-omega",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-algal-omega.webp?v=1790375108",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-fab-x",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fab-x.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "forever-fab-x",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-fab-x.webp?v=1790375108",
+      "offer_schema": true
+    },
+    {
+      "slug": "aloe-heat-lotion",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-heat-lotion.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "aloe-heat-lotion",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/aloe-heat-lotion.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "dream-by-forever",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/dream-by-forever.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "dream-by-forever",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/dream-by-forever.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "desire-by-forever",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/desire-by-forever.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "desire-by-forever",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/desire-by-forever.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "mini-touch-of-forever",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/mini-touch-of-forever.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "mini-touch-of-forever",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/mini-touch-of-forever.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-13-day-fit",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-13-day-fit.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-13-day-fit",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-13-day-fit.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-r3-factor",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-r3-factor.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-r3-factor",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-r3-factor.webp?v=1790375109",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-alpha-e-factor",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-alpha-e-factor.webp?v=1790375110",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-alpha-e-factor",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-alpha-e-factor.webp?v=1790375110",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-marine-mask",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-marine-mask.webp?v=1790375110",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-marine-mask",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-marine-mask.webp?v=1790375110",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-jovance-mask-powder",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/blog/fcc-catalog-96a8588debc966d3.png",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-jovance-mask-powder",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/blog/fcc-catalog-96a8588debc966d3.png",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-balancing-toner",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-balancing-toner.webp?v=1790375357",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-balancing-toner",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-balancing-toner.webp?v=1790375357",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-refreshing-gel-cleanser",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-refreshing-gel-cleanser.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-refreshing-gel-cleanser",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-refreshing-gel-cleanser.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-illuminating-gel",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-illuminating-gel.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-illuminating-gel",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-illuminating-gel.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-refining-gel-mask",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-refining-gel-mask.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-refining-gel-mask",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-refining-gel-mask.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-soothing-gel-moisturizer",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-soothing-gel-moisturizer.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "sonya-soothing-gel-moisturizer",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/sonya-soothing-gel-moisturizer.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-aloe-vera-juice",
+      "language": "hr",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-vera-juice.webp?v=1790375112",
+      "offer_schema": false
+    },
+    {
+      "slug": "forever-aloe-vera-juice",
+      "language": "en",
+      "facts": 2,
+      "photo": "http://localhost:8095/uploads/product-editorial/forever-aloe-vera-juice.webp?v=1790375112",
+      "offer_schema": false
+    }
+  ]
+}

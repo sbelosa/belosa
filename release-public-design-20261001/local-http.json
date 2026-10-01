@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "base": "http://localhost:8095",
+  "route_count": 1510,
+  "published_content_routes": 1472,
+  "failed": []
+}

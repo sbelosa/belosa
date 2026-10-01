@@ -1,0 +1,137 @@
+[
+  {
+    "path": "/hr/",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/blog?view=articles",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/blog/category/napitci",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/blog/forever-aloe-vera-gel",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/blog/referral-portal",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/page/about",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/pages",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/featured-apps",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/recommended-sponsors",
+    "scroll": 320,
+    "width": 320
+  },
+  {
+    "path": "/hr/",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/blog?view=articles",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/blog/category/napitci",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/blog/forever-aloe-vera-gel",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/blog/referral-portal",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/page/about",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/pages",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/featured-apps",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/recommended-sponsors",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "path": "/hr/",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/blog?view=articles",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/blog/category/napitci",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/blog/forever-aloe-vera-gel",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/blog/referral-portal",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/page/about",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/pages",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/featured-apps",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "path": "/hr/recommended-sponsors",
+    "scroll": 768,
+    "width": 768
+  }
+]

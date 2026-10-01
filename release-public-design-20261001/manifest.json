@@ -1,0 +1,97 @@
+[
+  {
+    "path": "app/config/fcc_public_design.php",
+    "before": null,
+    "sha256": "57e21e85dffc1cddd33620c2bc3db2525a839f7e7be8be8a7004c7366c13bf33"
+  },
+  {
+    "path": "app/helpers/fcc_public_design.php",
+    "before": null,
+    "sha256": "8a701de2d0ecea5aab67ea46bd403f5901d82108b6f072375b20a271caa698cc"
+  },
+  {
+    "path": "themes/altum/assets/css/fcc-public.css",
+    "before": null,
+    "sha256": "5e7ddc107178c0f979274574a6fd507ac4851655e2ffd6fbf1a6dc7c060e0402"
+  },
+  {
+    "path": "themes/altum/views/public/menu.php",
+    "before": null,
+    "sha256": "ac39dde908930a85184ceafd938d82488b779557ff3b2289342d01e6c08ccd6f"
+  },
+  {
+    "path": "themes/altum/views/public/footer.php",
+    "before": null,
+    "sha256": "26e2c7629ff75458483325e2236c5f8b2790723faec393ed2a5b5dc8f7bf6d5f"
+  },
+  {
+    "path": "themes/altum/views/public/home.php",
+    "before": null,
+    "sha256": "8234c658ac1c9c318027fdca7ca4331aad2356b7e91fb38ff5e8b1f3b561f102"
+  },
+  {
+    "path": "themes/altum/views/blog/public-list.php",
+    "before": null,
+    "sha256": "119a9349ed499dc9f113c850c76e5da37309ddd714726f33027ad60ee3de3056"
+  },
+  {
+    "path": "app/helpers/fcc_library_pilot.php",
+    "before": "eb2079e6dd6b0ace550289973e62933d65dc3c61a9820d5ea58d7fd8a2272d46",
+    "sha256": "ef38356947d97d790cc29f1ffe2d5607d807f2718f0fbbfe9bb191c557310865"
+  },
+  {
+    "path": "themes/altum/views/wrapper.php",
+    "before": "fe0631ca4e3affaaaca8f0ad5848867a2e639ed0e86bd03f86e1ad7ab29196b9",
+    "sha256": "46939d38b911a1b8eec2a3420ce4e24863360bcceb6529b893716c0cd69c2121"
+  },
+  {
+    "path": "themes/altum/views/partials/menu.php",
+    "before": "690bfe78717f817da84010e9cdc4bceb2125ac3ca9b3e90d1828de3a8caa64e0",
+    "sha256": "6a844ed13c91cb5fcdd9ec26ea4cb14745445aed0e62301039632ae9ae84abb2"
+  },
+  {
+    "path": "themes/altum/views/partials/footer.php",
+    "before": "a5d817c2b376b8b9663405b4d368ed9299e392c51dc3bc07eb163ffb7f047368",
+    "sha256": "fced14b0747b927c7fa0f6f0b3b41986c4c30c520fd6bd3a56f4bc2ce7907af5"
+  },
+  {
+    "path": "themes/altum/views/index/index.php",
+    "before": "26273c70eeb002dbed6f62af3864f7dcc04eebef5a824bd22d9a41472d77bd4b",
+    "sha256": "5d63d25d68f02d4034bf2b2f75b4b5a757efad243343d933076a58a27eaa7abd"
+  },
+  {
+    "path": "themes/altum/views/blog/index.php",
+    "before": "ae8f2252ad73c17fd4b8d83c3d688445271f6da91bc8d5793cafa0635e75e841",
+    "sha256": "91748eae1bf0b7466c12714a97d737191b48c04716377032841df944231cbcab"
+  },
+  {
+    "path": "themes/altum/views/blog/blog_posts_category.php",
+    "before": "ee8c8e69f1d36e69240bc10051b4df376d94d48e48c83f72fa73dbb2309cd7c4",
+    "sha256": "4154be223aff2269c51d91a3e181efd2baefdaa3edc168a362f0d7fd7f38bc27"
+  },
+  {
+    "path": "themes/altum/views/blog/pilot-library.php",
+    "before": "052297e4a42fc7dbef7260e8907fbb3faf3aeda29ff3dac421465a282cfeac64",
+    "sha256": "265306bdce713685cb2f3b3a2621101ada2d615544129c073004a56f26f77a52"
+  },
+  {
+    "path": "themes/altum/views/blog/pilot-post.php",
+    "before": "85a4ae65c90e0a31b963647a7160fc827bdc3a7ab710215544cc3b60718c6b62",
+    "sha256": "27d0dec4bbd11352b92e0424ea378b43434499f96a3bd7bd16df8ce3e13b185f"
+  },
+  {
+    "path": "app/controllers/Blog.php",
+    "before": "6492b1f1d03d1c4aeee857aa0ad19160814e40c9fdfefcac7a353cb58ed09c13",
+    "sha256": "61a979b4ffe075c82c1da9c91c6a3f666bde9493496e1a5281ecff10d801f23e"
+  },
+  {
+    "path": "themes/altum/views/page/index.php",
+    "before": "9e127a7a63f012fbc381917b4fd946411380511abb07428b360b434a1cb17ae7",
+    "sha256": "ddf41194367f154575ab9f518d3d7ccebc76c7a9dd6942a6171fc48674cd5adc"
+  },
+  {
+    "path": "app/controllers/Index.php",
+    "before": "8fd9e4bb2cf5440a7b55275c1c8487d8bf9c01fe9945089ae20f5fd5b3bfd5e2",
+    "sha256": "b6b720c9818f3dab9618e72c9db218b1a18fd603e748e8a3a1e433c031eb5245"
+  }
+]

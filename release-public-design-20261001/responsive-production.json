@@ -1,0 +1,50 @@
+[
+  {
+    "newPublic": "20261001",
+    "path": "/?view=public",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/blog?view=public",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/blog/category/napitci?view=public",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/blog/referral-portal?view=public",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/page/about",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/pages",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/featured-apps",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "newPublic": "20261001",
+    "path": "/recommended-sponsors",
+    "scroll": 390,
+    "width": 390
+  }
+]
