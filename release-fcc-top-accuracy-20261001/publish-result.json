@@ -1,0 +1,28 @@
+{
+    "status": "published",
+    "at_utc": "2026-10-01T16:02:02+00:00",
+    "files": 5,
+    "source_backup": "\/home\/forevercardclub\/fcc-release-20260927\/top-accurate-release-20261001T160114Z\/before",
+    "schema_changed": false,
+    "users_counted": 701,
+    "cc_month": "2026-10-01",
+    "cc_sync": "2026-10-01 15:40:04",
+    "previous_month_sync": "2026-09-30 04:42:14",
+    "current_categories": {
+        "total_active_cc": 15,
+        "registrations": 0,
+        "conversations": 1,
+        "education": 45,
+        "consistency": 1
+    },
+    "previous_categories": {
+        "total_active_cc": 138,
+        "registrations": 0,
+        "conversations": 1,
+        "education": 45,
+        "consistency": 1
+    },
+    "calculation_seconds": 0.1419999999999999873434575192732154391705989837646484375,
+    "profiles_opted_in": 2,
+    "existing_data_unchanged": true
+}

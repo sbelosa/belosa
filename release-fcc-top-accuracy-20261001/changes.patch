@@ -1,0 +1,162 @@
+--- a/app/config/fcc_top_locales.php
++++ b/app/config/fcc_top_locales.php
+@@ -66,11 +66,11 @@
+   "es": "Conversaciones iniciadas"
+  },
+  "education": {
+-  "hr": "Završeni koraci edukacije",
+-  "en": "Completed learning steps",
+-  "sl": "Zaključeni izobraževalni koraki",
+-  "de": "Abgeschlossene Lernschritte",
+-  "es": "Pasos de formación completados"
++  "hr": "Završeni koraci programa 90",
++  "en": "Completed steps in the 90-task program",
++  "sl": "Opravljeni koraki programa 90",
++  "de": "Abgeschlossene Schritte im 90-Aufgaben-Programm",
++  "es": "Pasos completados del programa de 90 tareas"
+  },
+  "consistency": {
+   "hr": "Dani aktivnog rada",
+@@ -122,18 +122,18 @@
+   "es": "Contactos distintos con una acción de contacto o del programa confirmada. Cada contacto cuenta una vez por periodo. La cifra no confirma una respuesta."
+  },
+  "education_help": {
+-  "hr": "Jedinstveni završeni koraci, uključujući priznatu vježbu. Otvaranje lekcije ne računa se kao završetak.",
+-  "en": "Unique completed steps, including accepted practice. Opening a lesson does not count as completion.",
+-  "sl": "Edinstveni zaključeni koraki, vključno s priznano vajo. Odprtje lekcije ne šteje kot zaključek.",
+-  "de": "Einmalige abgeschlossene Schritte einschließlich anerkannter Übungen. Das Öffnen einer Lektion zählt nicht als Abschluss.",
+-  "es": "Pasos completados únicos, incluida la práctica aceptada. Abrir una lección no cuenta como completarla."
++  "hr": "Broje se samo dovršeni koraci nove edukacije s 90 zadataka, povezani s korisnikovim korakom i ciklusom. Raniji edukacijski programi i nedovršeni zadaci ne ulaze u zbroj. Svaki korak broji se jednom u odabranom razdoblju. Sačuvani napredak kroz nadogradnje istog programa ostaje uključen.",
++  "en": "Counts only completed steps in the new 90-task program, linked to the user’s step and cycle. Earlier training programs and unfinished tasks are excluded. Each step counts once in the selected period. Preserved progress across updates to this program remains included.",
++  "sl": "Štejejo samo opravljeni koraki novega programa z 90 nalogami, povezani z uporabnikovim korakom in ciklom. Prejšnji programi in nedokončane naloge so izključeni. Vsak korak šteje enkrat v izbranem obdobju. Napredek, ohranjen pri nadgradnjah istega programa, ostane vključen.",
++  "de": "Gezählt werden nur abgeschlossene Schritte des neuen Programms mit 90 Aufgaben, die dem Schritt und Zyklus des Nutzers zugeordnet sind. Frühere Programme und offene Aufgaben sind ausgeschlossen. Jeder Schritt zählt einmal im gewählten Zeitraum. Bei Aktualisierungen dieses Programms erhaltener Fortschritt bleibt enthalten.",
++  "es": "Solo cuenta los pasos completados del nuevo programa de 90 tareas, vinculados al paso y ciclo del usuario. Se excluyen programas anteriores y tareas incompletas. Cada paso cuenta una vez en el período elegido. Se conserva el progreso de las actualizaciones del mismo programa."
+  },
+  "consistency_help": {
+-  "hr": "Različiti dani s potvrđenom komunikacijom, prema zagrebačkom vremenu.",
+-  "en": "Distinct days with confirmed contact activity, using Zagreb time.",
+-  "sl": "Različni dnevi s potrjeno komunikacijo po zagrebškem času.",
+-  "de": "Verschiedene Tage mit bestätigter Kontaktaktivität nach Zagreber Zeit.",
+-  "es": "Días distintos con actividad de contacto confirmada, según la hora de Zagreb."
++  "hr": "Jedan dan rada računa se kada zabilježiš radnju s kontaktom, dovršiš korak programa 90, spremiš pripremu koraka ili potvrdiš obavljenu radnju ili vježbu u tom programu. Više radnji istoga dana broji se kao jedan dan prema vremenu u Zagrebu. Sama prijava, otvaranje stranice ili poveznice ne broje se.",
++  "en": "A work day counts when you record a contact action, complete a step in the 90-task program, save a step draft, or record completed work or practice in that program. Multiple actions on the same Zagreb calendar day count once. Signing in or opening a page or link does not count.",
++  "sl": "Dan dela šteje, ko zabeležiš delo s kontaktom, opraviš korak programa 90, shraniš pripravo koraka ali potrdiš opravljeno delo ali vajo v tem programu. Več dejanj istega dne šteje enkrat po zagrebškem času. Sama prijava ali odpiranje strani ali povezave ne šteje.",
++  "de": "Ein Arbeitstag zählt bei einer erfassten Kontaktaktion, einem abgeschlossenen Schritt im Programm mit 90 Aufgaben, einem gespeicherten Entwurf oder einer bestätigten Arbeit oder Übung in diesem Programm. Mehrere Aktionen am selben Kalendertag nach Zagreber Zeit zählen einmal. Anmeldung und das Öffnen einer Seite oder eines Links zählen nicht.",
++  "es": "Un día de trabajo cuenta al registrar una acción con un contacto, completar un paso del programa de 90 tareas, guardar su preparación o registrar trabajo o práctica realizados en ese programa. Varias acciones en el mismo día de Zagreb cuentan una vez. Iniciar sesión o abrir una página o enlace no cuenta."
+  },
+  "period": {
+   "hr": "Razdoblje aktivnosti",
+@@ -561,6 +561,13 @@
+   "sl": "Skupna aktivnost za izbrani koledarski mesec iz potrjenega polja FLP360 Total Active CC. Vključuje osebne CC in CC računov Preferred Customer. Razvrstitev sledi aktivnosti v tem mesecu.",
+   "de": "Gesamtaktivität im ausgewählten Kalendermonat aus dem bestätigten FLP360 Feld Total Active CC. Enthält persönliche CC und Preferred Customer CC. Die Rangliste folgt der Aktivität in diesem Monat.",
+   "es": "Actividad total del mes natural seleccionado, según el campo verificado Total Active CC de FLP360. Incluye CC personales y CC de Preferred Customer. La clasificación refleja la actividad de ese mes."
++ },
++ "positive_only": {
++  "hr": "Prikazano {shown} od {total} vidljivih računa s više od 0 proknjiženih CC u ovom mjesecu. Lista prikazuje najviše 10 računa.",
++  "en": "Showing {shown} of {total} visible accounts with more than 0 posted CC this month. The list shows up to 10 accounts.",
++  "sl": "Prikazanih je {shown} od {total} vidnih računov z več kot 0 knjiženimi CC v tem mesecu. Seznam prikazuje največ 10 računov.",
++  "de": "Angezeigt werden {shown} von {total} sichtbaren Konten mit mehr als 0 verbuchten CC in diesem Monat. Die Liste zeigt höchstens 10 Konten.",
++  "es": "Se muestran {shown} de {total} cuentas visibles con más de 0 CC contabilizados este mes. La lista muestra un máximo de 10 cuentas."
+  }
+ }
+ JSON, true);
+--- a/themes/altum/assets/css/fcc-top.css
++++ b/themes/altum/assets/css/fcc-top.css
+@@ -39,3 +39,6 @@
+ .ft-archive-hint{border:1px solid #e6d6ac;background:#fff8e8;border-radius:10px;padding:12px 15px;color:#715520}.ft-archive-hint strong{font-weight:550}
+ 
+ .ft-overview-single{grid-template-columns:1fr}.ft-overview-single>div{justify-content:flex-end}.ft-overview-single strong{font-size:42px}.ft-goals-single{grid-template-columns:1fr}.ft-goals-single>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px}.ft-goals-single progress{grid-column:1/-1}@media(max-width:900px){.ft-overview-single>div{justify-content:flex-start}}
++
++/* Independent columns let a short ranking flow directly into the next card. */
++.ft-grid{display:block;column-count:2;column-gap:22px}.ft-grid>.ft-card{display:inline-block;width:100%;box-sizing:border-box;break-inside:avoid;vertical-align:top;margin:0 0 22px}.ft-card .ft-empty{min-height:0;padding:12px 0}.ft-positive-note{font-size:12px;line-height:1.7;color:#567162;margin:0 0 12px}@media(max-width:700px){.ft-grid{column-count:1}.ft-grid>.ft-card{margin-bottom:16px}}
+--- a/themes/altum/views/partner/top.php
++++ b/themes/altum/views/partner/top.php
+@@ -15,6 +15,7 @@
+ <section class="fp-panel ft-card"><div class="ft-card-head"><span class="ft-icon" aria-hidden="true"><?= fcc_partner_icon($cc?'chart':($key==='education'?'book':'people')) ?></span><div><span class="fp-eyebrow"><?= $cc?$h($ccMonthLabel):$h($t('days',['{n}'=>$top['days']])) ?></span><h2><?= $h($t($key)) ?></h2></div></div>
+ <div class="ft-own"><div><span><?= $h($t('own')) ?></span><strong><?= $card['own']['score']===null?'…':($cc?fcc_cc_number($card['own']['score']).' CC':(int)$card['own']['score']) ?></strong></div><div class="ft-own-rank"><?php if($card['own']['position']!==null): ?><span><?= $h($t('own_rank',['{n}'=>$card['own']['position']])) ?></span><?php else: ?><span><?= $h($t('no_score')) ?></span><?php endif ?><?php if($card['own']['movement']!==null): ?><small><?= $h($t('rank_change',['{date}'=>$card['own']['comparison_day'],'{n}'=>($card['own']['movement']>0?'+':'').$card['own']['movement']])) ?></small><?php endif ?></div></div>
+ <div class="ft-counts"><span><?= $h($t('result_accounts')) ?> <strong><?= (int)$card['count'] ?></strong></span><span><?= $h($t('visible_accounts')) ?> <strong><?= (int)($card['visible_count']??count($card['rows'])) ?></strong></span></div>
++<?php if($cc): ?><p class="ft-positive-note"><?= $h($t('positive_only',['{shown}'=>count($card['rows']),'{total}'=>$card['visible_count']])) ?></p><?php endif ?>
+ <?php if(!$card['rows']): ?><div class="ft-empty <?= $card['count']?'ft-has-results':'' ?>"><span aria-hidden="true"><?= $card['count']?fcc_partner_icon('people'):fcc_partner_icon('chart') ?></span><strong><?= $h($t($card['count']?'results_private_title':'no_recorded_result')) ?></strong><p><?= $h($t($card['count']?'results_private_body':'no_recorded_help',['{n}'=>$card['count']])) ?></p><?php if($card['count']): ?><a class="fp-link" href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('my_visibility')) ?> →</a><?php endif ?></div><?php else: ?><ol class="ft-list" aria-label="<?= $h($t($key)) ?>"><?php foreach($card['rows'] as $row): ?><li value="<?= (int)$row['position'] ?>" class="<?= $row['own']?'ft-is-me':'' ?>"><span class="ft-place <?= $row['position']<=3?'ft-medal':'' ?>" aria-hidden="true"><?= (int)$row['position'] ?></span><span class="ft-name"><?= $h($row['name']) ?><?php if($row['own']): ?><small><?= $h($t('you')) ?></small><?php endif ?></span><?php if($cc): ?><span class="ft-hidden" aria-label="<?= $h($t('private_cc')) ?>" title="<?= $h($t('private_cc')) ?>"><span aria-hidden="true">••••</span></span><?php else: ?><strong class="ft-score"><?= (int)$row['score'] ?></strong><?php endif ?></li><?php endforeach ?></ol><?php endif ?>
+ <details class="ft-rules"><summary><?= $h($t('rules')) ?></summary><p><?= $h($t($key.'_help')) ?></p></details></section><?php endforeach ?></div>
+ <aside class="fp-panel ft-explanation"><h2><?= $h($t('rules')) ?></h2><p><?= $h($t('privacy')) ?></p><p><?= $h($t('cc_privacy')) ?></p><a class="fp-link" href="<?= url('fcc-results') ?>"><?= $h(fcc_t('FCC Rezultati')) ?> · 15+ / 50+ →</a></aside>
+--- a/app/helpers/fcc_top.php
++++ b/app/helpers/fcc_top.php
+@@ -50,6 +50,17 @@
+  foreach($rows as $r)if(in_array($uid,$r['uids'],true))return ['score'=>$r['score'],'position'=>$r['position'],'entity'=>$r['entity']];
+  return ['score'=>null,'position'=>null,'entity'=>null];
+ }
++/** The current 90-task program preserves progress across its compatible catalog revisions. */
++function fcc_top_program_versions(): array { return [FCC_JP_VERSION,FCC_JP_V7_VERSION,FCC_JP_PREVIOUS_VERSION,FCC_JP_LEGACY_VERSION]; }
++function fcc_top_program_join(): string {
++ return " JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id AND s.user_id=o.recorded_by_user_id AND s.cycle_id=o.journey_cycle_id JOIN fcc_partner_journey_cycles c ON c.id=s.cycle_id AND c.user_id=s.user_id ";
++}
++function fcc_top_program_where(): string {
++ return "o.status='done' AND o.outcome_type='journey90' AND c.catalog_version IN (?,?,?,?) AND s.position BETWEEN 1 AND 90 AND o.sequence_position=s.position AND JSON_VALID(s.content_json)=1 AND JSON_UNQUOTE(JSON_EXTRACT(s.content_json,'$.id'))=o.action_key";
++}
++function fcc_top_period_key(string $category,array $dataset): string {
++ return $category==='total_active_cc'?$dataset['month']:(in_array($category,['education','consistency'],true)?'v2:':'').$dataset['window']['days'];
++}
+ function fcc_top_dataset(int $days,string $month,?DateTimeImmutable $now=null): array {
+  $w=fcc_top_window($days,$now);$current=substr($w['day'],0,7).'-01';$previous=(new DateTimeImmutable($current))->modify('-1 month')->format('Y-m-d');
+  $month=in_array($month,[$current,$previous],true)?$month:$current;
+@@ -59,16 +70,20 @@
+   $uid=(int)$r['user_id'];$r['visible']=(bool)$r['visible']&&!$r['private'];$users[$uid]=$r;
+   if(preg_match('/^[0-9]{12}$/D',(string)$r['fbo']))$groups[$r['fbo']][]=$uid;
+  }
+- $scores=[];
+- // Rankings use verified registrations, recorded contact work and completed education. Sharing controls are excluded.
+- $queries=[
+-  'registrations'=>"SELECT r.user_id,COUNT(DISTINCT CONCAT(r.session_id,':',r.email_key)) n FROM fcc_webinar_registrations r JOIN fcc_webinar_sessions s ON s.id=r.session_id JOIN fcc_webinar_invite_attempts a ON a.id=r.attempt_id AND a.user_id=r.user_id WHERE r.is_demo=0 AND s.is_demo=0 AND r.is_self=0 AND r.needs_review=0 AND r.status='registered' AND a.revoked_at IS NULL AND a.is_demo=0 AND a.session_id=r.session_id AND r.email_verified_at>=? AND r.email_verified_at<=? GROUP BY r.user_id",
+-  'conversations'=>"SELECT user_id,COUNT(DISTINCT contact_id) n FROM fcc_partner_activities WHERE contact_id IS NOT NULL AND kind IN ('contacted','journey_sent','journey_performed') AND created_at>=? AND created_at<=? GROUP BY user_id",
+-  'education'=>"SELECT recorded_by_user_id user_id,COUNT(DISTINCT COALESCE(CONCAT('step:',journey_step_id),CONCAT('legacy:',action_key,':',action_date))) n FROM forever_business_daily_outcomes WHERE status='done' AND created_at>=? AND created_at<=? GROUP BY recorded_by_user_id",
+-  'consistency'=>"SELECT user_id,created_at FROM fcc_partner_activities WHERE contact_id IS NOT NULL AND kind IN ('contacted','journey_sent','journey_performed') AND created_at>=? AND created_at<=?"
+- ];
+- foreach($queries as $key=>$sql){$params=[$w['from'],$w['to']];foreach(fcc_partner_rows($sql,$params) as $r){if($key==='consistency'){$date=(new DateTimeImmutable($r['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('Y-m-d');$activeDays[(int)$r['user_id']][$date]=true;}else $scores[$key][(int)$r['user_id']]=(int)$r['n'];}}
+- foreach($activeDays??[] as $id=>$dates)$scores['consistency'][$id]=count($dates);
++ $scores=[];$activeDays=[];$versions=fcc_top_program_versions();$params=[$w['from'],$w['to']];
++ $scores['registrations']=[];
++ foreach(fcc_partner_rows("SELECT r.user_id,COUNT(DISTINCT CONCAT(r.session_id,':',r.email_key)) n FROM fcc_webinar_registrations r JOIN fcc_webinar_sessions s ON s.id=r.session_id JOIN fcc_webinar_invite_attempts a ON a.id=r.attempt_id AND a.user_id=r.user_id WHERE r.is_demo=0 AND s.is_demo=0 AND r.is_self=0 AND r.needs_review=0 AND r.status='registered' AND a.revoked_at IS NULL AND a.is_demo=0 AND a.session_id=r.session_id AND r.email_verified_at>=? AND r.email_verified_at<=? GROUP BY r.user_id",$params) as $r)$scores['registrations'][(int)$r['user_id']]=(int)$r['n'];
++ $work=fcc_partner_rows("SELECT a.user_id,a.contact_id,a.created_at FROM fcc_partner_activities a LEFT JOIN fcc_partner_contacts c ON c.id=a.contact_id AND c.user_id=a.user_id WHERE a.kind IN ('contacted','journey_sent','journey_performed') AND (c.id IS NOT NULL OR (a.contact_id IS NULL AND a.kind IN ('journey_sent','journey_performed'))) AND a.created_at>=? AND a.created_at<=?",$params);
++ $contacts=[];foreach($work as $r)if($r['contact_id']!==null)$contacts[(int)$r['user_id']][(int)$r['contact_id']]=true;
++ foreach($contacts as $uid=>$ids)$scores['conversations'][$uid]=count($ids);
++ $education=fcc_partner_rows('SELECT DISTINCT o.recorded_by_user_id user_id,o.journey_step_id step_id,o.created_at FROM forever_business_daily_outcomes o'.fcc_top_program_join().'WHERE '.fcc_top_program_where().' AND o.created_at>=? AND o.created_at<=?',array_merge($versions,$params));
++ $steps=[];foreach($education as $r)$steps[(int)$r['user_id']][(int)$r['step_id']]=true;
++ foreach($steps as $uid=>$ids)$scores['education'][$uid]=count($ids);
++ // Count actual work across the app, once per Zagreb day. Merely opening a page or share link is excluded.
++ $preparations=fcc_partner_rows("SELECT e.user_id,e.created_at FROM fcc_partner_pilot_events e JOIN fcc_partner_journey_steps s ON s.id=e.step_id AND s.user_id=e.user_id JOIN fcc_partner_journey_cycles c ON c.id=s.cycle_id AND c.user_id=s.user_id WHERE c.catalog_version IN (?,?,?,?) AND s.position BETWEEN 1 AND 90 AND e.kind IN ('message_sent','conversation_reported','publication_reported','preparation_reported','practice') AND e.source<>'excluded_result' AND e.created_at>=? AND e.created_at<=?",array_merge($versions,$params));
++ $drafts=fcc_partner_rows("SELECT e.user_id,e.created_at FROM fcc_partner_journey_events e JOIN fcc_partner_journey_steps s ON s.user_id=e.user_id AND e.action_key=CONCAT('j90:',s.cycle_id,':',s.id) JOIN fcc_partner_journey_cycles c ON c.id=s.cycle_id AND c.user_id=s.user_id WHERE c.catalog_version IN (?,?,?,?) AND s.position BETWEEN 1 AND 90 AND e.event_type='draft_saved' AND e.created_at>=? AND e.created_at<=?",array_merge($versions,$params));
++ foreach(array_merge($work,$education,$preparations,$drafts) as $r){$day=(new DateTimeImmutable($r['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('Y-m-d');$activeDays[(int)$r['user_id']][$day]=true;}
++ foreach($activeDays as $uid=>$dates)$scores['consistency'][$uid]=count($dates);
+ 
+  $cc=[];$sync=null;
+  if(fcc_cc_ready()){
+@@ -85,14 +100,14 @@
+  return ['lists'=>$lists,'window'=>$w,'month'=>$month,'months'=>[$current,$previous],'sync'=>$sync,'cc_accounts'=>count($cc),'accounts'=>count($users),'scores'=>$scores,'cc'=>$cc,'users'=>$users];
+ }
+ function fcc_top_snapshot(array $dataset): void {
+- $batch=[];foreach($dataset['lists'] as $cat=>$rows){$period=in_array($cat,['personal_cc','total_active_cc'],true)?$dataset['month']:(string)$dataset['window']['days'];foreach($rows as $r)$batch[]=[$dataset['window']['day'],$cat,$period,$r['entity'],$r['position']];}
++ $batch=[];foreach($dataset['lists'] as $cat=>$rows){$period=fcc_top_period_key($cat,$dataset);foreach($rows as $r)$batch[]=[$dataset['window']['day'],$cat,$period,$r['entity'],$r['position']];}
+  foreach(array_chunk($batch,100) as $chunk)fcc_partner_query('INSERT IGNORE INTO fcc_top_positions(day,category,period_key,entity_key,position) VALUES'.implode(',',array_fill(0,count($chunk),'(?,?,?,?,?)')),array_merge(...$chunk));
+ }
+ function fcc_top_page(int $uid,int $days,string $month): array {
+  if(!fcc_pro_has_access($uid))throw new RuntimeException('PRO required');
+  // Empty or invalid selections resolve to the current Zagreb calendar month in the dataset.
+  $d=fcc_top_dataset($days,$month);fcc_top_snapshot($d);$cards=[];
+- foreach($d['lists'] as $key=>$rows){$own=fcc_top_own($rows,$uid);$period=in_array($key,['personal_cc','total_active_cc'],true)?$d['month']:(string)$d['window']['days'];$old=$own['entity']?fcc_partner_one('SELECT position,day FROM fcc_top_positions WHERE category=? AND period_key=? AND entity_key=? AND day<? ORDER BY day DESC LIMIT 1',[$key,$period,$own['entity'],$d['window']['day']]):null;
++ foreach($d['lists'] as $key=>$rows){$own=fcc_top_own($rows,$uid);$period=fcc_top_period_key($key,$d);$old=$own['entity']?fcc_partner_one('SELECT position,day FROM fcc_top_positions WHERE category=? AND period_key=? AND entity_key=? AND day<? ORDER BY day DESC LIMIT 1',[$key,$period,$own['entity'],$d['window']['day']]):null;
+   $value=$own['score'];if($value===null&&!in_array($key,['personal_cc','total_active_cc'],true))$value=0;
+   if($value===null&&isset($d['users'][$uid]))$value=$d['cc'][$d['users'][$uid]['fbo']][$key]??null;
+   $cards[$key]=['rows'=>fcc_top_public($rows,$key,$uid),'own'=>['score'=>$value,'position'=>$own['position'],'movement'=>$old?(int)$old['position']-(int)$own['position']:null,'comparison_day'=>$old['day']??null],'count'=>count($rows),'visible_count'=>count(array_filter($rows,static fn($r)=>$r['visible']))];
+@@ -106,10 +121,10 @@
+  $p=fcc_top_profile($uid);if((!$p['weekly_notice']&&!$p['milestone_notice'])||!fcc_pro_has_access($uid))return;
+  $day=$now->format('Y-m-d');$state=fcc_partner_one('SELECT * FROM fcc_top_state WHERE user_id=?',[$uid]);if(($state['checked_day']??'')===$day)return;
+  static $datasets=[];$key=$day;$d=$datasets[$key]??=fcc_top_dataset(30,substr($day,0,7).'-01',$now);
+- $ranks=[];foreach($d['lists'] as $cat=>$rows)$ranks[$cat]=count($rows)>=10?fcc_top_own($rows,$uid)['position']:null;
++ $ranks=[];foreach($d['lists'] as $cat=>$rows)$ranks[in_array($cat,['education','consistency'],true)?$cat.'_v2':$cat]=count($rows)>=10?fcc_top_own($rows,$uid)['position']:null;
+  $old=json_decode($state['ranks_json']??'{}',true)?:[];$week=$now->format('o-W');
+  if($p['weekly_notice']&&$now->format('N')==='1')fcc_partner_notify($uid,'top:weekly:'.$week,'service',fcc_top_t('weekly_title'),fcc_top_t('weekly_body'),'partner/top?month='.$d['month'],604800);
+- $entered=false;if($state)foreach($ranks as $cat=>$rank){if(in_array($cat,['personal_cc','total_active_cc'],true)&&(($state['month_key']??'')!==$d['month']||!array_key_exists($cat,$old)))continue;if($rank!==null&&$rank<=10&&(($old[$cat]??null)===null||$old[$cat]>10))$entered=true;}
++ $entered=false;if($state)foreach($ranks as $cat=>$rank){if(!array_key_exists($cat,$old))continue;if($cat==='total_active_cc'&&($state['month_key']??'')!==$d['month'])continue;if($rank!==null&&$rank<=10&&(($old[$cat]??null)===null||$old[$cat]>10))$entered=true;}
+  if($p['milestone_notice']&&$entered)fcc_partner_notify($uid,'top:milestone:'.$week,'service',fcc_top_t('milestone_title'),fcc_top_t('milestone_body'),'partner/top?month='.$d['month'],604800);
+  fcc_partner_query('INSERT INTO fcc_top_state(user_id,checked_day,month_key,ranks_json) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE checked_day=VALUES(checked_day),month_key=VALUES(month_key),ranks_json=VALUES(ranks_json)',[$uid,$day,$d['month'],json_encode($ranks)]);
+ }

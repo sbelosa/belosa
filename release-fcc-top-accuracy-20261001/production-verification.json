@@ -1,0 +1,32 @@
+{
+  "production_files_verified": 5,
+  "worker_restored": true,
+  "desktop": {
+    "width": 1440,
+    "scroll_width": 1440,
+    "columns": 2,
+    "within_column_gap_px": 22
+  },
+  "mobile": {
+    "width": 360,
+    "scroll_width": 360,
+    "columns": 1,
+    "card_width": 328
+  },
+  "cc_external_ui_samples_checked": 2,
+  "cc_external_ui_samples_match": true,
+  "cc_snapshot_to_current_metric_mismatches": 0,
+  "cc_positive_accounts": 15,
+  "cc_visible_rows": 10,
+  "program90_users": 20,
+  "program90_completions": 46,
+  "active_work_users": 21,
+  "production_preferences_changed_by_test": false,
+  "tests": {
+    "test_metrics-result.json": 46,
+    "test-result.json": 440,
+    "test_accuracy-result.json": 64,
+    "test_notices-result.json": 10,
+    "test_http-result.json": 17
+  }
+}
