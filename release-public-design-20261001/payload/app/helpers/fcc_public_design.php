@@ -43,3 +43,24 @@ function fcc_public_assets(): void {
     $done=true;
     \Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-public.css?v='.filemtime(ASSETS_PATH.'css/fcc-public.css').'">','head');
 }
+
+/** Keep search engine context alongside the visible public archive. Never include personal referral parameters. */
+function fcc_public_listing_schema(array $posts, ?object $category = null, bool $products = false): void {
+    $canonical = \Altum\Meta::$canonical ?: url('blog');
+    $name = $category->title ?? fcc_public_copy($products ? 'products' : 'articles');
+    $crumbs = [
+        ['@type'=>'ListItem','position'=>1,'name'=>fcc_public_copy('home'),'item'=>url()],
+        ['@type'=>'ListItem','position'=>2,'name'=>fcc_public_copy('library'),'item'=>url('blog')],
+    ];
+    if($category) $crumbs[] = ['@type'=>'ListItem','position'=>3,'name'=>$category->title,'item'=>$canonical];
+    $items = [];
+    foreach($posts as $post) {
+        $language = \Altum\Language::$active_languages[$post->language ?? ''] ?? '';
+        $items[] = ['@type'=>'ListItem','position'=>count($items)+1,'name'=>$products ? (fcc_library_pilot_product($post->url)['title'] ?? $post->title) : $post->title,'url'=>SITE_URL.($language ? $language.'/' : '').'blog/'.$post->url];
+    }
+    $schema = ['@context'=>'https://schema.org','@graph'=>[
+        ['@type'=>'BreadcrumbList','itemListElement'=>$crumbs],
+        ['@type'=>'CollectionPage','name'=>$name,'url'=>$canonical,'inLanguage'=>fcc_language_tag(),'mainEntity'=>['@type'=>'ItemList','numberOfItems'=>count($items),'itemListElement'=>$items]],
+    ]];
+    \Altum\Event::add_content('<script type="application/ld+json">'.json_encode($schema,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP).'</script>','head');
+}

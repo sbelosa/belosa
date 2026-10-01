@@ -7,7 +7,7 @@
   {
     "path": "app/helpers/fcc_public_design.php",
     "before": null,
-    "sha256": "f1559d2d5afc583feccc470d4fffe028a906bc06d750cf5241dd08b058175ce6"
+    "sha256": "8a701de2d0ecea5aab67ea46bd403f5901d82108b6f072375b20a271caa698cc"
   },
   {
     "path": "themes/altum/assets/css/fcc-public.css",
@@ -32,7 +32,7 @@
   {
     "path": "themes/altum/views/blog/public-list.php",
     "before": null,
-    "sha256": "f1e4232552706df5cd67f3108812cccfbdc1666692bafe6d5cb7378a7d7daaef"
+    "sha256": "119a9349ed499dc9f113c850c76e5da37309ddd714726f33027ad60ee3de3056"
   },
   {
     "path": "app/helpers/fcc_library_pilot.php",
@@ -72,7 +72,7 @@
   {
     "path": "themes/altum/views/blog/pilot-library.php",
     "before": "052297e4a42fc7dbef7260e8907fbb3faf3aeda29ff3dac421465a282cfeac64",
-    "sha256": "cf1d68ff7d731f6ccb61548ad62fca9bea4c276004faa13641a7dd58307af6ad"
+    "sha256": "265306bdce713685cb2f3b3a2621101ada2d615544129c073004a56f26f77a52"
   },
   {
     "path": "themes/altum/views/blog/pilot-post.php",

@@ -1,0 +1,131 @@
+{
+  "status": "PASS",
+  "routes": 25,
+  "checks": [
+    {
+      "path": "/en/blog",
+      "status": "PASS",
+      "items": 88
+    },
+    {
+      "path": "/en/blog?view=articles",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/en/blog?search=aloe",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/en/blog?design=classic&ref=Marina",
+      "status": "PASS",
+      "items": 88
+    },
+    {
+      "path": "/en/blog/category/forever-card-club",
+      "status": "PASS",
+      "items": 7
+    },
+    {
+      "path": "/hr/blog",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/hr/blog?view=articles",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/hr/blog?search=aloe",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/hr/blog?design=classic&ref=Marina",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/hr/blog/category/forever-proizvodi",
+      "status": "PASS",
+      "items": 91
+    },
+    {
+      "path": "/sl/blog",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/sl/blog?view=articles",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/sl/blog?search=aloe",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/sl/blog?design=classic&ref=Marina",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/sl/blog/category/forever-proizvodi",
+      "status": "PASS",
+      "items": 91
+    },
+    {
+      "path": "/de/blog",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/de/blog?view=articles",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/de/blog?search=aloe",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/de/blog?design=classic&ref=Marina",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/de/blog/category/forever-proizvodi",
+      "status": "PASS",
+      "items": 91
+    },
+    {
+      "path": "/es/blog",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/es/blog?view=articles",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/es/blog?search=aloe",
+      "status": "PASS",
+      "items": 10
+    },
+    {
+      "path": "/es/blog?design=classic&ref=Marina",
+      "status": "PASS",
+      "items": 90
+    },
+    {
+      "path": "/es/blog/category/forever-proizvodi",
+      "status": "PASS",
+      "items": 91
+    }
+  ]
+}

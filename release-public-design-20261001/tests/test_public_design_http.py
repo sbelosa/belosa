@@ -30,7 +30,13 @@ def verify(path,selector=None,cookie=''):
  assert not s.select('a[href*="design=classic"]:not(.fcw-skip)'),path+' retired design link'
  assert len(s.select('h1'))==1,path+' single page title'
  if selector:assert s.select_one(selector),path+' expected layout'
- for n in s.select('script[type="application/ld+json"]'):json.loads(n.get_text())
+ schemas=[json.loads(n.get_text()) for n in s.select('script[type="application/ld+json"]')]
+ if s.select_one('[data-fcc-public-list],.fl-discovery'):
+  graph=next(g['@graph'] for g in schemas if '@graph' in g)
+  collection=next(g for g in graph if g['@type']=='CollectionPage')
+  assert collection['mainEntity']['numberOfItems']==len(s.select('.fl-grid article')),path+' visible structured list'
+  assert any(g['@type']=='BreadcrumbList' for g in graph),path+' structured breadcrumbs'
+  assert all('ref=' not in row['url'] for row in collection['mainEntity']['itemListElement']),path+' canonical item identities'
  checks.append(path)
  return s
 for locale in ('en','hr','sl','de','es'):

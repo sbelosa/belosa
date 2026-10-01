@@ -3,6 +3,7 @@ fcc_library_pilot_assets();
 $listing_category = $data->blog_posts_category ?? null;
 $listing_search = trim((string)($_GET['search'] ?? ''));
 $listing_categories = $data->blog_posts_direct_children ?? $data->blog_posts_main_categories ?? [];
+fcc_public_listing_schema((array)$data->blog_posts, $listing_category);
 foreach((array)($data->alternate_urls ?? []) as $lang=>$href) \Altum\Event::add_content('<link rel="alternate" hreflang="'.e(fcc_language_tag($lang)).'" href="'.e($href).'">','head');
 ?>
 <div id="fl-library" class="fl-library fcw-article-list" data-fcc-public-list>

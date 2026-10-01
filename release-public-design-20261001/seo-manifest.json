@@ -1,0 +1,17 @@
+[
+  {
+    "path": "app/helpers/fcc_public_design.php",
+    "before": "8a701de2d0ecea5aab67ea46bd403f5901d82108b6f072375b20a271caa698cc",
+    "sha256": "f1559d2d5afc583feccc470d4fffe028a906bc06d750cf5241dd08b058175ce6"
+  },
+  {
+    "path": "themes/altum/views/blog/public-list.php",
+    "before": "119a9349ed499dc9f113c850c76e5da37309ddd714726f33027ad60ee3de3056",
+    "sha256": "f1e4232552706df5cd67f3108812cccfbdc1666692bafe6d5cb7378a7d7daaef"
+  },
+  {
+    "path": "themes/altum/views/blog/pilot-library.php",
+    "before": "265306bdce713685cb2f3b3a2621101ada2d615544129c073004a56f26f77a52",
+    "sha256": "cf1d68ff7d731f6ccb61548ad62fca9bea4c276004faa13641a7dd58307af6ad"
+  }
+]

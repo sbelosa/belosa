@@ -1,0 +1,27 @@
+{
+    "status": "published",
+    "at_utc": "2026-10-01T14:37:02+00:00",
+    "files": 3,
+    "source_backup": "\/home\/forevercardclub\/fcc-release-20260927\/public-design-seo-20261001T143601Z\/before",
+    "database_backup": "\/home\/forevercardclub\/fcc-release-20260927\/one-fcc-public-design-backup-20261001T140526Z\/database.sql.gz",
+    "content_unchanged": true,
+    "content_snapshot": {
+        "blog_posts": {
+            "count": 891,
+            "sha256": "5943488e36336dbcf2f69851cfe8cb803c6a36bf049d8a6c791ffe531f16c285"
+        },
+        "pages": {
+            "count": 252,
+            "sha256": "cfa466d9de9091defc66d98a9332dba3cea2fd467bb7729ccac03631f86279c6"
+        },
+        "blog_posts_categories": {
+            "count": 113,
+            "sha256": "87092d49fa00796d3138c19a3e66a92b7fb2c30f8b06181e650c97d7c472c9ca"
+        },
+        "pages_categories": {
+            "count": 9,
+            "sha256": "b2c70423e403547be9f3682419f56138ccd52f1fdabaef9086f28534582281b7"
+        }
+    },
+    "database_writes": 0
+}

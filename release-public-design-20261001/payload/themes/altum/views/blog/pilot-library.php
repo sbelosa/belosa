@@ -8,6 +8,7 @@ $lp_own_ref=$lp_cards[0]['url']??null;
 $lp_personal_share=$lp_uid && !empty($lp_own_ref);
 $lp_ref=$lp_share_context?$lp_own_ref:$lp_incoming;
 $lp_posts=fcc_library_pilot_posts();
+if(!$lp_share_context) fcc_public_listing_schema($lp_posts, null, true);
 $lp_all_url=fcc_library_pilot_url('blog',$lp_ref,['view'=>'articles']);
 foreach((array)($data->alternate_urls??[]) as $lang=>$href) \Altum\Event::add_content('<link rel="alternate" hreflang="'.e(fcc_language_tag($lang)).'" href="'.e($href).'">','head');
 ?>
