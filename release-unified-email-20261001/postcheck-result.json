@@ -1,0 +1,17 @@
+{
+    "status": "PASS",
+    "at_utc": "2026-10-01T10:12:01+00:00",
+    "rendered_languages": {
+        "en": true,
+        "hr": true,
+        "sl": true,
+        "de": true,
+        "es": true
+    },
+    "broadcast": {
+        "status": "sent",
+        "total_emails": 701,
+        "sent_emails": 701
+    },
+    "test_emails_sent": 0
+}

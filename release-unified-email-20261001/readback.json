@@ -1,0 +1,30 @@
+[
+  {
+    "path": "app/helpers/fcc_email_design.php",
+    "match": true
+  },
+  {
+    "path": "app/helpers/email.php",
+    "match": true
+  },
+  {
+    "path": "themes/altum/views/partials/email_wrapper.php",
+    "match": true
+  },
+  {
+    "path": "themes/altum/views/admin/broadcast-create/index.php",
+    "match": true
+  },
+  {
+    "path": "themes/altum/views/admin/broadcast-update/index.php",
+    "match": true
+  },
+  {
+    "path": "themes/altum/views/admin/automation-create/index.php",
+    "match": true
+  },
+  {
+    "path": "themes/altum/views/admin/automation-update/index.php",
+    "match": true
+  }
+]

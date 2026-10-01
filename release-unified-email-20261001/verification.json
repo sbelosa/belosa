@@ -1,0 +1,31 @@
+{
+  "automatic_checks": 106,
+  "design_checks": 56,
+  "webinar_checks": 41,
+  "business_delivery_checks": 9,
+  "browser_checks": {
+    "pages": [
+      "broadcast",
+      "registration",
+      "webinar",
+      "long_content"
+    ],
+    "widths": [
+      360,
+      390,
+      430
+    ],
+    "horizontal_overflow": false,
+    "editor_line_breaks_preserved": true,
+    "signed_editor_link_preserved": true
+  },
+  "native_email_clients_tested": false,
+  "production_render_languages": [
+    "en",
+    "hr",
+    "sl",
+    "de",
+    "es"
+  ],
+  "production_synthetic_test_emails_sent": 0
+}

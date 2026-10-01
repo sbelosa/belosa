@@ -1,0 +1,37 @@
+[
+  {
+    "path": "app/helpers/fcc_email_design.php",
+    "before": null,
+    "sha256": "b7c12c3e5467d84311f020006331201db0d429e0f23ab47becdc4a81f6ab5cd7"
+  },
+  {
+    "path": "app/helpers/email.php",
+    "before": "2864910309cfc526ad956cb2219147fdf19c100e2b5f6489814a44be3fe854e4",
+    "sha256": "a0df141603e2cab468f67adbe21794f9c3864e4578080828197a23fb87ef44bb"
+  },
+  {
+    "path": "themes/altum/views/partials/email_wrapper.php",
+    "before": "b7d032c1f96320b52d6350e835f54c62bb43e2428bc39cb2e9dd5dae222f7ccf",
+    "sha256": "eecd3e8c695c53ebadcb53feb343972c7e02bfd7d2e8557ddea30e3e2989cc3b"
+  },
+  {
+    "path": "themes/altum/views/admin/broadcast-create/index.php",
+    "before": "dd8ca3f3f638a3d52690723244d71eff909226bee025c983ca84569f0a8091ee",
+    "sha256": "67476d1c806c6e804cd2d9d3975103ae9c074cfe58cbbce5b15f67b916b675ba"
+  },
+  {
+    "path": "themes/altum/views/admin/broadcast-update/index.php",
+    "before": "33863b58adb8506507e7aedb6fcb97477ec5eeed3b763089c3d40e2fe37ce2ed",
+    "sha256": "7a51b3ce7ec19b6771738180ed1e2b7201c5897a7380db34bed6d8b72524a5d1"
+  },
+  {
+    "path": "themes/altum/views/admin/automation-create/index.php",
+    "before": "33d502ee68e9db5079ce1dcb1d9cf73fe2c352ede663b78af286a0d2fe3be65d",
+    "sha256": "616b4dd5bfef2f972573dcad5f893fdb882c3f48652b01a28ee0ea47b1adbc01"
+  },
+  {
+    "path": "themes/altum/views/admin/automation-update/index.php",
+    "before": "cb43f174933ff5c40a0f80a99a869d0c3f0e59474d2bdd1886292919819c148b",
+    "sha256": "b644b38fc96d825774838c50f35335de3697de104511a82bb9be3fb95fe48988"
+  }
+]
