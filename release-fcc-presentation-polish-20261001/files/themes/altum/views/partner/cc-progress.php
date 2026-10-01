@@ -1,0 +1,11 @@
+<?php defined('ALTUMCODE') || die();
+$series=fcc_partner_rows('SELECT period_month,total_cc,personal_cc FROM forever_business_metrics WHERE fbo_id=? AND period_month<=? ORDER BY period_month DESC LIMIT 12',[$ccPage['fbo'],$ccPage['period']]);
+$map=array_column($series,null,'period_month');$rankMember=$cc;$month=new DateTimeImmutable($ccPage['period']);
+foreach([1=>'previous_total_cc',2=>'two_months_ago_total_cc',3=>'three_months_ago_total_cc'] as $offset=>$key)$rankMember[$key]=$map[$month->modify('-'.$offset.' months')->format('Y-m-01')]['total_cc']??null;
+$rank=forever_business_get_verified_progress($rankMember)['rank'];
+?>
+<section class="fp-panel fp-cc-position"><h2><?= $h(fcc_rel_t('next_rank')) ?></h2>
+<?php if($rank['mode']==='manager'): ?><p><?= $h(fcc_rel_t('rank_high')) ?></p>
+<?php else: ?><h3><?= $h($rank['current_title']) ?> → <?= $h($rank['next_title']) ?></h3><?php foreach($rank['windows'] as $i=>$window): $months=$rank['next_title']==='Supervisor'?1:($rank['next_title']==='Assistant Manager'?2:($i===0?2:4)); ?><div class="fp-rank-window"><span><?= $months ?> <?= $h(fcc_rel_t('window')) ?></span><strong><?= $h(fcc_cc_number($window['current'])) ?> / <?= $h(fcc_cc_number($window['target'])) ?> CC</strong><progress aria-label="<?= $h(fcc_rel_t('next_rank')) ?>" max="100" value="<?= $window['progress'] ?>"></progress><small><?= $h(fcc_rel_t('remaining')) ?>: <?= $h(fcc_cc_number($window['gap'])) ?></small></div><?php endforeach ?><p class="fp-muted"><?= $h(fcc_rel_t('rank_note')) ?></p><?php endif ?>
+<a class="fp-link" href="<?= url('partner/team') ?>"><?= $h(fcc_t('Moj sponzor')) ?> →</a>
+</section><section class="fp-panel fp-cc-trend"><h2><?= $h(fcc_rel_t('trend')) ?></h2><?php $max=max(1,...array_column($series,'total_cc'));foreach(array_reverse($series) as $row): ?><div class="fp-cc-trend-row"><span><?= $h(substr($row['period_month'],0,7)) ?></span><div class="fp-cc-trend-track"><?php if($row['total_cc']!==null): ?><i style="width:<?= round(max(0,(float)$row['total_cc'])/$max*100,2) ?>%"></i><?php endif ?></div><strong class="<?= $row['total_cc']===null?'fp-cc-trend-missing':'' ?>"><?= $h($row['total_cc']===null?fcc_t('Nema podataka'):fcc_cc_number($row['total_cc'])) ?></strong></div><?php endforeach ?></section>

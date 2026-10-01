@@ -1,0 +1,150 @@
+--- a/themes/altum/assets/css/fcc-partner-premium.css
++++ b/themes/altum/assets/css/fcc-partner-premium.css
+@@ -636,3 +636,32 @@
+   overflow-y:hidden;
+  }
+ }
++
++/* Final workspace rhythm: compact headers and consistent content spacing. */
++body.fcc-partner-mode .fp-page{--fp-space:20px}
++body.fcc-partner-mode .fp-page :is(.fp-page-heading,.fp-section-title){row-gap:12px}
++body.fcc-partner-mode .fp-page .fp-section-title>.fp-link{margin-top:0;line-height:1.5}
++body.fcc-partner-mode .fp-page .fp-panel>h2:first-child{margin-top:0;line-height:1.35}
++body.fcc-partner-mode .fp-page .fp-panel>p:last-child{margin-bottom:0}
++body.fcc-partner-mode .fp-page :is(.fp-filter-row,.fp-actions)>.fp-link{margin-top:0;min-height:40px}
++body.fcc-partner-mode .fp-page .fp-form>button.fp-button{justify-self:start}
++body.fcc-partner-mode .fp-page details.fp-panel>summary{font-size:16px;line-height:1.5;font-weight:650;cursor:pointer}
++body.fcc-partner-mode .fp-page details.fp-panel[open]>summary{margin-bottom:18px}
++body.fcc-partner-mode .fp-page :is(.fp-menu-grid,.fp-settings-grid){align-items:stretch}
++body.fcc-partner-mode .fp-section-notifications .fp-notice{gap:16px;padding:18px 0}
++body.fcc-partner-mode .fp-section-notifications .fp-notice>div{min-width:0;flex:1}
++body.fcc-partner-mode .fp-section-notifications .fp-notice h3{margin:7px 0}
++body.fcc-partner-mode .fp-section-notifications .fp-notice p{font-size:13px;line-height:1.65;margin:0}
++body.fcc-partner-mode .fp-section-notifications .fp-notice-title{padding:0;text-align:left;white-space:normal;line-height:1.5}
++body.fcc-partner-mode .fp-section-notifications #preferences>.fp-form{margin-top:22px}
++body.fcc-partner-mode .fp-section-notifications #preferences>.fp-form>.fp-check-label{padding-block:10px}
++body.fcc-partner-mode .fp-page :is(.fp-form-grid,.fp-card-grid,.fp-package-grid)>*{min-width:0}
++@media(max-width:650px){body.fcc-partner-mode .fp-page .fp-page-heading{margin-bottom:20px}body.fcc-partner-mode .fp-page .fp-panel{border-radius:18px}body.fcc-partner-mode .fp-page .fp-section-title h2{font-size:18px;line-height:1.4}body.fcc-partner-mode .fp-section-notifications .fp-notice{align-items:flex-start;gap:8px}body.fcc-partner-mode .fp-section-notifications .fp-notice>form{flex-shrink:0;max-width:80px}body.fcc-partner-mode .fp-section-notifications .fp-notice>form .fp-text-button{font-size:11px;padding:8px 0}}
++body.fcc-partner-mode .fp-page .fp-card-preview{padding:0 24px 24px}
++body.fcc-partner-mode .fp-page .fp-card-preview .fp-card-cover{margin:0 -24px 20px;padding:20px 24px;height:88px!important}
++body.fcc-partner-mode .fp-results-milestones progress{appearance:none;-webkit-appearance:none;display:block;width:100%;height:8px;border:0;border-radius:99px;overflow:hidden;background:#e2ece4;accent-color:#247c68;margin:18px 0 12px}
++body.fcc-partner-mode .fp-results-milestones progress::-webkit-progress-bar{background:#e2ece4;border-radius:99px}
++body.fcc-partner-mode .fp-results-milestones progress::-webkit-progress-value{background:#247c68;border-radius:99px}
++body.fcc-partner-mode .fp-results-milestones progress::-moz-progress-bar{background:#247c68;border-radius:99px}
++body.fcc-partner-mode .fp-section-notifications #preferences>p{font-size:13px;line-height:1.7}
++@media(max-width:650px){body.fcc-partner-mode .fp-page .fp-card-preview{padding:0 20px 20px}body.fcc-partner-mode .fp-page .fp-card-preview .fp-card-cover{margin:0 -20px 18px;padding:18px 20px;height:76px!important}}
+--- a/themes/altum/assets/css/fcc-cc.css
++++ b/themes/altum/assets/css/fcc-cc.css
+@@ -13,3 +13,64 @@
+ .fp-cc-preferences .fp-check-label{border-bottom:1px solid #dbe6df;padding:16px 0!important;cursor:pointer}.fp-cc-preferences .fp-check-label:last-child{border-bottom:0}
+ @media(max-width:900px){.fp-cc-detail-grid{grid-template-columns:minmax(0,1fr);gap:0}}
+ @media(max-width:650px){.fp-cc-page>.fp-panel{padding:20px}.fp-cc-page .fp-cc-values strong{font-size:26px}.fp-cc-activity{margin-top:16px;padding-top:20px}.fp-cc-month{gap:10px}.fp-cc-month label{margin:0}.fp-cc-month select{min-width:0;flex:1}.fp-cc-activity .ft-status{font-size:12px;line-height:1.6}}
++
++/* Points workspace: clear hierarchy, aligned controls and independent cards. */
++.fp-cc-page{max-width:1180px}
++.fp-cc-page .fp-page-heading{align-items:flex-start;margin-bottom:22px}
++.fp-cc-page .fp-page-heading>.fp-button{flex-shrink:0;margin-top:12px}
++.fp-cc-page .fp-cc-overview{padding:24px}
++.fp-cc-page .fp-cc-month{padding:0 0 20px;margin:0 0 20px;border-bottom:1px solid #e0e9e3;gap:10px}
++.fp-cc-month label{margin:0 6px 0 0;font-size:13px;font-weight:600;color:#4e6c61}
++body.fcc-partner-mode .fp-cc-month select{min-height:44px;height:44px;min-width:145px;padding:10px 14px;border-radius:12px;line-height:1.4}
++.fp-cc-month .fp-button{min-height:44px}
++.fp-cc-page .fp-cc-values{gap:12px}
++.fp-cc-page .fp-cc-metric{padding:18px 20px;border:1px solid #e0eae3;border-radius:15px;background:#f5f8f4;gap:7px}
++.fp-cc-page .fp-cc-metric-active{background:#eaf3ec;border-color:#cbded0}
++.fp-cc-page .fp-cc-metric>span{font-size:13px;font-weight:600;line-height:1.4}
++.fp-cc-page .fp-cc-metric strong{font-size:clamp(26px,3vw,36px);line-height:1.15;letter-spacing:-.035em}
++.fp-cc-page .fp-cc-activity{border:0;margin:22px 0 0;padding:0}
++.fp-cc-page .fp-cc-activity .fp-section-title{margin-bottom:14px}
++.fp-cc-page .fp-cc-gates{gap:16px}
++.fp-cc-gates>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px 12px;padding:14px 16px;background:#f6f9f6;border:1px solid #e6ece7;border-radius:12px}
++.fp-cc-gates>div>span{font-size:12px;color:#506d60}
++.fp-cc-gates>div>strong{grid-row:1;grid-column:2;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
++.fp-cc-gates progress{grid-column:1/-1;height:7px}
++.fp-cc-activity>p{margin:12px 0 18px;font-size:12px;line-height:1.7}
++.fp-cc-overview>p:not(.fp-cc-note){font-size:13px;line-height:1.6;margin:16px 0 10px}
++.fp-cc-overview .fp-cc-timestamp{margin-bottom:5px!important}
++.fp-cc-overview>small{display:block;font-size:11px;line-height:1.6;color:#60766b}
++.fp-cc-content-grid{column-count:2;column-gap:20px}
++.fp-cc-content-grid>.fp-panel{display:inline-block;vertical-align:top;box-sizing:border-box;width:100%;break-inside:avoid;margin:0 0 20px;padding:24px}
++.fp-cc-content-grid>.fp-panel>h2{margin:0 0 16px}
++.fp-cc-content-grid>.fp-panel>p{font-size:13px;line-height:1.7}
++.fp-cc-content-grid .fp-section-title{margin-bottom:16px;align-items:flex-start}
++.fp-cc-content-grid .fp-section-title h2{flex:1 1 200px}
++.fp-cc-content-grid .fp-section-title .fp-link{margin-top:3px}
++.fp-cc-content-grid h2{font-size:18px;line-height:1.35}
++.fp-cc-content-grid .fp-rank-window{padding:16px;margin:12px 0}
++.fp-cc-position h3{font-size:16px;line-height:1.5;margin:0 0 16px}
++.fp-cc-position>.fp-link{margin-top:4px;min-height:36px}
++.fp-cc-position progress{display:block;width:100%;height:7px;accent-color:#247c68;margin:12px 0;border:0;border-radius:10px;overflow:hidden}
++.fp-cc-position progress::-webkit-progress-bar{background:#dce8df}
++.fp-cc-position progress::-webkit-progress-value{background:#247c68;border-radius:10px}
++.fp-cc-position .fp-rank-window>span,.fp-cc-position .fp-rank-window>small{font-size:12px;color:#506d60}
++.fp-cc-position .fp-rank-window strong{font-size:22px;margin-top:5px}
++.fp-cc-trend-row{grid-template-columns:68px minmax(0,1fr) 76px;gap:12px;margin:0;padding:11px 0;border-bottom:1px solid #e7eee8;font-size:13px}
++.fp-cc-trend-row:last-child{border-bottom:0;padding-bottom:0}
++.fp-cc-trend-track{height:9px;border-radius:99px;background:#eaf0e9;overflow:hidden}
++.fp-cc-trend-row i{height:9px;min-width:0;border-radius:99px;background:linear-gradient(90deg,#398e71,#237662)}
++.fp-cc-trend-row strong{font-size:13px;white-space:nowrap}
++.fp-cc-content-grid .fp-cc-update{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;padding:16px 0}
++.fp-cc-content-grid .fp-cc-update p{font-size:13px;line-height:1.65;min-width:0}
++.fp-cc-content-grid .fp-cc-update .fp-button{grid-column:2;grid-row:1/3;padding:8px 12px;min-height:40px;font-size:12px}
++.fp-cc-content-grid .fp-cc-update small{grid-column:1;font-size:11px}
++.fp-cc-content-grid .fp-cc-history{grid-template-columns:135px minmax(0,1fr);padding:16px 0;gap:12px}
++.fp-cc-content-grid .fp-cc-history strong{font-size:14px}
++.fp-cc-content-grid .fp-cc-history :is(time,small){font-size:11px;line-height:1.6}
++.fp-cc-content-grid :is(.fp-cc-update,.fp-cc-history):last-child{padding-bottom:0}
++.fp-cc-summary .fp-cc-values{padding:16px;background:#f1f6f0;border-radius:14px;gap:16px;margin-bottom:14px}
++.fp-cc-summary .fp-cc-values>div{gap:6px}.fp-cc-summary .fp-cc-values span{font-size:12px}
++@media(max-width:1000px){.fp-cc-content-grid{column-count:1}.fp-cc-page .fp-page-heading{flex-wrap:wrap}.fp-cc-page .fp-page-heading>.fp-button{margin:0}.fp-cc-content-grid>.fp-panel{margin-bottom:16px}}
++@media(max-width:650px){.fp-cc-page .fp-cc-overview,.fp-cc-content-grid>.fp-panel{padding:20px}.fp-cc-page .fp-cc-values{gap:8px}.fp-cc-page .fp-cc-metric{padding:14px 16px;border:1px solid #e0eae3;flex-direction:row}.fp-cc-page .fp-cc-metric strong{font-size:25px}.fp-cc-month label{flex-basis:100%;font-size:12px}.fp-cc-month select{flex:1;min-width:0!important}.fp-cc-page .fp-cc-gates{grid-template-columns:1fr;gap:10px}.fp-cc-page .fp-page-heading>.fp-button{margin:14px 0 0;min-height:40px;font-size:12px}.fp-cc-content-grid .fp-cc-update .fp-button{width:auto}.fp-cc-content-grid .fp-cc-history{grid-template-columns:1fr;gap:5px}.fp-cc-content-grid .fp-cc-update{grid-template-columns:1fr}.fp-cc-content-grid .fp-cc-update .fp-button{grid-column:1;grid-row:auto;justify-self:start;margin-top:4px}.fp-cc-page .fp-cc-activity{margin-top:20px}}
++
++body.fcc-partner-mode .fp-page .fp-cc-month select{height:48px;min-height:48px}.fp-cc-month .fp-button{min-height:48px}.fp-cc-trend-row .fp-cc-trend-missing{font-size:11px;font-weight:400;white-space:normal;color:#60766b;line-height:1.4}
+--- a/themes/altum/views/partner/cc-points.php
++++ b/themes/altum/views/partner/cc-points.php
+@@ -3,24 +3,25 @@
+ \Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-cc.css?v='.filemtime(ASSETS_PATH.'css/fcc-cc.css').'">','fcc_styles');
+ ?>
+ <div class="fp-cc-page">
+- <div class="fp-page-heading"><div><span class="fp-eyebrow">FLP360</span><h1><?= $h(fcc_cc_t('points')) ?></h1><p><?= $h(fcc_cc_t('points_description')) ?></p></div><a class="fp-link" href="<?= url('partner/notifications#preferences') ?>"><?= $h(fcc_cc_t('notification_settings')) ?> →</a></div>
++ <div class="fp-page-heading"><div><span class="fp-eyebrow">FLP360</span><h1><?= $h(fcc_cc_t('points')) ?></h1><p><?= $h(fcc_cc_t('points_description')) ?></p></div><a class="fp-button fp-button-outline" href="<?= url('partner/notifications#preferences') ?>"><?= $h(fcc_cc_t('notification_settings')) ?> →</a></div>
++ <section class="fp-panel fp-cc-overview">
+  <?php if($ccPage['periods']): ?><form method="get" class="fp-cc-month"><label for="cc-month"><?= $h(fcc_cc_t('month')) ?></label><select id="cc-month" name="month" data-is-not-custom-select><?php foreach($ccPage['periods'] as $period): ?><option value="<?= $h($period) ?>" <?= $period===$ccPage['period']?'selected':'' ?>><?= $h(substr($period,0,7)) ?></option><?php endforeach ?></select><button class="fp-button fp-button-outline"><?= $h(fcc_cc_t('show')) ?></button></form><?php endif ?>
+- <section class="fp-panel">
+  <?php if(!$cc): ?><p><?= $h(fcc_cc_t('no_data')) ?></p><a class="fp-button" href="<?= url('account') ?>"><?= $h(fcc_cc_t('settings')) ?></a>
+  <?php else: ?>
+- <div class="fp-cc-values fp-cc-three"><?php foreach(['personal'=>'personal_cc','active'=>'total_active_cc','total'=>'total_cc'] as $key=>$field): ?><div><span><?= $h(fcc_cc_t($key)) ?></span><strong><?= $h(fcc_cc_number($cc[$field])) ?></strong></div><?php endforeach ?></div>
++ <div class="fp-cc-values fp-cc-three"><?php foreach(['personal'=>'personal_cc','active'=>'total_active_cc','total'=>'total_cc'] as $key=>$field): ?><div class="fp-cc-metric fp-cc-metric-<?= $h($key) ?>"><span><?= $h(fcc_cc_t($key)) ?></span><strong><?= $h(fcc_cc_number($cc[$field])) ?></strong></div><?php endforeach ?></div>
+  <div class="fp-cc-activity"><div class="fp-section-title"><h2><?= $h(fcc_cc_t('activity')) ?></h2><?php if(!empty($cc['is_4cc_active'])): ?><span class="ft-status"><?= $h(fcc_cc_t('confirmed')) ?> ✓</span><?php endif ?></div>
+- <div class="fp-rank-grid"><div><span><?= $h(fcc_rel_t('personal_gate')) ?></span><progress max="1" value="<?= min(1,max(0,(float)$cc['personal_cc'])) ?>"></progress><strong><?= $h(fcc_cc_number($cc['personal_cc'])) ?> / 1</strong></div><div><span><?= $h(fcc_rel_t('active_gate')) ?></span><progress max="4" value="<?= min(4,max(0,(float)$cc['total_active_cc'])) ?>" aria-label="<?= $h(fcc_cc_t('activity')) ?>"></progress><strong><?= $h(fcc_cc_number($cc['total_active_cc'])) ?> / 4</strong></div></div>
++ <div class="fp-rank-grid fp-cc-gates"><div><span><?= $h(fcc_rel_t('personal_gate')) ?></span><progress aria-label="<?= $h(fcc_rel_t('personal_gate')) ?>" max="1" value="<?= min(1,max(0,(float)$cc['personal_cc'])) ?>"></progress><strong><?= $h(fcc_cc_number($cc['personal_cc'])) ?> / 1</strong></div><div><span><?= $h(fcc_rel_t('active_gate')) ?></span><progress max="4" value="<?= min(4,max(0,(float)$cc['total_active_cc'])) ?>" aria-label="<?= $h(fcc_cc_t('activity')) ?>"></progress><strong><?= $h(fcc_cc_number($cc['total_active_cc'])) ?> / 4</strong></div></div>
+  <?php if(empty($cc['is_4cc_active'])): ?><p><?= $h((float)$cc['total_active_cc']>=4?fcc_cc_t('await_activity'):fcc_cc_t('remaining',['{cc}'=>fcc_cc_number(max(0,4-(float)$cc['total_active_cc']))])) ?> <?= $h(fcc_cc_t('personal_condition',['{cc}'=>fcc_cc_number($cc['personal_cc'])])) ?></p><?php endif ?>
+  </div>
+  <?php if(fcc_cc_rank($cc['title']??'')>0): ?><p><?= $h(fcc_cc_t('position')) ?>: <strong><?= $h($cc['title']) ?></strong></p><?php endif ?>
+- <p class="fp-muted"><?= $h(fcc_cc_t('updated',['{at}'=>fcc_cc_time($cc['updated_at'])])) ?> · Europe/Zagreb</p>
++ <p class="fp-muted fp-cc-timestamp"><?= $h(fcc_cc_t('updated',['{at}'=>fcc_cc_time($cc['updated_at'])])) ?> · Europe/Zagreb</p>
+  <?php if($cc['stale']): ?><p class="fp-cc-note"><?= $h(fcc_cc_t('stale')) ?></p><?php endif ?>
+  <small><?= $h(fcc_cc_t('source_note')) ?></small>
+  <?php endif ?>
+  </section>
++ <div class="fp-cc-content-grid">
+  <?php if($cc)require THEME_PATH.'views/partner/cc-progress.php'; ?>
+- <div class="fp-cc-detail-grid"><section class="fp-panel" id="cc-updates"><div class="fp-section-title"><h2><?= $h(fcc_cc_t(fcc_pro_has_access($uid)?'digest_title':'my_points_events')) ?></h2><?php if(fcc_pro_has_access($uid)): ?><a class="fp-link" href="<?= url('partner/team') ?>"><?= $h(fcc_cc_t('open_team')) ?> →</a><?php endif ?></div>
++ <section class="fp-panel" id="cc-updates"><div class="fp-section-title"><h2><?= $h(fcc_cc_t(fcc_pro_has_access($uid)?'digest_title':'my_points_events')) ?></h2><?php if(fcc_pro_has_access($uid)): ?><a class="fp-link" href="<?= url('partner/team') ?>"><?= $h(fcc_cc_t('open_team')) ?> →</a><?php endif ?></div>
+  <?php if(!$items): ?><p class="fp-muted"><?= $h(fcc_cc_t('no_news')) ?></p><?php endif ?>
+  <?php foreach($items as $item): ?><article class="fp-cc-update"><p><?= $h(fcc_cc_item_text($item)) ?></p><?php if(!$item['self']): ?><a class="fp-button fp-button-outline" href="<?= url('partner/team?member='.(int)$item['member'].'&cc_event='.(int)$item['id'].'#team-work') ?>"><?= $h(fcc_cc_t($item['kind']==='growth'?'contact':'congratulate')) ?> →</a><?php endif ?><small><?= $h(fcc_cc_time($item['occurred_at'])) ?></small></article><?php endforeach ?>
+  </section>
+--- a/themes/altum/views/partner/cc-progress.php
++++ b/themes/altum/views/partner/cc-progress.php
+@@ -4,8 +4,8 @@
+ foreach([1=>'previous_total_cc',2=>'two_months_ago_total_cc',3=>'three_months_ago_total_cc'] as $offset=>$key)$rankMember[$key]=$map[$month->modify('-'.$offset.' months')->format('Y-m-01')]['total_cc']??null;
+ $rank=forever_business_get_verified_progress($rankMember)['rank'];
+ ?>
+-<div class="fp-rank-grid"><section class="fp-panel"><h2><?= $h(fcc_rel_t('next_rank')) ?></h2>
++<section class="fp-panel fp-cc-position"><h2><?= $h(fcc_rel_t('next_rank')) ?></h2>
+ <?php if($rank['mode']==='manager'): ?><p><?= $h(fcc_rel_t('rank_high')) ?></p>
+-<?php else: ?><h3><?= $h($rank['current_title']) ?> → <?= $h($rank['next_title']) ?></h3><?php foreach($rank['windows'] as $i=>$window): $months=$rank['next_title']==='Supervisor'?1:($rank['next_title']==='Assistant Manager'?2:($i===0?2:4)); ?><div class="fp-rank-window"><span><?= $months ?> <?= $h(fcc_rel_t('window')) ?></span><strong><?= $h(fcc_cc_number($window['current'])) ?> / <?= $h(fcc_cc_number($window['target'])) ?> CC</strong><progress max="100" value="<?= $window['progress'] ?>"></progress><small><?= $h(fcc_rel_t('remaining')) ?>: <?= $h(fcc_cc_number($window['gap'])) ?></small></div><?php endforeach ?><p class="fp-muted"><?= $h(fcc_rel_t('rank_note')) ?></p><?php endif ?>
++<?php else: ?><h3><?= $h($rank['current_title']) ?> → <?= $h($rank['next_title']) ?></h3><?php foreach($rank['windows'] as $i=>$window): $months=$rank['next_title']==='Supervisor'?1:($rank['next_title']==='Assistant Manager'?2:($i===0?2:4)); ?><div class="fp-rank-window"><span><?= $months ?> <?= $h(fcc_rel_t('window')) ?></span><strong><?= $h(fcc_cc_number($window['current'])) ?> / <?= $h(fcc_cc_number($window['target'])) ?> CC</strong><progress aria-label="<?= $h(fcc_rel_t('next_rank')) ?>" max="100" value="<?= $window['progress'] ?>"></progress><small><?= $h(fcc_rel_t('remaining')) ?>: <?= $h(fcc_cc_number($window['gap'])) ?></small></div><?php endforeach ?><p class="fp-muted"><?= $h(fcc_rel_t('rank_note')) ?></p><?php endif ?>
+ <a class="fp-link" href="<?= url('partner/team') ?>"><?= $h(fcc_t('Moj sponzor')) ?> →</a>
+-</section><section class="fp-panel"><h2><?= $h(fcc_rel_t('trend')) ?></h2><?php $max=max(1,...array_column($series,'total_cc'));foreach(array_reverse($series) as $row): ?><div class="fp-cc-trend-row"><span><?= $h(substr($row['period_month'],0,7)) ?></span><div><i style="width:<?= round(max(0,(float)$row['total_cc'])/$max*100,2) ?>%"></i></div><strong><?= $h(fcc_cc_number($row['total_cc'])) ?></strong></div><?php endforeach ?></section></div>
++</section><section class="fp-panel fp-cc-trend"><h2><?= $h(fcc_rel_t('trend')) ?></h2><?php $max=max(1,...array_column($series,'total_cc'));foreach(array_reverse($series) as $row): ?><div class="fp-cc-trend-row"><span><?= $h(substr($row['period_month'],0,7)) ?></span><div class="fp-cc-trend-track"><?php if($row['total_cc']!==null): ?><i style="width:<?= round(max(0,(float)$row['total_cc'])/$max*100,2) ?>%"></i><?php endif ?></div><strong class="<?= $row['total_cc']===null?'fp-cc-trend-missing':'' ?>"><?= $h($row['total_cc']===null?fcc_t('Nema podataka'):fcc_cc_number($row['total_cc'])) ?></strong></div><?php endforeach ?></section>

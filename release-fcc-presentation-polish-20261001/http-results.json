@@ -1,0 +1,72 @@
+[
+  {
+    "route": "/partner/points",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/contacts",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/team",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/more",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/settings",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/notifications",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/top",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/cards",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/webinars",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/share",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/account-plan",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/fcc-results",
+    "http_status": 200,
+    "rendered": true
+  },
+  {
+    "route": "/partner/points?month=2026-08-01",
+    "http_status": 200,
+    "rendered": true
+  }
+]

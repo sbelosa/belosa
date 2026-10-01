@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "files": [
+    {
+      "path": "themes/altum/assets/css/fcc-partner-premium.css",
+      "sha256": "fcf78f5585ac3faab3ae34e125fc1a6176062627d925ad20f697bd35c3e923e3",
+      "verified": true,
+      "public_asset_verified": true
+    },
+    {
+      "path": "themes/altum/assets/css/fcc-cc.css",
+      "sha256": "03aec0a65280dc00f044a3a637e004c312a5da623c590b58b14d5f86709dd725",
+      "verified": true,
+      "public_asset_verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/cc-points.php",
+      "sha256": "0106b23156db58fdb2e02e37f37103a4a6732b5e6d327004ff4070a882a4d8fa",
+      "verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/cc-progress.php",
+      "sha256": "8b67371d07a99487fcac180d8614d3fa0e3c4b76b0c8149e1b76d989ef2a8f04",
+      "verified": true
+    }
+  ],
+  "worker_restored": true
+}

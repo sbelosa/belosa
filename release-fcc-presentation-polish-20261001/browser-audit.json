@@ -1,0 +1,239 @@
+[
+  {
+    "overflow": [],
+    "path": "/partner/points",
+    "query": "",
+    "title": "Moji bodovi",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/contacts",
+    "query": "",
+    "title": "Tvoji kontakti",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/team",
+    "query": "",
+    "title": "Moj tim",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/more",
+    "query": "",
+    "title": "Moj radni prostor",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/settings",
+    "query": "",
+    "title": "Tvoj radni prostor",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/notifications",
+    "query": "",
+    "title": "Obavijesti",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/top",
+    "query": "",
+    "title": "FCC Top 10",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner",
+    "query": "",
+    "title": "Tvoj današnji korak",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/cards",
+    "query": "",
+    "title": "Moje FCC kartice",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/webinars",
+    "query": "",
+    "title": "Webinari i događaji",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/share",
+    "query": "",
+    "title": "Podijeli nešto korisno.",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/account-plan",
+    "query": "",
+    "title": "Moj paket",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/fcc-results",
+    "query": "",
+    "title": "FCC Rezultati",
+    "viewport": 360,
+    "width": 360
+  },
+  {
+    "overflow": [],
+    "path": "/partner/points",
+    "title": "Moji bodovi",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/contacts",
+    "title": "Tvoji kontakti",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/team",
+    "title": "Moj tim",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/more",
+    "title": "Moj radni prostor",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/settings",
+    "title": "Tvoj radni prostor",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/notifications",
+    "title": "Obavijesti",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/top",
+    "title": "FCC Top 10",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner",
+    "title": "Tvoj današnji korak",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/cards",
+    "title": "Moje FCC kartice",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/webinars",
+    "title": "Webinari i događaji",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/share",
+    "title": "Podijeli nešto korisno.",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/account-plan",
+    "title": "Moj paket",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/fcc-results",
+    "title": "FCC Rezultati",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "overflow": [],
+    "path": "/partner/points",
+    "title": "Moji bodovi",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "overflow": [],
+    "path": "/partner/cards",
+    "title": "Moje FCC kartice",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "overflow": [],
+    "path": "/fcc-results",
+    "title": "FCC Rezultati",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "overflow": [],
+    "path": "/partner/points",
+    "title": "Moji bodovi",
+    "viewport": 768,
+    "width": 768
+  },
+  {
+    "overflow": [],
+    "path": "/partner/cards",
+    "title": "Moje FCC kartice",
+    "viewport": 768,
+    "width": 768
+  },
+  {
+    "overflow": [],
+    "path": "/fcc-results",
+    "title": "FCC Rezultati",
+    "viewport": 768,
+    "width": 768
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "status": "published",
+  "at_utc": "2026-10-01T17:21:01+00:00",
+  "files": 4,
+  "schema_changed": false,
+  "business_data_changed": false,
+  "worker_restored": true,
+  "authenticated_production_visual_check": "pending user sign in; browser session expired"
+}

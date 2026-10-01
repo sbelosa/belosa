@@ -1,0 +1,26 @@
+[
+  {
+    "path": "themes/altum/assets/css/fcc-partner-premium.css",
+    "before": "d653affb6eb866d485c6deec16e77a7c565bf67be64e25b1265ca80649571035",
+    "sha256": "fcf78f5585ac3faab3ae34e125fc1a6176062627d925ad20f697bd35c3e923e3",
+    "bytes": 81883
+  },
+  {
+    "path": "themes/altum/assets/css/fcc-cc.css",
+    "before": "a34a2e22ce316b9c162e0cc15bcecf87bd6d8e764ec4d2c9a91feb1a77bdea37",
+    "sha256": "03aec0a65280dc00f044a3a637e004c312a5da623c590b58b14d5f86709dd725",
+    "bytes": 10468
+  },
+  {
+    "path": "themes/altum/views/partner/cc-points.php",
+    "before": "c2967665c40223b8e1204ce4aa073a83c89f81f27fee251cb8692c38295bf070",
+    "sha256": "0106b23156db58fdb2e02e37f37103a4a6732b5e6d327004ff4070a882a4d8fa",
+    "bytes": 4892
+  },
+  {
+    "path": "themes/altum/views/partner/cc-progress.php",
+    "before": "13bac064adda547c641036d720364ce031d665de4c8faf223319149721d373d5",
+    "sha256": "8b67371d07a99487fcac180d8614d3fa0e3c4b76b0c8149e1b76d989ef2a8f04",
+    "bytes": 2273
+  }
+]
