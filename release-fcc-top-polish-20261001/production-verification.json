@@ -1,0 +1,35 @@
+{
+  "production_files_verified": 5,
+  "worker_restored": true,
+  "desktop": {
+    "width": 1440,
+    "scroll_width": 1440,
+    "checkbox_width": 22,
+    "label_text_width": 577.546875
+  },
+  "mobile_settings": {
+    "width": 360,
+    "scroll_width": 360,
+    "checkbox_width": 22,
+    "label_text_width": 225
+  },
+  "mobile_top": {
+    "width": 360,
+    "scroll_width": 360,
+    "month": "2026-09-01",
+    "personal_positive_accounts": 134,
+    "total_positive_accounts": 159
+  },
+  "local_mobile_width": 390,
+  "local_settings_save_and_restore": "passed",
+  "default_month": "2026-09-01",
+  "explicit_current_month": "2026-10-01",
+  "production_preferences_changed_by_test": false,
+  "notification_month_links": "passed",
+  "tests": {
+    "translations_and_core": 401,
+    "metrics": 35,
+    "notifications": 10,
+    "http": 11
+  }
+}

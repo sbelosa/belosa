@@ -1,0 +1,16 @@
+{
+    "status": "passed",
+    "checks": 10,
+    "details": [
+        "Opted in PRO receives weekly inbox reminder",
+        "First measurement never claims an achievement",
+        "Repeated worker tick is idempotent",
+        "Notifications link to their measured month",
+        "Top 10 entry creates exactly one milestone alongside the weekly notice",
+        "Repeated Top 10 entry cannot exceed two notices per week",
+        "Notification opt out prevents future notices",
+        "Free account cannot obtain ranking view model",
+        "PRO expiry stops Top reminders",
+        "Free account still contributes to statistics"
+    ]
+}

@@ -1,0 +1,309 @@
+--- a/app/config/fcc_top_locales.php
++++ b/app/config/fcc_top_locales.php
+@@ -234,11 +234,11 @@
+   "es": "Sincronización CC verificada: {at}."
+  },
+  "awaiting": {
+-  "hr": "Za ovaj mjesec još nema potvrđene CC sinkronizacije. Možeš odabrati prethodni mjesec.",
+-  "en": "No verified CC sync for this month yet. You can select the previous month.",
+-  "sl": "Za ta mesec še ni potrjene sinhronizacije CC. Izbereš lahko prejšnji mesec.",
+-  "de": "Für diesen Monat liegt noch keine bestätigte CC Synchronisierung vor. Du kannst den Vormonat wählen.",
+-  "es": "Todavía no hay sincronización CC verificada de este mes. Puedes seleccionar el mes anterior."
++  "hr": "Za odabrani mjesec još nema potvrđene CC sinkronizacije.",
++  "en": "There is no verified CC sync for the selected month yet.",
++  "sl": "Za izbrani mesec še ni potrjene sinhronizacije CC.",
++  "de": "Für den ausgewählten Monat liegt noch keine bestätigte CC Synchronisierung vor.",
++  "es": "Todavía no hay una sincronización CC verificada para el mes seleccionado."
+  },
+  "freshness": {
+   "hr": "Aktivnosti su iz evidencije do {at}. Vrijeme: Zagreb.",
+@@ -262,11 +262,11 @@
+   "es": "Mostrar mi nombre en las clasificaciones FCC Top"
+  },
+  "visible_help": {
+-  "hr": "Isključivanje odmah uklanja tvoje ime. Vlastiti rezultati ostaju dostupni u PRO pregledu.",
+-  "en": "Turning this off immediately removes your name. Your own results remain available in the PRO overview.",
+-  "sl": "Izklop takoj odstrani tvoje ime. Lastni rezultati ostanejo v pregledu PRO.",
+-  "de": "Das Ausschalten entfernt deinen Namen sofort. Deine eigenen Ergebnisse bleiben in der PRO Übersicht verfügbar.",
+-  "es": "Al desactivarlo, tu nombre se elimina inmediatamente. Tus resultados siguen disponibles en la vista PRO."
++  "hr": "Isključivanjem skrivaš ime na svim FCC Top listama. Vlastiti pregled ostaje dostupan uz PRO.",
++  "en": "Turning this off hides your name across FCC Top rankings. Your personal overview remains available with PRO.",
++  "sl": "Z izklopom skriješ ime na vseh lestvicah FCC Top. Osebni pregled ostane na voljo s PRO.",
++  "de": "Das Ausschalten verbirgt deinen Namen in allen FCC Top Ranglisten. Deine persönliche Übersicht bleibt mit PRO verfügbar.",
++  "es": "Al desactivarlo, ocultas tu nombre en todas las clasificaciones FCC Top. Tu vista personal sigue disponible con PRO."
+  },
+  "weekly_notice": {
+   "hr": "Tjedni podsjetnik na moj napredak",
+@@ -393,6 +393,153 @@
+   "sl": "Za to obdobje še ni potrjenih rezultatov po pravilih te kategorije.",
+   "de": "Für diesen Zeitraum gibt es noch keine bestätigten Ergebnisse nach den Regeln dieser Kategorie.",
+   "es": "Todavía no hay resultados confirmados que cumplan las reglas de esta categoría para este periodo."
++ },
++ "settings_intro": {
++  "hr": "Odaberi što želiš podijeliti i postavi svoj ritam rada.",
++  "en": "Choose what to share and set your own pace.",
++  "sl": "Izberi, kaj želiš deliti, in določi svoj ritem.",
++  "de": "Wähle, was du teilen möchtest, und lege dein Tempo fest.",
++  "es": "Elige qué compartir y define tu ritmo."
++ },
++ "view_rankings": {
++  "hr": "Pogledaj rang liste",
++  "en": "View rankings",
++  "sl": "Poglej lestvice",
++  "de": "Ranglisten ansehen",
++  "es": "Ver clasificaciones"
++ },
++ "my_visibility": {
++  "hr": "Moja vidljivost",
++  "en": "My visibility",
++  "sl": "Moja vidnost",
++  "de": "Meine Sichtbarkeit",
++  "es": "Mi visibilidad"
++ },
++ "my_notifications": {
++  "hr": "Moje obavijesti",
++  "en": "My notifications",
++  "sl": "Moja obvestila",
++  "de": "Meine Benachrichtigungen",
++  "es": "Mis notificaciones"
++ },
++ "visibility_context": {
++  "hr": "Tvoje aktivnosti ulaze u obračun i kada je ime skriveno. Ovdje biraš smiju li drugi PRO korisnici vidjeti tvoje ime na listi.",
++  "en": "Your activity counts even when your name is hidden. Choose whether other PRO members may see your name in rankings.",
++  "sl": "Tvoje aktivnosti štejejo tudi, ko je ime skrito. Izberi, ali lahko drugi člani PRO vidijo tvoje ime na lestvici.",
++  "de": "Deine Aktivität zählt auch bei verborgenem Namen. Wähle, ob andere PRO Mitglieder deinen Namen in der Rangliste sehen dürfen.",
++  "es": "Tu actividad cuenta aunque tu nombre esté oculto. Elige si otros miembros PRO pueden ver tu nombre en la clasificación."
++ },
++ "weekly_help": {
++  "hr": "Jedan podsjetnik ponedjeljkom na pregled vlastitog napretka.",
++  "en": "One Monday reminder to review your own progress.",
++  "sl": "En ponedeljkov opomnik za pregled lastnega napredka.",
++  "de": "Eine Erinnerung am Montag, deinen Fortschritt anzusehen.",
++  "es": "Un recordatorio los lunes para revisar tu progreso."
++ },
++ "milestone_help": {
++  "hr": "Obavijest kada tvoj rezultat prvi put u tom tjednu uđe među deset najboljih.",
++  "en": "A notice when your result enters the top ten for the first time that week.",
++  "sl": "Obvestilo, ko se tvoj rezultat prvič v tednu uvrsti med najboljših deset.",
++  "de": "Ein Hinweis, wenn dein Ergebnis in dieser Woche erstmals in die Top Ten kommt.",
++  "es": "Un aviso cuando tu resultado entre por primera vez esa semana entre los diez mejores."
++ },
++ "saved_everywhere": {
++  "hr": "Postavke vrijede na svim tvojim uređajima.",
++  "en": "Settings apply across all your devices.",
++  "sl": "Nastavitve veljajo na vseh tvojih napravah.",
++  "de": "Die Einstellungen gelten auf allen deinen Geräten.",
++  "es": "Los ajustes se aplican en todos tus dispositivos."
++ },
++ "result_accounts": {
++  "hr": "Računi s rezultatom",
++  "en": "Accounts with results",
++  "sl": "Računi z rezultati",
++  "de": "Konten mit Ergebnissen",
++  "es": "Cuentas con resultados"
++ },
++ "visible_accounts": {
++  "hr": "Računi s vidljivim imenom",
++  "en": "Accounts with a visible name",
++  "sl": "Računi z vidnim imenom",
++  "de": "Konten mit sichtbarem Namen",
++  "es": "Cuentas con nombre visible"
++ },
++ "results_private_title": {
++  "hr": "Rezultati postoje. Imena su trenutačno skrivena.",
++  "en": "Results exist. Names are currently hidden.",
++  "sl": "Rezultati obstajajo. Imena so trenutno skrita.",
++  "de": "Ergebnisse sind vorhanden. Die Namen sind derzeit verborgen.",
++  "es": "Hay resultados. Los nombres están ocultos por ahora."
++ },
++ "results_private_body": {
++  "hr": "Računi s rezultatom u ovoj kategoriji: {n}. Nitko od njih još nema uključenu vidljivost imena. To ne znači da nema aktivnosti ili CC bodova.",
++  "en": "Accounts with results in this category: {n}. None currently has name visibility enabled. This does not mean there is no activity or no CC.",
++  "sl": "Računi z rezultatom v tej kategoriji: {n}. Nihče trenutno nima vključene vidnosti imena. To ne pomeni, da ni aktivnosti ali točk CC.",
++  "de": "Konten mit Ergebnissen in dieser Kategorie: {n}. Bei keinem ist die Namenssichtbarkeit derzeit aktiviert. Das bedeutet nicht, dass es keine Aktivität oder CC gibt.",
++  "es": "Cuentas con resultados en esta categoría: {n}. Ninguna tiene activada la visibilidad del nombre. Esto no significa que no haya actividad ni CC."
++ },
++ "previous_month": {
++  "hr": "Prethodni mjesec",
++  "en": "Previous month",
++  "sl": "Prejšnji mesec",
++  "de": "Vormonat",
++  "es": "Mes anterior"
++ },
++ "current_month": {
++  "hr": "Tekući mjesec",
++  "en": "Current month",
++  "sl": "Tekoči mesec",
++  "de": "Aktueller Monat",
++  "es": "Mes actual"
++ },
++ "period_explanation": {
++  "hr": "CC se prikazuje za odabrani mjesec. Izbor 7, 30 ili 60 dana odnosi se na FCC aktivnosti.",
++  "en": "CC is shown for the selected month. The 7, 30 or 60 day selection applies to FCC activity.",
++  "sl": "CC je prikazan za izbrani mesec. Izbira 7, 30 ali 60 dni velja za aktivnosti FCC.",
++  "de": "CC werden für den gewählten Monat angezeigt. Die Auswahl von 7, 30 oder 60 Tagen gilt für FCC Aktivitäten.",
++  "es": "Los CC corresponden al mes seleccionado. La selección de 7, 30 o 60 días se aplica a la actividad de FCC."
++ },
++ "cc_overview": {
++  "hr": "Rezultati u odabranom mjesecu",
++  "en": "Results in the selected month",
++  "sl": "Rezultati v izbranem mesecu",
++  "de": "Ergebnisse im gewählten Monat",
++  "es": "Resultados del mes seleccionado"
++ },
++ "cc_count_help": {
++  "hr": "Broj Forever računa s pozitivnim rezultatom, uključujući one sa skrivenim imenom.",
++  "en": "Number of Forever accounts with a positive result, including those with hidden names.",
++  "sl": "Število Forever računov s pozitivnim rezultatom, vključno s skritimi imeni.",
++  "de": "Anzahl der Forever Konten mit positivem Ergebnis, einschließlich verborgener Namen.",
++  "es": "Número de cuentas Forever con resultados positivos, incluidas las de nombre oculto."
++ },
++ "visibility_notice": {
++  "hr": "Ime je skriveno dok ne uključiš vidljivost. Tvoj rezultat i dalje se računa.",
++  "en": "Your name stays hidden until you enable visibility. Your result still counts.",
++  "sl": "Tvoje ime je skrito, dokler ne vključiš vidnosti. Tvoj rezultat še vedno šteje.",
++  "de": "Dein Name bleibt verborgen, bis du die Sichtbarkeit aktivierst. Dein Ergebnis zählt trotzdem.",
++  "es": "Tu nombre permanece oculto hasta que actives la visibilidad. Tu resultado sigue contando."
++ },
++ "no_recorded_result": {
++  "hr": "Još nema zabilježenog rezultata prema pravilima ove kategorije.",
++  "en": "No recorded result meets this category’s rules yet.",
++  "sl": "Po pravilih te kategorije še ni zabeleženega rezultata.",
++  "de": "Noch kein erfasstes Ergebnis nach den Regeln dieser Kategorie.",
++  "es": "Aún no hay resultados registrados según las reglas de esta categoría."
++ },
++ "no_recorded_help": {
++  "hr": "Brojimo samo zapise opisane u pravilima ispod. Aktivnost izvan te evidencije nije uključena, pa prazan prikaz nije dokaz da suradnici ne rade.",
++  "en": "Only records described in the rules below are counted. Activity outside that record is not included, so an empty view does not prove that members are inactive.",
++  "sl": "Štejemo le zapise, opisane v pravilih spodaj. Aktivnosti zunaj te evidence niso vključene, zato prazen prikaz ne pomeni, da sodelavci ne delajo.",
++  "de": "Gezählt werden nur die unten beschriebenen Nachweise. Andere Aktivitäten sind nicht enthalten. Eine leere Ansicht beweist daher keine Inaktivität.",
++  "es": "Solo se cuentan los registros descritos en las reglas. No se incluye la actividad fuera de esos registros, por lo que una vista vacía no demuestra inactividad."
++ },
++ "current_month_hint": {
++  "hr": "Ovo je novi mjesečni obračun. Rezultate prethodnog mjeseca možeš otvoriti zasebno.",
++  "en": "This is a new monthly tally. You can view the previous month separately.",
++  "sl": "To je nov mesečni obračun. Rezultate prejšnjega meseca lahko odpreš posebej.",
++  "de": "Dies ist eine neue Monatsauswertung. Den Vormonat kannst du separat ansehen.",
++  "es": "Este es un nuevo cómputo mensual. Puedes consultar el mes anterior por separado."
+  }
+ }
+ JSON, true);
+--- a/app/helpers/fcc_top.php
++++ b/app/helpers/fcc_top.php
+@@ -88,11 +88,13 @@
+ }
+ function fcc_top_page(int $uid,int $days,string $month): array {
+  if(!fcc_pro_has_access($uid))throw new RuntimeException('PRO required');
++ // Start with the previous calendar month; explicit current month links remain authoritative.
++ if($month==='')$month=(new DateTimeImmutable(fcc_partner_today()))->modify('first day of previous month')->format('Y-m-d');
+  $d=fcc_top_dataset($days,$month);fcc_top_snapshot($d);$cards=[];
+  foreach($d['lists'] as $key=>$rows){$own=fcc_top_own($rows,$uid);$period=in_array($key,['personal_cc','total_cc'],true)?$d['month']:(string)$d['window']['days'];$old=$own['entity']?fcc_partner_one('SELECT position,day FROM fcc_top_positions WHERE category=? AND period_key=? AND entity_key=? AND day<? ORDER BY day DESC LIMIT 1',[$key,$period,$own['entity'],$d['window']['day']]):null;
+   $value=$own['score'];if($value===null&&!in_array($key,['personal_cc','total_cc'],true))$value=0;
+   if($value===null&&isset($d['users'][$uid]))$value=$d['cc'][$d['users'][$uid]['fbo']][$key]??null;
+-  $cards[$key]=['rows'=>fcc_top_public($rows,$key,$uid),'own'=>['score'=>$value,'position'=>$own['position'],'movement'=>$old?(int)$old['position']-(int)$own['position']:null,'comparison_day'=>$old['day']??null],'count'=>count($rows)];
++  $cards[$key]=['rows'=>fcc_top_public($rows,$key,$uid),'own'=>['score'=>$value,'position'=>$own['position'],'movement'=>$old?(int)$old['position']-(int)$own['position']:null,'comparison_day'=>$old['day']??null],'count'=>count($rows),'visible_count'=>count(array_filter($rows,static fn($r)=>$r['visible']))];
+  }
+  $week=$days===7?$d:fcc_top_dataset(7,$d['month']);$weekly=[];foreach(['recommendations','invitations','education'] as $cat)$weekly[$cat]=$week['scores'][$cat][$uid]??0;
+  return ['cards'=>$cards,'days'=>$d['window']['days'],'month'=>$d['month'],'months'=>$d['months'],'sync'=>$d['sync'],'cc_accounts'=>$d['cc_accounts'],'accounts'=>$d['accounts'],'weekly'=>$weekly,'profile'=>fcc_top_profile($uid),'at'=>$d['window']['to']];
+@@ -105,8 +107,8 @@
+  static $datasets=[];$key=$day;$d=$datasets[$key]??=fcc_top_dataset(30,substr($day,0,7).'-01',$now);
+  $ranks=[];foreach($d['lists'] as $cat=>$rows)$ranks[$cat]=count($rows)>=10?fcc_top_own($rows,$uid)['position']:null;
+  $old=json_decode($state['ranks_json']??'{}',true)?:[];$week=$now->format('o-W');
+- if($p['weekly_notice']&&$now->format('N')==='1')fcc_partner_notify($uid,'top:weekly:'.$week,'service',fcc_top_t('weekly_title'),fcc_top_t('weekly_body'),'partner/top',604800);
++ if($p['weekly_notice']&&$now->format('N')==='1')fcc_partner_notify($uid,'top:weekly:'.$week,'service',fcc_top_t('weekly_title'),fcc_top_t('weekly_body'),'partner/top?month='.$d['month'],604800);
+  $entered=false;if($state)foreach($ranks as $cat=>$rank){if(in_array($cat,['personal_cc','total_cc'],true)&&($state['month_key']??'')!==$d['month'])continue;if($rank!==null&&$rank<=10&&(($old[$cat]??null)===null||$old[$cat]>10))$entered=true;}
+- if($p['milestone_notice']&&$entered)fcc_partner_notify($uid,'top:milestone:'.$week,'service',fcc_top_t('milestone_title'),fcc_top_t('milestone_body'),'partner/top',604800);
++ if($p['milestone_notice']&&$entered)fcc_partner_notify($uid,'top:milestone:'.$week,'service',fcc_top_t('milestone_title'),fcc_top_t('milestone_body'),'partner/top?month='.$d['month'],604800);
+  fcc_partner_query('INSERT INTO fcc_top_state(user_id,checked_day,month_key,ranks_json) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE checked_day=VALUES(checked_day),month_key=VALUES(month_key),ranks_json=VALUES(ranks_json)',[$uid,$day,$d['month'],json_encode($ranks)]);
+ }
+--- a/themes/altum/assets/css/fcc-top.css
++++ b/themes/altum/assets/css/fcc-top.css
+@@ -1,3 +1,37 @@
+ .ft-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:32px;border-radius:24px;color:#fff;background:linear-gradient(118deg,#123f34,#216a53);margin-bottom:24px;box-shadow:0 14px 40px #123f3414}.ft-hero h1{font-size:clamp(30px,5vw,44px);letter-spacing:-1.2px;margin:7px 0 10px;color:inherit}.ft-hero p{color:#e3f2e8;font-size:17px;margin:0}.ft-hero .fp-eyebrow{color:#d4eabe}.ft-hero .fp-button{white-space:normal;text-align:center;flex-shrink:0}.ft-filters{display:flex;gap:16px;align-items:end;flex-wrap:wrap}.ft-filters label{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:650}.ft-filters select{min-width:170px;border:1px solid #d8e3dc;border-radius:12px;padding:11px 36px 11px 14px;background:#fff;color:#193b30;font:inherit;min-height:46px}.ft-status{font-size:12px;line-height:1.8;color:#63756b;margin:18px 0 24px}.ft-progress{margin-bottom:24px}.ft-private{font-size:11px;color:#47675a;background:#edf4ee;border-radius:100px;padding:7px 11px}.ft-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:20px 0}.ft-goals>div{display:flex;flex-direction:column;gap:9px}.ft-goals span{font-size:13px;color:#536b5e}.ft-goals strong{font-size:25px;line-height:1.2;color:#173e30}.ft-goals small{font-size:15px;color:#718378;font-weight:500}.ft-goals progress{width:100%;height:7px;border:0;border-radius:9px;background:#edf2ed;accent-color:#42825c}.ft-goals progress::-webkit-progress-bar{background:#edf2ed;border-radius:9px}.ft-goals progress::-webkit-progress-value{background:#42825c;border-radius:9px}.ft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}.ft-card{min-width:0;padding:24px}.ft-card-head{display:flex;align-items:center;gap:13px;min-height:63px;margin-bottom:20px}.ft-card-head h2{font-size:18px;margin:5px 0 0;line-height:1.3}.ft-icon{background:#edf4ed;color:#386445;border-radius:13px;display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px}.ft-icon svg{width:22px;height:22px}.ft-own{display:flex;justify-content:space-between;gap:14px;padding:16px;border-radius:15px;background:#f4f7f2;margin-bottom:14px}.ft-own>div{display:flex;flex-direction:column;gap:6px}.ft-own span{font-size:11px;color:#576e5e}.ft-own strong{font-size:24px;line-height:1.1;color:#193c2e;overflow-wrap:anywhere}.ft-own-rank{max-width:52%;justify-content:center}.ft-own-rank small{font-size:10px;color:#607569;line-height:1.5}.ft-list{list-style:none;margin:0;padding:0}.ft-list li{display:flex;align-items:center;gap:12px;min-height:53px;border-bottom:1px solid #edf0ec;padding:9px 4px}.ft-place{flex:0 0 29px;width:29px;height:29px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#6a776f;background:#f3f5f2}.ft-place.ft-medal{background:#f3eddc;color:#846627}.ft-name{flex:1;min-width:0;font-size:13px;font-weight:550;overflow-wrap:anywhere;line-height:1.4}.ft-name small{display:block;color:#397c58;font-size:10px}.ft-score{font-size:16px;color:#214b35}.ft-is-me{background:#f2f8f1;border-radius:8px}.ft-hidden{display:inline-block;width:52px;text-align:center}.ft-hidden>span{filter:blur(3px);letter-spacing:3px;color:#648270;user-select:none}.ft-empty{min-height:150px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:22px 12px;color:#70816f}.ft-empty>span{font-size:26px;color:#b6c9af}.ft-empty p{font-size:13px;line-height:1.6;max-width:300px;margin:10px 0 0}.ft-rules{margin-top:14px;font-size:12px;color:#637368}.ft-rules summary{cursor:pointer;min-height:32px;display:list-item;padding:7px 0}.ft-rules p{line-height:1.75;margin-top:10px}.ft-explanation{margin-top:24px}.ft-explanation h2{font-size:18px}.ft-explanation p{font-size:13px;line-height:1.8;color:#66766b}.fp-section-top>.fp-page-heading{display:none}.ft-filters select:focus-visible,.ft-rules summary:focus-visible{outline:3px solid #91b98c;outline-offset:3px}@media(max-width:700px){.ft-hero{padding:24px;align-items:flex-start;flex-direction:column;gap:18px}.ft-hero .fp-button{font-size:13px}.ft-grid{grid-template-columns:1fr;gap:16px}.ft-card{padding:20px}.ft-goals{grid-template-columns:1fr;gap:18px}.ft-goals>div{display:grid;grid-template-columns:1fr auto;align-items:center}.ft-goals progress{grid-column:1/-1}.ft-goals strong{font-size:21px}.ft-filters{gap:10px}.ft-filters label{flex:1;min-width:120px}.ft-filters select{min-width:0;width:100%;padding-right:22px}.ft-private{max-width:110px;text-align:center}.ft-progress .fp-section-title{gap:12px}.ft-progress h2{font-size:18px}.ft-filters button{min-height:44px}}
+ 
+ body.fcc-partner-mode .fp-page .ft-hero h1{color:#fff!important;font-size:clamp(30px,5vw,44px)}body.fcc-partner-mode .fp-page .ft-hero p{color:#e3f2e8!important}body.fcc-partner-mode .fp-page .ft-hero .fp-eyebrow{color:#d4eabe!important}
++/* Scoped controls remain readable with older cached versions of the shared form stylesheet. */
++#fcc-top-settings.ft-settings{margin-top:24px;scroll-margin-top:90px;padding:28px}
++#fcc-top-settings .ft-settings-heading{display:flex;justify-content:space-between;align-items:center;gap:24px;padding-bottom:22px;border-bottom:1px solid #e2eae4}
++#fcc-top-settings .ft-settings-heading h2{font-size:24px;line-height:1.2;margin:7px 0 9px}
++#fcc-top-settings .ft-settings-heading p{color:#5b7366;font-size:14px;line-height:1.6;margin:0}
++#fcc-top-settings .ft-settings-heading .fp-button{white-space:normal;flex-shrink:0;text-align:center}
++#fcc-top-settings .ft-settings-form{display:block;margin:25px 0 0}
++#fcc-top-settings .ft-settings-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(270px,.85fr);gap:32px;align-items:start}
++#fcc-top-settings :is(.ft-setting-group,.ft-settings-goals){border:0;min-width:0;margin:0;padding:0}
++#fcc-top-settings legend{float:none;width:auto;font-size:16px;font-weight:650;line-height:1.5;padding:0;margin:0 0 12px;color:#1b4436}
++#fcc-top-settings .ft-setting-intro{font-size:12px;line-height:1.7;color:#597164;margin:0 0 14px}
++#fcc-top-settings .ft-setting-group+.ft-setting-group{margin-top:26px}
++body.fcc-partner-mode #fcc-top-settings label.ft-setting-toggle{display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;gap:13px!important;align-items:start!important;justify-content:normal!important;padding:15px!important;margin:0 0 10px!important;border:1px solid #dce7df;border-radius:14px;background:#fbfdfb;cursor:pointer;min-width:0;max-width:100%;box-sizing:border-box}
++body.fcc-partner-mode #fcc-top-settings .ft-setting-toggle input[type=checkbox]{appearance:auto!important;-webkit-appearance:auto!important;width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;padding:0!important;margin:2px 0 0!important;flex:0 0 22px!important;box-sizing:border-box!important;border-radius:5px!important;accent-color:#22694f}
++#fcc-top-settings .ft-setting-toggle>span{display:block;min-width:0;max-width:100%;overflow-wrap:break-word}
++#fcc-top-settings .ft-setting-toggle strong{display:block;font-size:13px;font-weight:650;line-height:1.5;color:#244b3d}
++#fcc-top-settings .ft-setting-toggle small{display:block!important;font-size:12px!important;font-weight:400;line-height:1.65;color:#63796c;margin-top:5px}
++#fcc-top-settings .ft-setting-toggle:has(input:checked){border-color:#79a58c;background:#f1f7ef}
++#fcc-top-settings .ft-setting-toggle:focus-within{outline:3px solid #afcbb7;outline-offset:2px}
++#fcc-top-settings .ft-setting-note{font-size:11px;line-height:1.7;color:#6b7d71;margin:13px 2px 0}
++#fcc-top-settings .ft-settings-goals{padding:22px;border:1px solid #dbe6d9;border-radius:18px;background:#f4f8f1}
++#fcc-top-settings .ft-settings-goals legend{margin-bottom:0;padding:0 4px}
++#fcc-top-settings .ft-settings-goals>p{font-size:12px;line-height:1.75;color:#5d7362;margin:0 0 13px}
++body.fcc-partner-mode #fcc-top-settings label.ft-goal-input{display:grid!important;grid-template-columns:minmax(0,1fr) 85px;align-items:center;gap:16px;margin:0;padding:15px 0;border-top:1px solid #dee7d9;font-size:13px;line-height:1.6}
++#fcc-top-settings .ft-goal-input span{min-width:0;overflow-wrap:break-word}
++body.fcc-partner-mode #fcc-top-settings .ft-goal-input input{width:85px;min-width:0;min-height:46px;text-align:center;background:#fff;font-size:17px;box-sizing:border-box}
++#fcc-top-settings .ft-settings-footer{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-top:24px;margin-top:25px;border-top:1px solid #e2eae4}
++#fcc-top-settings .ft-settings-footer span{font-size:12px;color:#657b6d}
++.ft-period-explanation{font-size:12px;line-height:1.7;color:#536b5f;margin:13px 0 0}.ft-status{margin-top:8px}
++.ft-overview{margin-bottom:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:center}.ft-overview-heading h2{font-size:18px;margin:0 0 8px}.ft-overview-heading h2>span{display:block;font-size:13px;font-weight:500;letter-spacing:0;color:#607766;margin-top:7px}.ft-overview-heading p{font-size:12px;line-height:1.7;color:#67796b;margin:0}.ft-overview-counts{display:grid;grid-template-columns:1fr 1fr;gap:20px}.ft-overview-counts>div{display:flex;gap:13px;align-items:center}.ft-overview-counts strong{font-size:34px;color:#21523a;line-height:1}.ft-overview-counts span{font-size:12px;line-height:1.5;color:#375c47}.ft-overview-counts small{display:block;font-size:10px;color:#6c7d6f;margin-top:3px}.ft-current-hint{grid-column:1/-1;margin:4px 0 0;font-size:12px;line-height:1.8;color:#637368;border-top:1px solid #e2eae4;padding-top:12px}.ft-current-hint a{font-weight:650;color:#24533c}.ft-privacy-banner{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:15px 19px;background:#eaf1e6;border:1px solid #d8e3d1;border-radius:14px;margin-bottom:24px;font-size:12px;line-height:1.7;color:#4d694f}.ft-privacy-banner a{white-space:nowrap;font-weight:650;color:#2f613e}.ft-counts{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.ft-counts>span{font-size:10px;line-height:1.6;background:#f1f5ef;color:#58715b;padding:5px 8px;border-radius:7px}.ft-counts strong{font-size:12px;color:#32563b;margin-left:4px}.ft-empty{padding:18px 12px;min-height:185px}.ft-empty>span svg{width:24px;height:24px}.ft-empty>strong{font-size:14px;line-height:1.6;color:#48674d;margin-top:9px;max-width:320px}.ft-empty p{font-size:12px}.ft-empty .fp-link{font-size:12px;margin-top:13px}.ft-has-results{background:#f6f9f2;border:1px solid #e1e9d9;border-radius:14px}.ft-has-results>span{color:#5f8c58}
++@media(max-width:900px){#fcc-top-settings .ft-settings-grid{grid-template-columns:1fr;gap:26px}.ft-overview{grid-template-columns:1fr}.ft-overview-counts{padding-top:5px}.ft-overview-counts>div{padding:8px 0}}
++@media(max-width:600px){#fcc-top-settings.ft-settings{padding:20px}#fcc-top-settings .ft-settings-heading{align-items:flex-start;flex-direction:column;gap:16px}#fcc-top-settings .ft-settings-heading h2{font-size:22px}#fcc-top-settings .ft-settings-heading p{font-size:13px}#fcc-top-settings .ft-settings-grid{gap:22px}#fcc-top-settings .ft-settings-goals{padding:18px}#fcc-top-settings .ft-settings-footer{align-items:flex-start;flex-direction:column;gap:13px}#fcc-top-settings .ft-setting-toggle strong{font-size:13px}body.fcc-partner-mode #fcc-top-settings label.ft-setting-toggle{padding:13px!important;gap:11px!important}.ft-privacy-banner{flex-direction:column;align-items:flex-start;gap:7px}.ft-overview-counts{gap:14px}.ft-overview-counts strong{font-size:30px}.ft-overview-counts>div{flex-direction:column;align-items:flex-start;gap:7px}.ft-counts{gap:6px}.ft-filters label{min-width:150px}}
++
++@media(max-width:600px){.ft-filters{display:grid;grid-template-columns:minmax(0,1fr)}.ft-filters label{min-width:0}.ft-filters button{justify-self:start}.ft-filters select{padding-right:32px}}
+--- a/themes/altum/views/partner/top.php
++++ b/themes/altum/views/partner/top.php
+@@ -4,12 +4,16 @@
+ ?>
+ <section class="ft-hero"><div><span class="fp-eyebrow">FCC · PRO</span><h1><?= $h($t('title')) ?></h1><p><?= $h($t('intro')) ?></p></div><a class="fp-button fp-button-light" href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('settings')) ?></a></section>
+ <?php if(!$top): ?><p class="fp-message" role="status"><?= $h($t('unavailable')) ?></p><?php return;endif ?>
+-<form class="ft-filters" method="get"><label><?= $h($t('period')) ?><select name="days" data-is-not-custom-select><?php foreach([7,30,60] as $n): ?><option value="<?= $n ?>" <?= $top['days']===$n?'selected':'' ?>><?= $h($t('days',['{n}'=>$n])) ?></option><?php endforeach ?></select></label><label><?= $h($t('cc_month')) ?><select name="month" data-is-not-custom-select><?php foreach($top['months'] as $m): ?><option value="<?= $h($m) ?>" <?= $top['month']===$m?'selected':'' ?>><?= $h(substr($m,5,2).'/'.substr($m,0,4)) ?></option><?php endforeach ?></select></label><button class="fp-button" type="submit"><?= $h($t('apply')) ?></button></form>
++<form class="ft-filters" method="get"><label><?= $h($t('period')) ?><select name="days" data-is-not-custom-select><?php foreach([7,30,60] as $n): ?><option value="<?= $n ?>" <?= $top['days']===$n?'selected':'' ?>><?= $h($t('days',['{n}'=>$n])) ?></option><?php endforeach ?></select></label><label><?= $h($t('cc_month')) ?><select name="month" data-is-not-custom-select><?php foreach($top['months'] as $m): ?><option value="<?= $h($m) ?>" <?= $top['month']===$m?'selected':'' ?>><?= $h(substr($m,5,2).'/'.substr($m,0,4).' · '.$t($m===$top['months'][0]?'current_month':'previous_month')) ?></option><?php endforeach ?></select></label><button class="fp-button" type="submit"><?= $h($t('apply')) ?></button></form>
++<p class="ft-period-explanation"><?= $h($t('period_explanation')) ?></p>
+ <p class="ft-status"><?= $h($top['sync']?$t('sync',['{at}'=>fcc_cc_time($top['sync'])]):$t('awaiting')) ?><br><?= $h($t('freshness',['{at}'=>fcc_cc_time($top['at'])])) ?></p>
++<section class="fp-panel ft-overview"><div class="ft-overview-heading"><h2><?= $h($t('cc_overview')) ?> <span><?= $h(substr($top['month'],5,2).'/'.substr($top['month'],0,4)) ?></span></h2><p><?= $h($t('cc_count_help')) ?></p></div><div class="ft-overview-counts"><?php foreach(['personal_cc','total_cc'] as $key): ?><div><strong><?= (int)$top['cards'][$key]['count'] ?></strong><span><?= $h($t($key)) ?><small><?= $h($t('result_accounts')) ?></small></span></div><?php endforeach ?></div><?php if($top['month']===$top['months'][0]): ?><p class="ft-current-hint"><?= $h($t('current_month_hint')) ?> <a href="<?= url('partner/top?days='.$top['days'].'&month='.$top['months'][1]) ?>"><?= $h($t('previous_month')) ?> →</a></p><?php endif ?></section>
++<?php if(!$top['profile']['visible']): ?><div class="ft-privacy-banner"><span><?= $h($t('visibility_notice')) ?></span><a href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('my_visibility')) ?> →</a></div><?php endif ?>
+ <section class="fp-panel ft-progress"><div class="fp-section-title"><h2><?= $h($t('progress')) ?></h2><span class="ft-private"><?= $h($t('private_label')) ?></span></div><div class="ft-goals"><?php foreach($top['weekly'] as $key=>$value): $goal=(int)$top['profile'][$key.'_goal']; ?><div><span><?= $h($t($key)) ?></span><strong><?= (int)$value ?> <small>/ <?= $goal ?></small></strong><progress value="<?= min($goal,$value) ?>" max="<?= $goal ?>" aria-label="<?= $h($t($key)) ?>"></progress></div><?php endforeach ?></div><a class="fp-link" href="<?= url('partner') ?>"><?= $h($t('start')) ?> →</a></section>
+ <div class="ft-grid"><?php foreach($top['cards'] as $key=>$card):$cc=in_array($key,['personal_cc','total_cc'],true); ?>
+ <section class="fp-panel ft-card"><div class="ft-card-head"><span class="ft-icon" aria-hidden="true"><?= fcc_partner_icon($cc?'chart':($key==='education'?'book':'people')) ?></span><div><span class="fp-eyebrow"><?= $cc?$h(substr($top['month'],5,2).'/'.substr($top['month'],0,4)):$h($t('days',['{n}'=>$top['days']])) ?></span><h2><?= $h($t($key)) ?></h2></div></div>
+ <div class="ft-own"><div><span><?= $h($t('own')) ?></span><strong><?= $card['own']['score']===null?'…':($cc?fcc_cc_number($card['own']['score']).' CC':(int)$card['own']['score']) ?></strong></div><div class="ft-own-rank"><?php if($card['own']['position']!==null): ?><span><?= $h($t('own_rank',['{n}'=>$card['own']['position']])) ?></span><?php else: ?><span><?= $h($t('no_score')) ?></span><?php endif ?><?php if($card['own']['movement']!==null): ?><small><?= $h($t('rank_change',['{date}'=>$card['own']['comparison_day'],'{n}'=>($card['own']['movement']>0?'+':'').$card['own']['movement']])) ?></small><?php endif ?></div></div>
+-<?php if(!$card['rows']): ?><div class="ft-empty"><span aria-hidden="true">✦</span><p><?= $h($t($card['count']?'empty':'no_activity')) ?></p></div><?php else: ?><ol class="ft-list" aria-label="<?= $h($t($key)) ?>"><?php foreach($card['rows'] as $row): ?><li value="<?= (int)$row['position'] ?>" class="<?= $row['own']?'ft-is-me':'' ?>"><span class="ft-place <?= $row['position']<=3?'ft-medal':'' ?>" aria-hidden="true"><?= (int)$row['position'] ?></span><span class="ft-name"><?= $h($row['name']) ?><?php if($row['own']): ?><small><?= $h($t('you')) ?></small><?php endif ?></span><?php if($cc): ?><span class="ft-hidden" aria-label="<?= $h($t('private_cc')) ?>" title="<?= $h($t('private_cc')) ?>"><span aria-hidden="true">••••</span></span><?php else: ?><strong class="ft-score"><?= (int)$row['score'] ?></strong><?php endif ?></li><?php endforeach ?></ol><?php endif ?>
++<div class="ft-counts"><span><?= $h($t('result_accounts')) ?> <strong><?= (int)$card['count'] ?></strong></span><span><?= $h($t('visible_accounts')) ?> <strong><?= (int)($card['visible_count']??count($card['rows'])) ?></strong></span></div>
++<?php if(!$card['rows']): ?><div class="ft-empty <?= $card['count']?'ft-has-results':'' ?>"><span aria-hidden="true"><?= $card['count']?fcc_partner_icon('people'):fcc_partner_icon('chart') ?></span><strong><?= $h($t($card['count']?'results_private_title':'no_recorded_result')) ?></strong><p><?= $h($t($card['count']?'results_private_body':'no_recorded_help',['{n}'=>$card['count']])) ?></p><?php if($card['count']): ?><a class="fp-link" href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('my_visibility')) ?> →</a><?php endif ?></div><?php else: ?><ol class="ft-list" aria-label="<?= $h($t($key)) ?>"><?php foreach($card['rows'] as $row): ?><li value="<?= (int)$row['position'] ?>" class="<?= $row['own']?'ft-is-me':'' ?>"><span class="ft-place <?= $row['position']<=3?'ft-medal':'' ?>" aria-hidden="true"><?= (int)$row['position'] ?></span><span class="ft-name"><?= $h($row['name']) ?><?php if($row['own']): ?><small><?= $h($t('you')) ?></small><?php endif ?></span><?php if($cc): ?><span class="ft-hidden" aria-label="<?= $h($t('private_cc')) ?>" title="<?= $h($t('private_cc')) ?>"><span aria-hidden="true">••••</span></span><?php else: ?><strong class="ft-score"><?= (int)$row['score'] ?></strong><?php endif ?></li><?php endforeach ?></ol><?php endif ?>
+ <details class="ft-rules"><summary><?= $h($t('rules')) ?></summary><p><?= $h($t($key.'_help')) ?></p></details></section><?php endforeach ?></div>
+ <aside class="fp-panel ft-explanation"><h2><?= $h($t('rules')) ?></h2><p><?= $h($t('privacy')) ?></p><p><?= $h($t('cc_privacy')) ?></p><a class="fp-link" href="<?= url('fcc-results') ?>"><?= $h(fcc_t('FCC Rezultati')) ?> · 15+ / 50+ →</a></aside>
+--- a/themes/altum/views/partner/top-settings.php
++++ b/themes/altum/views/partner/top-settings.php
+@@ -1,2 +1,25 @@
+-<?php defined('ALTUMCODE') || die();if(!fcc_top_ready())return;$topPrefs=fcc_top_profile($uid);$tt='fcc_top_t'; ?>
+-<section id="fcc-top-settings" class="fp-panel" style="margin-top:24px"><div class="fp-section-title"><h2><?= $h($tt('title')) ?></h2><a class="fp-link" href="<?= url('partner/top') ?>"><?= $h($tt('apply')) ?> →</a></div><form method="post" class="fp-form"><?= $token ?><input type="hidden" name="action" value="top_settings"><input type="hidden" name="version" value="<?= (int)$topPrefs['version'] ?>"><h3><?= $h($tt('settings')) ?></h3><label class="fp-check-label"><input type="checkbox" name="visible" value="1" <?= $topPrefs['visible']?'checked':'' ?>> <?= $h($tt('visible')) ?></label><p class="fp-muted"><?= $h($tt('visible_help')) ?></p><?php foreach(['weekly_notice','milestone_notice'] as $field): ?><label class="fp-check-label"><input type="checkbox" name="<?= $field ?>" value="1" <?= $topPrefs[$field]?'checked':'' ?>> <?= $h($tt($field)) ?></label><?php endforeach ?><p class="fp-muted"><?= $h($tt('notice_help')) ?></p><h3><?= $h($tt('goals')) ?></h3><p class="fp-muted"><?= $h($tt('goals_help')) ?></p><div class="fp-form-grid"><?php foreach(['recommendations','invitations','education'] as $key): ?><label><?= $h($tt($key)) ?><input type="number" name="<?= $key ?>_goal" min="1" max="1000" required value="<?= (int)$topPrefs[$key.'_goal'] ?>"></label><?php endforeach ?></div><button class="fp-button" type="submit"><?= $h($tt('save')) ?></button></form></section>
++<?php
++ defined('ALTUMCODE') || die();
++ if(!fcc_top_ready())return;
++ $topPrefs=fcc_top_profile($uid);$tt='fcc_top_t';
++ \Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-top.css?v='.filemtime(ASSETS_PATH.'css/fcc-top.css').'">','head');
++?>
++<section id="fcc-top-settings" class="fp-panel ft-settings">
++ <header class="ft-settings-heading"><div><span class="fp-eyebrow"><?= $h($tt('title')) ?></span><h2><?= $h($tt('settings')) ?></h2><p><?= $h($tt('settings_intro')) ?></p></div><a class="fp-button fp-button-outline" href="<?= url('partner/top') ?>"><?= $h($tt('view_rankings')) ?> →</a></header>
++ <form method="post" class="fp-form ft-settings-form">
++  <?= $token ?><input type="hidden" name="action" value="top_settings"><input type="hidden" name="version" value="<?= (int)$topPrefs['version'] ?>">
++  <div class="ft-settings-grid"><div class="ft-settings-options">
++   <fieldset class="ft-setting-group"><legend><?= $h($tt('my_visibility')) ?></legend><p class="ft-setting-intro"><?= $h($tt('visibility_context')) ?></p>
++    <label class="ft-setting-toggle"><input type="checkbox" name="visible" value="1" aria-describedby="ft-visible-help" <?= $topPrefs['visible']?'checked':'' ?>><span><strong><?= $h($tt('visible')) ?></strong><small id="ft-visible-help"><?= $h($tt('visible_help')) ?></small></span></label>
++   </fieldset>
++   <fieldset class="ft-setting-group"><legend><?= $h($tt('my_notifications')) ?></legend>
++    <?php foreach(['weekly_notice'=>'weekly_help','milestone_notice'=>'milestone_help'] as $field=>$help): ?>
++    <label class="ft-setting-toggle"><input type="checkbox" name="<?= $field ?>" value="1" aria-describedby="ft-<?= $field ?>-help" <?= $topPrefs[$field]?'checked':'' ?>><span><strong><?= $h($tt($field)) ?></strong><small id="ft-<?= $field ?>-help"><?= $h($tt($help)) ?></small></span></label>
++    <?php endforeach ?><p class="ft-setting-note"><?= $h($tt('notice_help')) ?></p>
++   </fieldset>
++  </div><fieldset class="ft-settings-goals"><legend><?= $h($tt('goals')) ?></legend><p><?= $h($tt('goals_help')) ?></p>
++   <?php foreach(['recommendations','invitations','education'] as $key): ?><label class="ft-goal-input"><span><?= $h($tt($key)) ?></span><input type="number" name="<?= $key ?>_goal" min="1" max="1000" required value="<?= (int)$topPrefs[$key.'_goal'] ?>"></label><?php endforeach ?>
++  </fieldset></div>
++  <footer class="ft-settings-footer"><button class="fp-button" type="submit"><?= $h($tt('save')) ?></button><span><?= $h($tt('saved_everywhere')) ?></span></footer>
++ </form>
++</section>

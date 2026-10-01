@@ -1,0 +1,90 @@
+{
+    "status": "verified",
+    "at_utc": "2026-10-01T14:52:02+00:00",
+    "default_month": "2026-09-01",
+    "explicit_current_month": "2026-10-01",
+    "free_rank_access_denied": true,
+    "private_cc_protected": true,
+    "category_counts": {
+        "2026-09-01": {
+            "personal_cc": {
+                "positive": 134,
+                "visible": 1
+            },
+            "total_cc": {
+                "positive": 159,
+                "visible": 1
+            },
+            "recommendations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "invitations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "registrations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "conversations": {
+                "positive": 1,
+                "visible": 0
+            },
+            "education": {
+                "positive": 45,
+                "visible": 1
+            },
+            "consistency": {
+                "positive": 1,
+                "visible": 0
+            }
+        },
+        "2026-10-01": {
+            "personal_cc": {
+                "positive": 0,
+                "visible": 0
+            },
+            "total_cc": {
+                "positive": 1,
+                "visible": 0
+            },
+            "recommendations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "invitations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "registrations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "conversations": {
+                "positive": 1,
+                "visible": 0
+            },
+            "education": {
+                "positive": 45,
+                "visible": 1
+            },
+            "consistency": {
+                "positive": 1,
+                "visible": 0
+            }
+        }
+    },
+    "heartbeat": {
+        "at": "2026-10-01T14:49:18+00:00",
+        "accounts": 100,
+        "transport": "enabled",
+        "result": {
+            "sent": 0,
+            "simulated": 0,
+            "failed": 0
+        }
+    },
+    "feature_profiles": 1,
+    "feature_notifications": 0
+}

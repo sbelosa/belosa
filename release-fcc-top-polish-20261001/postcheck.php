@@ -1,0 +1,14 @@
+<?php
+if(PHP_SAPI!=='cli')exit(1);umask(0077);
+try{
+ define('ALTUMCODE',66);define('DEBUG',0);define('MYSQL_DEBUG',0);define('LOGGING',1);define('CACHE',0);require '/home/forevercardclub/public_html/app/init.php';Altum\Cache::initialize();
+ if(DATABASE_NAME!=='forevercardclub_database')throw new RuntimeException('Wrong database');
+ $pro=0;$free=0;foreach(fcc_partner_rows('SELECT user_id FROM users WHERE status=1 ORDER BY user_id') as $u){$uid=(int)$u['user_id'];if(fcc_pro_has_access($uid))$pro=$pro?:$uid;else $free=$free?:$uid;if($pro&&$free)break;}
+ if(!$pro||!$free)throw new RuntimeException('Missing access verification account');
+ $blocked=false;try{fcc_top_page($free,30,'');}catch(RuntimeException $e){$blocked=$e->getMessage()==='PRO required';}if(!$blocked)throw new RuntimeException('Free access check failed');
+ $current=substr(fcc_partner_today(),0,7).'-01';$previous=(new DateTimeImmutable($current))->modify('-1 month')->format('Y-m-d');$default=fcc_top_page($pro,30,'');$now=fcc_top_page($pro,30,$current);
+ if($default['month']!==$previous||$now['month']!==$current)throw new RuntimeException('Month selection failed');
+ $counts=[];foreach([$default,$now] as $page){$source=fcc_top_dataset(30,$page['month']);foreach($page['cards'] as $cat=>$card){if($card['count']!==count($source['lists'][$cat]))throw new RuntimeException('Aggregate mismatch');if($card['visible_count']!==count(array_filter($source['lists'][$cat],fn($r)=>$r['visible'])))throw new RuntimeException('Visibility mismatch');foreach($card['rows'] as $row){if(isset($row['entity'],$row['uids']))throw new RuntimeException('Identifier exposed');if(in_array($cat,['personal_cc','total_cc'],true)&&$row['score']!==null)throw new RuntimeException('CC amount exposed');}$counts[$page['month']][$cat]=['positive'=>$card['count'],'visible'=>$card['visible_count']];}}
+ $result=['status'=>'verified','at_utc'=>gmdate('c'),'default_month'=>$default['month'],'explicit_current_month'=>$now['month'],'free_rank_access_denied'=>$blocked,'private_cc_protected'=>true,'category_counts'=>$counts,'heartbeat'=>fcc_partner_notification_config('heartbeat'),'feature_profiles'=>(int)fcc_partner_one('SELECT COUNT(*) n FROM fcc_top_profiles')['n'],'feature_notifications'=>(int)fcc_partner_one("SELECT COUNT(*) n FROM fcc_partner_notifications WHERE event_key LIKE 'top:%'")['n']];
+ file_put_contents(__DIR__.'/result.json',json_encode($result,JSON_PRETTY_PRINT));
+}catch(Throwable $e){file_put_contents(__DIR__.'/result.json',json_encode(['status'=>'error','error'=>$e->getMessage()]));exit(1);}

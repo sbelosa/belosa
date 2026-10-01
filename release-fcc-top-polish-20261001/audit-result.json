@@ -1,0 +1,112 @@
+{
+    "status": "ok",
+    "at": "2026-10-01T14:39:01+00:00",
+    "preferences": {
+        "saved": 0,
+        "visible": null
+    },
+    "months": {
+        "2026-09-01": {
+            "accounts": 701,
+            "cc_accounts": 668,
+            "sync": "2026-09-30 04:42:14",
+            "categories": {
+                "personal_cc": {
+                    "positive": 134,
+                    "visible": 0
+                },
+                "total_cc": {
+                    "positive": 159,
+                    "visible": 0
+                },
+                "recommendations": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "invitations": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "registrations": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "conversations": {
+                    "positive": 1,
+                    "visible": 0
+                },
+                "education": {
+                    "positive": 45,
+                    "visible": 0
+                },
+                "consistency": {
+                    "positive": 1,
+                    "visible": 0
+                }
+            }
+        },
+        "2026-10-01": {
+            "accounts": 701,
+            "cc_accounts": 668,
+            "sync": "2026-10-01 04:54:54",
+            "categories": {
+                "personal_cc": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "total_cc": {
+                    "positive": 1,
+                    "visible": 0
+                },
+                "recommendations": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "invitations": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "registrations": {
+                    "positive": 0,
+                    "visible": 0
+                },
+                "conversations": {
+                    "positive": 1,
+                    "visible": 0
+                },
+                "education": {
+                    "positive": 45,
+                    "visible": 0
+                },
+                "consistency": {
+                    "positive": 1,
+                    "visible": 0
+                }
+            }
+        }
+    },
+    "recommendation_evidence": [
+        {
+            "result_type": "conversation",
+            "output_status": null,
+            "records": 28,
+            "linked_interactions": "0"
+        },
+        {
+            "result_type": "invitation",
+            "output_status": null,
+            "records": 54,
+            "linked_interactions": "0"
+        },
+        {
+            "result_type": "recommendation",
+            "output_status": null,
+            "records": 26,
+            "linked_interactions": "0"
+        }
+    ],
+    "invites": {
+        "prepared": 11,
+        "confirmed_sent": "0"
+    }
+}
