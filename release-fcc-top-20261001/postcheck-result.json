@@ -1,0 +1,17 @@
+{
+    "status": "verified",
+    "at_utc": "2026-10-01T14:04:02+00:00",
+    "free_rank_access_denied": true,
+    "heartbeat": {
+        "at": "2026-10-01T14:03:22+00:00",
+        "accounts": 100,
+        "transport": "enabled",
+        "result": {
+            "sent": 0,
+            "simulated": 0,
+            "failed": 0
+        }
+    },
+    "feature_profiles": 0,
+    "feature_notifications": 0
+}
