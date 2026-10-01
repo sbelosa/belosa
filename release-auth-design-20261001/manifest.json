@@ -1,0 +1,22 @@
+[
+  {
+    "path": "themes/altum/assets/css/fcc-auth.css",
+    "before": null,
+    "sha256": "3c0ee863e7829c58530c8992ced2ab2c9a3326a3ab9357abdfffadc40b2b2be2"
+  },
+  {
+    "path": "themes/altum/views/login/index.php",
+    "before": "525bb717ecdcae80cd6c6b35549209a8ba637fb0af4ff394159b31de347cb744",
+    "sha256": "fac39285b65eb5f7dbc2085ffe55391f8a75acfe51ac6f684846753f53886808"
+  },
+  {
+    "path": "themes/altum/views/register/index.php",
+    "before": "a64950c3ef07102e90c7374199acd31c247bbf87275ba627141dc6ac8af51dac",
+    "sha256": "7dc8cab783d38526a3317022806546a75618b5aae30ab9121b1a401fd6265e83"
+  },
+  {
+    "path": "themes/altum/views/basic_wrapper.php",
+    "before": "5dcfd890397a4616fab233526b9a7d7502a4a4db97261e5b01a8822311bbf457",
+    "sha256": "e70d3963f09e2011287ad7caf79c660793f51123ffcd991162d008355ecec42f"
+  }
+]

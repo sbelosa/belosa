@@ -1,0 +1,71 @@
+/* Shared authentication surface. Account logic and personal card themes are independent. */
+body.fcc-auth-mode { min-height:100vh; color-scheme:light; }
+.fcc-auth-header { width:min(1180px,calc(100% - 48px)); margin:auto; min-height:104px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.fcc-auth-header .fcc-language-selector { margin:0!important; }
+.fcc-auth-mode main.fcc-auth-main { padding:24px 24px 40px!important; min-height:calc(100vh - 104px); }
+.fcc-auth-card { width:100%; max-width:540px; margin:0 auto; padding:40px; border:1px solid #d5e4dc; border-radius:28px; background:#fff; box-shadow:0 20px 64px #173e360b; overflow-wrap:anywhere; }
+.fcc-auth-card-wide { max-width:780px; }
+.fcc-auth-card :is(h1,.login-title,.register-title) { margin:0; font-size:clamp(28px,4vw,36px); font-weight:750; letter-spacing:-.045em; line-height:1.2; color:#173e36; }
+.fcc-auth-card :is(.login-eyebrow,.register-eyebrow) { display:block; margin-bottom:14px; color:#55786a; font-size:11px; font-weight:750; letter-spacing:.16em; text-transform:uppercase; }
+.fcc-auth-card :is(.login-subtitle,.register-subtitle) { display:block; margin-top:8px; color:#58756c; font-size:16px; font-weight:400; letter-spacing:0; line-height:1.5; }
+.fcc-auth-card .login-note-card { margin:18px 0 26px; color:#58756c; font-size:15px; line-height:1.65; }
+.fcc-auth-card .register-note-card { margin:24px 0 30px; padding:16px 18px; border:1px solid #d5e4dc; border-radius:14px; background:#f1f7f3; color:#426457; font-size:14px; line-height:1.65; }
+.fcc-auth-card .login-card { padding:0; border:0; background:none; }
+.fcc-auth-card label { margin-bottom:8px; color:#345b4d; font-size:14px; font-weight:600; }
+.fcc-auth-card :is(.form-control,.custom-select) { height:50px; min-height:50px; padding:12px 14px; border:1px solid #c6d9cd; border-radius:12px; background-color:#fff; color:#173e36; font-size:16px; box-shadow:none; }
+.fcc-auth-card .custom-select { padding-right:32px; }
+.fcc-auth-card .custom-select option { color:#173e36; background:#fff; }
+.fcc-auth-card :is(.form-control,.custom-select):focus { border-color:#248975; box-shadow:0 0 0 3px #2489751c; }
+.fcc-auth-card :is(.form-control,.custom-select).is-invalid { border-color:#b74444; }
+.fcc-auth-card .invalid-feedback { color:#a33232; font-size:13px; }
+.fcc-auth-card :is(.text-muted,.form-text) { color:#58756c!important; font-size:13px; line-height:1.6; }
+.fcc-auth-card .form-text { margin-top:8px; }
+.fcc-auth-card input:-webkit-autofill { -webkit-text-fill-color:#173e36; -webkit-box-shadow:0 0 0 1000px #f1f7f3 inset; }
+.fcc-auth-card :is(.login-submit-btn,.register-submit-btn,.btn-primary) { min-height:52px; padding:13px 18px; border:1px solid #367c67; border-radius:14px; color:#fff; background:linear-gradient(125deg,#217b66,#164d40); font-size:16px; font-weight:650; box-shadow:inset 0 1px 0 #ffffff25,0 7px 18px #1b5b4212; white-space:normal; }
+.fcc-auth-card :is(.login-submit-btn,.register-submit-btn,.btn-primary):hover { background:#164d40; color:#fff; }
+.fcc-auth-card :is(button,a,input,select):focus-visible { outline:3px solid #248975; outline-offset:3px; }
+.fcc-auth-card :is(.login-submit-btn,.register-submit-btn,.btn-primary):disabled { opacity:.6; }
+.fcc-auth-card :is(.login-submit-wrap,.register-submit-wrap) { margin-top:24px; }
+.fcc-auth-card .login-links-row { display:flex; flex-direction:column; gap:12px; margin-top:24px; }
+.fcc-auth-card .login-links-row>small { display:block; font-size:13px; line-height:1.8; }
+.fcc-auth-card .custom-control-label { margin:0; padding-top:1px; font-weight:400; line-height:1.7; }
+.fcc-auth-card .custom-control-label::before { border-color:#789b88; background:#fff; }
+.fcc-auth-card .custom-control-input:checked~.custom-control-label::before { background:#176956; border-color:#176956; }
+.fcc-auth-card .custom-control-input:focus~.custom-control-label::before { box-shadow:0 0 0 3px #24897526; }
+.fcc-auth-card :is(.login-footer-link,.register-footer-link) { margin-top:28px!important; padding-top:24px; border-top:1px solid #e0ebe4; text-align:center; color:#58756c; font-size:14px; }
+.fcc-auth-card :is(.login-footer-link,.register-footer-link) a { color:#176956; margin-left:4px; }
+.fcc-auth-card :is(.login-auth-divider,.register-auth-divider) { display:flex; align-items:center; gap:16px; margin:28px 0 16px; color:#58756c; font-size:13px; }
+.fcc-auth-card :is(.login-auth-divider,.register-auth-divider)::before,.fcc-auth-card :is(.login-auth-divider,.register-auth-divider)::after { content:''; flex:1; border-top:1px solid #d5e4dc; }
+.fcc-auth-card :is(.login-social-btn,.register-social-btn) { padding:12px; border:1px solid #cbded2; border-radius:12px; background:#f4f8f5; color:#173e36; }
+.fcc-auth-card :is(.login-social-btn,.register-social-btn):hover { background:#e6f0e9; }
+.fcc-auth-card .login-section-title { margin-bottom:20px; color:#345b4d; font-weight:650; }
+.fcc-auth-card .register-grid { display:grid; gap:28px; }
+.fcc-auth-card .register-section+.register-section { padding-top:28px; border-top:1px solid #d5e4dc; }
+.fcc-auth-card .register-section-title { display:flex; align-items:center; gap:12px; margin:0 0 22px; font-size:17px; font-weight:650; letter-spacing:-.02em; }
+.fcc-auth-card .register-section-number { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:30px; height:30px; border:1px solid #d5e4dc; border-radius:10px; background:#edf5ef; color:#176956; font-size:11px; font-weight:700; letter-spacing:0; }
+.fcc-auth-card .register-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 24px; }
+.fcc-auth-card .register-form-col { min-width:0; width:auto; max-width:none; padding:0; }
+.fcc-auth-card .register-form-col-full { grid-column:1 / -1; }
+.fcc-auth-card .register-shell .form-group { margin:0; }
+.fcc-auth-card .fcc-contact-capture { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,3fr); gap:12px; }
+.fcc-auth-card .fcc-contact-capture-row { min-width:0; }
+.fcc-auth-card .register-phone-field { position:relative; }
+.fcc-auth-card .register-phone-field-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#58756c; pointer-events:none; }
+.fcc-auth-card .register-phone-field .form-control { padding-left:40px; }
+.fcc-auth-card .register-captcha { display:grid; grid-template-columns:176px minmax(0,1fr); align-items:center; gap:16px; padding:16px; margin-bottom:22px!important; border:1px solid #d5e4dc; border-radius:14px; background:#f4f8f5; }
+.fcc-auth-card .register-captcha>img { display:block; max-width:100%; height:auto; margin:0!important; border-radius:6px; }
+.fcc-auth-card .register-captcha>:not(img):not(input) { grid-column:1 / -1; }
+.fcc-auth-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 18px; width:100%; max-width:780px; margin:28px auto 0; color:#58756c; font-size:13px; }
+.fcc-auth-footer small { flex-basis:100%; text-align:center; font-size:12px; }
+@media (max-width:575px) {
+ .fcc-auth-header { width:calc(100% - 32px); min-height:88px; gap:12px; }
+ .fcc-auth-header .fcw-brand img { width:176px; height:54px; }
+ .fcc-auth-mode main.fcc-auth-main { padding:12px 16px 28px!important; min-height:calc(100vh - 88px); }
+ .fcc-auth-card { padding:26px 22px; border-radius:22px; }
+ .fcc-auth-card .register-form-grid { grid-template-columns:minmax(0,1fr); gap:20px; }
+ .fcc-auth-card .register-note-card { padding:14px; margin:22px 0 28px; }
+ .fcc-auth-card .register-captcha { grid-template-columns:minmax(0,1fr); padding:12px; }
+ .fcc-auth-card .register-captcha>img { justify-self:center; }
+ .fcc-auth-card .fcc-contact-capture { grid-template-columns:minmax(0,1fr); }
+}
+@media (prefers-reduced-motion:reduce) { .fcc-auth-mode * { scroll-behavior:auto; transition:none!important; } }

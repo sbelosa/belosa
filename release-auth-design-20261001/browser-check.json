@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "responsive_cases": 9,
+  "language_switch": "Croatian to German and back on canonical local host",
+  "password_visibility_toggle": "Shows text after click",
+  "fixture_notes": [
+    "Local email confirmation disabled, so resend and sent activation correctly return 404 locally. Production routes will be checked separately.",
+    "Offline registration security fixture requires identity fcc_t compatibility shim; 131 assertions passed without writes.",
+    "Layout tested at 127.0.0.1, functional language selection tested at canonical localhost because its CSRF endpoint uses SITE_URL."
+  ]
+}

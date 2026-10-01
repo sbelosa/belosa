@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "checks": [
+    "/en/login",
+    "/en/register",
+    "/en/lost-password",
+    "/en/resend-activation",
+    "/en/sent-activation",
+    "/hr/login",
+    "/hr/register",
+    "/hr/lost-password",
+    "/hr/resend-activation",
+    "/hr/sent-activation",
+    "/sl/login",
+    "/sl/register",
+    "/sl/lost-password",
+    "/sl/resend-activation",
+    "/sl/sent-activation",
+    "/de/login",
+    "/de/register",
+    "/de/lost-password",
+    "/de/resend-activation",
+    "/de/sent-activation",
+    "/es/login",
+    "/es/register",
+    "/es/lost-password",
+    "/es/resend-activation",
+    "/es/sent-activation"
+  ],
+  "disabled_local_routes": []
+}

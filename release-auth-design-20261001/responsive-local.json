@@ -1,0 +1,287 @@
+[
+  {
+    "path": "login",
+    "fields": [
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 55
+      }
+    ],
+    "form": true,
+    "scroll": 320,
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "path": "register",
+    "fields": [
+      {
+        "left": -10000,
+        "right": -9992
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 39,
+        "right": 281
+      },
+      {
+        "left": 52,
+        "right": 268
+      },
+      {
+        "left": 39,
+        "right": 55
+      }
+    ],
+    "form": true,
+    "scroll": 320,
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "path": "lost-password",
+    "fields": [
+      {
+        "left": 39,
+        "right": 281
+      }
+    ],
+    "form": true,
+    "scroll": 320,
+    "theme": "light",
+    "width": 320
+  },
+  {
+    "path": "login",
+    "fields": [
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 55
+      }
+    ],
+    "form": true,
+    "scroll": 390,
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "path": "register",
+    "fields": [
+      {
+        "left": -10000,
+        "right": -9992
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 39,
+        "right": 351
+      },
+      {
+        "left": 52,
+        "right": 338
+      },
+      {
+        "left": 39,
+        "right": 55
+      }
+    ],
+    "form": true,
+    "scroll": 390,
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "path": "lost-password",
+    "fields": [
+      {
+        "left": 39,
+        "right": 351
+      }
+    ],
+    "form": true,
+    "scroll": 390,
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "path": "login",
+    "fields": [
+      {
+        "left": 155,
+        "right": 613
+      },
+      {
+        "left": 155,
+        "right": 613
+      },
+      {
+        "left": 155,
+        "right": 171
+      }
+    ],
+    "form": true,
+    "scroll": 768,
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "path": "register",
+    "fields": [
+      {
+        "left": -10000,
+        "right": -9992
+      },
+      {
+        "left": 65,
+        "right": 372
+      },
+      {
+        "left": 396,
+        "right": 703
+      },
+      {
+        "left": 65,
+        "right": 372
+      },
+      {
+        "left": 396,
+        "right": 703
+      },
+      {
+        "left": 65,
+        "right": 315.390625
+      },
+      {
+        "left": 327.390625,
+        "right": 702.984375
+      },
+      {
+        "left": 65,
+        "right": 372
+      },
+      {
+        "left": 396,
+        "right": 703
+      },
+      {
+        "left": 65,
+        "right": 372
+      },
+      {
+        "left": 396,
+        "right": 703
+      },
+      {
+        "left": 274,
+        "right": 686
+      },
+      {
+        "left": 65,
+        "right": 81
+      }
+    ],
+    "form": true,
+    "scroll": 768,
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "path": "lost-password",
+    "fields": [
+      {
+        "left": 155,
+        "right": 613
+      }
+    ],
+    "form": true,
+    "scroll": 768,
+    "theme": "light",
+    "width": 768
+  }
+]

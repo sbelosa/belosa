@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "checks": [
+    "/en/login",
+    "/en/register",
+    "/en/lost-password",
+    "/hr/login",
+    "/hr/register",
+    "/hr/lost-password",
+    "/sl/login",
+    "/sl/register",
+    "/sl/lost-password",
+    "/de/login",
+    "/de/register",
+    "/de/lost-password",
+    "/es/login",
+    "/es/register",
+    "/es/lost-password",
+    "Original form fields, security attributes and action buttons unchanged",
+    "Existing local login suradnik@fcc.test",
+    "Existing local login admin@fcc.test"
+  ],
+  "disabled_local_routes": [
+    "/en/resend-activation",
+    "/en/sent-activation",
+    "/hr/resend-activation",
+    "/hr/sent-activation",
+    "/sl/resend-activation",
+    "/sl/sent-activation",
+    "/de/resend-activation",
+    "/de/sent-activation",
+    "/es/resend-activation",
+    "/es/sent-activation"
+  ]
+}
