@@ -1,0 +1,32 @@
+[
+  {
+    "path": "app/config/fcc_top_locales.php",
+    "before": "969eabf532056b49533f2f89b5e0600f6ea1f285f44ab946de2318b1418a215c",
+    "sha256": "653fbe71e1dc9c95c7672f017c131dba519c24e43dc234f623b9c5a27a103903",
+    "bytes": 32002
+  },
+  {
+    "path": "themes/altum/assets/css/fcc-top.css",
+    "before": "18a376b1c27e76e5848bf735bbfdb5de39718913d667a79b36ef36fa3a59cb81",
+    "sha256": "e23ff74316ab38d706af84a98ab5a4d4adae03b4ffdbcc8b58ece87f40020fb5",
+    "bytes": 12418
+  },
+  {
+    "path": "themes/altum/views/partner/top.php",
+    "before": "7571a0b1ec27878a3ed7bff4e508a3624cecfec668b235b3bf2d44895d9d7527",
+    "sha256": "447a8ddc50e55961b01681295793622d511d2a15a909b138ed731abca325a21d",
+    "bytes": 6567
+  },
+  {
+    "path": "themes/altum/views/partner/top-settings.php",
+    "before": "75b7d858a07a03402ea4bf44977f69c217da1238c79e109552e65f56b91cddb1",
+    "sha256": "718d2ec83c771f3c8da8bf1583b620fdb169e4d666c41686a16e16a51b3d6e51",
+    "bytes": 2529
+  },
+  {
+    "path": "app/helpers/fcc_top.php",
+    "before": "625a499b6206dcb4095431939bce94d72fe588fd8c0ea0d593a42692066d6ce4",
+    "sha256": "53e9564b23794afd8a147c6fb2378c930d33140536205955142b16913f9e16b5",
+    "bytes": 12351
+  }
+]

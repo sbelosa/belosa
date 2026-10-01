@@ -1,0 +1,76 @@
+{
+    "status": "verified",
+    "visibility_default": 1,
+    "active_accounts": 701,
+    "visible_accounts": 698,
+    "explicit_hidden_accounts": 0,
+    "existing_privacy_hidden_accounts": 3,
+    "at_utc": "2026-10-01T15:41:02+00:00",
+    "cc_sync": "2026-10-01 15:40:04",
+    "cc_accounts": 668,
+    "only_total_active_cc_ranked": true,
+    "source_metric": "total_active_cc",
+    "retired_metrics_removed": true,
+    "default_month": "2026-10-01",
+    "explicit_current_month": "2026-10-01",
+    "free_rank_access_denied": true,
+    "private_cc_protected": true,
+    "category_counts": {
+        "2026-10-01": {
+            "total_active_cc": {
+                "positive": 15,
+                "visible": 15
+            },
+            "registrations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "conversations": {
+                "positive": 1,
+                "visible": 1
+            },
+            "education": {
+                "positive": 45,
+                "visible": 45
+            },
+            "consistency": {
+                "positive": 1,
+                "visible": 1
+            }
+        },
+        "2026-09-01": {
+            "total_active_cc": {
+                "positive": 138,
+                "visible": 138
+            },
+            "registrations": {
+                "positive": 0,
+                "visible": 0
+            },
+            "conversations": {
+                "positive": 1,
+                "visible": 1
+            },
+            "education": {
+                "positive": 45,
+                "visible": 45
+            },
+            "consistency": {
+                "positive": 1,
+                "visible": 1
+            }
+        }
+    },
+    "heartbeat": {
+        "at": "2026-10-01T15:40:20+00:00",
+        "accounts": 100,
+        "transport": "enabled",
+        "result": {
+            "sent": 0,
+            "simulated": 0,
+            "failed": 0
+        }
+    },
+    "feature_profiles": 2,
+    "feature_notifications": 0
+}

@@ -1,0 +1,36 @@
+{
+  "production_files_verified": 5,
+  "worker_restored": true,
+  "desktop": {
+    "width": 1440,
+    "scroll_width": 1440
+  },
+  "mobile": {
+    "width": 360,
+    "scroll_width": 360
+  },
+  "default_month": "2026-10-01",
+  "source_metric": "total_active_cc",
+  "owner_activity_matches_flp360": true,
+  "positive_monthly_activity_accounts": 15,
+  "visible_monthly_activity_accounts": 15,
+  "cc_sync_zagreb": "2026-10-01 17:40:04",
+  "ranking_cards": 5,
+  "removed_categories": [
+    "personal_cc",
+    "total_cc",
+    "recommendations",
+    "invitations"
+  ],
+  "goals": [
+    "education"
+  ],
+  "notification_migration_baseline_tested": true,
+  "production_preferences_changed_by_test": false,
+  "tests": {
+    "test_metrics-result": 46,
+    "test-result": 425,
+    "test_notices-result": 10,
+    "test_http-result": 17
+  }
+}

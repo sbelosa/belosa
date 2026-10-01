@@ -1,0 +1,353 @@
+--- a/app/config/fcc_top_locales.php
++++ b/app/config/fcc_top_locales.php
+@@ -31,11 +31,11 @@
+   "es": "CC personales"
+  },
+  "total_cc": {
+-  "hr": "Ukupni CC iz FLP360",
+-  "en": "Total CC from FLP360",
+-  "sl": "Skupni CC iz FLP360",
+-  "de": "Gesamte CC aus FLP360",
+-  "es": "CC totales de FLP360"
++  "hr": "Ukupna CC aktivnost",
++  "en": "Total CC activity",
++  "sl": "Skupna aktivnost CC",
++  "de": "Gesamte CC Aktivität",
++  "es": "Actividad CC total"
+  },
+  "recommendations": {
+   "hr": "Poslane preporuke proizvoda",
+@@ -87,11 +87,11 @@
+   "es": "CC personales contabilizados de la última sincronización verificada de FLP360 del mes seleccionado."
+  },
+  "total_cc_help": {
+-  "hr": "Izvorno polje Total CC. Osobni CC se ne dodaje ponovno. Ovo nije zaseban izračun sponzorskih CC.",
+-  "en": "The original Total CC field. Personal CC is not added again. This is not a separate calculation of sponsorship CC.",
+-  "sl": "Izvirno polje Total CC. Osebnih CC ne prištevamo ponovno. To ni ločen izračun sponzorskih CC.",
+-  "de": "Das ursprüngliche Feld Total CC. Persönliche CC werden nicht erneut addiert. Dies ist keine separate Berechnung von Sponsoring CC.",
+-  "es": "El campo original Total CC. No se vuelven a sumar los CC personales. No es un cálculo separado de CC de patrocinio."
++  "hr": "Ukupni CC za odabrani kalendarski mjesec. Izvorno polje Total CC. Osobni CC se ne dodaje ponovno. Ovo nije zaseban izračun sponzorskih CC.",
++  "en": "Total CC for the selected calendar month. The original Total CC field. Personal CC is not added again. This is not a separate calculation of sponsorship CC.",
++  "sl": "Skupni CC za izbrani koledarski mesec. Izvirno polje Total CC. Osebnih CC ne prištevamo ponovno. To ni ločen izračun sponzorskih CC.",
++  "de": "Gesamt CC für den ausgewählten Kalendermonat. Das ursprüngliche Feld Total CC. Persönliche CC werden nicht erneut addiert. Dies ist keine separate Berechnung von Sponsoring CC.",
++  "es": "CC totales del mes natural seleccionado. El campo original Total CC. No se vuelven a sumar los CC personales. No es un cálculo separado de CC de patrocinio."
+  },
+  "recommendations_help": {
+   "hr": "Slanje potvrđeno u programu Moj put, uz kontakt i preporuku. Isti kontakt i proizvod broje se jednom u razdoblju. Nepovezane preporuke nisu uključene.",
+@@ -213,18 +213,18 @@
+   "es": "Cómo se contabiliza"
+  },
+  "privacy": {
+-  "hr": "Računaju se svi aktivni računi, neovisno o paketu. Imena prikazujemo samo uz uključenu vidljivost. Prikazani poredak odnosi se na vidljive sudionike. Jednaki rezultati dijele mjesto.",
+-  "en": "All active accounts count, regardless of plan. Names appear only when visibility is enabled. Displayed rankings are among visible participants. Equal results share a place.",
+-  "sl": "Štejejo vsi aktivni računi ne glede na paket. Imena prikazujemo le ob vključeni vidnosti. Prikazana lestvica velja za vidne udeležence. Enaki rezultati delijo mesto.",
+-  "de": "Alle aktiven Konten zählen unabhängig vom Tarif. Namen erscheinen nur bei aktivierter Sichtbarkeit. Die angezeigte Rangliste gilt für sichtbare Teilnehmer. Gleiche Ergebnisse teilen sich einen Platz.",
+-  "es": "Cuentan todas las cuentas activas, independientemente del plan. Los nombres aparecen solo con visibilidad activada. La clasificación mostrada incluye participantes visibles. Los empates comparten puesto."
++  "hr": "Računaju se svi aktivni računi, neovisno o paketu. Vidljivost imena početno je uključena i može se isključiti u postavkama. Ranije isključivanje prikaza se poštuje. Prikazani poredak odnosi se na vidljive sudionike. Jednaki rezultati dijele mjesto.",
++  "en": "All active accounts count, regardless of plan. Name visibility is on by default and can be turned off in settings. Previous choices to hide a name are respected. Displayed rankings are among visible participants. Equal results share a place.",
++  "sl": "Štejejo vsi aktivni računi ne glede na paket. Vidnost imena je privzeto vključena in jo lahko izklopiš v nastavitvah. Prejšnje odločitve za skritje imena se upoštevajo. Prikazana lestvica velja za vidne udeležence. Enaki rezultati delijo mesto.",
++  "de": "Alle aktiven Konten zählen unabhängig vom Tarif. Namen sind standardmäßig sichtbar und können in den Einstellungen verborgen werden. Frühere Entscheidungen zum Verbergen werden respektiert. Die angezeigte Rangliste gilt für sichtbare Teilnehmer. Gleiche Ergebnisse teilen sich einen Platz.",
++  "es": "Cuentan todas las cuentas activas, independientemente del plan. Los nombres son visibles por defecto y se pueden ocultar en los ajustes. Se respetan las decisiones anteriores de ocultarlos. La clasificación mostrada incluye participantes visibles. Los empates comparten puesto."
+  },
+  "cc_privacy": {
+-  "hr": "Zajednički Forever broj računa se jednom. Za prikaz zajedničkog imena svi povezani računi trebaju uključiti vidljivost. CC se prikazuju po mjesecu i nisu dokaz kupnje preko FCC poveznice.",
+-  "en": "A shared Forever number counts once. Every linked account must enable visibility to display the shared name. CC are monthly and do not prove a purchase through an FCC link.",
+-  "sl": "Skupna Forever številka šteje enkrat. Za prikaz skupnega imena morajo vsi povezani računi vključiti vidnost. CC so mesečni in niso dokaz nakupa prek povezave FCC.",
+-  "de": "Eine gemeinsame Forever Nummer zählt einmal. Alle verknüpften Konten müssen für den gemeinsamen Namen die Sichtbarkeit aktivieren. CC gelten monatlich und belegen keinen Kauf über einen FCC Link.",
+-  "es": "Un número Forever compartido cuenta una vez. Todas las cuentas vinculadas deben activar la visibilidad para mostrar el nombre compartido. Los CC son mensuales y no demuestran compras a través de enlaces FCC."
++  "hr": "Zajednički Forever broj računa se jednom. Za prikaz zajedničkog imena svi povezani računi moraju imati uključenu vidljivost. Iznosi tuđih CC ostaju skriveni. CC se prikazuju po mjesecu i nisu dokaz kupnje preko FCC poveznice.",
++  "en": "A shared Forever number counts once. All linked accounts must have visibility on to display the shared name. Other members’ CC amounts stay hidden. CC are monthly and do not prove a purchase through an FCC link.",
++  "sl": "Skupna Forever številka šteje enkrat. Za prikaz skupnega imena morajo imeti vsi povezani računi vključeno vidnost. Zneski CC drugih članov ostanejo skriti. CC so mesečni in niso dokaz nakupa prek povezave FCC.",
++  "de": "Eine gemeinsame Forever Nummer zählt einmal. Für die Anzeige des gemeinsamen Namens müssen alle verknüpften Konten sichtbar sein. CC Beträge anderer Mitglieder bleiben verborgen. CC gelten monatlich und belegen keinen Kauf über einen FCC Link.",
++  "es": "Un número Forever compartido cuenta una vez. Todas las cuentas vinculadas deben tener la visibilidad activada para mostrar el nombre compartido. Los importes CC de otros miembros siguen ocultos. Los CC son mensuales y no demuestran compras a través de enlaces FCC."
+  },
+  "sync": {
+   "hr": "Potvrđena CC sinkronizacija: {at}.",
+@@ -262,11 +262,11 @@
+   "es": "Mostrar mi nombre en las clasificaciones FCC Top"
+  },
+  "visible_help": {
+-  "hr": "Isključivanjem skrivaš ime na svim FCC Top listama. Vlastiti pregled ostaje dostupan uz PRO.",
+-  "en": "Turning this off hides your name across FCC Top rankings. Your personal overview remains available with PRO.",
+-  "sl": "Z izklopom skriješ ime na vseh lestvicah FCC Top. Osebni pregled ostane na voljo s PRO.",
+-  "de": "Das Ausschalten verbirgt deinen Namen in allen FCC Top Ranglisten. Deine persönliche Übersicht bleibt mit PRO verfügbar.",
+-  "es": "Al desactivarlo, ocultas tu nombre en todas las clasificaciones FCC Top. Tu vista personal sigue disponible con PRO."
++  "hr": "Vidljivost je početno uključena. Možeš je isključiti u bilo kojem trenutku i sakriti ime na svim FCC Top listama. Vlastiti pregled ostaje dostupan uz PRO.",
++  "en": "Visibility is on by default. You can turn it off at any time to hide your name across FCC Top rankings. Your personal overview remains available with PRO.",
++  "sl": "Vidnost je privzeto vključena. Kadar koli jo lahko izklopiš in skriješ ime na vseh lestvicah FCC Top. Osebni pregled ostane na voljo s PRO.",
++  "de": "Die Sichtbarkeit ist standardmäßig aktiviert. Du kannst sie jederzeit ausschalten und deinen Namen in allen FCC Top Ranglisten verbergen. Deine persönliche Übersicht bleibt mit PRO verfügbar.",
++  "es": "La visibilidad está activada por defecto. Puedes desactivarla en cualquier momento para ocultar tu nombre en todas las clasificaciones FCC Top. Tu vista personal sigue disponible con PRO."
+  },
+  "weekly_notice": {
+   "hr": "Tjedni podsjetnik na moj napredak",
+@@ -423,11 +423,11 @@
+   "es": "Mis notificaciones"
+  },
+  "visibility_context": {
+-  "hr": "Tvoje aktivnosti ulaze u obračun i kada je ime skriveno. Ovdje biraš smiju li drugi PRO korisnici vidjeti tvoje ime na listi.",
+-  "en": "Your activity counts even when your name is hidden. Choose whether other PRO members may see your name in rankings.",
+-  "sl": "Tvoje aktivnosti štejejo tudi, ko je ime skrito. Izberi, ali lahko drugi člani PRO vidijo tvoje ime na lestvici.",
+-  "de": "Deine Aktivität zählt auch bei verborgenem Namen. Wähle, ob andere PRO Mitglieder deinen Namen in der Rangliste sehen dürfen.",
+-  "es": "Tu actividad cuenta aunque tu nombre esté oculto. Elige si otros miembros PRO pueden ver tu nombre en la clasificación."
++  "hr": "Ime je početno vidljivo drugim PRO korisnicima. Ako isključiš prikaz, tvoje aktivnosti i dalje ulaze u obračun. Tvoj spremljeni odabir se poštuje.",
++  "en": "Your name is visible to other PRO members by default. If you turn visibility off, your activity still counts. Your saved choice is respected.",
++  "sl": "Tvoje ime je privzeto vidno drugim članom PRO. Če vidnost izklopiš, tvoje aktivnosti še vedno štejejo. Tvoja shranjena izbira se upošteva.",
++  "de": "Dein Name ist standardmäßig für andere PRO Mitglieder sichtbar. Wenn du die Sichtbarkeit ausschaltest, zählt deine Aktivität weiterhin. Deine gespeicherte Auswahl bleibt gültig.",
++  "es": "Tu nombre es visible para otros miembros PRO por defecto. Si desactivas la visibilidad, tu actividad sigue contando. Se respeta tu elección guardada."
+  },
+  "weekly_help": {
+   "hr": "Jedan podsjetnik ponedjeljkom na pregled vlastitog napretka.",
+@@ -472,11 +472,11 @@
+   "es": "Hay resultados. Los nombres están ocultos por ahora."
+  },
+  "results_private_body": {
+-  "hr": "Računi s rezultatom u ovoj kategoriji: {n}. Nitko od njih još nema uključenu vidljivost imena. To ne znači da nema aktivnosti ili CC bodova.",
+-  "en": "Accounts with results in this category: {n}. None currently has name visibility enabled. This does not mean there is no activity or no CC.",
+-  "sl": "Računi z rezultatom v tej kategoriji: {n}. Nihče trenutno nima vključene vidnosti imena. To ne pomeni, da ni aktivnosti ali točk CC.",
+-  "de": "Konten mit Ergebnissen in dieser Kategorie: {n}. Bei keinem ist die Namenssichtbarkeit derzeit aktiviert. Das bedeutet nicht, dass es keine Aktivität oder CC gibt.",
+-  "es": "Cuentas con resultados en esta categoría: {n}. Ninguna tiene activada la visibilidad del nombre. Esto no significa que no haya actividad ni CC."
++  "hr": "Računi s rezultatom u ovoj kategoriji: {n}. Njihova imena skrivena su prema postavkama privatnosti. Rezultati i dalje ulaze u obračun.",
++  "en": "Accounts with results in this category: {n}. Their names are hidden according to privacy settings. Their results still count.",
++  "sl": "Računi z rezultatom v tej kategoriji: {n}. Njihova imena so skrita glede na nastavitve zasebnosti. Rezultati še vedno štejejo.",
++  "de": "Konten mit Ergebnissen in dieser Kategorie: {n}. Ihre Namen sind gemäß den Datenschutzeinstellungen verborgen. Ihre Ergebnisse zählen weiterhin.",
++  "es": "Cuentas con resultados en esta categoría: {n}. Sus nombres están ocultos según los ajustes de privacidad. Sus resultados siguen contando."
+  },
+  "previous_month": {
+   "hr": "Prethodni mjesec",
+@@ -500,25 +500,25 @@
+   "es": "Los CC corresponden al mes seleccionado. La selección de 7, 30 o 60 días se aplica a la actividad de FCC."
+  },
+  "cc_overview": {
+-  "hr": "Rezultati u odabranom mjesecu",
+-  "en": "Results in the selected month",
+-  "sl": "Rezultati v izbranem mesecu",
+-  "de": "Ergebnisse im gewählten Monat",
+-  "es": "Resultados del mes seleccionado"
++  "hr": "Ukupna aktivnost u odabranom mjesecu",
++  "en": "Total activity in the selected month",
++  "sl": "Skupna aktivnost v izbranem mesecu",
++  "de": "Gesamtaktivität im ausgewählten Monat",
++  "es": "Actividad total del mes seleccionado"
+  },
+  "cc_count_help": {
+-  "hr": "Broj Forever računa s pozitivnim rezultatom, uključujući one sa skrivenim imenom.",
+-  "en": "Number of Forever accounts with a positive result, including those with hidden names.",
+-  "sl": "Število Forever računov s pozitivnim rezultatom, vključno s skritimi imeni.",
+-  "de": "Anzahl der Forever Konten mit positivem Ergebnis, einschließlich verborgener Namen.",
+-  "es": "Número de cuentas Forever con resultados positivos, incluidas las de nombre oculto."
++  "hr": "Broj Forever računa s pozitivnom ukupnom aktivnošću u odabranom mjesecu, uključujući one sa skrivenim imenom.",
++  "en": "Number of Forever accounts with positive total activity in the selected month, including accounts with hidden names.",
++  "sl": "Število računov Forever s pozitivno skupno aktivnostjo v izbranem mesecu, vključno z računi s skritim imenom.",
++  "de": "Anzahl der Forever Konten mit positiver Gesamtaktivität im ausgewählten Monat, einschließlich Konten mit verborgenem Namen.",
++  "es": "Número de cuentas Forever con actividad total positiva en el mes seleccionado, incluidas las cuentas con nombre oculto."
+  },
+  "visibility_notice": {
+-  "hr": "Ime je skriveno dok ne uključiš vidljivost. Tvoj rezultat i dalje se računa.",
+-  "en": "Your name stays hidden until you enable visibility. Your result still counts.",
+-  "sl": "Tvoje ime je skrito, dokler ne vključiš vidnosti. Tvoj rezultat še vedno šteje.",
+-  "de": "Dein Name bleibt verborgen, bis du die Sichtbarkeit aktivierst. Dein Ergebnis zählt trotzdem.",
+-  "es": "Tu nombre permanece oculto hasta que actives la visibilidad. Tu resultado sigue contando."
++  "hr": "Prikaz tvog imena je isključen. Tvoj rezultat i dalje se računa. Vidljivost možeš promijeniti u postavkama.",
++  "en": "Your name visibility is turned off. Your result still counts. You can change visibility in settings.",
++  "sl": "Prikaz tvojega imena je izključen. Tvoj rezultat še vedno šteje. Vidnost lahko spremeniš v nastavitvah.",
++  "de": "Die Anzeige deines Namens ist ausgeschaltet. Dein Ergebnis zählt weiterhin. Du kannst die Sichtbarkeit in den Einstellungen ändern.",
++  "es": "La visibilidad de tu nombre está desactivada. Tu resultado sigue contando. Puedes cambiar la visibilidad en los ajustes."
+  },
+  "no_recorded_result": {
+   "hr": "Još nema zabilježenog rezultata prema pravilima ove kategorije.",
+@@ -535,11 +535,32 @@
+   "es": "Solo se cuentan los registros descritos en las reglas. No se incluye la actividad fuera de esos registros, por lo que una vista vacía no demuestra inactividad."
+  },
+  "current_month_hint": {
+-  "hr": "Ovo je novi mjesečni obračun. Rezultate prethodnog mjeseca možeš otvoriti zasebno.",
+-  "en": "This is a new monthly tally. You can view the previous month separately.",
+-  "sl": "To je nov mesečni obračun. Rezultate prejšnjega meseca lahko odpreš posebej.",
+-  "de": "Dies ist eine neue Monatsauswertung. Den Vormonat kannst du separat ansehen.",
+-  "es": "Este es un nuevo cómputo mensual. Puedes consultar el mes anterior por separado."
++  "hr": "Prikazuješ CC samo za tekući kalendarski mjesec. Bodovi prethodnog mjeseca ne pribrajaju se ovom obračunu.",
++  "en": "You are viewing CC for the current calendar month only. Points from the previous month are not added to this tally.",
++  "sl": "Prikazani so CC samo za tekoči koledarski mesec. Točke prejšnjega meseca se ne prištevajo temu obračunu.",
++  "de": "Du siehst ausschließlich CC für den aktuellen Kalendermonat. Punkte des Vormonats werden dieser Auswertung nicht hinzugerechnet.",
++  "es": "Estás viendo los CC del mes natural actual únicamente. Los puntos del mes anterior no se suman a este cómputo."
++ },
++ "archive_month_hint": {
++  "hr": "Prikazuješ CC za prethodni mjesec. Ti bodovi ne ulaze u tekući mjesečni obračun.",
++  "en": "You are viewing CC for the previous month. These points do not belong to the current monthly tally.",
++  "sl": "Prikazani so CC za prejšnji mesec. Te točke ne spadajo v tekoči mesečni obračun.",
++  "de": "Du siehst CC für den Vormonat. Diese Punkte gehören nicht zur aktuellen Monatsauswertung.",
++  "es": "Estás viendo los CC del mes anterior. Estos puntos no pertenecen al cómputo del mes actual."
++ },
++ "total_active_cc": {
++  "hr": "Ukupna aktivnost",
++  "en": "Total activity",
++  "sl": "Skupna aktivnost",
++  "de": "Gesamtaktivität",
++  "es": "Actividad total"
++ },
++ "total_active_cc_help": {
++  "hr": "Ukupna aktivnost za odabrani kalendarski mjesec iz potvrđenog FLP360 polja Total Active CC. Uključuje osobne CC i CC Preferred Customer računa. Rangiranje prati aktivnost u tom mjesecu.",
++  "en": "Total activity for the selected calendar month from the verified FLP360 Total Active CC field. Includes personal CC and Preferred Customer CC. Ranking follows activity in that month.",
++  "sl": "Skupna aktivnost za izbrani koledarski mesec iz potrjenega polja FLP360 Total Active CC. Vključuje osebne CC in CC računov Preferred Customer. Razvrstitev sledi aktivnosti v tem mesecu.",
++  "de": "Gesamtaktivität im ausgewählten Kalendermonat aus dem bestätigten FLP360 Feld Total Active CC. Enthält persönliche CC und Preferred Customer CC. Die Rangliste folgt der Aktivität in diesem Monat.",
++  "es": "Actividad total del mes natural seleccionado, según el campo verificado Total Active CC de FLP360. Incluye CC personales y CC de Preferred Customer. La clasificación refleja la actividad de ese mes."
+  }
+ }
+ JSON, true);
+--- a/themes/altum/assets/css/fcc-top.css
++++ b/themes/altum/assets/css/fcc-top.css
+@@ -35,3 +35,7 @@
+ @media(max-width:600px){#fcc-top-settings.ft-settings{padding:20px}#fcc-top-settings .ft-settings-heading{align-items:flex-start;flex-direction:column;gap:16px}#fcc-top-settings .ft-settings-heading h2{font-size:22px}#fcc-top-settings .ft-settings-heading p{font-size:13px}#fcc-top-settings .ft-settings-grid{gap:22px}#fcc-top-settings .ft-settings-goals{padding:18px}#fcc-top-settings .ft-settings-footer{align-items:flex-start;flex-direction:column;gap:13px}#fcc-top-settings .ft-setting-toggle strong{font-size:13px}body.fcc-partner-mode #fcc-top-settings label.ft-setting-toggle{padding:13px!important;gap:11px!important}.ft-privacy-banner{flex-direction:column;align-items:flex-start;gap:7px}.ft-overview-counts{gap:14px}.ft-overview-counts strong{font-size:30px}.ft-overview-counts>div{flex-direction:column;align-items:flex-start;gap:7px}.ft-counts{gap:6px}.ft-filters label{min-width:150px}}
+ 
+ @media(max-width:600px){.ft-filters{display:grid;grid-template-columns:minmax(0,1fr)}.ft-filters label{min-width:0}.ft-filters button{justify-self:start}.ft-filters select{padding-right:32px}}
++
++.ft-archive-hint{border:1px solid #e6d6ac;background:#fff8e8;border-radius:10px;padding:12px 15px;color:#715520}.ft-archive-hint strong{font-weight:550}
++
++.ft-overview-single{grid-template-columns:1fr}.ft-overview-single>div{justify-content:flex-end}.ft-overview-single strong{font-size:42px}.ft-goals-single{grid-template-columns:1fr}.ft-goals-single>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px}.ft-goals-single progress{grid-column:1/-1}@media(max-width:900px){.ft-overview-single>div{justify-content:flex-start}}
+--- a/themes/altum/views/partner/top.php
++++ b/themes/altum/views/partner/top.php
+@@ -1,5 +1,6 @@
+ <?php defined('ALTUMCODE') || die();
+ $t='fcc_top_t';$h='fcc_partner_h';$top=$data->top??null;
++$ccMonthLabel=$top?substr($top['month'],5,2).'/'.substr($top['month'],0,4).' · '.$t($top['month']===$top['months'][0]?'current_month':'previous_month'):'';
+ \Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-top.css?v='.filemtime(ASSETS_PATH.'css/fcc-top.css').'">','head');
+ ?>
+ <section class="ft-hero"><div><span class="fp-eyebrow">FCC · PRO</span><h1><?= $h($t('title')) ?></h1><p><?= $h($t('intro')) ?></p></div><a class="fp-button fp-button-light" href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('settings')) ?></a></section>
+@@ -7,11 +8,11 @@
+ <form class="ft-filters" method="get"><label><?= $h($t('period')) ?><select name="days" data-is-not-custom-select><?php foreach([7,30,60] as $n): ?><option value="<?= $n ?>" <?= $top['days']===$n?'selected':'' ?>><?= $h($t('days',['{n}'=>$n])) ?></option><?php endforeach ?></select></label><label><?= $h($t('cc_month')) ?><select name="month" data-is-not-custom-select><?php foreach($top['months'] as $m): ?><option value="<?= $h($m) ?>" <?= $top['month']===$m?'selected':'' ?>><?= $h(substr($m,5,2).'/'.substr($m,0,4).' · '.$t($m===$top['months'][0]?'current_month':'previous_month')) ?></option><?php endforeach ?></select></label><button class="fp-button" type="submit"><?= $h($t('apply')) ?></button></form>
+ <p class="ft-period-explanation"><?= $h($t('period_explanation')) ?></p>
+ <p class="ft-status"><?= $h($top['sync']?$t('sync',['{at}'=>fcc_cc_time($top['sync'])]):$t('awaiting')) ?><br><?= $h($t('freshness',['{at}'=>fcc_cc_time($top['at'])])) ?></p>
+-<section class="fp-panel ft-overview"><div class="ft-overview-heading"><h2><?= $h($t('cc_overview')) ?> <span><?= $h(substr($top['month'],5,2).'/'.substr($top['month'],0,4)) ?></span></h2><p><?= $h($t('cc_count_help')) ?></p></div><div class="ft-overview-counts"><?php foreach(['personal_cc','total_cc'] as $key): ?><div><strong><?= (int)$top['cards'][$key]['count'] ?></strong><span><?= $h($t($key)) ?><small><?= $h($t('result_accounts')) ?></small></span></div><?php endforeach ?></div><?php if($top['month']===$top['months'][0]): ?><p class="ft-current-hint"><?= $h($t('current_month_hint')) ?> <a href="<?= url('partner/top?days='.$top['days'].'&month='.$top['months'][1]) ?>"><?= $h($t('previous_month')) ?> →</a></p><?php endif ?></section>
++<section class="fp-panel ft-overview"><div class="ft-overview-heading"><h2><?= $h($t('cc_overview')) ?> <span><?= $h($ccMonthLabel) ?></span></h2><p><?= $h($t('cc_count_help')) ?></p></div><div class="ft-overview-counts ft-overview-single"><?php foreach(['total_active_cc'] as $key): ?><div><strong><?= (int)$top['cards'][$key]['count'] ?></strong><span><?= $h($t($key)) ?><small><?= $h($t('result_accounts')) ?></small></span></div><?php endforeach ?></div><?php if($top['month']===$top['months'][0]): ?><p class="ft-current-hint"><?= $h($t('current_month_hint')) ?> <a href="<?= url('partner/top?days='.$top['days'].'&month='.$top['months'][1]) ?>"><?= $h($t('previous_month')) ?> →</a></p><?php else: ?><p class="ft-current-hint ft-archive-hint"><strong><?= $h($t('archive_month_hint')) ?></strong> <a href="<?= url('partner/top?days='.$top['days'].'&month='.$top['months'][0]) ?>"><?= $h($t('current_month')) ?> →</a></p><?php endif ?></section>
+ <?php if(!$top['profile']['visible']): ?><div class="ft-privacy-banner"><span><?= $h($t('visibility_notice')) ?></span><a href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('my_visibility')) ?> →</a></div><?php endif ?>
+-<section class="fp-panel ft-progress"><div class="fp-section-title"><h2><?= $h($t('progress')) ?></h2><span class="ft-private"><?= $h($t('private_label')) ?></span></div><div class="ft-goals"><?php foreach($top['weekly'] as $key=>$value): $goal=(int)$top['profile'][$key.'_goal']; ?><div><span><?= $h($t($key)) ?></span><strong><?= (int)$value ?> <small>/ <?= $goal ?></small></strong><progress value="<?= min($goal,$value) ?>" max="<?= $goal ?>" aria-label="<?= $h($t($key)) ?>"></progress></div><?php endforeach ?></div><a class="fp-link" href="<?= url('partner') ?>"><?= $h($t('start')) ?> →</a></section>
+-<div class="ft-grid"><?php foreach($top['cards'] as $key=>$card):$cc=in_array($key,['personal_cc','total_cc'],true); ?>
+-<section class="fp-panel ft-card"><div class="ft-card-head"><span class="ft-icon" aria-hidden="true"><?= fcc_partner_icon($cc?'chart':($key==='education'?'book':'people')) ?></span><div><span class="fp-eyebrow"><?= $cc?$h(substr($top['month'],5,2).'/'.substr($top['month'],0,4)):$h($t('days',['{n}'=>$top['days']])) ?></span><h2><?= $h($t($key)) ?></h2></div></div>
++<section class="fp-panel ft-progress"><div class="fp-section-title"><h2><?= $h($t('progress')) ?></h2><span class="ft-private"><?= $h($t('private_label')) ?></span></div><div class="ft-goals ft-goals-single"><?php foreach($top['weekly'] as $key=>$value): $goal=(int)$top['profile'][$key.'_goal']; ?><div><span><?= $h($t($key)) ?></span><strong><?= (int)$value ?> <small>/ <?= $goal ?></small></strong><progress value="<?= min($goal,$value) ?>" max="<?= $goal ?>" aria-label="<?= $h($t($key)) ?>"></progress></div><?php endforeach ?></div><a class="fp-link" href="<?= url('partner') ?>"><?= $h($t('start')) ?> →</a></section>
++<div class="ft-grid"><?php foreach($top['cards'] as $key=>$card):$cc=in_array($key,['personal_cc','total_active_cc'],true); ?>
++<section class="fp-panel ft-card"><div class="ft-card-head"><span class="ft-icon" aria-hidden="true"><?= fcc_partner_icon($cc?'chart':($key==='education'?'book':'people')) ?></span><div><span class="fp-eyebrow"><?= $cc?$h($ccMonthLabel):$h($t('days',['{n}'=>$top['days']])) ?></span><h2><?= $h($t($key)) ?></h2></div></div>
+ <div class="ft-own"><div><span><?= $h($t('own')) ?></span><strong><?= $card['own']['score']===null?'…':($cc?fcc_cc_number($card['own']['score']).' CC':(int)$card['own']['score']) ?></strong></div><div class="ft-own-rank"><?php if($card['own']['position']!==null): ?><span><?= $h($t('own_rank',['{n}'=>$card['own']['position']])) ?></span><?php else: ?><span><?= $h($t('no_score')) ?></span><?php endif ?><?php if($card['own']['movement']!==null): ?><small><?= $h($t('rank_change',['{date}'=>$card['own']['comparison_day'],'{n}'=>($card['own']['movement']>0?'+':'').$card['own']['movement']])) ?></small><?php endif ?></div></div>
+ <div class="ft-counts"><span><?= $h($t('result_accounts')) ?> <strong><?= (int)$card['count'] ?></strong></span><span><?= $h($t('visible_accounts')) ?> <strong><?= (int)($card['visible_count']??count($card['rows'])) ?></strong></span></div>
+ <?php if(!$card['rows']): ?><div class="ft-empty <?= $card['count']?'ft-has-results':'' ?>"><span aria-hidden="true"><?= $card['count']?fcc_partner_icon('people'):fcc_partner_icon('chart') ?></span><strong><?= $h($t($card['count']?'results_private_title':'no_recorded_result')) ?></strong><p><?= $h($t($card['count']?'results_private_body':'no_recorded_help',['{n}'=>$card['count']])) ?></p><?php if($card['count']): ?><a class="fp-link" href="<?= url('partner/settings#fcc-top-settings') ?>"><?= $h($t('my_visibility')) ?> →</a><?php endif ?></div><?php else: ?><ol class="ft-list" aria-label="<?= $h($t($key)) ?>"><?php foreach($card['rows'] as $row): ?><li value="<?= (int)$row['position'] ?>" class="<?= $row['own']?'ft-is-me':'' ?>"><span class="ft-place <?= $row['position']<=3?'ft-medal':'' ?>" aria-hidden="true"><?= (int)$row['position'] ?></span><span class="ft-name"><?= $h($row['name']) ?><?php if($row['own']): ?><small><?= $h($t('you')) ?></small><?php endif ?></span><?php if($cc): ?><span class="ft-hidden" aria-label="<?= $h($t('private_cc')) ?>" title="<?= $h($t('private_cc')) ?>"><span aria-hidden="true">••••</span></span><?php else: ?><strong class="ft-score"><?= (int)$row['score'] ?></strong><?php endif ?></li><?php endforeach ?></ol><?php endif ?>
+--- a/themes/altum/views/partner/top-settings.php
++++ b/themes/altum/views/partner/top-settings.php
+@@ -18,7 +18,7 @@
+     <?php endforeach ?><p class="ft-setting-note"><?= $h($tt('notice_help')) ?></p>
+    </fieldset>
+   </div><fieldset class="ft-settings-goals"><legend><?= $h($tt('goals')) ?></legend><p><?= $h($tt('goals_help')) ?></p>
+-   <?php foreach(['recommendations','invitations','education'] as $key): ?><label class="ft-goal-input"><span><?= $h($tt($key)) ?></span><input type="number" name="<?= $key ?>_goal" min="1" max="1000" required value="<?= (int)$topPrefs[$key.'_goal'] ?>"></label><?php endforeach ?>
++   <?php foreach(['education'] as $key): ?><label class="ft-goal-input"><span><?= $h($tt($key)) ?></span><input type="number" name="<?= $key ?>_goal" min="1" max="1000" required value="<?= (int)$topPrefs[$key.'_goal'] ?>"></label><?php endforeach ?>
+   </fieldset></div>
+   <footer class="ft-settings-footer"><button class="fp-button" type="submit"><?= $h($tt('save')) ?></button><span><?= $h($tt('saved_everywhere')) ?></span></footer>
+  </form>
+--- a/app/helpers/fcc_top.php
++++ b/app/helpers/fcc_top.php
+@@ -9,15 +9,19 @@
+  static $ready;return $ready??=(bool)fcc_partner_one("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='fcc_top_state'");
+ }
+ function fcc_top_profile(int $uid): array {
+- return (fcc_top_ready()?fcc_partner_one('SELECT * FROM fcc_top_profiles WHERE user_id=?',[$uid]):null)??['visible'=>0,'weekly_notice'=>0,'milestone_notice'=>0,'recommendations_goal'=>3,'invitations_goal'=>5,'education_goal'=>3,'version'=>0];
++ $profile=(fcc_top_ready()?fcc_partner_one('SELECT * FROM fcc_top_profiles WHERE user_id=?',[$uid]):null)??['visible'=>1,'weekly_notice'=>0,'milestone_notice'=>0,'recommendations_goal'=>3,'invitations_goal'=>5,'education_goal'=>3,'version'=>0];
++ // Version zero is an untouched default; saved visibility choices remain authoritative.
++ if((int)$profile['version']===0)$profile['visible']=1;
++ return $profile;
+ }
+ function fcc_top_save(int $uid,array $input): void {
+  if(!fcc_top_ready())throw new InvalidArgumentException(fcc_top_t('unavailable'));
++ $current=fcc_top_profile($uid);
+  $values=[];foreach(['visible','weekly_notice','milestone_notice'] as $key)$values[]=empty($input[$key])?0:1;
+- foreach(['recommendations_goal','invitations_goal','education_goal'] as $key){$v=filter_var($input[$key]??null,FILTER_VALIDATE_INT);if($v===false||$v<1||$v>1000)throw new InvalidArgumentException(fcc_top_t('goal_error'));$values[]=$v;}
++ foreach(['recommendations_goal','invitations_goal','education_goal'] as $key){$v=filter_var($input[$key]??($key==='education_goal'?null:$current[$key]),FILTER_VALIDATE_INT);if($v===false||$v<1||$v>1000)throw new InvalidArgumentException(fcc_top_t('goal_error'));$values[]=$v;}
+  database()->begin_transaction();
+  try {
+-  fcc_partner_query('INSERT IGNORE INTO fcc_top_profiles(user_id) VALUES(?)',[$uid]);
++  fcc_partner_query('INSERT IGNORE INTO fcc_top_profiles(user_id,visible) VALUES(?,1)',[$uid]);
+   $old=fcc_partner_one('SELECT * FROM fcc_top_profiles WHERE user_id=? FOR UPDATE',[$uid]);
+   if((int)$old['version']!==(int)($input['version']??-1))throw new InvalidArgumentException(fcc_top_t('conflict'));
+   fcc_partner_query('UPDATE fcc_top_profiles SET visible=?,weekly_notice=?,milestone_notice=?,recommendations_goal=?,invitations_goal=?,education_goal=?,version=version+1,updated_at=UTC_TIMESTAMP() WHERE user_id=?',array_merge($values,[$uid]));
+@@ -30,7 +34,7 @@
+  $days=in_array($days,[7,30,60],true)?$days:30;$now=($now??new DateTimeImmutable('now'))->setTimezone(new DateTimeZone('Europe/Zagreb'));
+  return ['days'=>$days,'from'=>$now->setTime(0,0)->modify('-'.($days-1).' days')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),'to'=>$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),'day'=>$now->format('Y-m-d')];
+ }
+-function fcc_top_categories(): array { return ['personal_cc','total_cc','recommendations','invitations','registrations','conversations','education','consistency']; }
++function fcc_top_categories(): array { return ['total_active_cc','registrations','conversations','education','consistency']; }
+ /** Competition ranks: equal values share a place, then skip the occupied positions. */
+ function fcc_top_rank(array $rows): array {
+  $rows=array_values(array_filter($rows,static fn($r)=>isset($r['score'])&&is_numeric($r['score'])&&is_finite((float)$r['score'])&&round((float)$r['score'],3)>0));
+@@ -39,7 +43,7 @@
+ }
+ /** Safe view model. No identifiers, contacts or another person's CC reach HTML or JSON. */
+ function fcc_top_public(array $rows,string $category,int $uid): array {
+- $cc=in_array($category,['personal_cc','total_cc'],true);$visible=fcc_top_rank(array_values(array_filter($rows,static fn($r)=>$r['visible'])));$out=[];
++ $cc=in_array($category,['personal_cc','total_active_cc'],true);$visible=fcc_top_rank(array_values(array_filter($rows,static fn($r)=>$r['visible'])));$out=[];
+  foreach($visible as $r){if($r['position']>10||count($out)>=10)break;$out[]=['name'=>$r['name'],'position'=>$r['position'],'score'=>$cc?null:(int)$r['score'],'own'=>in_array($uid,$r['uids'],true)];}return $out;
+ }
+ function fcc_top_own(array $rows,int $uid): array {
+@@ -51,21 +55,19 @@
+  $month=in_array($month,[$current,$previous],true)?$month:$current;
+  $users=[];$groups=[];
+  $expr=forever_business_user_fbo_sql_expression('u.preferences');
+- foreach(fcc_partner_rows("SELECT u.user_id,u.name,$expr fbo,COALESCE(p.visible,0) visible,COALESCE(m.is_privacy_requested,0) private FROM users u LEFT JOIN fcc_top_profiles p ON p.user_id=u.user_id LEFT JOIN forever_business_members m ON m.fbo_id=$expr WHERE u.status=1") as $r){
++ foreach(fcc_partner_rows("SELECT u.user_id,u.name,$expr fbo,CASE WHEN p.user_id IS NULL OR p.version=0 THEN 1 ELSE p.visible END visible,COALESCE(m.is_privacy_requested,0) private FROM users u LEFT JOIN fcc_top_profiles p ON p.user_id=u.user_id LEFT JOIN forever_business_members m ON m.fbo_id=$expr WHERE u.status=1") as $r){
+   $uid=(int)$r['user_id'];$r['visible']=(bool)$r['visible']&&!$r['private'];$users[$uid]=$r;
+   if(preg_match('/^[0-9]{12}$/D',(string)$r['fbo']))$groups[$r['fbo']][]=$uid;
+  }
+  $scores=[];
+- // These are confirmed actions, not clicks on sharing controls. Deduplication is per person and article, or event.
++ // Rankings use verified registrations, recorded contact work and completed education. Sharing controls are excluded.
+  $queries=[
+-  'recommendations'=>"SELECT user_id,COUNT(*) n FROM (SELECT a.user_id,a.contact_id,COALESCE(p.article_id,0) article_id FROM fcc_partner_pilot_events e JOIN fcc_partner_activities a ON a.id=e.activity_id AND a.user_id=e.user_id JOIN fcc_partner_opportunities p ON p.id=e.opportunity_id AND p.user_id=e.user_id WHERE e.kind='message_sent' AND p.kind='product' AND a.contact_id IS NOT NULL AND e.created_at>=? AND e.created_at<=? UNION SELECT a.user_id,a.contact_id,0 FROM forever_business_daily_outcomes o JOIN fcc_partner_activities a ON a.id=o.interaction_id AND a.user_id=o.recorded_by_user_id WHERE o.status='done' AND o.result_type='recommendation' AND o.output_status='sent' AND a.contact_id IS NOT NULL AND a.created_at>=? AND a.created_at<=? AND NOT EXISTS(SELECT 1 FROM fcc_partner_pilot_events e WHERE e.activity_id=a.id)) q GROUP BY user_id",
+-  'invitations'=>"SELECT a.user_id,COUNT(DISTINCT CONCAT(a.session_id,':',a.recipient_contact_id)) n FROM fcc_webinar_invite_attempts a JOIN fcc_webinar_sessions s ON s.id=a.session_id WHERE a.is_demo=0 AND s.is_demo=0 AND a.revoked_at IS NULL AND a.recipient_contact_id IS NOT NULL AND a.sent_self_reported_at>=? AND a.sent_self_reported_at<=? GROUP BY a.user_id",
+   'registrations'=>"SELECT r.user_id,COUNT(DISTINCT CONCAT(r.session_id,':',r.email_key)) n FROM fcc_webinar_registrations r JOIN fcc_webinar_sessions s ON s.id=r.session_id JOIN fcc_webinar_invite_attempts a ON a.id=r.attempt_id AND a.user_id=r.user_id WHERE r.is_demo=0 AND s.is_demo=0 AND r.is_self=0 AND r.needs_review=0 AND r.status='registered' AND a.revoked_at IS NULL AND a.is_demo=0 AND a.session_id=r.session_id AND r.email_verified_at>=? AND r.email_verified_at<=? GROUP BY r.user_id",
+   'conversations'=>"SELECT user_id,COUNT(DISTINCT contact_id) n FROM fcc_partner_activities WHERE contact_id IS NOT NULL AND kind IN ('contacted','journey_sent','journey_performed') AND created_at>=? AND created_at<=? GROUP BY user_id",
+   'education'=>"SELECT recorded_by_user_id user_id,COUNT(DISTINCT COALESCE(CONCAT('step:',journey_step_id),CONCAT('legacy:',action_key,':',action_date))) n FROM forever_business_daily_outcomes WHERE status='done' AND created_at>=? AND created_at<=? GROUP BY recorded_by_user_id",
+   'consistency'=>"SELECT user_id,created_at FROM fcc_partner_activities WHERE contact_id IS NOT NULL AND kind IN ('contacted','journey_sent','journey_performed') AND created_at>=? AND created_at<=?"
+  ];
+- foreach($queries as $key=>$sql){$params=[$w['from'],$w['to']];if($key==='recommendations')$params=array_merge($params,$params);foreach(fcc_partner_rows($sql,$params) as $r){if($key==='consistency'){$date=(new DateTimeImmutable($r['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('Y-m-d');$activeDays[(int)$r['user_id']][$date]=true;}else $scores[$key][(int)$r['user_id']]=(int)$r['n'];}}
++ foreach($queries as $key=>$sql){$params=[$w['from'],$w['to']];foreach(fcc_partner_rows($sql,$params) as $r){if($key==='consistency'){$date=(new DateTimeImmutable($r['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('Y-m-d');$activeDays[(int)$r['user_id']][$date]=true;}else $scores[$key][(int)$r['user_id']]=(int)$r['n'];}}
+  foreach($activeDays??[] as $id=>$dates)$scores['consistency'][$id]=count($dates);
+ 
+  $cc=[];$sync=null;
+@@ -75,7 +77,7 @@
+  }
+  $lists=[];
+  foreach(fcc_top_categories() as $cat){$rows=[];
+-  if(in_array($cat,['personal_cc','total_cc'],true)){
++  if(in_array($cat,['personal_cc','total_active_cc'],true)){
+    foreach($groups as $fbo=>$ids){$r=$cc[$fbo]??null;if(!$r)continue;$names=[];$visible=true;foreach($ids as $id){$names[]=$users[$id]['name'];$visible=$visible&&$users[$id]['visible'];}$rows[]=['entity'=>hash('sha256','fbo:'.$fbo),'uids'=>$ids,'name'=>implode(' i ',$names),'visible'=>$visible,'score'=>$r[$cat]];}
+   }else foreach($users as $id=>$u)$rows[]=['entity'=>hash('sha256','uid:'.$id),'uids'=>[$id],'name'=>$u['name'],'visible'=>$u['visible'],'score'=>$scores[$cat][$id]??0];
+   $lists[$cat]=fcc_top_rank($rows);
+@@ -83,20 +85,19 @@
+  return ['lists'=>$lists,'window'=>$w,'month'=>$month,'months'=>[$current,$previous],'sync'=>$sync,'cc_accounts'=>count($cc),'accounts'=>count($users),'scores'=>$scores,'cc'=>$cc,'users'=>$users];
+ }
+ function fcc_top_snapshot(array $dataset): void {
+- $batch=[];foreach($dataset['lists'] as $cat=>$rows){$period=in_array($cat,['personal_cc','total_cc'],true)?$dataset['month']:(string)$dataset['window']['days'];foreach($rows as $r)$batch[]=[$dataset['window']['day'],$cat,$period,$r['entity'],$r['position']];}
++ $batch=[];foreach($dataset['lists'] as $cat=>$rows){$period=in_array($cat,['personal_cc','total_active_cc'],true)?$dataset['month']:(string)$dataset['window']['days'];foreach($rows as $r)$batch[]=[$dataset['window']['day'],$cat,$period,$r['entity'],$r['position']];}
+  foreach(array_chunk($batch,100) as $chunk)fcc_partner_query('INSERT IGNORE INTO fcc_top_positions(day,category,period_key,entity_key,position) VALUES'.implode(',',array_fill(0,count($chunk),'(?,?,?,?,?)')),array_merge(...$chunk));
+ }
+ function fcc_top_page(int $uid,int $days,string $month): array {
+  if(!fcc_pro_has_access($uid))throw new RuntimeException('PRO required');
+- // Start with the previous calendar month; explicit current month links remain authoritative.
+- if($month==='')$month=(new DateTimeImmutable(fcc_partner_today()))->modify('first day of previous month')->format('Y-m-d');
++ // Empty or invalid selections resolve to the current Zagreb calendar month in the dataset.
+  $d=fcc_top_dataset($days,$month);fcc_top_snapshot($d);$cards=[];
+- foreach($d['lists'] as $key=>$rows){$own=fcc_top_own($rows,$uid);$period=in_array($key,['personal_cc','total_cc'],true)?$d['month']:(string)$d['window']['days'];$old=$own['entity']?fcc_partner_one('SELECT position,day FROM fcc_top_positions WHERE category=? AND period_key=? AND entity_key=? AND day<? ORDER BY day DESC LIMIT 1',[$key,$period,$own['entity'],$d['window']['day']]):null;
+-  $value=$own['score'];if($value===null&&!in_array($key,['personal_cc','total_cc'],true))$value=0;
++ foreach($d['lists'] as $key=>$rows){$own=fcc_top_own($rows,$uid);$period=in_array($key,['personal_cc','total_active_cc'],true)?$d['month']:(string)$d['window']['days'];$old=$own['entity']?fcc_partner_one('SELECT position,day FROM fcc_top_positions WHERE category=? AND period_key=? AND entity_key=? AND day<? ORDER BY day DESC LIMIT 1',[$key,$period,$own['entity'],$d['window']['day']]):null;
++  $value=$own['score'];if($value===null&&!in_array($key,['personal_cc','total_active_cc'],true))$value=0;
+   if($value===null&&isset($d['users'][$uid]))$value=$d['cc'][$d['users'][$uid]['fbo']][$key]??null;
+   $cards[$key]=['rows'=>fcc_top_public($rows,$key,$uid),'own'=>['score'=>$value,'position'=>$own['position'],'movement'=>$old?(int)$old['position']-(int)$own['position']:null,'comparison_day'=>$old['day']??null],'count'=>count($rows),'visible_count'=>count(array_filter($rows,static fn($r)=>$r['visible']))];
+  }
+- $week=$days===7?$d:fcc_top_dataset(7,$d['month']);$weekly=[];foreach(['recommendations','invitations','education'] as $cat)$weekly[$cat]=$week['scores'][$cat][$uid]??0;
++ $week=$days===7?$d:fcc_top_dataset(7,$d['month']);$weekly=[];foreach(['education'] as $cat)$weekly[$cat]=$week['scores'][$cat][$uid]??0;
+  return ['cards'=>$cards,'days'=>$d['window']['days'],'month'=>$d['month'],'months'=>$d['months'],'sync'=>$d['sync'],'cc_accounts'=>$d['cc_accounts'],'accounts'=>$d['accounts'],'weekly'=>$weekly,'profile'=>fcc_top_profile($uid),'at'=>$d['window']['to']];
+ }
+ /** Optional inbox notices only. First observation sets a baseline, and at most two notices are created per week. */
+@@ -108,7 +109,7 @@
+  $ranks=[];foreach($d['lists'] as $cat=>$rows)$ranks[$cat]=count($rows)>=10?fcc_top_own($rows,$uid)['position']:null;
+  $old=json_decode($state['ranks_json']??'{}',true)?:[];$week=$now->format('o-W');
+  if($p['weekly_notice']&&$now->format('N')==='1')fcc_partner_notify($uid,'top:weekly:'.$week,'service',fcc_top_t('weekly_title'),fcc_top_t('weekly_body'),'partner/top?month='.$d['month'],604800);
+- $entered=false;if($state)foreach($ranks as $cat=>$rank){if(in_array($cat,['personal_cc','total_cc'],true)&&($state['month_key']??'')!==$d['month'])continue;if($rank!==null&&$rank<=10&&(($old[$cat]??null)===null||$old[$cat]>10))$entered=true;}
++ $entered=false;if($state)foreach($ranks as $cat=>$rank){if(in_array($cat,['personal_cc','total_active_cc'],true)&&(($state['month_key']??'')!==$d['month']||!array_key_exists($cat,$old)))continue;if($rank!==null&&$rank<=10&&(($old[$cat]??null)===null||$old[$cat]>10))$entered=true;}
+  if($p['milestone_notice']&&$entered)fcc_partner_notify($uid,'top:milestone:'.$week,'service',fcc_top_t('milestone_title'),fcc_top_t('milestone_body'),'partner/top?month='.$d['month'],604800);
+  fcc_partner_query('INSERT INTO fcc_top_state(user_id,checked_day,month_key,ranks_json) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE checked_day=VALUES(checked_day),month_key=VALUES(month_key),ranks_json=VALUES(ranks_json)',[$uid,$day,$d['month'],json_encode($ranks)]);
+ }

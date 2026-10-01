@@ -1,0 +1,13 @@
+{
+  "run_id": 36883511990,
+  "run_url": "https://github.com/sbelosa/belosa/actions/runs/36883511990",
+  "status": "completed",
+  "conclusion": "success",
+  "period": "2026-10",
+  "verified_forever_ids": 668,
+  "expected_forever_ids": 668,
+  "active_account_links": 700,
+  "changed_cc_snapshots": 27,
+  "completed_at_utc": "2026-10-01T15:40:05Z",
+  "previous_period_reconciliation": false
+}
