@@ -1,0 +1,77 @@
+[
+  {
+    "path": "app/config/fcc_rollout_copy.php",
+    "before": null,
+    "sha256": "3f5bcf29f7f7e59815875249d59669e7142b4efd0694ec67061bdb2e51a38e2c"
+  },
+  {
+    "path": "app/helpers/fcc_partner_rollout.php",
+    "before": "cd532b5874b76ec34ce464cea973406e513c76d9a40e40d82715307d9d7bdfe0",
+    "sha256": "58c858001d4994fbce5680c73a5335b8efec6fcfd5bb8ba9bd53bc983640193b"
+  },
+  {
+    "path": "app/helpers/fcc_partner_tools.php",
+    "before": "86c1324770e6780ad6667bc22bb73d2a4c17fb17b895735065cb56db42c62a8b",
+    "sha256": "cc7977eb41da29e572b5aeb95ff45f2795a7ee0098842b501196a44bd1394b67"
+  },
+  {
+    "path": "app/controllers/admin/AdminFccAccess.php",
+    "before": "92888ed0803a4e5c5119d7aeccb3d7db90f657c73ac3284e0539c9cb97eaae3b",
+    "sha256": "1ed0c2c9ea432c3c7788c8107ec8bbf1a02883afa3e9307ea7f37e191b0f753b"
+  },
+  {
+    "path": "app/controllers/Index.php",
+    "before": "4567eb02b2cee3c563999c666e106bbd11790c9cbaa4d2fbdff27ab5a1ae4103",
+    "sha256": "8fd9e4bb2cf5440a7b55275c1c8487d8bf9c01fe9945089ae20f5fd5b3bfd5e2"
+  },
+  {
+    "path": "app/controllers/Dashboard.php",
+    "before": "64d63ba023622e415a2b30a6079803a715448b3a178133830b743dc0a82fce96",
+    "sha256": "a20fc25b14c94f876c7d8342471d5a3a12d90dfe46edab500316ec4180d6d68b"
+  },
+  {
+    "path": "themes/altum/views/partner/rollout-admin.php",
+    "before": "42909724896eb83975cd4a17950097ca7573eec6e19e61eb83f9da51b86c3a1a",
+    "sha256": "dff0360e399af36f8bf852c4e88f43729863ad28abc0dca79b2517faaf42aa97"
+  },
+  {
+    "path": "themes/altum/views/dashboard/index.php",
+    "before": "b7312e95cd791af8c08334a3d183018c9351872b50364e8f2a877c568e7672c6",
+    "sha256": "8c65f309ff6a3079a9a8b63c4e34d136ab7ec7ef6ba96ed762f5e5292918c194"
+  },
+  {
+    "path": "themes/altum/views/partner/index.php",
+    "before": "11f0d8e8705c7720bfd6baf9ee77358f90a6ea8d592e11c7b0867e8485b3a924",
+    "sha256": "443e74d2f9bacea70ff9a458624ff1e660f16caf85cffff8dde7399369de602b"
+  },
+  {
+    "path": "themes/altum/views/partner/education.php",
+    "before": "5edf59f9d67670f924ee9d3c102aa6ff3d03667827c6f82346646319e8d3171d",
+    "sha256": "bf28e2c255a4f898077a9244854c56100ae8e5f61f2432cd4f28be06c3e6e14c"
+  },
+  {
+    "path": "themes/altum/views/partner/journey.php",
+    "before": "28b11d4bf741e35d3fde5667fe5083a56884145a01cfd00b5395029e57a94b30",
+    "sha256": "5da02bf18c65b3faf513d79c7268e4340b8bfb76b2f84d0228191ad3ba63243d"
+  },
+  {
+    "path": "themes/altum/views/partner/journey90.php",
+    "before": "f6492796009c6728e943adf13b11da3c425411a65af4958f09dc9332096a557c",
+    "sha256": "eabf15e4bb5de9b0d677b970fb0a4006ae1ce5cdc22597f35e78faaf339da7a0"
+  },
+  {
+    "path": "themes/altum/views/partner/journey-pilot.php",
+    "before": "868ca21f7056a470359624172a10262756883ae8ebe74b1ac217f962a124c714",
+    "sha256": "13e2a432c6a4c3bd6e65ca1d31f5a63011548a23ec4ca765fdde806a188f179a"
+  },
+  {
+    "path": "scripts/migrations/partner/026_all_active_rollout.sql",
+    "before": null,
+    "sha256": "4035860c2509ebd530f525458672dbd6a59ff64dae5baf84b94ab83203f7fdcc"
+  },
+  {
+    "path": "themes/altum/views/partner/install.php",
+    "before": "82f117fef458e4ba0cb1896cbd22eae7adde5bc2e78988a0c7641ac48a736ea3",
+    "sha256": "fe6e33ab2f3730c9a913f757be078b1293b89abee0a870d5a188aba19bfc75ff"
+  }
+]

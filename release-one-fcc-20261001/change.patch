@@ -1,0 +1,369 @@
+--- /dev/null
++++ b/app/config/fcc_rollout_copy.php
+@@ -0,0 +1,39 @@
++<?php
++defined('ALTUMCODE') || die();
++return [
++ 'hr'=>[
++  'all'=>'Uključi novi FCC za sve aktivne račune',
++  'description'=>'Novi FCC koristi isti račun, kartice, kontakte, preporuke i paket. Započeta edukacija i povijest ostaju sačuvani.',
++  'active'=>'Novi FCC je zajednički radni prostor za sve aktivne račune i buduće odobrene suradnike.',
++  'preview'=>'Uključuju se svi aktivni računi s ovog popisa. Novi suradnici dobivaju pristup nakon odobrenja računa. Neaktivni računi ostaju isključeni.',
++  'prepare'=>'Prije uključivanja prikazat će se cijeli popis. Ova postavka vrijedi i za buduće odobrene račune.',
++ ],
++ 'en'=>[
++  'all'=>'Enable the new FCC for every active account',
++  'description'=>'The new FCC keeps the same account, cards, contacts, referrals and plan. Existing education progress and history are preserved.',
++  'active'=>'The new FCC is the shared workspace for all active accounts and future approved members.',
++  'preview'=>'All active accounts listed here will be included. New members get access after their account is approved. Inactive accounts remain excluded.',
++  'prepare'=>'Review the complete account list before enabling access. This setting also applies to future approved accounts.',
++ ],
++ 'sl'=>[
++  'all'=>'Vključi novi FCC za vse aktivne račune',
++  'description'=>'Novi FCC ohranja isti račun, kartice, kontakte, priporočila in paket. Obstoječi napredek izobraževanja in zgodovina ostaneta shranjena.',
++  'active'=>'Novi FCC je skupni delovni prostor za vse aktivne račune in prihodnje odobrene sodelavce.',
++  'preview'=>'Vključeni bodo vsi aktivni računi na tem seznamu. Novi sodelavci dobijo dostop po odobritvi računa. Neaktivni računi ostanejo izključeni.',
++  'prepare'=>'Pred vključitvijo bo prikazan celoten seznam. Nastavitev velja tudi za prihodnje odobrene račune.',
++ ],
++ 'de'=>[
++  'all'=>'Das neue FCC für alle aktiven Konten aktivieren',
++  'description'=>'Das neue FCC behält dasselbe Konto, Karten, Kontakte, Empfehlungen und Paket. Vorhandene Lernfortschritte und der Verlauf bleiben erhalten.',
++  'active'=>'Das neue FCC ist der gemeinsame Arbeitsbereich für alle aktiven Konten und künftig freigegebene Mitglieder.',
++  'preview'=>'Alle hier aufgeführten aktiven Konten werden einbezogen. Neue Mitglieder erhalten nach der Freigabe ihres Kontos Zugang. Inaktive Konten bleiben ausgeschlossen.',
++  'prepare'=>'Vor der Aktivierung wird die vollständige Liste angezeigt. Diese Einstellung gilt auch für künftig freigegebene Konten.',
++ ],
++ 'es'=>[
++  'all'=>'Activar el nuevo FCC para todas las cuentas activas',
++  'description'=>'El nuevo FCC conserva la misma cuenta, tarjetas, contactos, recomendaciones y plan. Se mantienen el progreso de formación y el historial existentes.',
++  'active'=>'El nuevo FCC es el espacio de trabajo común para todas las cuentas activas y los futuros miembros aprobados.',
++  'preview'=>'Se incluirán todas las cuentas activas de esta lista. Los nuevos miembros acceden tras la aprobación de su cuenta. Las cuentas inactivas siguen excluidas.',
++  'prepare'=>'Antes de activar el acceso se mostrará la lista completa. Esta configuración también se aplica a las futuras cuentas aprobadas.',
++ ],
++];
+--- a/app/helpers/fcc_partner_rollout.php
++++ b/app/helpers/fcc_partner_rollout.php
+@@ -12,11 +12,18 @@
+  if(!fcc_rollout_ready())return false;
+  return !empty(fcc_rollout_control()['managed']);
+ }
++/** Audited all-users activation also covers accounts approved in the future. */
++function fcc_rollout_all_enabled(): bool {return fcc_rollout_ready()&&!empty(fcc_rollout_control()['all_enabled']);}
++/** Fixed SQL expression shared by authorization and the admin account list. */
++function fcc_rollout_access_sql(): string {
++ $global=fcc_rollout_all_enabled()?" OR (COALESCE(a.source,'')<>'revoke')":'';
++ return '(u.type>0 OR COALESCE(a.allowed,0)=1'.$global.')';
++}
+ function fcc_rollout_allowed(int $uid,bool $published=false): bool {
+  if($uid<1||!fcc_rollout_ready())return false;
+  try {
+-  $u=fcc_partner_one('SELECT u.status,u.type,a.allowed,a.first_granted_at FROM users u LEFT JOIN fcc_partner_rollout_access a ON a.user_id=u.user_id WHERE u.user_id=?',[$uid]);
+-  return $u&&(int)$u['status']===1&&((int)$u['type']>0||!empty($u['allowed'])||($published&&!empty($u['first_granted_at'])));
++  $u=fcc_partner_one('SELECT u.status,'.fcc_rollout_access_sql().' workspace_allowed,a.first_granted_at FROM users u LEFT JOIN fcc_partner_rollout_access a ON a.user_id=u.user_id WHERE u.user_id=?',[$uid]);
++  return $u&&(int)$u['status']===1&&(!empty($u['workspace_allowed'])||($published&&!empty($u['first_granted_at'])));
+  }catch(Throwable $e){error_log('FCC managed access unavailable.');return false;}
+ }
+ /** Published guest pages retain ownership after an admin removes workspace access. */
+@@ -101,12 +108,12 @@
+    fcc_partner_query('INSERT INTO fcc_partner_rollout_access(user_id,allowed,first_granted_at,source,actor_user_id,updated_at) VALUES(?,?,IF(?=1,UTC_TIMESTAMP(),NULL),?,?,UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE allowed=VALUES(allowed),first_granted_at=COALESCE(first_granted_at,VALUES(first_granted_at)),source=VALUES(source),actor_user_id=VALUES(actor_user_id),updated_at=VALUES(updated_at)',[$uid,$allow,$allow,$action,$actor]);
+    $details[]=['user_id'=>$uid,'before'=>(int)($before['allowed']??0),'after'=>$allow];
+   }
+-  fcc_partner_query('UPDATE fcc_partner_rollout_control SET managed=1,revision=revision+1,updated_at=UTC_TIMESTAMP() WHERE id=1');
++  fcc_partner_query('UPDATE fcc_partner_rollout_control SET managed=1,all_enabled=IF(?=1,1,all_enabled),revision=revision+1,updated_at=UTC_TIMESTAMP() WHERE id=1',[$action==='all'?1:0]);
+   fcc_partner_query('INSERT INTO fcc_partner_rollout_audit(actor_user_id,request_key,payload_hash,action,affected_count,detail_json,created_at) VALUES(?,?,?,?,?,?,UTC_TIMESTAMP())',[$actor,$key,$hash,$action,count($details),json_encode($details,JSON_THROW_ON_ERROR)]);
+   $db->commit();unset($GLOBALS['fcc_rollout_control_cache']);return count($details);
+  }catch(Throwable $e){$db->rollback();throw $e;}
+ }
+-/** First authenticated entry starts a new curriculum exactly once; old history stays archived. */
++/** Global activation resumes existing education. Pilot entry retains its original policy. */
+ function fcc_rollout_enter(int $uid): void {
+  if(!fcc_rollout_managed()||!fcc_partner_enabled($uid))return;
+  $row=fcc_partner_one('SELECT * FROM fcc_partner_rollout_access WHERE user_id=?',[$uid]);
+@@ -115,14 +122,20 @@
+  try {
+   fcc_partner_query('SELECT user_id FROM users WHERE user_id=? FOR UPDATE',[$uid]);
+   if(!fcc_rollout_allowed($uid)){$db->rollback();return;}
+-  fcc_partner_query("INSERT IGNORE INTO fcc_partner_rollout_access(user_id,allowed,first_granted_at,source,actor_user_id,updated_at) VALUES(?,0,UTC_TIMESTAMP(),'admin_role',?,UTC_TIMESTAMP())",[$uid,$uid]);
++  $all=fcc_rollout_all_enabled();
++  fcc_partner_query("INSERT IGNORE INTO fcc_partner_rollout_access(user_id,allowed,first_granted_at,source,actor_user_id,updated_at) VALUES(?,?,UTC_TIMESTAMP(),?,?,UTC_TIMESTAMP())",[$uid,$all?1:0,$all?'all_active':'admin_role',$uid]);
+   $row=fcc_partner_one('SELECT * FROM fcc_partner_rollout_access WHERE user_id=? FOR UPDATE',[$uid]);
+   if(!$row['first_entered_at'])fcc_partner_query('UPDATE fcc_partner_rollout_access SET first_entered_at=UTC_TIMESTAMP() WHERE user_id=?',[$uid]);
+   // Access and plan gates remain in the curriculum runtime. Creating an empty cycle grants no paid rights.
+   if(!$row['education_cycle_id']&&fcc_jp_enabled($uid)){
+    $cycle=fcc_j90_cycle($uid);
++   if($all&&$cycle){
++    // Do not restart active, paused or completed programs, and never rewrite their steps.
++    $cid=(int)$cycle['id'];
++   }else{
+    if($cycle&&$cycle['status']==='active')fcc_partner_query("UPDATE fcc_partner_journey_cycles SET status='archived',version=version+1 WHERE id=?",[(int)$cycle['id']]);
+    fcc_partner_query('INSERT INTO fcc_partner_journey_cycles(user_id,catalog_version,policy_version,started_at) VALUES(?,?,?,UTC_TIMESTAMP())',[$uid,FCC_JP_VERSION,fcc_jp_catalog()['policy']['id']]);$cid=(int)$db->insert_id;
++   }
+    fcc_partner_query('UPDATE fcc_partner_rollout_access SET education_cycle_id=? WHERE user_id=?',[$cid,$uid]);
+   }
+   $db->commit();
+@@ -131,3 +144,8 @@
+ function fcc_rollout_new_education(int $uid): bool {
+  return fcc_rollout_managed()&&fcc_partner_enabled($uid)&&!empty(fcc_partner_one('SELECT education_cycle_id FROM fcc_partner_rollout_access WHERE user_id=?',[$uid])['education_cycle_id']);
+ }
++
++function fcc_rollout_ui(string $key): string {
++ static $copy; $copy??=require APP_PATH.'config/fcc_rollout_copy.php';
++ return $copy[fcc_locale()][$key]??$copy['en'][$key]??$key;
++}
+--- a/app/helpers/fcc_partner_tools.php
++++ b/app/helpers/fcc_partner_tools.php
+@@ -8,11 +8,11 @@
+ 
+ function fcc_partner_tools(): array {
+     $tools = [
+-        'links' => ['title'=>'Poveznice i datoteke', 'path'=>'links?classic=1', 'group'=>'content', 'icon'=>'share', 'description'=>'Skrati poveznicu, podijeli datoteku ili pripremi dodatnu karticu.', 'help'=>'Odaberi vrstu sadržaja, unesi odredište i spremi. Postojeće poveznice i njihova statistika ostaju na istom mjestu.', 'routes'=>['links','link']],
++        'links' => ['title'=>'Poveznice i datoteke', 'path'=>'links', 'group'=>'content', 'icon'=>'share', 'description'=>'Skrati poveznicu, podijeli datoteku ili pripremi dodatnu karticu.', 'help'=>'Odaberi vrstu sadržaja, unesi odredište i spremi. Postojeće poveznice i njihova statistika ostaju na istom mjestu.', 'routes'=>['links','link']],
+         'qr-codes' => ['title'=>'QR kodovi', 'path'=>'qr-codes', 'group'=>'content', 'icon'=>'card', 'description'=>'Pripremi kod za karticu, letak ili događaj.', 'help'=>'Za svoju FCC karticu odaberi njezinu postojeću poveznicu. Nakon preuzimanja provjeri kod kamerom mobitela prije ispisa.', 'routes'=>['qr-codes','qr-code-create','qr-code-update']],
+         'projects' => ['title'=>'Projekti', 'path'=>'projects', 'group'=>'content', 'icon'=>'book', 'description'=>'Organiziraj poveznice i QR kodove po temi ili kampanji.', 'help'=>'Kreiraj projekt, a zatim ga odaberi u postavkama poveznice ili QR koda. Tako lakše pratiš sadržaj za isti cilj.', 'routes'=>['projects','project-create','project-update']],
+         'vip-funnel-studio' => ['title'=>'Funnel studio', 'path'=>'vip-funnel-studio', 'group'=>'content', 'icon'=>'people', 'description'=>'Složi kratku prezentaciju koja prikuplja upite.', 'help'=>'Kreni od predloška, prilagodi sadržaj i provjeri završni korak. Prijave prati u Kontaktima, a rezultate u Analitici funnela.', 'routes'=>['vip-funnel-studio']],
+-        'dashboard' => ['title'=>'Detaljna statistika', 'path'=>'dashboard?classic=1', 'group'=>'results', 'icon'=>'chart', 'description'=>'Pogledaj izvore posjeta, klikove i interes za sadržaj.', 'help'=>'Odaberi razdoblje koje želiš usporediti. Posjet, klik i prijava različite su radnje. Klik sam po sebi nije potvrda kupnje.', 'routes'=>['dashboard','link-statistics']],
++        'dashboard' => ['title'=>'Detaljna statistika', 'path'=>'dashboard?view=statistics', 'group'=>'results', 'icon'=>'chart', 'description'=>'Pogledaj izvore posjeta, klikove i interes za sadržaj.', 'help'=>'Odaberi razdoblje koje želiš usporediti. Posjet, klik i prijava različite su radnje. Klik sam po sebi nije potvrda kupnje.', 'routes'=>['dashboard','link-statistics']],
+         'funnels-analytics' => ['title'=>'Rezultati funnela', 'path'=>'funnels-analytics', 'group'=>'results', 'icon'=>'chart', 'description'=>'Vidi koliko posjetitelja ostavi upit i gdje odustaju.', 'help'=>'Usporedi ulaze, početke obrasca i poslane prijave. Odaberi određenu prezentaciju kako bi znao što vrijedi doraditi.', 'routes'=>['funnels-analytics']],
+         'pixels' => ['title'=>'Pikseli za oglašavanje', 'path'=>'pixels', 'group'=>'results', 'icon'=>'chart', 'description'=>'Poveži Meta, Google ili drugi alat za mjerenje oglasa.', 'help'=>'Kopiraj ID piksela iz svojeg oglašivačkog računa, odaberi odgovarajuću platformu i spremi. Zatim ga poveži s karticom u njezinim Postavkama. Prije uporabe provjeri postavke privatnosti i privole.', 'routes'=>['pixels','pixel-create','pixel-update']],
+         'data' => ['title'=>'Prikupljeni upiti', 'path'=>'data', 'group'=>'results', 'icon'=>'people', 'description'=>'Pregledaj prijave iz obrazaca i izvornog FCC sustava.', 'help'=>'Ovdje su upiti iz postojećih FCC obrazaca. Za svakodnevne razgovore i dogovorena javljanja koristi Kontakte.', 'routes'=>['data']],
+--- a/app/controllers/admin/AdminFccAccess.php
++++ b/app/controllers/admin/AdminFccAccess.php
+@@ -26,13 +26,14 @@
+   if($ready){
+    $plan=fcc_rollout_seed_plan(fcc_rollout_users(),$extras);$where='1=1';$params=[];
+    if($filter!=='all')$where.=' AND u.status=1';
+-   if($filter==='new')$where.=' AND (u.type>0 OR COALESCE(a.allowed,0)=1)';
+-   if($filter==='old')$where.=' AND u.type=0 AND COALESCE(a.allowed,0)=0';
++   $access=fcc_rollout_access_sql();
++   if($filter==='new')$where.=' AND '.$access;
++   if($filter==='old')$where.=' AND NOT '.$access;
+    if($q!==''){$where.=' AND (u.name LIKE ? OR u.email LIKE ? OR CAST(u.user_id AS CHAR)=?)';$params=['%'.$q.'%','%'.$q.'%',$q];}
+    $join=' FROM users u LEFT JOIN fcc_partner_rollout_access a ON a.user_id=u.user_id';
+    $count=(int)fcc_partner_one('SELECT COUNT(*) n'.$join.' WHERE '.$where,$params)['n'];
+-   $page=min($page,max(1,(int)ceil($count/50)));$rows=fcc_partner_rows('SELECT u.user_id,u.name,u.email,u.type,u.status,u.plan_id,a.allowed,a.first_entered_at,a.education_cycle_id'.$join.' WHERE '.$where.' ORDER BY u.user_id LIMIT 50 OFFSET '.(($page-1)*50),$params);
+-   $stats=fcc_partner_one('SELECT COUNT(*) active,COALESCE(SUM(u.type>0 OR COALESCE(a.allowed,0)=1),0) new'.$join.' WHERE u.status=1');
++   $page=min($page,max(1,(int)ceil($count/50)));$rows=fcc_partner_rows('SELECT u.user_id,u.name,u.email,u.type,u.status,u.plan_id,'.$access.' allowed,a.first_entered_at,a.education_cycle_id'.$join.' WHERE '.$where.' ORDER BY u.user_id LIMIT 50 OFFSET '.(($page-1)*50),$params);
++   $stats=fcc_partner_one('SELECT COUNT(*) active,COALESCE(SUM('.$access.'),0) new'.$join.' WHERE u.status=1');
+    $audit=fcc_partner_rows('SELECT a.action,a.affected_count,a.created_at,u.name actor FROM fcc_partner_rollout_audit a LEFT JOIN users u ON u.user_id=a.actor_user_id ORDER BY a.id DESC LIMIT 15');
+   }
+   \Altum\Title::set('Pristup novom FCC-u');$v=new \Altum\View('partner/rollout-admin',(array)$this);
+--- a/app/controllers/Index.php
++++ b/app/controllers/Index.php
+@@ -58,6 +58,8 @@
+     }
+ 
+     public function index() {
++        // A signed-in collaborator has one home. Public cards and guest pages keep their URLs.
++        if(is_logged_in() && fcc_partner_enabled()) redirect('partner');
+ 
+         /* Custom index redirect if set */
+         if(!empty(settings()->main->index_url)) {
+--- a/app/controllers/Dashboard.php
++++ b/app/controllers/Dashboard.php
+@@ -139,7 +139,15 @@
+     /* /Custom code: FC-2026-03-07 */
+ 
+     public function index() {
+-        if(fcc_partner_enabled() && empty($_GET['classic'])) { \Altum\Authentication::guard(); redirect('partner'); }
++        if(fcc_partner_enabled()) {
++            \Altum\Authentication::guard();
++            if(isset($_GET['classic'])) {
++                $query=$_GET;unset($query['classic'],$query['altum']);$query['view']='statistics';
++                redirect('dashboard?'.http_build_query($query));
++            }
++            if(($_GET['view']??'')!=='statistics') redirect('partner');
++            \Altum\Title::set(fcc_t('Detaljna statistika'));
++        }
+ 
+         \Altum\Authentication::guard();
+ 
+@@ -257,11 +265,12 @@
+         $data = [
+             'has_links' => count($links),
+             /* Custom code: FC-2026-02-24: FCC core education notice */
+-            'needs_fcc_education' => $needs_fcc_education,
++            'needs_fcc_education' => !fcc_partner_enabled() && $needs_fcc_education,
++            'partner_statistics' => fcc_partner_enabled(),
+             /* /Custom code: FC-2026-02-24 */
+             /* Custom code: FC-2026-04-06: dashboard onboarding should auto-open only once per user */
+             'dashboard_onboarding_seen' => $dashboard_onboarding_seen,
+-            'should_auto_open_dashboard_onboarding' => !$dashboard_onboarding_seen,
++            'should_auto_open_dashboard_onboarding' => !fcc_partner_enabled() && !$dashboard_onboarding_seen,
+             /* /Custom code: FC-2026-04-06 */
+             /* Custom code: FC-2026-08-14: verified self-only 4 CC dashboard notice */
+             'forever_activity_notice' => $forever_activity_notice,
+--- a/themes/altum/views/partner/rollout-admin.php
++++ b/themes/altum/views/partner/rollout-admin.php
+@@ -1,13 +1,13 @@
+-<?php defined('ALTUMCODE') || die();$h='fcc_partner_h';$base=url('admin/fcc-access');$token='<input type="hidden" name="token" value="'.$h(\Altum\Csrf::get()).'">';$labels=['initial'=>fcc_t('Postavi početni pristup'),'grant'=>fcc_t('Uključi novi FCC'),'revoke'=>fcc_t('Vrati pristup postojećem FCC-u'),'all'=>fcc_t('Uključi sve postojeće aktivne korisnike')]; ?>
++<?php defined('ALTUMCODE') || die();$h='fcc_partner_h';$base=url('admin/fcc-access');$token='<input type="hidden" name="token" value="'.$h(\Altum\Csrf::get()).'">';$labels=['initial'=>fcc_t('Postavi početni pristup'),'grant'=>fcc_t('Uključi novi FCC'),'revoke'=>fcc_t('Vrati pristup postojećem FCC-u'),'all'=>fcc_rollout_ui('all')]; ?>
+ <div class="container-fluid px-0">
+- <h1 class="h3"><?= htmlspecialchars(fcc_t('Pristup novom FCC-u'), ENT_QUOTES, 'UTF-8') ?></h1><p><?= htmlspecialchars(fcc_t('Ti određuješ tko koristi novi FCC. Suradnik nastavlja s istim računom, karticom, preporukama i paketom. Pri prvom ulasku započinje novu edukaciju.'), ENT_QUOTES, 'UTF-8') ?></p>
++ <h1 class="h3"><?= htmlspecialchars(fcc_t('Pristup novom FCC-u'), ENT_QUOTES, 'UTF-8') ?></h1><p><?= htmlspecialchars(fcc_rollout_ui('description'), ENT_QUOTES, 'UTF-8') ?></p>
+  <?= \Altum\Alerts::output_alerts() ?>
+  <?php if($data->error): ?><div class="alert alert-danger" role="alert"><?= $h($data->error) ?></div><?php endif ?>
+  <?php if(!$data->ready): ?><div class="alert alert-info"><?= htmlspecialchars(fcc_t('Administracija pristupa bit će dostupna nakon primjene migracije 017.'), ENT_QUOTES, 'UTF-8') ?></div><?php else: ?>
+- <div class="card mb-4"><div class="card-body"><strong><?= fcc_rollout_managed()?fcc_t('Pristup određuje administrator.'):fcc_t('Administratorski odabir još nije aktiviran.') ?></strong><p class="mb-0"><?php if(getenv('FCC_PARTNER_ENABLED')!=='1'): ?><?= htmlspecialchars(fcc_t('Glavni prekidač novog FCC-a je isključen. Možeš unaprijed pripremiti odabir.'), ENT_QUOTES, 'UTF-8') ?><?php elseif(!fcc_rollout_managed()): ?><?= htmlspecialchars(fcc_t('Prva potvrđena promjena aktivirat će ovaj popis. Postojeća konfiguracija vrijedi do tada.'), ENT_QUOTES, 'UTF-8') ?><?php endif ?> <?= htmlspecialchars(fcc_t('Odabrano za novi FCC:'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$data->stats['new'] ?> <?= htmlspecialchars(fcc_t('od'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$data->stats['active'] ?> <?= htmlspecialchars(fcc_t('aktivnih računa. Aktivni administratori imaju pristup prema svojoj ulozi.'), ENT_QUOTES, 'UTF-8') ?></p></div></div>
++ <div class="card mb-4"><div class="card-body"><strong><?= fcc_rollout_all_enabled()?fcc_rollout_ui('active'):(fcc_rollout_managed()?fcc_t('Pristup određuje administrator.'):fcc_t('Administratorski odabir još nije aktiviran.')) ?></strong><p class="mb-0"><?php if(getenv('FCC_PARTNER_ENABLED')!=='1'): ?><?= htmlspecialchars(fcc_t('Glavni prekidač novog FCC-a je isključen. Možeš unaprijed pripremiti odabir.'), ENT_QUOTES, 'UTF-8') ?><?php elseif(!fcc_rollout_managed()): ?><?= htmlspecialchars(fcc_t('Prva potvrđena promjena aktivirat će ovaj popis. Postojeća konfiguracija vrijedi do tada.'), ENT_QUOTES, 'UTF-8') ?><?php endif ?> <?= htmlspecialchars(fcc_t('Odabrano za novi FCC:'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$data->stats['new'] ?> <?= htmlspecialchars(fcc_t('od'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$data->stats['active'] ?> <?= htmlspecialchars(fcc_t('aktivnih računa. Aktivni administratori imaju pristup prema svojoj ulozi.'), ENT_QUOTES, 'UTF-8') ?></p></div></div>
+  <?php if($data->preview): $p=$data->preview; ?>
+  <section class="card mb-4 border-primary"><div class="card-body"><h2 class="h4"><?= htmlspecialchars(fcc_t('Pregled prije spremanja'), ENT_QUOTES, 'UTF-8') ?></h2><p><strong><?= $h($labels[$p['action']]) ?></strong><?= htmlspecialchars(fcc_t('. Obuhvaćeno računa:'), ENT_QUOTES, 'UTF-8') ?> <?= count($p['accounts']) ?>.</p>
+- <?php if($p['action']==='all'): ?><p><?= htmlspecialchars(fcc_t('Obuhvaćeni su samo postojeći aktivni računi prikazani ispod. Budući suradnici ostaju na postojećem FCC-u dok ih ne uključiš.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
++ <?php if($p['action']==='all'): ?><p><?= htmlspecialchars(fcc_rollout_ui('preview'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
+  <?php if($p['action']==='revoke'): ?><p><?= htmlspecialchars(fcc_t('Korisnici se vraćaju na postojeći radni prostor. Njihovi podaci, nova edukacija i već podijeljene javne poveznice ostaju sačuvani. Ponovno uključivanje nastavlja isti novi program.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
+  <div style="max-height:320px;overflow:auto"><ol><?php foreach($p['accounts'] as $u): ?><li><?= $h($u['name']) ?>, <?= $h($u['email']) ?><?= htmlspecialchars(fcc_t(', ID'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$u['user_id'] ?></li><?php endforeach ?></ol></div>
+  <form method="post"><?= $token ?><input type="hidden" name="stage" value="confirm"><input type="hidden" name="request_key" value="<?= $h($p['key']) ?>"><div class="custom-control custom-checkbox my-3"><input class="custom-control-input" id="rollout-confirm" type="checkbox" name="confirmation" value="POTVRDI" required><label class="custom-control-label" for="rollout-confirm"><?= htmlspecialchars(fcc_t('Pregledao/la sam račune i želim spremiti ovu promjenu.'), ENT_QUOTES, 'UTF-8') ?></label></div><button class="btn btn-primary"><?= htmlspecialchars(fcc_t('Potvrdi promjenu'), ENT_QUOTES, 'UTF-8') ?></button> <a class="btn btn-outline-secondary" href="<?= $base ?>"><?= htmlspecialchars(fcc_t('Odustani'), ENT_QUOTES, 'UTF-8') ?></a></form></div></section>
+@@ -19,9 +19,9 @@
+  <form method="get" class="card mb-3"><div class="card-body"><div class="form-row"><div class="col-md-7"><label for="rollout-search"><?= htmlspecialchars(fcc_t('Pronađi suradnika'), ENT_QUOTES, 'UTF-8') ?></label><input id="rollout-search" name="q" class="form-control" value="<?= $h($data->q) ?>" placeholder="<?= htmlspecialchars(fcc_t('Ime, email ili ID računa'), ENT_QUOTES, 'UTF-8') ?>"></div><div class="col-md-3"><label for="rollout-filter"><?= htmlspecialchars(fcc_t('Prikaz'), ENT_QUOTES, 'UTF-8') ?></label><select name="filter" id="rollout-filter" class="form-control"><?php foreach(['active'=>fcc_t('Svi aktivni'),'new'=>fcc_t('Novi FCC'),'old'=>fcc_t('Postojeći FCC'),'all'=>fcc_t('Svi računi')] as $k=>$v): ?><option value="<?= $k ?>" <?= $data->filter===$k?'selected':'' ?>><?= $v ?></option><?php endforeach ?></select></div><div class="col-md-2 d-flex align-items-end"><button class="btn btn-outline-primary mt-3"><?= htmlspecialchars(fcc_t('Pronađi'), ENT_QUOTES, 'UTF-8') ?></button></div></div></div></form>
+  <form method="post" class="card mb-4"><?= $token ?><div class="table-responsive"><table class="table mb-0"><thead><tr><th><?= htmlspecialchars(fcc_t('Odabir'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Suradnik'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Pristup'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Prvi ulazak'), ENT_QUOTES, 'UTF-8') ?></th></tr></thead><tbody>
+  <?php foreach($data->rows as $u): $admin=(int)$u['type']>0;$active=(int)$u['status']===1;$allowed=$active&&($admin||$u['allowed']); ?><tr><td><?php if($active&&!$admin): ?><input type="checkbox" name="ids[]" value="<?= (int)$u['user_id'] ?>" aria-label="Odaberi <?= $h($u['name']) ?>"><?php endif ?></td><td><a href="<?= url('admin/user-view/'.(int)$u['user_id']) ?>"><?= $h($u['name']) ?></a><br><small><?= $h($u['email']) ?> <?= htmlspecialchars(fcc_t('· ID'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$u['user_id'] ?></small></td><td><span class="badge <?= $allowed?'badge-success':'badge-light' ?>"><?= !$active?fcc_t('Neaktivan račun'):($allowed?fcc_t('Novi FCC'):fcc_t('Postojeći FCC')) ?></span><?php if($admin): ?><br><small><?= htmlspecialchars(fcc_t('Administrator'), ENT_QUOTES, 'UTF-8') ?></small><?php endif ?></td><td><?= $h($u['first_entered_at']?$u['first_entered_at'].fcc_t(' UTC'):fcc_t('Još nije ušao/la')) ?></td></tr><?php endforeach ?>
+- <?php if(!$data->rows): ?><tr><td colspan="4"><?= htmlspecialchars(fcc_t('Nema računa za ovaj odabir.'), ENT_QUOTES, 'UTF-8') ?></td></tr><?php endif ?></tbody></table></div><div class="card-body"><button name="action" value="grant" class="btn btn-primary mb-2"><?= htmlspecialchars(fcc_t('Uključi odabrane'), ENT_QUOTES, 'UTF-8') ?></button> <button name="action" value="revoke" class="btn btn-outline-secondary mb-2"><?= htmlspecialchars(fcc_t('Vrati odabrane na postojeći FCC'), ENT_QUOTES, 'UTF-8') ?></button><p class="mb-0"><?= htmlspecialchars(fcc_t('Svaka promjena najprije otvara pregled odabranih računa.'), ENT_QUOTES, 'UTF-8') ?></p></div></form>
++ <?php if(!$data->rows): ?><tr><td colspan="4"><?= htmlspecialchars(fcc_t('Nema računa za ovaj odabir.'), ENT_QUOTES, 'UTF-8') ?></td></tr><?php endif ?></tbody></table></div><div class="card-body"><button name="action" value="grant" class="btn btn-primary mb-2"><?= htmlspecialchars(fcc_t('Uključi odabrane'), ENT_QUOTES, 'UTF-8') ?></button> <?php if(!fcc_rollout_all_enabled()): ?><button name="action" value="revoke" class="btn btn-outline-secondary mb-2"><?= htmlspecialchars(fcc_t('Vrati odabrane na postojeći FCC'), ENT_QUOTES, 'UTF-8') ?></button><?php endif ?><p class="mb-0"><?= htmlspecialchars(fcc_t('Svaka promjena najprije otvara pregled odabranih računa.'), ENT_QUOTES, 'UTF-8') ?></p></div></form>
+  <nav aria-label="<?= htmlspecialchars(fcc_t('Stranice računa'), ENT_QUOTES, 'UTF-8') ?>"><p><?= htmlspecialchars(fcc_t('Pronađeno:'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$data->count ?><?= htmlspecialchars(fcc_t('. Stranica'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$data->page ?>. <?php if($data->page>1): ?><a href="<?= $base.'?'.$h(http_build_query(['q'=>$data->q,'filter'=>$data->filter,'page'=>$data->page-1])) ?>"><?= htmlspecialchars(fcc_t('Prethodna'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?> <?php if($data->count>$data->page*50): ?><a href="<?= $base.'?'.$h(http_build_query(['q'=>$data->q,'filter'=>$data->filter,'page'=>$data->page+1])) ?>"><?= htmlspecialchars(fcc_t('Sljedeća'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?></p></nav>
+- <details class="card mb-4"><summary class="card-header"><?= htmlspecialchars(fcc_t('Uključi sve postojeće aktivne korisnike'), ENT_QUOTES, 'UTF-8') ?></summary><div class="card-body"><p><?= htmlspecialchars(fcc_t('Prije uključivanja prikazat će se cijeli popis. Novi korisnici koji se kasnije registriraju nisu obuhvaćeni.'), ENT_QUOTES, 'UTF-8') ?></p><form method="post"><?= $token ?><button name="action" value="all" class="btn btn-outline-primary"><?= htmlspecialchars(fcc_t('Pregledaj sve račune'), ENT_QUOTES, 'UTF-8') ?></button></form></div></details>
++ <details class="card mb-4"><summary class="card-header"><?= htmlspecialchars(fcc_rollout_ui('all'), ENT_QUOTES, 'UTF-8') ?></summary><div class="card-body"><p><?= htmlspecialchars(fcc_rollout_ui('prepare'), ENT_QUOTES, 'UTF-8') ?></p><form method="post"><?= $token ?><button name="action" value="all" class="btn btn-outline-primary"><?= htmlspecialchars(fcc_t('Pregledaj sve račune'), ENT_QUOTES, 'UTF-8') ?></button></form></div></details>
+  <details class="card"><summary class="card-header"><?= htmlspecialchars(fcc_t('Posljednje promjene pristupa'), ENT_QUOTES, 'UTF-8') ?></summary><div class="card-body"><ol><?php foreach($data->audit as $a): ?><li><?= $h($a['created_at']) ?> <?= htmlspecialchars(fcc_t('UTC,'), ENT_QUOTES, 'UTF-8') ?> <?= $h($a['actor']??'Administrator') ?>: <?= $h($labels[$a['action']]??$a['action']) ?><?= htmlspecialchars(fcc_t(', računa'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$a['affected_count'] ?>.</li><?php endforeach ?></ol></div></details>
+  <?php endif ?>
+ </div>
+--- a/themes/altum/views/dashboard/index.php
++++ b/themes/altum/views/dashboard/index.php
+@@ -1,6 +1,7 @@
+ <?php defined('ALTUMCODE') || die() ?>
+ 
+ <?php
++$partner_statistics = !empty($data->partner_statistics);
+ $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Altum\Language::$name);
+ $dashboard_forever_activity = (array) ($data->forever_activity_notice ?? []);
+ $dashboard_forever_activity_status = $dashboard_forever_activity['status'] ?? 'unavailable';
+@@ -1756,7 +1757,11 @@
+         <!-- /Custom code: FC-2026-02-24 -->
+     <?php endif ?>
+ 
++    <?php if($partner_statistics): ?>
++    <header class="fp-page-heading"><div><span class="fp-eyebrow"><?= l('dashboard.hero.period_30_days') ?></span><h1><?= fcc_partner_h(fcc_t('Detaljna statistika')) ?></h1></div><a class="fp-button fp-button-outline" href="<?= url('fcc-results') ?>"><?= fcc_partner_h(fcc_t('Rezultati')) ?> →</a></header>
++    <?php endif ?>
+     <div class="mb-5 dashboard-growth-shell">
++        <?php if(!$partner_statistics): ?>
+         <div class="dashboard-page-guide-rail">
+             <button type="button" class="dashboard-page-guide-trigger dashboard-tour-target" id="dashboard_tour_step_page_guide" data-dashboard-start-tour>
+                 <i class="fas fa-fw fa-route"></i>
+@@ -1942,6 +1947,7 @@
+             </div>
+         </div>
+ 
++        <?php endif ?>
+         <div class="dashboard-workbench dashboard-growth-card mb-4 dashboard-tour-target" id="dashboard_tour_step_workbench">
+             <div class="dashboard-workbench-header">
+                 <div>
+@@ -2115,6 +2121,7 @@
+     </div>
+ </div>
+ 
++<?php if(!$partner_statistics): ?>
+ <div class="modal fade" id="dashboard_how_fcc_works_modal" tabindex="-1" role="dialog" aria-labelledby="dashboard_how_fcc_works_modal_title" aria-hidden="true">
+     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+         <div class="modal-content">
+@@ -2260,6 +2267,7 @@
+ </div>
+ 
+ <!-- Custom code: FC-2026-03-30: dashboard geo breakdown modal -->
++<?php endif ?>
+ <div class="modal fade" id="dashboard_geo_breakdown_modal" tabindex="-1" role="dialog" aria-labelledby="dashboard_geo_breakdown_modal_title" aria-hidden="true">
+     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+         <div class="modal-content">
+@@ -3447,13 +3455,13 @@
+                     }
+                 }
+ 
+-                    initDashboardOnboarding();
++                    <?php if(!$partner_statistics): ?>initDashboardOnboarding();<?php endif ?>
+                 }
+             } catch (error) {
+                 render_dashboard_fetch_error();
+             }
+         })();
+ 
+-        initDashboardOnboarding();
++        <?php if(!$partner_statistics): ?>initDashboardOnboarding();<?php endif ?>
+     </script>
+ <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
+--- a/themes/altum/views/partner/index.php
++++ b/themes/altum/views/partner/index.php
+@@ -59,7 +59,7 @@
+  <?php if($section==='cards') require THEME_PATH.'views/partner/card-removal-confirm.php'; ?>
+  <?php if(in_array($section,['cards','share'],true)): ?>
+   <p class="fp-lead"><?= $section==='cards'?fcc_t('Ista kartica, gdje god je uređuješ. Promjene su odmah dio tvoje javne FCC stranice.'):fcc_t('Tvoje poveznice vode na tvoju karticu i čuvaju tvoju preporuku.') ?></p><div class="fp-card-grid"><?php foreach($data->cards as $card): ?><article class="fp-panel fp-card-preview"><div class="fp-card-cover"><img class="fp-brand-icon" src="<?= SITE_URL ?>partner-assets/fcc-icon.png" width="52" height="52" alt="<?= htmlspecialchars(fcc_t('Forever Card Club'), ENT_QUOTES, 'UTF-8') ?>"><span class="fp-card-status"><?= $card['is_enabled']?fcc_t('Aktivna kartica'):fcc_t('Kartica nije aktivna') ?></span></div><h2><?= $h($card['title']) ?></h2><p class="fp-url"><?= $h($card['public_url']) ?></p><div class="fp-actions"><?php if($section==='cards'): ?><a class="fp-button" href="<?= url('link/'.(int)$card['link_id']) ?>"><?= htmlspecialchars(fcc_t('Uredi karticu'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-button fp-button-outline" href="<?= url('link/'.(int)$card['link_id'].'?editor=preview') ?>"><?= htmlspecialchars(fcc_t('Pogledaj'), ENT_QUOTES, 'UTF-8') ?></a><?php else: ?><button class="fp-button" data-share-url="<?= $h($card['public_url']) ?>" data-share-title="<?= $h($card['title']) ?>"><?= htmlspecialchars(fcc_t('Podijeli karticu'), ENT_QUOTES, 'UTF-8') ?> <?= fcc_partner_icon('share') ?></button><button class="fp-button fp-button-outline" data-copy="<?= $h($card['public_url']) ?>"><?= htmlspecialchars(fcc_t('Kopiraj'), ENT_QUOTES, 'UTF-8') ?></button><?php endif ?></div><?php if($section==='cards') require THEME_PATH.'views/partner/card-removal-option.php'; ?></article><?php endforeach ?><?php if(!$data->cards): ?><section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Pripremi svoju prvu karticu'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Tvoj javni prostor za proizvode, kontakt i poslovnu priču.'), ENT_QUOTES, 'UTF-8') ?></p><?php if($section==='share'): ?><a class="fp-button" href="<?= url('partner/cards') ?>"><?= htmlspecialchars(fcc_t('Pripremi karticu'), ENT_QUOTES, 'UTF-8') ?></a><?php else: ?><button class="fp-button" type="button" data-toggle="modal" data-target="#create_biolink"><?= htmlspecialchars(fcc_t('Izradi karticu'), ENT_QUOTES, 'UTF-8') ?></button><?php endif ?></section><?php endif ?></div>
+-  <?php if($section==='cards'): ?><div class="fp-actions fp-card-tools"><button type="button" class="fp-button fp-button-outline" data-toggle="modal" data-target="#create_biolink"><?= htmlspecialchars(fcc_t('Nova kartica'), ENT_QUOTES, 'UTF-8') ?></button></div><div class="fp-card-shortcuts"><a href="<?= url('qr-codes') ?>"><?= htmlspecialchars(fcc_t('QR kodovi'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('links?classic=1') ?>"><?= htmlspecialchars(fcc_t('Poveznice i datoteke'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('partner/more#tools') ?>"><?= htmlspecialchars(fcc_t('Svi alati →'), ENT_QUOTES, 'UTF-8') ?></a></div><?php endif ?>
++  <?php if($section==='cards'): ?><div class="fp-actions fp-card-tools"><button type="button" class="fp-button fp-button-outline" data-toggle="modal" data-target="#create_biolink"><?= htmlspecialchars(fcc_t('Nova kartica'), ENT_QUOTES, 'UTF-8') ?></button></div><div class="fp-card-shortcuts"><a href="<?= url('qr-codes') ?>"><?= htmlspecialchars(fcc_t('QR kodovi'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('links') ?>"><?= htmlspecialchars(fcc_t('Poveznice i datoteke'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('partner/more#tools') ?>"><?= htmlspecialchars(fcc_t('Svi alati →'), ENT_QUOTES, 'UTF-8') ?></a></div><?php endif ?>
+  <?php endif ?>
+  <?php if($section==='share'): ?>
+   <?php require THEME_PATH.'views/partner/share-navigation.php'; ?>
+--- a/themes/altum/views/partner/education.php
++++ b/themes/altum/views/partner/education.php
+@@ -6,7 +6,7 @@
+ <?php if(!empty($action['can_complete'])): ?><form method="post" action="<?= url('forever-business') ?>" class="fp-form"><?= $token ?><input type="hidden" name="record_outcome" value="1"><input type="hidden" name="partner_return" value="1"><input type="hidden" name="fbo_id" value="<?= $h($state['fbo_id']) ?>"><input type="hidden" name="action_key" value="<?= $h($action['key']) ?>"><input type="hidden" name="core_key" value="<?= $h($action['core']) ?>"><div class="fp-form-grid"><label><?= htmlspecialchars(fcc_t('Što si napravio/la?'), ENT_QUOTES, 'UTF-8') ?><select name="result_type" required data-is-not-custom-select><?php foreach(forever_business_vip_result_type_options() as $value=>$label): if(!in_array($value,$action['allowed_result_types']??[],true)) continue; ?><option value="<?= $h($value) ?>" <?= $value===($action['expected_result_type']??'')?'selected':'' ?>><?= $h($label) ?></option><?php endforeach ?></select></label><label><?= htmlspecialchars(fcc_t('Koliko radnji?'), ENT_QUOTES, 'UTF-8') ?><input type="number" name="outcome_count" min="<?= max(1,(int)($action['quick_target']??1)) ?>" max="999" value="<?= max(1,(int)($action['target']??1)) ?>" required></label></div><?php if(!empty($action['fallback'])&&(int)($action['target']??1)===(int)($action['quick_target']??1)): ?><label><?= htmlspecialchars(fcc_t('Koju verziju?'), ENT_QUOTES, 'UTF-8') ?><select name="completion_variant" required data-is-not-custom-select><option value="standard"><?= htmlspecialchars(fcc_t('Puni korak'), ENT_QUOTES, 'UTF-8') ?></option><option value="quick"><?= htmlspecialchars(fcc_t('Lakša verzija'), ENT_QUOTES, 'UTF-8') ?></option></select></label><?php endif ?><label><?= htmlspecialchars(fcc_t('Kako ti je bilo?'), ENT_QUOTES, 'UTF-8') ?><select name="difficulty" data-is-not-custom-select><?php foreach(forever_business_vip_difficulty_options() as $v=>$label): ?><option value="<?= $v ?>" <?= $v==='normal'?'selected':'' ?>><?= $h($label) ?></option><?php endforeach ?></select></label><button class="fp-button"><?= fcc_partner_icon('check') ?> <?= htmlspecialchars(fcc_t('Potvrdi odrađeni korak'), ENT_QUOTES, 'UTF-8') ?></button></form>
+ <?php elseif(!empty($action['is_daily_complete'])): ?><div class="fp-message"><?= htmlspecialchars(fcc_t('Današnji korak je spremljen. Sljedeći se otvara u ponoć prema Europe/Zagreb vremenu.'), ENT_QUOTES, 'UTF-8') ?></div><?php elseif(!empty($action['is_program_complete'])): ?><div class="fp-message"><?= htmlspecialchars(fcc_t('Dovršio/la si ovu razinu. Tvoj dosadašnji napredak ostaje spremljen.'), ENT_QUOTES, 'UTF-8') ?></div><?php else: ?><p><?= htmlspecialchars(fcc_t('Potvrda ovog koraka trenutačno nije otvorena.'), ENT_QUOTES, 'UTF-8') ?> <?= $h($action['marketing_plan']['completion_available_at_display']??'') ?></p><?php endif ?>
+ <?php if(empty($action['is_daily_complete'])&&empty($action['is_program_complete'])&&(int)($action['target']??0)>0): ?><details class="fp-add"><summary><?= htmlspecialchars(fcc_t('Treba mi pomoć mentora'), ENT_QUOTES, 'UTF-8') ?></summary><form method="post" action="<?= url('forever-business') ?>" class="fp-form"><?= $token ?><input type="hidden" name="request_vip_help" value="1"><input type="hidden" name="partner_return" value="1"><input type="hidden" name="fbo_id" value="<?= $h($state['fbo_id']) ?>"><input type="hidden" name="action_key" value="<?= $h($action['key']) ?>"><input type="hidden" name="core_key" value="<?= $h($action['core']) ?>"><label><?= htmlspecialchars(fcc_t('Što ti treba?'), ENT_QUOTES, 'UTF-8') ?><textarea name="help_note" minlength="3" maxlength="1000" required></textarea></label><button class="fp-button fp-button-outline"><?= htmlspecialchars(fcc_t('Zatraži pomoć'), ENT_QUOTES, 'UTF-8') ?></button></form></details><?php endif ?></section>
+-<?php else: ?><section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Provjeri pristup svojoj edukaciji'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Pristup koristi postojeća pravila tvojeg FCC računa i povezani Forever ID. Tvoj raniji napredak ostaje sačuvan.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button" href="<?= url('forever-business?classic=1') ?>"><?= htmlspecialchars(fcc_t('Pogledaj uvjete i svoj napredak'), ENT_QUOTES, 'UTF-8') ?></a></section><?php endif ?>
+-<a class="fp-link" href="<?= url('forever-business?classic=1') ?>"><?= htmlspecialchars(fcc_t('Detaljan napredak, bodovi i edukacijski sadržaji →'), ENT_QUOTES, 'UTF-8') ?></a>
++<?php else: ?><section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Provjeri pristup svojoj edukaciji'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Pristup koristi postojeća pravila tvojeg FCC računa i povezani Forever ID. Tvoj raniji napredak ostaje sačuvan.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button" href="<?= url('partner/points') ?>"><?= htmlspecialchars(fcc_t('Pogledaj uvjete i svoj napredak'), ENT_QUOTES, 'UTF-8') ?></a></section><?php endif ?>
++<a class="fp-link" href="<?= url('partner/points') ?>"><?= htmlspecialchars(fcc_t('Detaljan napredak, bodovi i edukacijski sadržaji →'), ENT_QUOTES, 'UTF-8') ?></a>
+ 
+ <section class="fp-panel fp-spaced"><h2><?= htmlspecialchars(fcc_t('Uči i primijeni'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Program sada ima 60 redovnih koraka po razini. Prvih 30 i tvoj dosadašnji napredak ostaju sačuvani. Nedjeljni webinar zaseban je zadatak, pa 60 koraka ne znači nužno 60 kalendarskih dana.'), ENT_QUOTES, 'UTF-8') ?></p><div class="fp-actions"><a class="fp-button fp-button-outline" href="<?= url('fcc-education?video=last') ?>"><?= htmlspecialchars(fcc_t('Otvori videoteke i edukacije'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-button fp-button-outline" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moj rezultat 15+ / 50+'), ENT_QUOTES, 'UTF-8') ?></a></div></section>
+--- a/themes/altum/views/partner/journey.php
++++ b/themes/altum/views/partner/journey.php
+@@ -27,7 +27,7 @@
+  <?php elseif(empty($j['program']['state']['can_access_education'])): ?>
+   <h2><?= htmlspecialchars(fcc_t('Tvoj sljedeći korak počinje ovdje.'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Za 4 Core program potrebni su odobren račun, povezan Forever ID i potvrđen upis nakon najmanje 0,33 osobnih CC u kvalifikacijskom mjesecu.'), ENT_QUOTES, 'UTF-8') ?></p>
+   <div class="fj-access"><?= $h(match($j['program']['state']['status']??'') {'missing_linkage','duplicate_linkage'=>fcc_t('Provjeri povezanost svojeg Forever ID-a s podrškom.'),'waiting_data','waiting_confirmation'=>fcc_t('Čekamo potvrdu podataka. To ne znači da narudžba nije napravljena.'),default=>fcc_t('Tvoj postojeći upis i napredak ostaju sačuvani.')}) ?></div>
+-  <a class="fp-button" href="<?= url('forever-business?classic=1') ?>"><?= htmlspecialchars(fcc_t('Provjeri moj pristup →'), ENT_QUOTES, 'UTF-8') ?></a>
++  <a class="fp-button" href="<?= url('partner/points') ?>"><?= htmlspecialchars(fcc_t('Provjeri moj pristup →'), ENT_QUOTES, 'UTF-8') ?></a>
+  <?php elseif(!$a): ?>
+   <h2><?= htmlspecialchars(fcc_t('Tvoj radni prostor je spreman.'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Na ovom računu trenutačno nema osobnog dnevnog zadatka. Materijali i vlastiti podaci ostaju dostupni.'), ENT_QUOTES, 'UTF-8') ?></p><?php if(\Altum\Authentication::is_admin()): ?><a class="fp-button" href="<?= url('partner/admin?journey=1') ?>"><?= htmlspecialchars(fcc_t('Pregledaj program i materijale →'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+  <?php elseif(!empty($a['is_daily_complete'])): ?>
+@@ -78,7 +78,7 @@
+  <section class="fp-panel"><div class="fp-section-title"><h2><?= htmlspecialchars(fcc_t('Tvoj napredak ostaje s tobom.'), ENT_QUOTES, 'UTF-8') ?></h2><a class="fp-link" href="<?= url('partner?view=review') ?>"><?= htmlspecialchars(fcc_t('Kratki osvrt →'), ENT_QUOTES, 'UTF-8') ?></a></div>
+  <p><?= htmlspecialchars(fcc_t('Program se priprema za 90 zadataka. Dostupno je 60 koraka po postojećem smjeru. Dodatni zadaci i nova pravila razina čekaju završni zajednički pregled.'), ENT_QUOTES, 'UTF-8') ?></p>
+  <div class="fj-stats"><div><strong><?= (int)$j['stats']['completed'] ?></strong><span><?= htmlspecialchars('koraka / 7 dana', ENT_QUOTES, 'UTF-8') ?></span></div><div><strong><?= (int)$j['stats']['hard'] ?></strong><span><?= htmlspecialchars(fcc_t('označeno zahtjevnim'), ENT_QUOTES, 'UTF-8') ?></span></div><div><strong><?= $j['program']['state']['current_personal_cc']===null?'—':$h(number_format((float)$j['program']['state']['current_personal_cc'],3,',','.')) ?></strong><span><?= htmlspecialchars(fcc_t('osobnih CC ·'), ENT_QUOTES, 'UTF-8') ?> <?= $h($j['program']['state']['current_period']??'bez podataka') ?></span></div></div><p class="fp-muted"><?= htmlspecialchars(fcc_t('CC dolaze iz dostupnih FLP360 podataka. Nepotpun podatak nije potvrđena nula. Klikovi, vježbe i prodaje različiti su pokazatelji.'), ENT_QUOTES, 'UTF-8') ?></p>
+- <div class="fp-actions"><a class="fp-button fp-button-outline" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moji klikovi 15+ / 50+'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-button fp-button-outline" href="<?= url('forever-business?classic=1') ?>"><?= htmlspecialchars(fcc_t('Bodovi i službeni napredak'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-button fp-button-outline" href="<?= url('partner?view=history') ?>"><?= htmlspecialchars(fcc_t('Raniji planovi i savjeti'), ENT_QUOTES, 'UTF-8') ?></a></div></section>
++ <div class="fp-actions"><a class="fp-button fp-button-outline" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moji klikovi 15+ / 50+'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-button fp-button-outline" href="<?= url('partner/points') ?>"><?= htmlspecialchars(fcc_t('Bodovi i službeni napredak'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-button fp-button-outline" href="<?= url('partner?view=history') ?>"><?= htmlspecialchars(fcc_t('Raniji planovi i savjeti'), ENT_QUOTES, 'UTF-8') ?></a></div></section>
+  <section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Moji posljednji koraci'), ENT_QUOTES, 'UTF-8') ?></h2><?php if(!$j['outcomes']): ?><p><?= htmlspecialchars(fcc_t('Ovdje će biti vidljivi tvoji spremljeni koraci.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?><?php foreach($j['outcomes'] as $o): ?><div class="fj-outcome"><span><strong><?= $h(forever_business_vip_result_type_options()[$o['result_type']]??$o['core_key']) ?></strong><small><?= $h($o['action_date']) ?> · <?= $h($o['core_key']) ?><?= $o['completion_mode']==='quick'||$o['result_type']==='training'?fcc_t(' · Lakša verzija / vježba'):'' ?></small></span><span><?= (int)$o['outcome_count'] ?></span></div><?php endforeach ?></section>
+  <?php endif ?>
+ 
+--- a/themes/altum/views/partner/journey90.php
++++ b/themes/altum/views/partner/journey90.php
+@@ -16,7 +16,7 @@
+ <?php if($n['readiness']['proposed_level']): ?><form method="post" class="fp-form"><?= $fields('level') ?><input type="hidden" name="level" value="<?= $n['readiness']['proposed_level'] ?>"><h3><?= htmlspecialchars(fcc_t('Spreman/na si isprobati sljedeću razinu.'), ENT_QUOTES, 'UTF-8') ?></h3><p><?= $h($levelNames[$n['readiness']['proposed_level']]) ?><?= htmlspecialchars(fcc_t('. Promjena vrijedi od sljedećeg neotvorenog koraka.'), ENT_QUOTES, 'UTF-8') ?></p><button class="fp-button"><?= htmlspecialchars(fcc_t('Prihvati sljedeću razinu'), ENT_QUOTES, 'UTF-8') ?></button></form>
+ <?php elseif((int)$cycle['accepted_level']<4): $rr=$n['readiness']; ?><details class="fj-history"><summary><?= htmlspecialchars(fcc_t('Što se gleda za sljedeću razinu?'), ENT_QUOTES, 'UTF-8') ?></summary><p><?= htmlspecialchars(fcc_t('U zadnjih'), ENT_QUOTES, 'UTF-8') ?> <?= $rr['rule']['window'] ?> <?= htmlspecialchars(fcc_t('koraka:'), ENT_QUOTES, 'UTF-8') ?> <?= $rr['counts']['applied'] ?>/<?= $rr['rule']['min_applied'] ?> <?= htmlspecialchars(fcc_t('primjena,'), ENT_QUOTES, 'UTF-8') ?> <?= $rr['counts']['external'] ?>/<?= $rr['rule']['min_external'] ?> <?= htmlspecialchars(fcc_t('stvarnih komunikacija i'), ENT_QUOTES, 'UTF-8') ?> <?= $rr['counts']['cores'] ?>/<?= $rr['rule']['min_cores'] ?> <?= htmlspecialchars(fcc_t('Core područja.'), ENT_QUOTES, 'UTF-8') ?></p><p><?= htmlspecialchars(fcc_t('Ukupno je potrebno'), ENT_QUOTES, 'UTF-8') ?> <?= $rr['rule']['min_completed'] ?> <?= htmlspecialchars(fcc_t('koraka'), ENT_QUOTES, 'UTF-8') ?><?= $rr['rule']['min_advanced']?fcc_t(' i dva napredna stvarna slučaja'):'' ?><?= htmlspecialchars(fcc_t('. CC nije uvjet promjene edukacijske razine. Svih 90 koraka možeš završiti na osnovnoj razini.'), ENT_QUOTES, 'UTF-8') ?></p></details><?php endif ?>
+ <details class="fj-history"><summary><?= htmlspecialchars(fcc_t('CC · izvor i svježina podataka'), ENT_QUOTES, 'UTF-8') ?></summary><?php foreach($n['cc'] as $cc): ?><p><strong><?= $h(substr($cc['period'],0,7)) ?> · <?= $cc['personal_cc']===null?'—':$h(number_format($cc['personal_cc'],3,',','.')) ?> <?= htmlspecialchars(fcc_t('osobnih CC'), ENT_QUOTES, 'UTF-8') ?></strong><br><?= $h(['verified'=>'Provjereno','pending'=>fcc_t('Čeka potvrdu izvora'),'stale'=>fcc_t('Čeka osvježavanje'),'conflict'=>fcc_t('Potrebna provjera'),'unavailable'=>fcc_t('Nije dostupno')][$cc['status']]) ?> <?= htmlspecialchars(fcc_t('· Službeni 4 CC Active:'), ENT_QUOTES, 'UTF-8') ?> <?= $cc['active']===null?'nije poznato':($cc['active']?'da':'ne') ?><br><small><?= $h($cc['reason']) ?><?= $cc['checked_at']?fcc_t(' Provjera: ').$h($cc['checked_at']):'' ?></small></p><?php endforeach ?><p><?= htmlspecialchars(fcc_t('Učenje ne brišemo kad uvoz kasni ili ispravi bodove. Klikove i poruke ne pretvaramo u narudžbe ili CC.'), ENT_QUOTES, 'UTF-8') ?></p></details>
+-<a class="fp-link" href="<?= url('forever-business?classic=1') ?>"><?= htmlspecialchars(fcc_t('Moji službeni CC podaci i vrijeme izvora →'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-link" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moji klikovi 15+ / 50+ →'), ENT_QUOTES, 'UTF-8') ?></a></section>
++<a class="fp-link" href="<?= url('partner/points') ?>"><?= htmlspecialchars(fcc_t('Moji službeni CC podaci i vrijeme izvora →'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-link" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moji klikovi 15+ / 50+ →'), ENT_QUOTES, 'UTF-8') ?></a></section>
+ <section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Sačuvani koraci'), ENT_QUOTES, 'UTF-8') ?></h2><?php foreach(array_reverse($n['rows']) as $row): $snap=json_decode($row['content_json'],true); ?><details class="fj-history"><summary><?= (int)$row['sequence_position'] ?>. <?= $h($snap['title']) ?> · <?= $row['learning_mode']==='practice'?fcc_t('Vježba'):fcc_t('Primjena') ?></summary><p><?= $h($row['action_date']) ?> · <?= $h($snap['core_label']) ?></p><p><?= $h($snap['variant']['criterion']) ?></p><?php if($row['note']): ?><p><?= nl2br($h($row['note'])) ?></p><?php endif ?><small><?= htmlspecialchars(fcc_t('Verzija'), ENT_QUOTES, 'UTF-8') ?> <?= $h($snap['catalog_version']) ?> <?= htmlspecialchars(fcc_t('· razina'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$snap['variant']['level'] ?></small></details><?php endforeach ?><?php $saved=fcc_partner_rows('SELECT s.position,s.content_json,s.draft_json,s.opened_at FROM fcc_partner_journey_steps s WHERE s.user_id=? AND s.draft_json IS NOT NULL ORDER BY s.id DESC LIMIT 90',[(int)$this->user->user_id]);if($saved): ?><h3><?= htmlspecialchars(fcc_t('Moje korisne poruke'), ENT_QUOTES, 'UTF-8') ?></h3><?php foreach($saved as $savedRow):$dm=json_decode($savedRow['draft_json'],true);$ct=json_decode($savedRow['content_json'],true);if(empty($dm['message']))continue; ?><details class="fj-history"><summary><?= (int)$savedRow['position'] ?>. <?= $h($ct['title']) ?></summary><p><?= $h($ct['communication']['situation']) ?></p><blockquote><?= nl2br($h($dm['message'])) ?></blockquote><small><?= $h($dm['country']??'') ?> <?= htmlspecialchars(fcc_t('· Pripremljeno'), ENT_QUOTES, 'UTF-8') ?> <?= $h($dm['prepared_at']??$savedRow['opened_at']) ?><?= htmlspecialchars(fcc_t('. Prije ponovne uporabe provjeri aktualnost i osobu kojoj pišeš.'), ENT_QUOTES, 'UTF-8') ?></small><button class="fp-button fp-button-outline" type="button" data-copy="<?= $h($dm['message']) ?>"><?= htmlspecialchars(fcc_t('Kopiraj svoju poruku'), ENT_QUOTES, 'UTF-8') ?></button></details><?php endforeach;endif ?>
+ <a class="fp-link" href="<?= url('partner?view=history') ?>"><?= htmlspecialchars(fcc_t('Raniji planovi, savjeti i osvrti →'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-link" href="<?= url('partner?view=review') ?>"><?= htmlspecialchars(fcc_t('Moj tjedni osvrt →'), ENT_QUOTES, 'UTF-8') ?></a></section>
+ <?php else: ?>
+--- a/themes/altum/views/partner/journey-pilot.php
++++ b/themes/altum/views/partner/journey-pilot.php
+@@ -26,7 +26,7 @@
+ <section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Tvoja četiri Core područja'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Ovdje vidiš odrađene korake. Kupce, narudžbe i CC bodove pratiš zasebno.'), ENT_QUOTES, 'UTF-8') ?></p><div class="jp-core-grid"><?php foreach(fcc_localize_copy(fcc_jp_catalog())['cores'] as $key=>$label): $coreRows=array_filter($n['rows'],fn($r)=>strtolower($r['core_key'])===$key);$real=count(array_filter($coreRows,fn($r)=>$r['learning_mode']==='applied'));?><div><strong><?= $h($label) ?></strong><span><?= $real ?> <?= htmlspecialchars(fcc_t('u praksi ·'), ENT_QUOTES, 'UTF-8') ?> <?= count($coreRows)-$real ?> <?= htmlspecialchars(fcc_t('vježbi'), ENT_QUOTES, 'UTF-8') ?></span></div><?php endforeach ?></div></section>
+ <section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Dogovoreni nastavci'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Promjena datuma sprema se i u tvoje Kontakte. Kupnja koju navedeš ovdje ostaje tvoja potvrda, odvojena od službenog uvoza.'), ENT_QUOTES, 'UTF-8') ?></p><?php if(!$opps): ?><p class="fp-muted"><?= htmlspecialchars(fcc_t('Kad uz korak odabereš kontakt i potvrdiš razgovor ili slanje, ovdje se pojavljuje dogovor za nastavak.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
+ <?php foreach($opps as $o): ?><details class="jp-opportunity"><summary><?= $h($o['name']) ?> <span><?= $h(fcc_jp_statuses()[$o['status']]) ?></span></summary><form method="post" class="fp-form"><?= $fields('opportunity',['opportunity_id'=>$o['id'],'opportunity_version'=>$o['version'],'contact_version'=>$o['contact_version']]) ?><label><?= htmlspecialchars(fcc_t('Status'), ENT_QUOTES, 'UTF-8') ?><select name="status" data-is-not-custom-select><?php foreach(fcc_jp_statuses() as $key=>$label): ?><option value="<?= $key ?>" <?= $key===$o['status']?'selected':'' ?>><?= $h($label) ?></option><?php endforeach ?></select></label><label><?= htmlspecialchars(fcc_t('Dogovoreni datum'), ENT_QUOTES, 'UTF-8') ?><input name="next_followup" type="date" value="<?= $h($o['next_followup']??'') ?>" min="<?= $h(fcc_partner_today()) ?>"></label><label class="fp-check-label"><input type="checkbox" name="agreed" value="1"> <?= htmlspecialchars(fcc_t('Osoba je pristala na javljanje tog dana.'), ENT_QUOTES, 'UTF-8') ?></label><button class="fp-button"><?= htmlspecialchars(fcc_t('Spremi dogovor'), ENT_QUOTES, 'UTF-8') ?></button><a href="<?= url('partner/contacts?id='.(int)$o['contact_id']) ?>"><?= htmlspecialchars(fcc_t('Otvori kontakt →'), ENT_QUOTES, 'UTF-8') ?></a></form></details><?php endforeach ?></section>
+-<section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('CC i rezultat prodaje'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= $h($n['capabilities']['label']) ?></p><a class="fp-link" href="<?= url('forever-business?classic=1') ?>"><?= htmlspecialchars(fcc_t('Pogledaj moje Forever podatke →'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-link" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moji kvalificirani klikovi →'), ENT_QUOTES, 'UTF-8') ?></a></section>
++<section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('CC i rezultat prodaje'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= $h($n['capabilities']['label']) ?></p><a class="fp-link" href="<?= url('partner/points') ?>"><?= htmlspecialchars(fcc_t('Pogledaj moje Forever podatke →'), ENT_QUOTES, 'UTF-8') ?></a><a class="fp-link" href="<?= url('fcc-results') ?>"><?= htmlspecialchars(fcc_t('Moji kvalificirani klikovi →'), ENT_QUOTES, 'UTF-8') ?></a></section>
+ <section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Sačuvani koraci'), ENT_QUOTES, 'UTF-8') ?></h2><?php foreach($n['rows'] as $r): $t=fcc_localize_copy(json_decode($r['content_json'],true)?:[]); ?><details class="jp-opportunity"><summary><?= (int)$r['sequence_position'] ?>. <?= $h($t['title']) ?><span><?= $r['learning_mode']==='practice'?fcc_t('Vježba'):fcc_t('Primjena · samopotvrda') ?></span></summary><p><?= $h($r['action_date']) ?></p><p><?= $h($r['note']) ?></p><p><?= $h($t['completion']) ?></p></details><?php endforeach ?>
+ <?php $oldCycles=fcc_partner_rows('SELECT id,catalog_version,started_at FROM fcc_partner_journey_cycles WHERE user_id=? AND id<>? ORDER BY id DESC',[$uid,(int)$cycle['id']]);foreach($oldCycles as $old): ?><details class="jp-opportunity"><summary><?= htmlspecialchars(fcc_t('Raniji program ·'), ENT_QUOTES, 'UTF-8') ?> <?= $h($old['started_at']) ?></summary><?php foreach(fcc_j90_rows($uid,(int)$old['id']) as $r): $t=fcc_localize_copy(json_decode($r['content_json'],true)?:[]); ?><p><?= (int)$r['sequence_position'] ?>. <?= $h($t['title']??$r['action_key']) ?> · <?= $h($r['action_date']) ?></p><?php endforeach ?></details><?php endforeach ?><a href="<?= url('partner?view=history') ?>"><?= htmlspecialchars(fcc_t('Ranija edukacija i AI savjeti →'), ENT_QUOTES, 'UTF-8') ?></a></section>
+ <?php elseif($n['pilot_finished']): ?><section class="fp-panel"><span class="fp-eyebrow"><?= htmlspecialchars(fcc_t('TVOJ PROGRAM JE ZAVRŠEN'), ENT_QUOTES, 'UTF-8') ?></span><h2><?= htmlspecialchars(fcc_t('Od prvog koraka do vlastite rutine.'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Prošao/la si svih 90 koraka. Nastavi s dogovorenim javljanjima i temom koju si odabrao/la za idući tjedan. U Napretku možeš pregledati sve odrađene zadatke i područja koja želiš još uvježbati.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button" href="<?= url('partner?view=progress') ?>"><?= htmlspecialchars(fcc_t('Pogledaj moj napredak →'), ENT_QUOTES, 'UTF-8') ?></a></section>
+--- /dev/null
++++ b/scripts/migrations/partner/026_all_active_rollout.sql
+@@ -0,0 +1,3 @@
++-- Additive rollout policy. Existing accounts, progress and payment data are untouched.
++ALTER TABLE fcc_partner_rollout_control
++ ADD COLUMN IF NOT EXISTS all_enabled TINYINT UNSIGNED NOT NULL DEFAULT 0;
+--- a/themes/altum/views/partner/install.php
++++ b/themes/altum/views/partner/install.php
+@@ -25,7 +25,7 @@
+ <details class="fp-panel install-other" data-install-other hidden><summary><?= htmlspecialchars(fcc_t('Upute za drugi uređaj'), ENT_QUOTES, 'UTF-8') ?></summary><div data-install-other-content></div></details>
+ <section class="fp-panel install-address"><h2><?= htmlspecialchars(fcc_t('Poveznica za tvoj telefon'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Otvori ovu adresu na telefonu na koji želiš dodati FCC.'), ENT_QUOTES, 'UTF-8') ?></p><a href="<?= e($install_url) ?>"><?= e($install_url) ?></a><button type="button" class="fp-button fp-button-outline" data-copy="<?= e($install_url) ?>"><?= htmlspecialchars(fcc_t('Kopiraj poveznicu'), ENT_QUOTES, 'UTF-8') ?></button></section>
+ </div>
+-<section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Prijava i pristup'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Već imaš odobren račun? Koristi isti email i lozinku. Instalacija ne stvara novi račun i tvoji podaci ostaju povezani.'), ENT_QUOTES, 'UTF-8') ?></p><?php if(getenv('FCC_LOCAL')!=='1'&&getenv('FCC_PARTNER_ROLLOUT')!=='all'): ?><p><?= htmlspecialchars(fcc_t('Novi FCC trenutačno je dostupan odabranim suradnicima. Ako nakon prijave vidiš prethodni izgled, javi se administratoru radi provjere pristupa.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?><details><summary><?= htmlspecialchars(fcc_t('Još nemam FCC račun'), ENT_QUOTES, 'UTF-8') ?></summary><p><?= htmlspecialchars(fcc_t('Registriraj se na FCC webu i pričekaj odobrenje administratora. Nakon odobrenja koristi isti račun i u aplikaciji.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button fp-button-outline" href="<?= url('register') ?>"><?= htmlspecialchars(fcc_t('Registracija na FCC webu'), ENT_QUOTES, 'UTF-8') ?></a></details></section>
++<section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Prijava i pristup'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Već imaš odobren račun? Koristi isti email i lozinku. Instalacija ne stvara novi račun i tvoji podaci ostaju povezani.'), ENT_QUOTES, 'UTF-8') ?></p><?php if(getenv('FCC_LOCAL')!=='1'&&getenv('FCC_PARTNER_ROLLOUT')!=='all'&&!fcc_rollout_all_enabled()): ?><p><?= htmlspecialchars(fcc_t('Novi FCC trenutačno je dostupan odabranim suradnicima. Ako nakon prijave vidiš prethodni izgled, javi se administratoru radi provjere pristupa.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?><details><summary><?= htmlspecialchars(fcc_t('Još nemam FCC račun'), ENT_QUOTES, 'UTF-8') ?></summary><p><?= htmlspecialchars(fcc_t('Registriraj se na FCC webu i pričekaj odobrenje administratora. Nakon odobrenja koristi isti račun i u aplikaciji.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button fp-button-outline" href="<?= url('register') ?>"><?= htmlspecialchars(fcc_t('Registracija na FCC webu'), ENT_QUOTES, 'UTF-8') ?></a></details></section>
+ <section class="fp-panel"><h2><?= htmlspecialchars(fcc_t('Uključi obavijesti kad budeš spreman'), ENT_QUOTES, 'UTF-8') ?></h2><p><?= htmlspecialchars(fcc_t('Nakon prijave otvori zvono u aplikaciji, zatim'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Obavijesti na uređaju'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('i'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Uključi na ovom uređaju'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t('. Potvrdi dopuštenje telefona. Na iPhoneu to napravi u FCC aplikaciji otvorenoj s početnog zaslona, uz iOS 16.4 ili noviji.'), ENT_QUOTES, 'UTF-8') ?></p><a class="fp-button fp-button-outline" href="<?= url(is_logged_in()?'partner/notifications':'login?redirect=partner/notifications') ?>"><?= htmlspecialchars(fcc_t('Otvori obavijesti'), ENT_QUOTES, 'UTF-8') ?></a><p class="fp-muted"><?= htmlspecialchars(fcc_t('Za provjeru koristi gumb „Pošalji mi probnu obavijest”. Ako je slanje odgođeno zbog mirnog vremena ili ograničenja, aplikacija će to pokazati.'), ENT_QUOTES, 'UTF-8') ?></p></section>
+ <p class="fp-muted"><?= htmlspecialchars(fcc_t('Za rad treba internet. Podaci su isti na telefonu i računalu. Ažuriranja sadržaja vidiš pri ponovnom otvaranju. Ako imaš staru testnu ikonu s privremene adrese, ovu službenu aplikaciju dodaj zasebno.'), ENT_QUOTES, 'UTF-8') ?></p>
+ <?php if(getenv('FCC_PHONE_PILOT')==='1'): ?><div class="fp-message"><strong><?= htmlspecialchars(fcc_t('Privatni test na tvojem Macu.'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('Mac i Docker moraju ostati uključeni. Ovaj test koristi privremenu adresu i nije produkcijska instalacija.'), ENT_QUOTES, 'UTF-8') ?></div><?php elseif(getenv('FCC_LOCAL')==='1'): ?><div class="fp-message"><?= htmlspecialchars(fcc_t('Ovo je lokalni pregled na računalu. Za iPhone pokreni „Pokreni FCC iPhone pregled.command” i otvori HTTPS adresu iz pripremljenih uputa. Localhost na telefonu ne označava ovo računalo.'), ENT_QUOTES, 'UTF-8') ?></div><?php endif ?>

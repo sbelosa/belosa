@@ -1,0 +1,121 @@
+{
+  "published_at_utc": "2026-10-01T09:19:03+00:00",
+  "status": "verified",
+  "published_files": 15,
+  "authorization": {
+    "enabled": 701,
+    "blocked": 4,
+    "failures": []
+  },
+  "accounts": [
+    {
+      "status": 1,
+      "type": 0,
+      "n": 696
+    },
+    {
+      "status": 1,
+      "type": 1,
+      "n": 5
+    },
+    {
+      "status": 2,
+      "type": 0,
+      "n": 4
+    }
+  ],
+  "preserved_tables": {
+    "users": true,
+    "links": true,
+    "biolinks_blocks": true,
+    "data": true,
+    "payments": true,
+    "fcc_partner_contacts": true,
+    "fcc_team_outreach": true,
+    "fcc_webinar_registrations": true,
+    "fcc_webinar_invitations": true,
+    "fcc_partner_journey_cycles": true,
+    "fcc_partner_journey_steps": true
+  },
+  "data_counts": {
+    "users": 705,
+    "links": 1883,
+    "biolinks_blocks": 8158,
+    "data": 1252,
+    "payments": 1873,
+    "fcc_partner_contacts": 62,
+    "fcc_team_outreach": 29,
+    "fcc_webinar_registrations": 4,
+    "fcc_webinar_invitations": 5,
+    "fcc_partner_journey_cycles": 42,
+    "fcc_partner_journey_steps": 46
+  },
+  "draft": {
+    "broadcast_id": 19,
+    "status": "draft",
+    "total_emails": 701,
+    "sent_emails": 0,
+    "processed": 0
+  },
+  "pending_broadcasts": 0,
+  "backup": {
+    "status": "verified",
+    "started_at": "2026-10-01T08:55:01+00:00",
+    "database": {
+      "file": "database.sql.gz",
+      "tables": 147,
+      "bytes": 22555723,
+      "sha256": "6068469c2e74a8a7afaa382a6efac4ab5382eeb32f82be3c0946346d1aefa47d"
+    },
+    "files": {
+      "file": "public_html.tar.gz",
+      "entries": 103739,
+      "bytes": 1434198437,
+      "sha256": "cab362b12630bba1bc8a51261c4533444d8a9ce62e4fd2283417c59ff65c9f63",
+      "tar_exit": 0
+    },
+    "finished_at": "2026-10-01T08:56:57+00:00"
+  },
+  "tests": {
+    "http_checks": 103,
+    "authorization_checks": 46,
+    "master_switch_checks": 14,
+    "localized_page_checks": 10,
+    "mobile_statistics_widths": [
+      360,
+      390,
+      430
+    ],
+    "production_ui": [
+      "access_admin",
+      "statistics",
+      "cards",
+      "contacts",
+      "webinar_invites",
+      "team",
+      "account_plan",
+      "education_materials",
+      "draft_editor",
+      "installation",
+      "primary_card_editor",
+      "public_nfc_card",
+      "legacy_points_redirect",
+      "authenticated_home_redirect"
+    ]
+  },
+  "production_health": {
+    "database_connected": true,
+    "cron_stale": false,
+    "payments_enabled": true,
+    "stripe_enabled": true,
+    "mail_sender_configured": true,
+    "ai_runtime_ready": true,
+    "preexisting_billing_counts": {
+      "past_due": 0,
+      "past_due_critical": 2,
+      "access_revoked": 15,
+      "expiring_24h": 0,
+      "recovered_7d": 9
+    }
+  }
+}
