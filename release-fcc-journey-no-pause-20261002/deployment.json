@@ -1,0 +1,19 @@
+{
+  "status": "published",
+  "at_utc": "2026-10-02T10:41:02+00:00",
+  "files": 12,
+  "schema_changed": false,
+  "business_data_changed": false,
+  "scope": "Education pause removal; existing daily cadence preserved",
+  "verification": {
+    "status": "passed",
+    "accounts_with_saved_pause_checked": 3,
+    "cycles_preserved": 3,
+    "steps_preserved": 5,
+    "history_preserved": true,
+    "retired_pauses_ignored": true,
+    "pause_control_removed": true,
+    "daily_cadence_changed": false,
+    "writes_performed": false
+  }
+}

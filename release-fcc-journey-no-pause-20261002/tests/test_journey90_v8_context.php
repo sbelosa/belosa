@@ -1,0 +1,27 @@
+<?php
+require dirname(__DIR__).'/local/pilot15-fixtures.php';
+$checks=[];$assert=function($ok,$name)use(&$checks){if(!$ok)throw new RuntimeException($name);$checks[]=$name;};
+$uid=fcc_pilot_fixture('pilot15-qa-'.bin2hex(random_bytes(4)).'@fcc.test',true,false);
+$now=new DateTimeImmutable('now',new DateTimeZone('Europe/Zagreb'));$now=$now->setTime(18,0);$key=fn()=>bin2hex(random_bytes(16));
+fcc_jp_mutate($uid,'start',['catalog_version'=>FCC_JP_VERSION,'request_key'=>$key(),'confirm'=>1,'previous_cycle_id'=>0,'previous_cycle_version'=>0]);
+$in=fn($s)=>['catalog_version'=>FCC_JP_VERSION,'request_key'=>$key(),'cycle_id'=>$s['cycle']['id'],'cycle_version'=>$s['cycle']['version'],'step_id'=>$s['step']['id']??0,'draft_version'=>$s['step']['draft_version']??0];
+$s=fcc_j90_state($uid,fcc_j90_access($uid));fcc_jp_mutate($uid,'open',$in($s));$s=fcc_j90_state($uid,fcc_j90_access($uid));
+fcc_jp_mutate($uid,'draft',$in($s)+['message'=>'Moja poruka čćžšđ','note'=>'Želim naučiti jasno predstaviti posao.']);
+$c=fcc_journey_coach_context($uid,['purpose'=>'simplify','action_key'=>fcc_journey_state($uid)['key']]);
+$assert($c['context']['task']['title']==='Odaberi svoj razlog za početak','Coach receives the exact displayed warm task');
+$assert($c['context']['journey_context']['catalog']===FCC_JP_VERSION,'Coach sees current catalog identity');
+$assert($c['context']['learning']['task']['day']===1,'Learning source uses stable warm task key');
+$assert($c['context']['webinar_learning']===null,'Old webinar day overlay cannot replace new task context');
+$assert($c['context']['task_delivery']==='applied','Current delivery context is explicit');
+$summary=fcc_journey_reminder($uid,$now);
+$assert($summary&&$summary['path']==='partner'&&str_contains($summary['body'],'Odaberi svoj razlog'),'Reminder uses the same task title and destination');
+$prefs=json_decode(fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid])['preferences'],true);$prefs['partner_journey']=['paused_until'=>$now->format('Y-m-d'),'reminder_hour'=>8,'reminders'=>true];
+fcc_partner_query('UPDATE users SET preferences=? WHERE user_id=?',[json_encode($prefs),$uid]);
+$summary=fcc_journey_reminder($uid,$now);$assert($summary&&$summary['step_key']!=='','Retired pause does not suppress available learning task');
+fcc_partner_contact_save($uid,['name'=>'Synthetic followup','request_key'=>$key(),'next_followup'=>$now->format('Y-m-d')]);
+$summary=fcc_journey_reminder($uid,$now);
+$assert($summary&&$summary['step_key']!==''&&str_contains($summary['body'],'javljanje'),'Actual followup keeps priority without pausing learning');
+$prefs['partner_journey']['reminders']=false;fcc_partner_query('UPDATE users SET preferences=? WHERE user_id=?',[json_encode($prefs),$uid]);
+$assert(fcc_journey_reminder($uid,$now)===null,'Explicit reminder opt-out suppresses all daily summaries');
+foreach(fcc_jp_catalog()['tasks'] as $task)$assert(!empty(fcc_coach_learning_task($task['id'])),'Learning support '.$task['day']);
+echo json_encode(['passed'=>count($checks),'checks'=>$checks],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;

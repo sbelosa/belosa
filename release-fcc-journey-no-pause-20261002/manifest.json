@@ -1,0 +1,74 @@
+[
+  {
+    "path": "app/helpers/fcc_partner_journey.php",
+    "before": "74aac95e6070d35f1e9ea04cf1bc7f2d64134cbd93425a35e7032398aacfaad9",
+    "sha256": "19c11a09af8b4172e2fb26047714a571f39ae442af7146c0405b7b2f4503f316",
+    "bytes": 37056
+  },
+  {
+    "path": "app/helpers/fcc_journey90.php",
+    "before": "8db9a3e15c73de90107261ad5bb6a4591d160ea9d6bbe17ff2e87fca39a1e348",
+    "sha256": "ab01ceb71bbb9be041a5f390253d0abe38b796d85c520a040a069fea01fa348a",
+    "bytes": 28093
+  },
+  {
+    "path": "app/helpers/fcc_journey_pilot.php",
+    "before": "f57f1b3ed764b4226a18683c27f462e46295d09603fc3166d517b9b7c9083dc9",
+    "sha256": "3948292a60e6889188ee87c7890cb613f08d3103369e71f9dd4cea9912518d23",
+    "bytes": 32040
+  },
+  {
+    "path": "app/helpers/fcc_team.php",
+    "before": "69c67199e862bd32bd1e7d859f8bdfe1a8b1fc3330ef4225d4979e7f8aae8dbc",
+    "sha256": "11a247efe9b32bcf7d9fcffeb545e4aab8c29d96d103f8271d2049087d2b9202",
+    "bytes": 24735
+  },
+  {
+    "path": "app/helpers/fcc_webinar_growth.php",
+    "before": "a654065afb4f8195942db10b450672239dcf0f374bf9c50129c3e9a57d678abd",
+    "sha256": "d487820acb6c9ab76848f5e8fb32a8234687c819bcc6b09e0a0688212d300071",
+    "bytes": 12017
+  },
+  {
+    "path": "themes/altum/views/partner/journey.php",
+    "before": "5da02bf18c65b3faf513d79c7268e4340b8bfb76b2f84d0228191ad3ba63243d",
+    "sha256": "8facb307aafe84c9b419676f0b2a4cf03f8e38c2579997be439cb554770e567d",
+    "bytes": 24907
+  },
+  {
+    "path": "themes/altum/views/partner/journey90.php",
+    "before": "eabf15e4bb5de9b0d677b970fb0a4006ae1ce5cdc22597f35e78faaf339da7a0",
+    "sha256": "bf2d98ffddf0bf53d67a82c50197981c66cfd00a840984b4ed8c3f75d4be4641",
+    "bytes": 25592
+  },
+  {
+    "path": "themes/altum/views/partner/journey-pilot.php",
+    "before": "13e2a432c6a4c3bd6e65ca1d31f5a63011548a23ec4ca765fdde806a188f179a",
+    "sha256": "2744d029248b31be5a4d50976df1d4370555d9f6750814c61fde51a33d264de1",
+    "bytes": 15233
+  },
+  {
+    "path": "themes/altum/views/partner/notifications.php",
+    "before": "80427bd7c27ed1f449631c82865f2fa72a530380da1955c7bdb60e7dd47014bd",
+    "sha256": "31477532196c232cb798e36d33a101080174add48c044e8d3069865eda212c54",
+    "bytes": 6036
+  },
+  {
+    "path": "themes/altum/views/partner/team.php",
+    "before": "35d87b86dd3c8ae57eb7adf8bd3246f911d143d3c746ddd2f4a2b990f7b224f7",
+    "sha256": "ed68774e321888d31bc037e3df726d352e6916069992ef5b7e1c5e27ae5e6b79",
+    "bytes": 25443
+  },
+  {
+    "path": "app/helpers/fcc_coach_mentor.php",
+    "before": "9647547182744dd274e4e47b8c4ecd64de43916fb3c0f48296a2024717a62dbd",
+    "sha256": "e6cf878d8a43b790e32f3b06adbe3cbce57af32eeca7b044a047382363587f83",
+    "bytes": 38410
+  },
+  {
+    "path": "app/config/fcc_coach_mentor.hr.txt",
+    "before": "59d98b4a6aa1f0aea2a6f475ab92e7c2b0706bbaac2f4fdf5ed9d8981c089a6d",
+    "sha256": "3997ace1ea11b4e286359064541b18c657985304bb91dfd9ba11539da7925f05",
+    "bytes": 25963
+  }
+]

@@ -1,0 +1,83 @@
+<?php
+/** Local synthetic accounts only. No AI requests or messages to guests. */
+require dirname(__DIR__).'/local/webinar-fixtures.php';
+set_exception_handler(function($e){fwrite(STDERR,get_class($e).': '.$e->getMessage().' at '.$e->getLine().PHP_EOL);exit(1);});
+$checks=[];$uids=[];$key=fn()=>bin2hex(random_bytes(16));
+$assert=function($ok,$label)use(&$checks){if(!$ok)throw new RuntimeException($label);$checks[]=$label;};
+try {
+ $uid=$uids[]=fcc_webinar_qa_fixture();$other=$uids[]=fcc_webinar_qa_fixture();$free=$uids[]=fcc_webinar_qa_fixture(false);
+ $timeLabel=fcc_webinar_coach_time(new DateTimeImmutable('2026-10-03 16:30:00',new DateTimeZone('UTC')),'Europe/Zagreb');
+ $assert($timeLabel['weekday_local']==='subota'&&$timeLabel['date_label']==='03. 10. 2026. u 18:30 · Europe/Zagreb','Date, weekday and summer timezone come from the server calendar');
+ $winter=fcc_webinar_coach_time(new DateTimeImmutable('2026-11-03 16:30:00',new DateTimeZone('UTC')),'Europe/Zagreb');
+ $assert(str_contains($winter['date_label'],'17:30'),'Winter timezone offset is applied');
+ $timeContext=['webinar'=>['invitation_url'=>'https://example.test/invite']+$timeLabel];
+ $assert(fcc_coach_reply_issues(['recipient_message'=>'Vidimo se u petak. https://example.test/invite'],$timeContext)===['webinar_weekday_mismatch_use_server_date_label'],'Wrong model weekday is rejected before sharing');
+ $assert(!fcc_coach_reply_issues(['recipient_message'=>'Vidimo se u subotu. https://example.test/invite'],$timeContext),'Correct inflected weekday remains valid');
+ $now=fcc_webinar_now();
+ $g=fcc_webinar_growth_context($uid,$now);
+ $assert($g['activity']['prepared']===0&&$g['activity']['received']===0,'Empty activity remains zero');
+ $assert(fcc_webinar_next_action($g,['step'=>14],[])['kind']==='first_or_weekly_invitation','Beginner starts with a shared invitation');
+ $assert(fcc_webinar_next_action($g,['step'=>30],[])['kind']==='plan_personal_event','Experienced member can plan a small personal event');
+ $assert(fcc_webinar_next_action($g,['step'=>30],['paused_until'=>$now->modify('+1 day')->format('Y-m-d')])['kind']==='plan_personal_event','Retired education pause does not override optional cadence');
+ $freeGrowth=fcc_webinar_growth_context($free,$now);
+ $assert(!$freeGrowth['capabilities']['personal_webinar']&&fcc_webinar_next_action($freeGrowth,['step'=>60],[])['kind']==='first_or_weekly_invitation','Free member has an achievable standard invitation alternative');
+ $in=['request_key'=>$key(),'webinar_choice'=>'custom','video_choice'=>'none','custom_title'=>'QA pitanja o proizvodu','custom_date'=>$now->modify('+7 days')->format('Y-m-d'),'custom_time'=>'18:30','custom_timezone'=>'Europe/Zagreb','custom_duration'=>'20','custom_access_url'=>'https://zoom.us/j/123456?pwd=PRIVATE_GROWTH_ROOM','custom_description'=>'Kratki prikaz i pitanja.'];
+ $demo=fcc_webinar_prepare($uid,$in);
+ $real=fcc_webinar_prepare($uid,array_replace($in,['request_key'=>$key(),'custom_title'=>'QA stvarni termin','_qa_real'=>true]));
+ $foreign=fcc_webinar_prepare($other,array_replace($in,['request_key'=>$key(),'custom_title'=>'FOREIGN_EVENT_TITLE']));
+ $g=fcc_webinar_growth_context($uid);
+ $assert($g['activity']['prepared']===2&&$g['activity']['real_prepared']===1&&$g['activity']['demo_prepared']===1,'Real and demo preparation counts are separate');
+ $assert(count($g['upcoming_personal'])===2&&!str_contains(json_encode($g),'FOREIGN_EVENT_TITLE'),'Personal events are scoped to the owner');
+ $assert($g['upcoming_personal'][0]['description']==='Kratki prikaz i pitanja.','Coach knows the owned event topic and public description');
+ $assert(!str_contains(json_encode($g),'PRIVATE_GROWTH_ROOM'),'Coach never receives webinar room credentials');
+ $assert(fcc_webinar_next_action($g,['step'=>60],[])['kind']==='prepare_existing_event','Existing own event takes priority over creating a duplicate');
+ $assert(!empty($g['active_invitations'][0]['invitation_url']),'Coach has a currently valid public invitation link');
+ $ctx=['webinar_activity'=>['growth'=>$g]];
+ $assert(fcc_coach_validate_links($g['active_invitations'][0]['invitation_url'],$ctx)&&!fcc_coach_validate_links(fcc_webinar_url($foreign),$ctx),'Coach accepts only contextual owned invitation URLs');
+ fcc_webinar_record($uid,(int)$real['id'],'whatsapp');$g=fcc_webinar_growth_context($uid);
+ $assert($g['activity']['whatsapp_opened']===1&&$g['activity']['self_reported_sent']===0,'Opening WhatsApp is not sending');
+ fcc_webinar_record($uid,(int)$real['id'],'sent',true);$g=fcc_webinar_growth_context($uid);
+ $assert($g['activity']['self_reported_sent']===1,'Explicit sent confirmation stays self reported');
+ foreach([$real,$demo] as $a)fcc_webinar_register(fcc_webinar_unseal($a['token_sealed']),['name'=>'PRIVATE_GROWTH_GUEST','email'=>'growth-'.$key().'@example.test','phone'=>'+385991234566','whatsapp_permission'=>1]);
+ $g=fcc_webinar_growth_context($uid);
+ $assert($g['activity']['received']===2&&$g['activity']['eligible']===1&&$g['activity']['demo']===1,'Eligible registrations do not include demo activity');
+ $assert(!str_contains(json_encode($g),'PRIVATE_GROWTH_GUEST')&&!str_contains(json_encode($g),'example.test')&&!str_contains(json_encode($g),'385991234566'),'No guest identity or private notes enter aggregate context');
+ $assert(!$g['capabilities']['attendance_tracking']&&!$g['capabilities']['order_attribution']&&!$g['capabilities']['creates_zoom_room'],'Unmeasured attendance, orders and automatic Zoom creation are never claimed');
+ fcc_partner_query("UPDATE fcc_webinar_sessions SET starts_at_utc=?,ends_at_utc=? WHERE id=?",[$now->modify('-2 days')->format('Y-m-d H:i:s'),$now->modify('-2 days +20 minutes')->format('Y-m-d H:i:s'),(int)$real['session_id']]);
+ $g=fcc_webinar_growth_context($uid);
+ $assert($g['activity']['past_event_registrations']===1&&fcc_webinar_next_action($g,['step'=>51],[])['kind']==='followup','Past registration prompts a question about follow-up, not assumed attendance');
+ $assert(count($g['past_scheduled_personal'])===1&&$g['past_scheduled_personal'][0]['registrations']['eligible']===1&&!$g['past_scheduled_personal'][0]['attendance_known'],'Past themes keep registration counts separate from unknown attendance');
+ fcc_partner_query("UPDATE fcc_webinar_sessions SET status='cancelled' WHERE id=?",[(int)$real['session_id']]);
+ $g=fcc_webinar_growth_context($uid);
+ $assert($g['activity']['past_event_registrations']===0,'Cancelled event is not treated as held');
+ fcc_partner_query('UPDATE users SET plan_expiration_date=? WHERE user_id=?',['2020-01-01',$uid]);
+ $g=fcc_webinar_growth_context($uid);
+ $assert(!$g['active_invitations']&&!$g['upcoming_personal'],'Expired paid invitations are not suggested');
+
+ $shared=fcc_webinar_session($free);$card=fcc_partner_one("SELECT url FROM links WHERE user_id=? AND type='biolink' AND is_enabled=1 ORDER BY link_id LIMIT 1",[$free]);
+ $standard=fcc_webinar_standard_prepare((int)$shared['id'],$card['url'],(int)$shared['revision']);
+ $freeGrowth=fcc_webinar_growth_context($free);
+ $assert($freeGrowth['activity']['prepared']===0,'Lazy standard attribution is not counted as a preparation action');
+ $assert($freeGrowth['active_invitations'][0]['url']===SITE_URL.'partner/share?type=webinar','Free prepared link points to the accessible standard tool');
+ $assert(str_contains(fcc_webinar_learning_url($free,46)['url'],'partner/share?type=webinar')&&str_contains(fcc_webinar_learning_url($other,46,123)['url'],'create=1&step_id=123'),'Task tools follow plan rights and preserve original step');
+ $raw=json_decode(file_get_contents(APP_PATH.'config/curriculum/fcc90.hr.v6.json'),true);$catalog=fcc_jp_catalog();
+ $task=fcc_jp_content(30);$newSource=['message'=>$task['communication']['example']];
+ $assert(fcc_jp_display_message($task,['message'=>$raw['tasks'][29]['communication']['example']],$newSource)===$newSource['message'],'Untouched old default refreshes to webinar preparation');
+ $custom='Moja vlastita tema i osobno pripremljene točke.';
+ $assert(fcc_jp_display_message($task,['message'=>$custom],$newSource)===$custom,'Custom preparation text is preserved');
+ $oldDraft=fcc_jp_draft($other,$task,['message'=>$custom,'article_id'=>999999999,'contact_id'=>999999999],[]);
+ $assert($oldDraft['article_id']===0&&$oldDraft['contact_id']===0&&$oldDraft['message']===$custom,'Obsolete product and contact selections cannot block a converted planning task');
+ $assert(count($catalog['tasks'])===90&&count(fcc_webinar_learning()['tasks'])===16,'90 tasks include 16 integrated webinar milestones');
+ foreach($catalog['tasks'] as $i=>$t){
+  $assert($t['id']===$raw['tasks'][$i]['id']&&$t['core']===$raw['tasks'][$i]['core'],'Stable identity and 4 Core category '.$t['day']);
+  if($w=fcc_webinar_learning_task($t['day']))$assert($t['title']===$w['title']&&$t['actions']===$w['actions']&&$t['audience']===$w['audience']&&count($t['actions'])===3,'Task, audience and practical actions share one source '.$t['day']);
+ }
+ foreach([30,46,60,90] as $day)$assert(fcc_jp_presentation($day)['mode']==='planning'&&in_array('preparation_reported',fcc_jp_allowed_evidence($day),true),'Planning is distinct from sending '.$day);
+ $assert(!in_array('preparation_reported',fcc_jp_allowed_evidence(4),true),'Planning cannot replace a product recommendation task');
+ $context=fcc_coach_mentor_context($other,'Kako pripremiti vlastiti webinar?');
+ $assert(isset($context['webinar_activity']['growth'],$context['webinar_activity']['next_action']),'Main Coach receives owned growth context and one next action');
+ $assert(str_contains(fcc_coach_prompt_from_context($context),'WEBINARI U 4 CORE RADU'),'Main Coach uses webinar mentoring rules');
+ $report=['status'=>'PASS','checks'=>count($checks),'details'=>$checks];
+ file_put_contents(dirname(__DIR__).'/local/webinar-growth-checks.json',json_encode($report,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
+ echo json_encode($report,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE).PHP_EOL;
+} finally {foreach($uids as $id)fcc_webinar_qa_cleanup($id);}

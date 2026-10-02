@@ -1,0 +1,77 @@
+{
+  "status": "passed",
+  "files": [
+    {
+      "path": "app/helpers/fcc_partner_journey.php",
+      "sha256": "19c11a09af8b4172e2fb26047714a571f39ae442af7146c0405b7b2f4503f316",
+      "verified": true
+    },
+    {
+      "path": "app/helpers/fcc_journey90.php",
+      "sha256": "ab01ceb71bbb9be041a5f390253d0abe38b796d85c520a040a069fea01fa348a",
+      "verified": true
+    },
+    {
+      "path": "app/helpers/fcc_journey_pilot.php",
+      "sha256": "3948292a60e6889188ee87c7890cb613f08d3103369e71f9dd4cea9912518d23",
+      "verified": true
+    },
+    {
+      "path": "app/helpers/fcc_team.php",
+      "sha256": "11a247efe9b32bcf7d9fcffeb545e4aab8c29d96d103f8271d2049087d2b9202",
+      "verified": true
+    },
+    {
+      "path": "app/helpers/fcc_webinar_growth.php",
+      "sha256": "d487820acb6c9ab76848f5e8fb32a8234687c819bcc6b09e0a0688212d300071",
+      "verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/journey.php",
+      "sha256": "8facb307aafe84c9b419676f0b2a4cf03f8e38c2579997be439cb554770e567d",
+      "verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/journey90.php",
+      "sha256": "bf2d98ffddf0bf53d67a82c50197981c66cfd00a840984b4ed8c3f75d4be4641",
+      "verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/journey-pilot.php",
+      "sha256": "2744d029248b31be5a4d50976df1d4370555d9f6750814c61fde51a33d264de1",
+      "verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/notifications.php",
+      "sha256": "31477532196c232cb798e36d33a101080174add48c044e8d3069865eda212c54",
+      "verified": true
+    },
+    {
+      "path": "themes/altum/views/partner/team.php",
+      "sha256": "ed68774e321888d31bc037e3df726d352e6916069992ef5b7e1c5e27ae5e6b79",
+      "verified": true
+    },
+    {
+      "path": "app/helpers/fcc_coach_mentor.php",
+      "sha256": "e6cf878d8a43b790e32f3b06adbe3cbce57af32eeca7b044a047382363587f83",
+      "verified": true
+    },
+    {
+      "path": "app/config/fcc_coach_mentor.hr.txt",
+      "sha256": "3997ace1ea11b4e286359064541b18c657985304bb91dfd9ba11539da7925f05",
+      "verified": true
+    }
+  ],
+  "worker_restored": true,
+  "postcheck": {
+    "status": "passed",
+    "accounts_with_saved_pause_checked": 3,
+    "cycles_preserved": 3,
+    "steps_preserved": 5,
+    "history_preserved": true,
+    "retired_pauses_ignored": true,
+    "pause_control_removed": true,
+    "daily_cadence_changed": false,
+    "writes_performed": false
+  }
+}

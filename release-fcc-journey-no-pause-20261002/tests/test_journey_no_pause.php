@@ -1,0 +1,47 @@
+<?php
+require dirname(__DIR__).'/local/pilot15-fixtures.php';
+Altum\Language::$name='Hrvatski';$_SESSION['fcc_language']='hr';
+set_exception_handler(function($e){fwrite(STDERR,$e->getMessage().' at '.$e->getFile().':'.$e->getLine().PHP_EOL);exit(1);});
+$checks=[];$assert=function($ok,$label)use(&$checks){if(!$ok)throw new RuntimeException($label);$checks[]=$label;};
+$reject=function($fn,$label)use($assert){try{$fn();}catch(InvalidArgumentException $e){$assert(true,$label);return;}$assert(false,$label);};
+$key=fn()=>bin2hex(random_bytes(16));$at=new DateTimeImmutable('2030-01-02 18:00',new DateTimeZone('Europe/Zagreb'));
+$protected=fn()=>json_encode([fcc_partner_rows('SELECT * FROM fcc_partner_journey_cycles WHERE user_id IN(1,2,3,56,57) ORDER BY id'),fcc_partner_rows('SELECT * FROM fcc_partner_journey_steps WHERE user_id IN(1,2,3,56,57) ORDER BY id')]);$before=$protected();
+$state=fn($u,$time)=>fcc_j90_state($u,fcc_j90_access($u),$time);
+$input=fn($s,$extra=[])=>$extra+['catalog_version'=>FCC_JP_VERSION,'request_key'=>$key(),'cycle_id'=>$s['cycle']['id'],'cycle_version'=>$s['cycle']['version'],'step_id'=>$s['step']['id']??0,'draft_version'=>$s['step']['draft_version']??0];
+$testUsers=[];
+foreach([true,false] as $pro){
+ $uid=fcc_pilot_fixture('pilot15-qa-'.bin2hex(random_bytes(4)).'@fcc.test',$pro,false);$testUsers[]=$uid;
+ $prefs=json_decode(fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid])['preferences'],true);$prefs['partner_journey']=['paused_until'=>'2035-12-31','reminders'=>false,'reminder_hour'=>18];$prefs['pause_test_preserve']=['note'=>'Keep unrelated preferences'];
+ fcc_partner_query('UPDATE users SET preferences=? WHERE user_id=?',[json_encode($prefs),$uid]);$raw=fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid])['preferences'];
+ fcc_jp_mutate($uid,'start',['catalog_version'=>FCC_JP_VERSION,'request_key'=>$key(),'confirm'=>1,'previous_cycle_id'=>0,'previous_cycle_version'=>0],$at);
+ $s=$state($uid,$at);$assert(!$s['paused']&&$s['position']===1,'Old future pause cannot hide first task '.(int)$pro);
+ fcc_jp_mutate($uid,'open',$input($s),$at);$s=$state($uid,$at);$step=$s['step'];
+ $assert($s['action']['can_complete'],'Previously paused account can work on current task '.(int)$pro);
+ $assert(fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid])['preferences']===$raw,'Reading or opening does not rewrite preferences '.(int)$pro);
+ fcc_jp_mutate($uid,'draft',$input($s,['message'=>'Moj sačuvani tekst.','note'=>'Moj vlastiti razlog.']),$at);$s=$state($uid,$at);$draft=$s['draft'];
+ $later=$state($uid,$at->modify('+14 days'));$assert($later['position']===1&&$later['step']['id']===$step['id']&&$later['draft']===$draft,'Unfinished task and draft stay open after fourteen days '.(int)$pro);
+ $assert(fcc_journey_reminder($uid,$at)===null,'Reminder opt out stays respected without blocking task '.(int)$pro);
+ $profile=fcc_journey_profile(fcc_journey_user($uid));fcc_journey_save_profile($uid,$profile+['unused'=>'test']);
+ $profile=fcc_journey_profile(fcc_journey_user($uid));fcc_journey_save_profile($uid,array_replace($profile,['paused_until'=>'2099-12-31']));
+ $stored=json_decode(fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid])['preferences'],true);
+ $assert(!array_key_exists('paused_until',$stored['partner_journey'])&&fcc_journey_profile(fcc_journey_user($uid))['paused_until']==='','Old form cannot restore pause '.(int)$pro);
+ $assert($stored['pause_test_preserve']===$prefs['pause_test_preserve']&&!$stored['partner_journey']['reminders'],'Saving keeps unrelated preferences and reminder choice '.(int)$pro);
+ $reject(fn()=>fcc_journey_save_profile($uid,$profile),'Stale settings still rejected '.(int)$pro);
+ $finish=$input($s,['kind'=>'preparation_reported','note'=>'Želim učiti i primijeniti svoj plan.']);$id=fcc_jp_mutate($uid,'finish',$finish,$at);
+ $assert(fcc_jp_mutate($uid,'finish',$finish,$at)===$id,'Completion retry remains idempotent '.(int)$pro);
+ $next=$state($uid,$at->modify('+1 day'));$assert($next['completed']===1&&$next['position']===2,'Only completion advances to next task '.(int)$pro);
+ $reject(fn()=>fcc_jp_mutate($uid,'finish',array_replace($finish,['request_key'=>$key()]),$at),'Old completion cannot skip next task '.(int)$pro);
+ fcc_jp_mutate($uid,'open',$input($next),$at->modify('+1 day'));$next=$state($uid,$at->modify('+1 day'));
+ $assert($next['step']&&$next['step']['id']!==$step['id'],'Next eligible task opens normally '.(int)$pro);
+}
+$legacy=fcc_pilot_fixture('pilot15-qa-'.bin2hex(random_bytes(4)).'@fcc.test',true,false);$testUsers[]=$legacy;
+fcc_j90_mutate($legacy,'start',['request_key'=>$key(),'confirm'=>1],$at);$p=json_decode(fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$legacy])['preferences'],true);$p['partner_journey']['paused_until']='2035-12-31';fcc_partner_query('UPDATE users SET preferences=? WHERE user_id=?',[json_encode($p),$legacy]);
+$s=$state($legacy,$at);fcc_j90_mutate($legacy,'open',$input($s),$at);$s=$state($legacy,$at);$assert(!$s['paused']&&$s['action']['can_complete'],'Earlier 90 step cycles also ignore retired pause dates');
+fcc_j90_mutate($legacy,'draft',$input($s,['note'=>'Sačuvana priprema ranijeg ciklusa.']),$at);$assert(($state($legacy,$at)['draft']['note']??'')==='Sačuvana priprema ranijeg ciklusa.','Earlier cycle draft can be saved');
+$metrics=fcc_team_account_metrics($legacy);$assert($metrics['paused_until']===''&&$metrics['progress']===0,'Sponsor overview does not report a retired pause or alter progress');
+$growth=fcc_webinar_growth_context($legacy);$assert(fcc_webinar_next_action($growth,['step'=>30],['paused_until'=>'2035-12-31'])===fcc_webinar_next_action($growth,['step'=>30],[]),'Optional Coach guidance ignores retired education pause');
+$coach=fcc_coach_mentor_context($testUsers[0],'Mogu li pauzirati edukaciju?');
+$assert(!array_key_exists('paused_until',$coach['own_profile']),'Coach no longer receives retired pause as an available preference');
+$assert(str_contains(fcc_coach_prompt_from_context($coach),'Program nema mogućnost pauziranja.'),'Coach rules explain current task availability');
+$assert($protected()===$before,'Existing users and progress remain untouched');
+$out=['status'=>'passed','checks'=>count($checks),'details'=>$checks,'fixture_users'=>$testUsers];file_put_contents(dirname(__DIR__).'/local/journey-no-pause-20261002/fixtures.json',json_encode($out));echo json_encode($out,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE).PHP_EOL;

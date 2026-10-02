@@ -1,0 +1,5 @@
+changes.patch whitespace=-blank-at-eol,-blank-at-eof
+files/app/helpers/fcc_coach_mentor.php whitespace=-blank-at-eol
+files/themes/altum/views/partner/journey.php whitespace=-blank-at-eof
+files/themes/altum/views/partner/notifications.php whitespace=-blank-at-eol,-blank-at-eof
+tests/test_partner_journey.php whitespace=-blank-at-eof
