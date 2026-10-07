@@ -89,6 +89,7 @@ class ForeverBusinessSync extends Controller {
                 } elseif($registration_metric === 'registration_notification_test') {
                     $data = ['test' => fcc_registration_notify_admin_test((string) ($_POST['request_id'] ?? '')),
                         'delivery' => fcc_registration_process_admin_notifications()];
+                    $data['test'] = fcc_registration_admin_notification_status((int) $data['test']['notification_id']);
                 } else {
                     $data = fcc_registration_automation_status();
                 }

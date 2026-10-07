@@ -9,11 +9,13 @@ import re
 import subprocess
 import tempfile
 import urllib.request
+import urllib.error
 
 ROOT = Path(__file__).resolve().parents[1]
 TAG = "FC-2026-10-07"
 HELPERS = ["app/helpers/fcc_registration_notifications.php", "app/helpers/fcc_registration_automation.php"]
-SHARED = ["app/controllers/Register.php", "app/controllers/ForeverBusinessSync.php"]
+NEW_FILES = HELPERS + ["app/controllers/admin/AdminFccPush.php", "themes/altum/views/admin/fcc-push/index.php", "fcc-admin-push-sw.js"]
+SHARED = ["app/controllers/Register.php", "app/controllers/ForeverBusinessSync.php", "app/core/Router.php"]
 LANGUAGES = ["app/languages/Hrvatski#hr.php", "app/languages/english#en.php",
              "app/languages/cache/Hrvatski#hr.php", "app/languages/cache/english#en.php"]
 
@@ -33,6 +35,12 @@ def patch_controller(path, live, source):
     if opening in live:
         existing = block(live, opening)
         return live.replace(existing, addition, 1)
+    if path.endswith("/Router.php"):
+        anchors = list(re.finditer(r"(?m)^[ \t]*'internal-notifications'\s*=>\s*\[\s*\n[ \t]*'controller'\s*=>\s*'AdminInternalNotifications'", live))
+        if len(anchors) != 1:
+            raise ValueError("Live admin routing differs from the reviewed contract")
+        anchor = anchors[0]
+        return live[:anchor.start()] + addition + live[anchor.start():]
     if path.endswith("/Register.php"):
         anchor = re.search(r"(?m)^([ \t]*)\$registered_user\s*=\s*\(new User\(\)\)->create\(", live)
         if not anchor:
@@ -109,6 +117,20 @@ def fcc_request(metric, **fields):
     return result
 
 
+def verify_machine_authentication():
+    body = b'metric=registration_pending'
+    for headers in [{}, {'X-FCC-Forever-Sync-Key': 'invalid-test-only'}]:
+        request = urllib.request.Request(os.environ['FCC_FOREVER_SYNC_URL'], data=body, headers=headers)
+        try:
+            urllib.request.urlopen(request, timeout=30)
+        except urllib.error.HTTPError as error:
+            if error.code == 403:
+                continue
+            raise RuntimeError('Production authentication check failed') from None
+        raise RuntimeError('Production registration endpoint is not protected')
+    print(json.dumps({'machine_authentication_verified': True}))
+
+
 def main():
     release = os.environ["GITHUB_SHA"]
     if not re.fullmatch(r"[a-f0-9]{40}", release):
@@ -119,20 +141,22 @@ def main():
     before, after = {}, {}
     uploaded = []
     try:
-        for path in HELPERS + LANGUAGES + SHARED:
-            data = download(ftp, "/public_html/" + path, optional=path in HELPERS)
+        for path in NEW_FILES + LANGUAGES + SHARED:
+            data = download(ftp, "/public_html/" + path, optional=path in NEW_FILES)
             before[path] = data
             source = (ROOT / path).read_text()
-            if path in HELPERS:
+            if path in NEW_FILES:
                 after[path] = source.encode()
             else:
                 live = data.decode()
                 updated = patch_language(live, source) if path in LANGUAGES else patch_controller(path, live, source)
                 after[path] = updated.encode()
-            print(json.dumps({"file": path, "existing_live_changes_preserved": path not in HELPERS,
+            print(json.dumps({"file": path, "existing_live_changes_preserved": path not in NEW_FILES,
                               "changed": data != after[path]}))
         with tempfile.TemporaryDirectory() as directory:
-            for index, data in enumerate(after.values()):
+            for index, (path, data) in enumerate(after.items()):
+                if not path.endswith('.php'):
+                    continue
                 file = Path(directory) / f"patch{index}.php"
                 file.write_bytes(data)
                 subprocess.run(["php", "-l", str(file)], check=True, capture_output=True)
@@ -155,11 +179,15 @@ def main():
             for path, data in after.items():
                 if before[path] == data:
                     continue
+                if path in NEW_FILES:
+                    mkdirs(ftp, '/public_html/' + str(Path(path).parent))
                 uploaded.append(path)
                 store_atomic(ftp, "/public_html/" + path, data, release[:12])
             status = fcc_request("registration_status")
             if not status.get("runtime_ready"):
+                print(json.dumps({'runtime_checks': status.get('runtime_checks'), 'admin_notifications': status.get('admin_notifications')}))
                 raise RuntimeError("Production registration prerequisites are unavailable")
+            verify_machine_authentication()
             pending = fcc_request("registration_pending", limit="100")
             fcc_request("registration_decisions", decisions="[]", dry_run="1")
             print(json.dumps({"production_verified": True, "pending_registration_count": len(pending.get("accounts", [])),

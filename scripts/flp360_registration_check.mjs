@@ -11,7 +11,7 @@ import {
 const ROOT_FBO_ID = '360000760944';
 const MAX_EVIDENCE_AGE_MS = 30 * 60 * 1000;
 const SOURCE = 'flp360';
-const MAX_SPONSOR_CHAIN_LENGTH = 128;
+const MAX_SPONSOR_CHAIN_LENGTH = 64;
 
 function normalizedEmail(value) {
     return String(value || '').trim().toLocaleLowerCase('en');
@@ -21,6 +21,16 @@ function freshEvidence(evidence, now = new Date()) {
     const at = new Date(evidence?.checked_at || '').getTime();
     const age = now.getTime() - at;
     return Number.isFinite(at) && age >= -60000 && age <= MAX_EVIDENCE_AGE_MS;
+}
+
+function validApprovalAncestorChain(account, evidence) {
+    const chain = evidence?.ancestor_fbo_ids;
+    return Array.isArray(chain) && chain.length >= 2 && chain.length <= MAX_SPONSOR_CHAIN_LENGTH
+        && chain.every(id => typeof id === 'string' && /^\d{12}$/.test(id))
+        && new Set(chain).size === chain.length
+        && chain[0] === account.fbo_id
+        && chain[1] === evidence.sponsor_fbo_id
+        && chain.at(-1) === ROOT_FBO_ID;
 }
 
 function evaluateRegistration(account, evidence, now = new Date()) {
@@ -56,6 +66,9 @@ function evaluateRegistration(account, evidence, now = new Date()) {
     if(!/^\d{12}$/.test(String(evidence.sponsor_fbo_id || ''))
         || evidence.sponsor_fbo_id === account.fbo_id) {
         return result('manual_review', 'sponsor_unconfirmed');
+    }
+    if(!validApprovalAncestorChain(account, evidence)) {
+        return result('manual_review', 'ancestor_chain_unconfirmed');
     }
     return result('approve', 'verified');
 }
@@ -114,7 +127,7 @@ async function collectRegistrationEvidence(page, configuration, account, now = n
     const evidence = {source: SOURCE, checked_at: now.toISOString(), exact_fbo_id: null,
         root_fbo_id: ROOT_FBO_ID, id_exists: null, authoritative_not_found: false,
         authoritative_structure: false, in_root_structure: null, flp_name: null,
-        flp_email: null, sponsor_fbo_id: null};
+        flp_email: null, sponsor_fbo_id: null, ancestor_fbo_ids: []};
     const fboId = normalizeFboId(account.fbo_id);
     if(!fboId || fboId !== account.fbo_id) return evidence;
     const preferredCountry = resolveFccAccountCountryCode(account.country_code, configuration);
@@ -135,11 +148,13 @@ async function collectRegistrationEvidence(page, configuration, account, now = n
     evidence.authoritative_structure = rootConfirmed || chain.reachedOutsideBoundary === true;
     evidence.in_root_structure = rootConfirmed ? true : chain.reachedOutsideBoundary === true ? false : null;
     evidence.chain_checked_count = chain.checkedCount;
+    evidence.ancestor_fbo_ids = chain.ancestorFboIds;
     return evidence;
 }
 
 async function fetchExactDistributorDetail(page, configuration, fboId, countryCandidates) {
-    for(const country of countryCandidates) {
+    const issuingMarkets = ({'389': ['BGR'], '410': ['CHE'], '490': ['DEU']})[fboId.slice(0, 3)] || [];
+    for(const country of [...new Set([...countryCandidates, ...issuingMarkets])]) {
         try {
             const payload = await flpGetJson(page, reportV2Url(configuration,
                 `downlineLoggedInDetails/fboId/${fboId}/country/${encodeURIComponent(country)}`), configuration);
@@ -165,21 +180,23 @@ async function verifySponsorChain(page, configuration, firstFboId, firstDetail, 
         // measure distance or authorize either approval or rejection.
         if(fboId === ROOT_FBO_ID) return {reachedRoot: true,
             reachedOutsideBoundary: false,
-            generationMetadataValid, checkedCount: visited.size};
+            generationMetadataValid, checkedCount: visited.size, ancestorFboIds: [...visited]};
         // A freshly verified direct sponsor of the root is an ancestor above
         // this team. Reaching that ancestor without first reaching the root
         // positively proves a different branch; absence alone proves nothing.
         if(options.rootSponsorId && options.rootSponsorId !== ROOT_FBO_ID
             && fboId === options.rootSponsorId) {
             return {reachedRoot: false, reachedOutsideBoundary: true, generationMetadataValid,
-                checkedCount: visited.size};
+                checkedCount: visited.size, ancestorFboIds: [...visited]};
         }
         const sponsorId = normalizeFboId(detail.sponsorDistributorId);
-        if(!sponsorId || sponsorId === fboId || visited.has(sponsorId)) break;
+        if(!sponsorId || sponsorId === fboId || visited.has(sponsorId)
+            || hop + 1 >= MAX_SPONSOR_CHAIN_LENGTH) break;
         fboId = sponsorId;
         detail = await fetchExactDistributorDetail(page, configuration, fboId, countryCandidates);
     }
-    return {reachedRoot: false, reachedOutsideBoundary: false, generationMetadataValid, checkedCount: visited.size};
+    return {reachedRoot: false, reachedOutsideBoundary: false, generationMetadataValid,
+        checkedCount: visited.size, ancestorFboIds: [...visited]};
 }
 
 function summarizeDecisions(decisions) {
@@ -207,12 +224,10 @@ async function main() {
     const dryRun = String(process.env.FCC_REGISTRATION_DRY_RUN || '').trim() === '1';
     const accounts = validatePendingPayload(await fccRequest('registration_pending', syncUrl, syncKey));
     if(process.argv.includes('--pending-count')) {
-        if(accounts.length === 0) {
-            const response = await fccRequest('registration_decisions', syncUrl, syncKey,
-                {decisions: '[]', dry_run: dryRun ? '1' : '0'});
-            console.log(JSON.stringify({delivery_retry_processed: !dryRun, dry_run: dryRun,
-                summary: safeServerSummary(response.summary)}));
-        }
+        const response = await fccRequest('registration_decisions', syncUrl, syncKey,
+            {decisions: '[]', dry_run: dryRun ? '1' : '0'});
+        console.log(JSON.stringify({delivery_retry_processed: !dryRun, dry_run: dryRun,
+            summary: safeServerSummary(response.summary)}));
         console.log(JSON.stringify({pending_count: accounts.length}));
         if(process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, `pending_count=${accounts.length}\n`);
         return;
@@ -258,5 +273,5 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
 
 export {evaluateRegistration, freshEvidence, validatePendingPayload, unwrapSingleRecord,
     collectRegistrationEvidence, summarizeDecisions, safeServerSummary,
-    fetchExactDistributorDetail, verifySponsorChain};
+    fetchExactDistributorDetail, verifySponsorChain, validApprovalAncestorChain};
 /* /Custom code: FC-2026-10-07 */

@@ -10,7 +10,8 @@ const account = {user_id: 42, fbo_id: '360111222333', registered_at: '2026-10-07
 const good = {source: 'flp360', checked_at: now.toISOString(), root_fbo_id: '360000760944',
     exact_fbo_id: account.fbo_id, id_exists: true, authoritative_not_found: false,
     authoritative_structure: true, in_root_structure: true, flp_name: account.name,
-    flp_email: ' Person@Example.Test ', sponsor_fbo_id: '360444555666'};
+    flp_email: ' Person@Example.Test ', sponsor_fbo_id: '360444555666',
+    ancestor_fbo_ids: [account.fbo_id, '360444555666', '360000760944']};
 const result = changes => evaluateRegistration(account, {...good, ...changes}, now).result;
 
 assert.equal(result({}), 'approve');
@@ -29,6 +30,14 @@ assert.equal(result({flp_email: 'another@example.test'}), 'manual_review');
 assert.equal(result({sponsor_fbo_id: null}), 'manual_review');
 assert.equal(result({sponsor_fbo_id: account.fbo_id}), 'manual_review');
 assert.equal(result({sponsor_fbo_id: 'invalid'}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: undefined}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: [account.fbo_id, '360444555666']}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: [account.fbo_id, '360000760944']}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: [account.fbo_id, '360444555666', '360444555666', '360000760944']}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: [account.fbo_id, 'not-an-id', '360000760944']}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: ['360444555666', account.fbo_id, '360000760944']}), 'manual_review');
+assert.equal(result({ancestor_fbo_ids: [account.fbo_id, '360444555666',
+    ...Array.from({length: 62}, (_, index) => String(360000001000 + index)), '360000760944']}), 'manual_review');
 assert.equal(unwrapSingleRecord([{body: {distributorId: account.fbo_id}}]).distributorId, account.fbo_id);
 assert.equal(unwrapSingleRecord([]), null);
 assert.equal(unwrapSingleRecord([{}, {}]), null);
@@ -70,6 +79,7 @@ const chain = await collectRegistrationEvidence(chainPage, configuration, accoun
 assert.equal(chain.in_root_structure, true);
 assert.equal(chain.flp_name, account.name);
 assert.equal(chain.sponsor_fbo_id, rootDetail.distributorId);
+assert.deepEqual(chain.ancestor_fbo_ids, [account.fbo_id, rootDetail.distributorId]);
 assert.equal(evaluateRegistration(account, chain, now).result, 'approve');
 const inconsistentPage = mockPage(url => url.includes(rootDetail.distributorId) ? rootDetail : {...memberDetail, generation: 3});
 const inconsistent = await collectRegistrationEvidence(inconsistentPage, configuration, account, now);
@@ -87,7 +97,20 @@ const outsidePage = mockPage(url => url.includes(rootDetail.distributorId) ? roo
 const outside = await collectRegistrationEvidence(outsidePage, configuration, account, now);
 assert.equal(outside.authoritative_structure, true);
 assert.equal(outside.in_root_structure, false);
+assert.deepEqual(outside.ancestor_fbo_ids, [account.fbo_id, ancestorDetail.distributorId]);
 assert.equal(evaluateRegistration(account, outside, now).result, 'valid_id_not_team');
+const foreignSponsorId = '410444555666';
+const foreignSponsor = {distributorId: foreignSponsorId, generation: 0,
+    sponsorDistributorId: rootDetail.distributorId};
+const foreignPage = mockPage(url => {
+    if(url.includes(rootDetail.distributorId)) return rootDetail;
+    if(url.includes(foreignSponsorId)) return url.endsWith('/CHE') ? foreignSponsor : {distributorId: null};
+    return {...memberDetail, sponsorDistributorId: foreignSponsorId};
+});
+const foreign = await collectRegistrationEvidence(foreignPage, configuration, account, now);
+assert.equal(foreign.in_root_structure, true);
+assert.equal(foreign.sponsor_fbo_id, foreignSponsorId);
+assert.deepEqual(foreign.ancestor_fbo_ids, [account.fbo_id, foreignSponsorId, rootDetail.distributorId]);
 assert.deepEqual(summarizeDecisions([{result: 'approve'}, {result: 'unconfirmed'}]),
     {checked: 2, approve: 1, invalid_id: 0, valid_id_not_team: 0, manual_review: 0, unconfirmed: 1});
 assert.deepEqual(safeServerSummary({processed: 2, user_id: 42, email: account.email,

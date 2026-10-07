@@ -102,6 +102,7 @@ async function main() {
                                 final_adapter_in_root: evidence.in_root_structure,
                                 final_adapter_identity_confirmed: evidence.id_exists === true,
                                 final_adapter_sponsor_present: Boolean(evidence.sponsor_fbo_id),
+                                final_adapter_ancestor_count: evidence.ancestor_fbo_ids.length,
                                 final_adapter_email_present: Boolean(evidence.flp_email),
                                 owner_control_only: !target.email,
                                 final_adapter_result: decision.result}));
@@ -138,11 +139,12 @@ async function main() {
                 const source = await response.text();
                 for(const match of source.matchAll(/["']([^"'\r\n]{0,160}(?:sponsor|upline|downline|distributor|lookup|profile|\/search|fboId)[^"'\r\n]{0,160})["']/gi)) {
                     const hint = match[1];
-                    if(!/\d{8}|@|Bearer|token|password/i.test(hint)) hints.add(hint);
+                    if(/^[A-Za-z0-9_./:?=&%+ -]{1,160}$/.test(hint)
+                        && !/\d{8}|@|Bearer|token|password/i.test(hint)) hints.add(hint);
                     if(hints.size >= 100) break;
                 }
                 for(const match of source.matchAll(/\b[A-Za-z_$][A-Za-z0-9_$]{0,90}\b/g)) {
-                    if(/sponsor|upline|downline|distributor|lookup|fbo/i.test(match[0])) identifiers.add(match[0]);
+                    if(!/\d/.test(match[0]) && /sponsor|upline|downline|distributor|fbo/i.test(match[0])) identifiers.add(match[0]);
                     if(identifiers.size >= 150) break;
                 }
             } catch {}

@@ -1956,6 +1956,12 @@ class Router {
             ],
             /* /Custom code: FC-2026-03-18 */
 
+            /* Custom code: FC-2026-10-07: FCC owner push notification preferences. */
+            'fcc-push' => [
+                'controller' => 'AdminFccPush',
+            ],
+            /* /Custom code: FC-2026-10-07 */
+
             'internal-notifications' => [
                 'controller' => 'AdminInternalNotifications',
             ],

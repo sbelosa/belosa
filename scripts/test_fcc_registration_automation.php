@@ -64,9 +64,46 @@ namespace {
             if(str_starts_with($sql, 'CREATE TABLE')) return true;
             if(str_contains($sql, 'GET_LOCK')) return new RegistrationTestRows([['acquired' => 1]]);
             if(str_contains($sql, 'RELEASE_LOCK')) return new RegistrationTestRows([]);
-            if(str_contains($sql, ' FOR UPDATE')) {
+            if(str_contains($sql, 'FROM users WHERE') && str_contains($sql, ' FOR UPDATE')) {
                 preg_match('/user_id = (\d+)/', $sql, $match);
                 return new RegistrationTestRows(isset($this->tables['users'][(int) $match[1]]) ? [$this->tables['users'][(int) $match[1]]] : []);
+            }
+            if(str_starts_with($sql, 'SELECT * FROM forever_business_members')) {
+                preg_match("/fbo_id = '([0-9]{12})'/", $sql, $match);
+                return new RegistrationTestRows(array_filter($this->tables['forever_business_members'] ?? [], static fn($row) => $row['fbo_id'] === $match[1]));
+            }
+            if(str_starts_with($sql, 'SELECT ancestor_fbo_id, depth, source_import_id FROM forever_business_hierarchy')) {
+                preg_match("/descendant_fbo_id = '([0-9]{12})'/", $sql, $match);
+                return new RegistrationTestRows(array_filter($this->tables['forever_business_hierarchy'] ?? [], static fn($row) => $row['descendant_fbo_id'] === $match[1]));
+            }
+            if(str_starts_with($sql, 'SELECT descendant_fbo_id FROM forever_business_hierarchy')) {
+                preg_match("/ancestor_fbo_id = '([0-9]{12})'/", $sql, $match);
+                return new RegistrationTestRows(array_filter($this->tables['forever_business_hierarchy'] ?? [], static fn($row) => $row['ancestor_fbo_id'] === $match[1] && $row['depth'] > 0));
+            }
+            if(str_starts_with($sql, 'INSERT INTO forever_business_members')) {
+                preg_match("/VALUES \('([0-9]{12})', '([^']*)', 'FCC suradnik', NULLIF\('([^']*)', ''\), '([0-9]{12})'/", $sql, $match);
+                $old = $this->tables['forever_business_members'][$match[1]] ?? null;
+                $data = ['parent_fbo_id' => $match[4], 'is_in_current_structure' => 1, 'updated_at' => get_date()];
+                $this->tables['forever_business_members'][$match[1]] = array_merge($old ?? ['fbo_id' => $match[1], 'name' => $match[2],
+                    'title' => 'FCC suradnik', 'country_code' => $match[3], 'last_seen_import_id' => null, 'created_at' => get_date()], $data);
+                return true;
+            }
+            if(str_starts_with($sql, 'DELETE FROM forever_business_hierarchy')) {
+                preg_match("/descendant_fbo_id = '([0-9]{12})'/", $sql, $match);
+                preg_match('/NOT IN \(([^)]+)\)/', $sql, $ids_match);
+                preg_match_all('/[0-9]{12}/', $ids_match[1], $ids);
+                foreach($this->tables['forever_business_hierarchy'] ?? [] as $key => $row) {
+                    if($row['descendant_fbo_id'] === $match[1] && !in_array($row['ancestor_fbo_id'], $ids[0], true) && $row['source_import_id'] === null) unset($this->tables['forever_business_hierarchy'][$key]);
+                }
+                return true;
+            }
+            if(str_starts_with($sql, 'INSERT INTO forever_business_hierarchy')) {
+                preg_match("/VALUES \('([0-9]{12})', '([0-9]{12})', ([0-9]+), NULL\)/", $sql, $match);
+                if(!empty($GLOBALS['fail_structure_write'])) throw new \RuntimeException('Simulated hierarchy write failure.');
+                $key = $match[1] . ':' . $match[2];
+                $old = $this->tables['forever_business_hierarchy'][$key] ?? ['ancestor_fbo_id' => $match[1], 'descendant_fbo_id' => $match[2], 'source_import_id' => null];
+                $this->tables['forever_business_hierarchy'][$key] = array_merge($old, ['depth' => (int) $match[3]]);
+                return true;
             }
             if(str_contains($sql, 'SELECT user_id, name, status, type FROM users')) {
                 preg_match("/= '([0-9]{12})' LIMIT 2/", $sql, $match);
@@ -93,6 +130,17 @@ namespace {
     function db() { return $GLOBALS['real_db_builder'] ?? $GLOBALS['fake_db']; }
     function database() { return $GLOBALS['real_database'] ?? db(); }
     function get_date() { return gmdate('Y-m-d H:i:s'); }
+    if(!function_exists('mb_substr')) { function mb_substr($value, $start, $length) { return substr($value, $start, $length); } }
+    function forever_business_ensure_tables() {
+        $GLOBALS['structure_ensure_calls'] = ($GLOBALS['structure_ensure_calls'] ?? 0) + 1;
+        if(!isset($GLOBALS['real_database'])) return;
+        database()->query("CREATE TABLE IF NOT EXISTS forever_business_members (fbo_id CHAR(12) PRIMARY KEY, name VARCHAR(160) NOT NULL,
+            title VARCHAR(96), generation SMALLINT, country_code VARCHAR(8), sponsor_date DATE, parent_fbo_id CHAR(12), tree_sequence VARCHAR(64),
+            is_manager TINYINT NOT NULL DEFAULT 0, is_privacy_requested TINYINT NOT NULL DEFAULT 0, is_in_current_structure TINYINT NOT NULL DEFAULT 1,
+            email_hash CHAR(64), phone_hash CHAR(64), first_seen_import_id BIGINT, last_seen_import_id BIGINT, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL) ENGINE=InnoDB");
+        database()->query("CREATE TABLE IF NOT EXISTS forever_business_hierarchy (ancestor_fbo_id CHAR(12), descendant_fbo_id CHAR(12), depth SMALLINT UNSIGNED NOT NULL,
+            source_import_id BIGINT, PRIMARY KEY(ancestor_fbo_id, descendant_fbo_id)) ENGINE=InnoDB");
+    }
     function fc_resolve_language_name($language) { return $language ?: 'Hrvatski#hr'; }
     function fc_get_user_main_biolink_id($id) { return 42; }
     function url($path) { return SITE_URL . $path; }
@@ -109,6 +157,7 @@ namespace {
         $GLOBALS['notification_audits'][$context['audit_id']] = true;
         return ['status' => 'queued'];
     }
+    function fcc_registration_admin_push_runtime_ready() { return true; }
     require dirname(__DIR__) . '/app/helpers/fcc_registration_automation.php';
 
     function check(bool $condition, string $description): void {
@@ -135,6 +184,8 @@ namespace {
         $GLOBALS['mail_success'] = true;
         $GLOBALS['deleted_users'] = [];
         $GLOBALS['notification_audits'] = [];
+        $GLOBALS['structure_ensure_calls'] = 0;
+        $GLOBALS['fail_structure_write'] = false;
         return $user;
     }
     $GLOBALS['assertion_count'] = 0;
@@ -142,10 +193,11 @@ namespace {
     $user = reset_test_db();
     $now = time();
     $sponsor = ['user_id' => 20, 'fbo_id' => '360000000020', 'name' => 'Sponsor', 'status' => 1, 'type' => 0];
+    $chain = ['360000000010', '360000000020', '360000760944'];
     $decision = ['user_id' => 10, 'fbo_id' => '360000000010', 'registered_at' => $user->datetime, 'result' => 'approve',
         'evidence' => ['source' => 'flp360', 'checked_at' => gmdate('c', $now), 'exact_fbo_id' => '360000000010',
             'flp_name' => 'Ana Test', 'flp_email' => 'ANA@example.test', 'sponsor_fbo_id' => '360000000020',
-            'root_fbo_id' => '360000760944', 'id_exists' => true, 'in_root_structure' => true, 'authoritative_structure' => true]];
+            'root_fbo_id' => '360000760944', 'ancestor_fbo_ids' => $chain, 'id_exists' => true, 'in_root_structure' => true, 'authoritative_structure' => true]];
     check(fcc_registration_automation_validate($user, $decision, [$sponsor], $now)['status'] === 'approved', 'Verified owner, exact ID, root membership and unique active sponsor approve.');
     foreach(['fcc_access_approved_at', 'fcc_access_deactivated_at', 'fcc_access_rejected_at', 'fcc_access_approval_email_sent_at'] as $marker) {
         $candidate = fresh_user(); $p = json_decode($candidate->preferences); $p->meta->$marker = '2026-10-06 00:00:00'; $candidate->preferences = json_encode($p);
@@ -164,6 +216,11 @@ namespace {
     $name_only = $decision; unset($name_only['evidence']['flp_email']);
     check(fcc_registration_automation_validate($user, $name_only, [$sponsor], $now)['status'] === 'manual_review', 'Exact name alone is not sufficient proof of ownership.');
     foreach([[], [$sponsor, $sponsor]] as $sponsors) check(fcc_registration_automation_validate($user, $decision, $sponsors, $now)['status'] === 'manual_review', 'Missing or ambiguous FCC sponsor stays manual.');
+    foreach([null, [], array_reverse($chain), [$chain[0], $chain[1], $chain[1], $chain[2]], [$chain[0], 360000000020, $chain[2]],
+        [$chain[0], ' 360000000020', $chain[2]], [$chain[0], $chain[1], '360000000099'], array_fill(0, 65, $chain[0])] as $bad_chain) {
+        $changed = $decision; $changed['evidence']['ancestor_fbo_ids'] = $bad_chain;
+        check(fcc_registration_automation_validate($user, $changed, [$sponsor], $now)['reason'] === 'sponsor_chain_unconfirmed', 'Incomplete, cyclic, unordered or oversized sponsor evidence never approves.');
+    }
     foreach(['in_root_structure' => null, 'id_exists' => null, 'authoritative_structure' => false,
         'exact_fbo_id' => '360000000999', 'root_fbo_id' => '360000000999', 'checked_at' => gmdate('c', $now - 1801)] as $field => $value) {
         $changed = $decision; $changed['evidence'][$field] = $value;
@@ -182,7 +239,7 @@ namespace {
 
     $before = db()->tables;
     $dry = fcc_registration_automation_apply_decisions([$decision], true);
-    check($dry['results'][0]['status'] === 'approved' && db()->tables === $before && count($GLOBALS['mail_calls']) === 0, 'Dry run predicts the decision without writes, mail or notifications.');
+    check($dry['results'][0]['status'] === 'approved' && db()->tables === $before && count($GLOBALS['mail_calls']) === 0 && $GLOBALS['structure_ensure_calls'] === 0, 'Dry run predicts the decision without writes, schema setup, mail or notifications.');
     check($dry['summary']['checked'] === 1 && $dry['summary']['approved'] === 1 && $dry['summary']['rejected'] === 0, 'Machine response includes safe aggregate decision counts.');
     $safe = fcc_registration_automation_safe_evidence($decision['evidence']);
     check(!isset($safe['flp_email'], $safe['flp_name']) && strlen($safe['flp_email_sha256']) === 64, 'Audit evidence does not store raw FLP names or email addresses.');
@@ -203,22 +260,38 @@ namespace {
     check(count($GLOBALS['mail_calls']) === 0 && count($GLOBALS['deleted_users']) === 1, 'A durable sent rejection receipt allows retrying deletion without sending duplicate mail.');
 
     $user = reset_test_db();
-    $approved = fcc_registration_automation_approve($user, $sponsor, 1);
+    $approved = fcc_registration_automation_approve($user, $sponsor, 1, $chain);
     $stored = json_decode(db()->tables['users'][10]['preferences'])->meta;
     check($approved['status'] === 'approved' && db()->tables['users'][10]['status'] === 1 && $stored->fcc_sponsor_user_id === 20 && $stored->fcc_sponsor_fbo_id === $sponsor['fbo_id'], 'Approval activates the user and persists the verified sponsor without changing referral attribution.');
+    check(db()->tables['forever_business_members'][$chain[0]]['parent_fbo_id'] === $chain[1]
+        && db()->tables['forever_business_members'][$chain[0]]['is_in_current_structure'] === 1
+        && db()->tables['forever_business_hierarchy'][$chain[2] . ':' . $chain[0]]['depth'] === 2, 'Approval links the existing Forever member and stores the exact proven root depth.');
     check(!empty($stored->fcc_access_approval_email_sent_at) && $approved['notification']['status'] === 'queued', 'Approval records successful existing email and queues admin notification.');
-    fcc_registration_automation_approve((object) db()->tables['users'][10], $sponsor, 1);
+    fcc_registration_automation_approve((object) db()->tables['users'][10], $sponsor, 1, $chain);
     check(count($GLOBALS['mail_calls']) === 1 && count($GLOBALS['notification_audits']) === 1, 'Approval retry preserves the original email receipt and stable admin event identity.');
     $user = reset_test_db(); $GLOBALS['mail_success'] = false;
-    $approved = fcc_registration_automation_approve($user, $sponsor, 1);
+    $approved = fcc_registration_automation_approve($user, $sponsor, 1, $chain);
     check($approved['email_status'] === 'pending' && db()->tables['users'][10]['status'] === 1 && empty(json_decode(db()->tables['users'][10]['preferences'])->meta->fcc_access_approval_email_sent_at), 'Failed approval email stays durably retryable without pretending it was sent.');
     $GLOBALS['mail_success'] = true;
-    fcc_registration_automation_approve((object) db()->tables['users'][10], $sponsor, 1);
+    fcc_registration_automation_approve((object) db()->tables['users'][10], $sponsor, 1, $chain);
     check(!empty(json_decode(db()->tables['users'][10]['preferences'])->meta->fcc_access_approval_email_sent_at), 'A failed approval email can later complete successfully.');
     $user = reset_test_db(); db()->tables['users'][10]['status'] = 2;
     $failed = false;
-    try { fcc_registration_automation_approve($user, $sponsor, 1); } catch(\RuntimeException $exception) { $failed = true; }
+    try { fcc_registration_automation_approve($user, $sponsor, 1, $chain); } catch(\RuntimeException $exception) { $failed = true; }
     check($failed && db()->tables['users'][10]['status'] === 2 && !$GLOBALS['mail_calls'], 'An optimistic approval cannot reactivate a concurrently disabled account.');
+    $user = reset_test_db(); $GLOBALS['fail_structure_write'] = true;
+    $failed = false;
+    try { fcc_registration_automation_approve($user, $sponsor, 1, $chain); } catch(\RuntimeException $exception) { $failed = true; }
+    check($failed && db()->tables['users'][10]['status'] === 0 && empty(db()->tables['forever_business_members'])
+        && empty(db()->tables['forever_business_hierarchy']) && !$GLOBALS['mail_calls'], 'A failed hierarchy write rolls back activation, member profile and audit state before any mail.');
+    $user = reset_test_db();
+    db()->tables['forever_business_members'][$chain[0]] = ['fbo_id' => $chain[0], 'parent_fbo_id' => '360000000099', 'last_seen_import_id' => 7];
+    $manual = fcc_registration_automation_apply_decisions([$decision]);
+    check($manual['results'][0]['reason'] === 'imported_sponsor_conflict' && db()->tables['users'][10]['status'] === 0 && !$GLOBALS['mail_calls'], 'An imported conflicting sponsor remains manual without changing its existing structure.');
+    $user = reset_test_db();
+    db()->tables['forever_business_hierarchy']['child'] = ['ancestor_fbo_id' => $chain[0], 'descendant_fbo_id' => '360000000099', 'depth' => 1, 'source_import_id' => 7];
+    $manual = fcc_registration_automation_apply_decisions([$decision]);
+    check($manual['results'][0]['reason'] === 'member_subtree_conflict' && db()->tables['users'][10]['status'] === 0 && !$GLOBALS['mail_calls'], 'Adding new ancestors to an existing subtree remains manual to protect descendant relationships.');
 
     $user = reset_test_db();
     $applied = fcc_registration_automation_apply_decisions([$decision]);
@@ -259,7 +332,7 @@ namespace {
         database()->select_db('fcc_registration_automation_offline_test');
         $GLOBALS['real_db_builder'] = new \Altum\Helpers\MysqliDb(database());
         db()->returnType = 'object';
-        foreach(['users', 'links', 'users_vcards', 'fcc_registration_automation_audits'] as $table) database()->query('DROP TABLE IF EXISTS ' . $table);
+        foreach(['users', 'links', 'users_vcards', 'fcc_registration_automation_audits', 'forever_business_members', 'forever_business_hierarchy'] as $table) database()->query('DROP TABLE IF EXISTS ' . $table);
         database()->query("CREATE TABLE users (user_id INT UNSIGNED PRIMARY KEY, type TINYINT NOT NULL, status TINYINT NOT NULL,
             source VARCHAR(32), name VARCHAR(128), email VARCHAR(255), country VARCHAR(8), datetime DATETIME,
             preferences LONGTEXT, language VARCHAR(64), anti_phishing_code VARCHAR(32)) ENGINE=InnoDB");
@@ -274,12 +347,22 @@ namespace {
         db()->insert('users', $sponsor);
         db()->insert('links', ['link_id' => 42, 'user_id' => 10, 'type' => 'biolink', 'url' => 'ana']);
         db()->insert('users_vcards', ['user_id' => 10, 'vcard_id' => 43]);
+        forever_business_ensure_tables();
+        $profile = ['fbo_id' => '360000000010', 'name' => 'FLP imported identity', 'title' => 'Manager', 'generation' => 2,
+            'country_code' => 'SI', 'sponsor_date' => '2024-01-01', 'parent_fbo_id' => '360000000020', 'tree_sequence' => 'original-sequence',
+            'is_manager' => 1, 'is_privacy_requested' => 1, 'is_in_current_structure' => 0, 'email_hash' => str_repeat('a', 64),
+            'phone_hash' => str_repeat('b', 64), 'first_seen_import_id' => 5, 'last_seen_import_id' => 7, 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00'];
+        db()->insert('forever_business_members', $profile);
+        db()->insert('forever_business_hierarchy', ['ancestor_fbo_id' => '360000000020', 'descendant_fbo_id' => '360000000010', 'depth' => 1, 'source_import_id' => 7]);
+        db()->insert('forever_business_hierarchy', ['ancestor_fbo_id' => '360000000099', 'descendant_fbo_id' => '360000000010', 'depth' => 5, 'source_import_id' => null]);
+        db()->insert('forever_business_hierarchy', ['ancestor_fbo_id' => '360000000020', 'descendant_fbo_id' => '360000000051', 'depth' => 1, 'source_import_id' => 12]);
         $GLOBALS['mail_calls'] = []; $GLOBALS['mail_success'] = true; $GLOBALS['deleted_users'] = []; $GLOBALS['notification_audits'] = [];
         $pending = fcc_registration_automation_pending();
         check(count($pending['accounts']) === 1 && $pending['accounts'][0]['user_id'] === 10, 'MariaDB pending query excludes old disabled accounts and active sponsors.');
         $decision = ['user_id' => 10, 'fbo_id' => '360000000010', 'registered_at' => $user->datetime, 'result' => 'approve',
             'evidence' => ['source' => 'flp360', 'checked_at' => gmdate('c'), 'exact_fbo_id' => '360000000010',
                 'flp_email' => 'ana@example.test', 'sponsor_fbo_id' => '360000000020', 'root_fbo_id' => '360000760944',
+                'ancestor_fbo_ids' => ['360000000010', '360000000020', '360000760944'],
                 'id_exists' => true, 'in_root_structure' => true, 'authoritative_structure' => true]];
         $dry = fcc_registration_automation_apply_decisions([$decision], true);
         check($dry['results'][0]['status'] === 'approved' && count($GLOBALS['mail_calls']) === 0
@@ -289,9 +372,51 @@ namespace {
         $stored = db()->where('user_id', 10)->getOne('users');
         $meta = json_decode($stored->preferences)->meta;
         check((int) $stored->status === 1 && (int) $meta->fcc_sponsor_user_id === 20 && !empty($meta->fcc_access_approval_email_sent_at), 'MariaDB activation persists verified sponsor and mail receipt.');
+        $linked_profile = (array) db()->where('fbo_id', $profile['fbo_id'])->getOne('forever_business_members');
+        foreach(['parent_fbo_id', 'is_in_current_structure', 'updated_at'] as $field) { unset($profile[$field], $linked_profile[$field]); }
+        check($linked_profile == $profile, 'MariaDB sponsor linking preserves every imported identity, privacy, date, rank and provenance field.');
+        $ancestors = db()->where('descendant_fbo_id', '360000000010')->orderBy('depth', 'ASC')->get('forever_business_hierarchy');
+        check(array_map(static fn($row) => $row->ancestor_fbo_id, $ancestors) === $decision['evidence']['ancestor_fbo_ids']
+            && array_map(static fn($row) => (int) $row->depth, $ancestors) === [0, 1, 2]
+            && (int) $ancestors[1]->source_import_id === 7 && $ancestors[2]->source_import_id === null, 'MariaDB closure uses actual hop depths, preserves matching import provenance and removes only stale registration ancestors.');
+        check((int) db()->where('descendant_fbo_id', '360000000051')->getValue('forever_business_hierarchy', 'source_import_id') === 12, 'MariaDB sponsor linking leaves unrelated descendants and their imported ancestry intact.');
         fcc_registration_automation_apply_decisions([$decision]);
         check(count($GLOBALS['mail_calls']) === 1 && (int) db()->getValue('fcc_registration_automation_audits', 'COUNT(*)') === 1, 'MariaDB repeated decision has one audit and one email.');
         check(count(fcc_registration_automation_pending()['accounts']) === 0, 'Approved account leaves the MariaDB pending queue.');
+        foreach([41 => 'imported_sponsor_conflict', 42 => 'member_subtree_conflict'] as $manual_id => $reason) {
+            $manual_fbo = '3600000000' . $manual_id;
+            $manual_user = (array) fresh_user(); $manual_user['user_id'] = $manual_id;
+            $manual_user['preferences'] = json_encode(['meta' => ['foreverId' => $manual_fbo, 'fcc_access_requested_at' => $user->datetime, 'fcc_registration_verification_status' => 'pending']]);
+            db()->insert('users', $manual_user);
+            db()->insert('forever_business_members', ['fbo_id' => $manual_fbo, 'name' => 'Existing profile', 'parent_fbo_id' => $manual_id === 41 ? '360000000099' : null,
+                'last_seen_import_id' => $manual_id === 41 ? 7 : null, 'created_at' => get_date(), 'updated_at' => get_date()]);
+            if($manual_id === 42) db()->insert('forever_business_hierarchy', ['ancestor_fbo_id' => $manual_fbo, 'descendant_fbo_id' => '360000000052', 'depth' => 1, 'source_import_id' => 7]);
+            $manual_decision = $decision; $manual_decision['user_id'] = $manual_id; $manual_decision['fbo_id'] = $manual_fbo;
+            $manual_decision['evidence']['exact_fbo_id'] = $manual_fbo; $manual_decision['evidence']['ancestor_fbo_ids'][0] = $manual_fbo;
+            $mail_count = count($GLOBALS['mail_calls']);
+            $manual = fcc_registration_automation_apply_decisions([$manual_decision]);
+            check($manual['results'][0]['reason'] === $reason && (int) db()->where('user_id', $manual_id)->getValue('users', 'status') === 0
+                && count($GLOBALS['mail_calls']) === $mail_count, 'MariaDB existing imported conflict or subtree requires manual review without activation or mail.');
+            check(!db()->where('descendant_fbo_id', $manual_fbo)->has('forever_business_hierarchy')
+                && ($manual_id !== 42 || (int) db()->where('descendant_fbo_id', '360000000052')->getValue('forever_business_hierarchy', 'source_import_id') === 7), 'MariaDB manual review preserves existing descendants and never rewrites the disputed ancestry.');
+            db()->where('user_id', $manual_id)->delete('users');
+            db()->where('user_id', $manual_id)->delete('fcc_registration_automation_audits');
+        }
+        $failure_user = (array) fresh_user(); $failure_user['user_id'] = 40;
+        $failure_user['preferences'] = json_encode(['meta' => ['foreverId' => '360000000040', 'fcc_access_requested_at' => $user->datetime, 'fcc_registration_verification_status' => 'pending']]);
+        db()->insert('users', $failure_user);
+        $failure_decision = $decision; $failure_decision['user_id'] = 40; $failure_decision['fbo_id'] = '360000000040';
+        $failure_decision['evidence']['exact_fbo_id'] = '360000000040'; $failure_decision['evidence']['ancestor_fbo_ids'][0] = '360000000040';
+        database()->query("CREATE TRIGGER offline_registration_failure BEFORE INSERT ON forever_business_hierarchy FOR EACH ROW
+            BEGIN IF NEW.descendant_fbo_id = '360000000040' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'offline test rollback'; END IF; END");
+        $mail_count = count($GLOBALS['mail_calls']);
+        $failure = fcc_registration_automation_apply_decisions([$failure_decision]);
+        check($failure['results'][0]['status'] === 'retry' && (int) db()->where('user_id', 40)->getValue('users', 'status') === 0
+            && !db()->where('fbo_id', '360000000040')->has('forever_business_members')
+            && !db()->where('descendant_fbo_id', '360000000040')->has('forever_business_hierarchy') && count($GLOBALS['mail_calls']) === $mail_count, 'MariaDB failed hierarchy DML atomically rolls back account activation and member insertion before mail.');
+        database()->query('DROP TRIGGER offline_registration_failure');
+        db()->where('user_id', 40)->delete('users');
+        db()->where('user_id', 40)->delete('fcc_registration_automation_audits');
         $rejected_user = (array) fresh_user(); $rejected_user['user_id'] = 30;
         $rejected_user['preferences'] = json_encode(['meta' => ['foreverId' => '360000000030',
             'fcc_access_requested_at' => $user->datetime, 'fcc_registration_verification_status' => 'pending']]);

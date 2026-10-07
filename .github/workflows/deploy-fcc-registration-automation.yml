@@ -9,6 +9,10 @@ on:
       - app/helpers/fcc_registration_notifications.php
       - app/controllers/Register.php
       - app/controllers/ForeverBusinessSync.php
+      - app/controllers/admin/AdminFccPush.php
+      - app/core/Router.php
+      - themes/altum/views/admin/fcc-push/**
+      - fcc-admin-push-sw.js
       - app/languages/**
       - scripts/*fcc_registration*
       - scripts/*flp360_registration*
@@ -31,7 +35,7 @@ jobs:
         env:
           MARIADB_ROOT_PASSWORD: offline-only
           MARIADB_DATABASE: registration_test
-        ports: [3306:3306]
+        ports: ['3306:3306']
         options: >-
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=5s --health-timeout=5s --health-retries=20
@@ -51,8 +55,12 @@ jobs:
           php -l app/controllers/ForeverBusinessSync.php
           php -l app/helpers/fcc_registration_automation.php
           php -l app/helpers/fcc_registration_notifications.php
+          php -l app/controllers/admin/AdminFccPush.php
+          php -l app/core/Router.php
+          php -l themes/altum/views/admin/fcc-push/index.php
           php scripts/test_fcc_registration_automation.php
           php scripts/test_fcc_registration_notifications.php
+          php scripts/test_fcc_admin_push_controller.php
           python3 scripts/test_deploy_fcc_registration.py
       - name: Verify registration decisions against MariaDB
         env:
@@ -62,6 +70,7 @@ jobs:
         run: |
           node scripts/test_flp360_cloud_sync.mjs
           node scripts/test_flp360_registration_check.mjs
+          node scripts/test_fcc_admin_push_worker.mjs
 
   deploy:
     needs: validate
@@ -97,7 +106,11 @@ jobs:
           from deploy_fcc_registration import fcc_request
           result = fcc_request('registration_notification_test', request_id='release_' + os.environ['GITHUB_SHA'][:20])
           print(json.dumps({'test': result['test'], 'delivery': result['delivery']}))
-          if result['delivery'].get('delivered', 0) < 1 and result['test'].get('status') != 'delivered':
+          if result['test'].get('status') == 'delivered':
+              print('Administrator test push accepted by the device push service.')
+          elif result['delivery'].get('active_admin_subscribers', 0) == 0:
+              print('Administrator browser permission is required. Test remains queued and visible in FCC notifications.')
+          else:
               raise SystemExit('Administrator push delivery is not confirmed.')
           PY
       - name: Check pending registrations without changes

@@ -15,6 +15,15 @@ function fcc_registration_automation_fbo_id($value): string {
     return preg_match('/\A[0-9]{12}\z/', $value) ? $value : '';
 }
 
+/** The signed verifier supplies each freshly confirmed sponsor hop, starting with this member. */
+function fcc_registration_automation_ancestor_ids($value, string $fbo_id, string $sponsor_fbo_id): array {
+    if(!is_array($value) || !array_is_list($value) || count($value) < 2 || count($value) > 64) return [];
+    foreach($value as $id) if(!is_string($id) || !preg_match('/\A[0-9]{12}\z/', $id)) return [];
+    if(count(array_unique($value)) !== count($value) || $value[0] !== $fbo_id || $value[1] !== $sponsor_fbo_id
+        || $value[count($value) - 1] !== '360000760944') return [];
+    return $value;
+}
+
 function fcc_registration_automation_is_pending(object $user): bool {
     $meta = fcc_registration_automation_preferences($user->preferences ?? null)->meta;
     return (int) ($user->type ?? 0) === 0 && (int) ($user->status ?? -1) === 0
@@ -75,10 +84,12 @@ function fcc_registration_automation_validate(object $user, array $decision, arr
         || !hash_equals(strtolower(trim((string) ($user->email ?? ''))), $flp_email)) return $manual('owner_email_unconfirmed');
     $sponsor_fbo_id = fcc_registration_automation_fbo_id($evidence['sponsor_fbo_id'] ?? '');
     if($sponsor_fbo_id === '' || $sponsor_fbo_id === $fbo_id) return $manual('sponsor_unconfirmed');
+    $ancestor_ids = fcc_registration_automation_ancestor_ids($evidence['ancestor_fbo_ids'] ?? null, $fbo_id, $sponsor_fbo_id);
+    if(!$ancestor_ids) return $manual('sponsor_chain_unconfirmed');
     if(count($sponsors) !== 1 || (int) ($sponsors[0]['status'] ?? 0) !== 1 || !in_array((int) ($sponsors[0]['type'] ?? 0), [0, 1], true)
         || (int) ($sponsors[0]['user_id'] ?? 0) === (int) $user->user_id
         || fcc_registration_automation_fbo_id($sponsors[0]['fbo_id'] ?? '') !== $sponsor_fbo_id) return $manual('sponsor_missing_or_ambiguous');
-    return ['status' => 'approved', 'reason' => 'verified_owner_and_structure', 'sponsor' => $sponsors[0]];
+    return ['status' => 'approved', 'reason' => 'verified_owner_and_structure', 'sponsor' => $sponsors[0], 'ancestor_fbo_ids' => $ancestor_ids];
 }
 
 function fcc_registration_automation_ensure_tables(): void {
@@ -198,22 +209,90 @@ function fcc_registration_automation_audit_update(int $audit_id, array $values):
     if(!db()->where('audit_id', $audit_id)->update('fcc_registration_automation_audits', $values)) throw new \RuntimeException('Registration audit could not be saved.');
 }
 
-function fcc_registration_automation_approve(object $user, array $sponsor, int $audit_id): array {
+/** Existing imported subtrees stay intact when fresh registration evidence conflicts. */
+function fcc_registration_automation_structure_check(array $ancestor_ids, bool $lock = false): array {
+    $fbo_id = $ancestor_ids[0];
+    $suffix = $lock ? ' FOR UPDATE' : '';
+    $member_result = database()->query("SELECT * FROM forever_business_members WHERE fbo_id = '{$fbo_id}'{$suffix}");
+    if(!$member_result) throw new \RuntimeException('Registration member profile is unavailable.');
+    $member = $member_result->fetch_object();
+    if($member && !empty($member->parent_fbo_id) && $member->parent_fbo_id !== $ancestor_ids[1]
+        && $member->last_seen_import_id !== null) return ['status' => 'manual_review', 'reason' => 'imported_sponsor_conflict'];
+    $closure_result = database()->query("SELECT ancestor_fbo_id, depth, source_import_id FROM forever_business_hierarchy WHERE descendant_fbo_id = '{$fbo_id}'{$suffix}");
+    if(!$closure_result) throw new \RuntimeException('Registration sponsor hierarchy is unavailable.');
+    $expected = array_flip($ancestor_ids);
+    $actual = [];
+    while($row = $closure_result->fetch_assoc()) {
+        $id = (string) $row['ancestor_fbo_id'];
+        $actual[$id] = (int) $row['depth'];
+        if((!array_key_exists($id, $expected) || $expected[$id] !== (int) $row['depth']) && $row['source_import_id'] !== null) {
+            return ['status' => 'manual_review', 'reason' => 'imported_ancestry_conflict'];
+        }
+    }
+    $descendants_result = database()->query("SELECT descendant_fbo_id FROM forever_business_hierarchy WHERE ancestor_fbo_id = '{$fbo_id}' AND depth > 0 LIMIT 1{$suffix}");
+    if(!$descendants_result) throw new \RuntimeException('Registration descendants are unavailable.');
+    if($descendants_result->fetch_assoc() && $actual != $expected) return ['status' => 'manual_review', 'reason' => 'member_subtree_conflict'];
+    return ['status' => 'ready', 'reason' => 'verified_sponsor_chain'];
+}
+
+/** Writes only this member's proof and preserves existing profile and import provenance. */
+function fcc_registration_automation_link_structure(object $user, array $ancestor_ids): void {
+    $fbo_id = $ancestor_ids[0];
+    $sponsor_id = $ancestor_ids[1];
+    $name = database()->real_escape_string(mb_substr((string) $user->name, 0, 160));
+    $country = database()->real_escape_string(mb_substr((string) ($user->country ?? ''), 0, 8));
+    $now = database()->real_escape_string(get_date());
+    $member = database()->query("INSERT INTO forever_business_members
+        (fbo_id, name, title, country_code, parent_fbo_id, is_in_current_structure, created_at, updated_at)
+        VALUES ('{$fbo_id}', '{$name}', 'FCC suradnik', NULLIF('{$country}', ''), '{$sponsor_id}', 1, '{$now}', '{$now}')
+        ON DUPLICATE KEY UPDATE parent_fbo_id = VALUES(parent_fbo_id), is_in_current_structure = 1, updated_at = VALUES(updated_at)");
+    if(!$member) throw new \RuntimeException('Registration sponsor profile could not be linked.');
+    $id_list = "'" . implode("','", $ancestor_ids) . "'";
+    if(!database()->query("DELETE FROM forever_business_hierarchy WHERE descendant_fbo_id = '{$fbo_id}'
+        AND ancestor_fbo_id NOT IN ({$id_list}) AND source_import_id IS NULL")) throw new \RuntimeException('Stale registration ancestry could not be removed.');
+    foreach($ancestor_ids as $depth => $ancestor_id) {
+        if(!database()->query("INSERT INTO forever_business_hierarchy (ancestor_fbo_id, descendant_fbo_id, depth, source_import_id)
+            VALUES ('{$ancestor_id}', '{$fbo_id}', {$depth}, NULL) ON DUPLICATE KEY UPDATE depth = VALUES(depth)")) {
+            throw new \RuntimeException('Registration sponsor ancestry could not be saved.');
+        }
+    }
+}
+
+function fcc_registration_automation_approve(object $user, array $sponsor, int $audit_id, array $ancestor_ids = []): array {
     $preferences = fcc_registration_automation_preferences($user->preferences);
     $meta = $preferences->meta;
-    $assets = fcc_registration_automation_assets((int) $user->user_id);
     if((int) $user->status === 0) {
-        $meta->fcc_access_approved_at = get_date();
-        $meta->fcc_registration_verification_status = 'approved';
-        $meta->fcc_registration_verified_at = get_date();
-        $meta->fcc_registration_verification_audit_id = $audit_id;
-        $meta->fcc_sponsor_fbo_id = $sponsor['fbo_id'];
-        $meta->fcc_sponsor_user_id = (int) $sponsor['user_id'];
-        $preferences->meta = $meta;
-        $approved = db()->where('user_id', (int) $user->user_id)->where('status', 0)
-            ->where('preferences', $user->preferences)->update('users', ['status' => 1, 'preferences' => json_encode($preferences)]);
-        if(!$approved || (int) db()->count !== 1) {
-            throw new \RuntimeException('Registration approval could not be saved.');
+        $fbo_id = fcc_registration_automation_fbo_id($meta->foreverId ?? '');
+        if(!fcc_registration_automation_ancestor_ids($ancestor_ids, $fbo_id, (string) $sponsor['fbo_id'])) throw new \RuntimeException('Registration sponsor proof is incomplete.');
+        forever_business_ensure_tables();
+        db()->startTransaction();
+        try {
+            $locked_result = database()->query('SELECT * FROM users WHERE user_id = ' . (int) $user->user_id . ' FOR UPDATE');
+            $locked_user = $locked_result ? $locked_result->fetch_object() : null;
+            if(!$locked_user || !fcc_registration_automation_is_pending($locked_user) || $locked_user->preferences !== $user->preferences) {
+                throw new \RuntimeException('Registration changed before approval.');
+            }
+            $structure = fcc_registration_automation_structure_check($ancestor_ids, true);
+            if($structure['status'] !== 'ready') throw new \RuntimeException('Existing sponsor structure requires manual review.');
+            $assets = fcc_registration_automation_assets((int) $user->user_id);
+            $meta->fcc_access_approved_at = get_date();
+            $meta->fcc_registration_verification_status = 'approved';
+            $meta->fcc_registration_verified_at = get_date();
+            $meta->fcc_registration_verification_audit_id = $audit_id;
+            $meta->fcc_sponsor_fbo_id = $sponsor['fbo_id'];
+            $meta->fcc_sponsor_user_id = (int) $sponsor['user_id'];
+            $preferences->meta = $meta;
+            $approved = db()->where('user_id', (int) $user->user_id)->where('status', 0)
+                ->where('preferences', $user->preferences)->update('users', ['status' => 1, 'preferences' => json_encode($preferences)]);
+            if(!$approved || (int) db()->count !== 1) {
+                throw new \RuntimeException('Registration approval could not be saved.');
+            }
+            fcc_registration_automation_link_structure($user, $ancestor_ids);
+            fcc_registration_automation_audit_update($audit_id, ['status' => 'approved', 'email_status' => 'pending']);
+            db()->commit();
+        } catch(\Throwable $exception) {
+            db()->rollback();
+            throw $exception;
         }
         $user->status = 1;
         $user->preferences = json_encode($preferences);
@@ -227,7 +306,7 @@ function fcc_registration_automation_approve(object $user, array $sponsor, int $
                 ]);
             } catch(\Throwable $exception) { error_log('FCC automated approval webhook delivery failed.'); }
         }
-    }
+    } else $assets = fcc_registration_automation_assets((int) $user->user_id);
     $email_sent = !empty($meta->fcc_access_approval_email_sent_at);
     if(!$email_sent && fcc_registration_automation_mail($user, 'approved', $assets)) {
         $meta->fcc_access_approval_email_sent_at = get_date();
@@ -285,6 +364,9 @@ function fcc_registration_automation_reject(object $user, string $reason, int $a
 function fcc_registration_automation_safe_evidence(array $evidence): array {
     $safe = array_intersect_key($evidence, array_flip(['source', 'checked_at', 'exact_fbo_id', 'sponsor_fbo_id',
         'root_fbo_id', 'id_exists', 'in_root_structure', 'authoritative_structure', 'authoritative_not_found']));
+    $ancestor_ids = fcc_registration_automation_ancestor_ids($evidence['ancestor_fbo_ids'] ?? null,
+        (string) ($evidence['exact_fbo_id'] ?? ''), (string) ($evidence['sponsor_fbo_id'] ?? ''));
+    if($ancestor_ids) $safe['ancestor_fbo_ids'] = $ancestor_ids;
     if(!empty($evidence['flp_email'])) $safe['flp_email_sha256'] = hash('sha256', strtolower(trim((string) $evidence['flp_email'])));
     return $safe;
 }
@@ -305,7 +387,12 @@ function fcc_registration_automation_apply_decisions(array $decisions, bool $dry
             $evidence = is_array($decision['evidence'] ?? null) ? $decision['evidence'] : [];
             $sponsors = ($decision['result'] ?? '') === 'approve' ? fcc_registration_automation_sponsors((string) ($evidence['sponsor_fbo_id'] ?? '')) : [];
             $validated = fcc_registration_automation_validate($user, $decision, $sponsors);
-            if($dry_run || $validated['status'] === 'unchanged') return array_merge(['user_id' => $user_id, 'dry_run' => $dry_run], array_diff_key($validated, ['sponsor' => true]));
+            if($validated['status'] === 'approved') {
+                if(!$dry_run) forever_business_ensure_tables();
+                $structure = fcc_registration_automation_structure_check($validated['ancestor_fbo_ids']);
+                if($structure['status'] !== 'ready') $validated = $structure;
+            }
+            if($dry_run || $validated['status'] === 'unchanged') return array_merge(['user_id' => $user_id, 'dry_run' => $dry_run], array_diff_key($validated, ['sponsor' => true, 'ancestor_fbo_ids' => true]));
             $now = get_date();
             $key = ['user_id' => $user_id, 'registered_at' => (string) $user->datetime, 'fbo_id' => fcc_registration_automation_fbo_id($decision['fbo_id'] ?? '')];
             $audit = db()->where('user_id', $key['user_id'])->where('registered_at', $key['registered_at'])->where('fbo_id', $key['fbo_id'])->getOne('fcc_registration_automation_audits');
@@ -328,13 +415,14 @@ function fcc_registration_automation_apply_decisions(array $decisions, bool $dry
                 $audit_id = (int) db()->insert('fcc_registration_automation_audits', array_merge($values, ['created_at' => $now]));
                 if(!$audit_id) throw new \RuntimeException('Registration audit could not be created.');
             }
-            if($validated['status'] === 'approved') return fcc_registration_automation_approve($user, $validated['sponsor'], $audit_id);
+            if($validated['status'] === 'approved') return fcc_registration_automation_approve($user, $validated['sponsor'], $audit_id, $validated['ancestor_fbo_ids']);
             if($validated['status'] === 'rejected') return fcc_registration_automation_reject($user, $validated['reason'], $audit_id, $audit->email_status ?? 'pending');
             $preferences = fcc_registration_automation_preferences($user->preferences);
             $preferences->meta->fcc_registration_verification_status = $validated['status'];
             $preferences->meta->fcc_registration_verification_reason = $validated['reason'];
             $preferences->meta->fcc_registration_last_checked_at = $now;
-            if(!db()->where('user_id', $user_id)->where('status', 0)->update('users', ['preferences' => json_encode($preferences)])) throw new \RuntimeException('Pending registration status could not be saved.');
+            if(!db()->where('user_id', $user_id)->where('status', 0)->where('preferences', $user->preferences)
+                ->update('users', ['preferences' => json_encode($preferences)]) || (int) db()->count !== 1) throw new \RuntimeException('Pending registration status could not be saved.');
             return array_merge(['user_id' => $user_id, 'audit_id' => $audit_id], $validated);
         };
         try { $results[] = $dry_run ? $process() : fcc_registration_automation_with_lock($user_id, $process); }
@@ -409,11 +497,11 @@ function fcc_registration_automation_status(): array {
     while($row = $result->fetch_assoc()) $groups[] = $row;
     $runtime_checks = [];
     foreach(['db', 'database', 'get_date', 'url', 'fc_get_user_main_biolink_id', 'fc_resolve_language_name', 'get_email_template', 'send_mail',
-        'fcc_registration_automation_notify_approval', 'fcc_registration_process_admin_notifications'] as $function) {
+        'fcc_registration_automation_notify_approval', 'fcc_registration_process_admin_notifications', 'forever_business_ensure_tables'] as $function) {
         $runtime_checks[$function] = function_exists($function);
     }
     $runtime_checks['user_model'] = class_exists('Altum\\Models\\User');
-    $runtime_checks['admin_push_class'] = class_exists('Altum\\Helpers\\PushNotifications');
+    $runtime_checks['admin_push_class'] = function_exists('fcc_registration_admin_push_runtime_ready') && fcc_registration_admin_push_runtime_ready();
     $status = ['root_fbo_id' => '360000760944', 'audit_groups' => $groups, 'generated_at' => get_date(),
         'runtime_ready' => !in_array(false, $runtime_checks, true), 'runtime_checks' => $runtime_checks];
     if(function_exists('fcc_registration_admin_notification_diagnostics')) $status['admin_notifications'] = fcc_registration_admin_notification_diagnostics();
