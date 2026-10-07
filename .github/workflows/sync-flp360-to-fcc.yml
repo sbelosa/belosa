@@ -3,8 +3,12 @@ name: Sync FLP360 to FCC
 
 on:
   schedule:
-    # 06:17 Europe/Zagreb during CEST (05:17 during CET). GitHub cron uses UTC.
-    - cron: '17 4 * * *'
+    # Custom code: FC-2026-10-07: Two daily syncs at the same Zagreb local times throughout the year
+    - cron: '17 6 * * *'
+      timezone: 'Europe/Zagreb'
+    - cron: '17 18 * * *'
+      timezone: 'Europe/Zagreb'
+    # /Custom code: FC-2026-10-07
   workflow_dispatch:
     inputs:
       dry_run:
@@ -70,6 +74,9 @@ jobs:
         shell: bash
         env:
           MANUAL_RECONCILE_PREVIOUS: ${{ github.event_name == 'workflow_dispatch' && inputs.reconcile_previous && 'true' || 'false' }}
+          # Custom code: FC-2026-10-07: Identify the scheduled morning run for closed period reconciliation
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+          # /Custom code: FC-2026-10-07
         run: |
           set -euo pipefail
 
@@ -84,14 +91,17 @@ jobs:
             exit 1
           fi
 
+          # Custom code: FC-2026-10-07: Reconcile the previous month only in the scheduled morning run
           reconcile_previous=false
           if [[ "${GITHUB_EVENT_NAME}" == "schedule" \
+             && "${SCHEDULE_CRON:-}" == "17 6 * * *" \
              && ( "${zagreb_day}" == "01" || "${zagreb_day}" == "02" ) ]]; then
             reconcile_previous=true
           elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" \
                && "${MANUAL_RECONCILE_PREVIOUS}" == "true" ]]; then
             reconcile_previous=true
           fi
+          # /Custom code: FC-2026-10-07
 
           echo "current_period=${current_period}" >> "$GITHUB_OUTPUT"
           echo "previous_period=${previous_period}" >> "$GITHUB_OUTPUT"
