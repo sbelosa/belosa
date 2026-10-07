@@ -1,26 +1,11 @@
 <?php
-/* Custom code: FC-2026-10-07: FCC owner opt in for independent Web Push. */
+/* Custom code: FC-2026-10-07: Authenticated FCC administrator opt in for independent Web Push. */
 
 namespace Altum\Controllers;
 
 defined('ALTUMCODE') || die();
 
 class AdminFccPush extends Controller {
-    public function access_status() {
-        $owner = $this->user;
-        if($_SERVER['REQUEST_METHOD'] !== 'GET' || !is_object($owner) || (int) ($owner->type ?? 0) !== 1) throw_404();
-        require_once APP_PATH . 'helpers/fcc_registration_notifications.php';
-        header('Cache-Control: no-store');
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['owner_account' => (int) ($owner->user_id ?? 0) === 1,
-            'active_account' => (int) ($owner->status ?? 0) === 1,
-            'admin_preview_marker' => session_has('admin_user_id'),
-            'preview_owner' => (int) session_get('admin_user_id') === 1,
-            'session_owner' => (int) session_get('user_id') === 1,
-            'setup_allowed' => fcc_registration_admin_push_owner($owner)]);
-        exit;
-    }
-
     public function index() {
         require_once APP_PATH . 'helpers/fcc_registration_notifications.php';
         $owner = $this->user;
@@ -66,7 +51,7 @@ class AdminFccPush extends Controller {
         \Altum\Title::set('FCC obavijesti');
         $configuration = fcc_registration_admin_push_runtime_ready() ? fcc_registration_admin_push_configuration(true) : null;
         $data = ['public_key' => $configuration->public_key ?? '',
-            'subscriber_count' => count(fcc_registration_admin_push_subscribers())];
+            'subscriber_count' => fcc_registration_admin_push_subscription_count($owner)];
         $view = new \Altum\View('admin/fcc-push/index', (array) $this);
         $this->add_view_content('content', $view->run($data));
     }

@@ -39,7 +39,7 @@ namespace {
         ob_start(); require __DIR__ . '/test_fcc_registration_notifications.php'; ob_end_clean();
         define('APP_PATH', dirname(__DIR__) . '/app/');
         require APP_PATH . 'controllers/admin/AdminFccPush.php';
-        $database->tables['users'][0]['status'] = 1;
+        $database->tables['users'] = [['user_id' => 1, 'type' => 1, 'status' => 1], ['user_id' => 2, 'type' => 1, 'status' => 1], ['user_id' => 99, 'type' => 0, 'status' => 1]];
         $controller = new \Altum\Controllers\AdminFccPush();
         $controller->user = (object) ['user_id' => 1, 'type' => 1, 'status' => 1];
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -48,6 +48,7 @@ namespace {
             case 'owner_get': $_SERVER['REQUEST_METHOD'] = 'GET'; break;
             case 'returned_owner': $_SERVER['REQUEST_METHOD'] = 'GET'; $impersonating = true; $owner_session = ['admin_user_id' => 1, 'user_id' => 1]; break;
             case 'other_admin': $controller->user->user_id = 2; break;
+            case 'other_admin_get': $controller->user->user_id = 2; $_SERVER['REQUEST_METHOD'] = 'GET'; break;
             case 'customer': $controller->user->user_id = 99; $controller->user->type = 0; break;
             case 'inactive_owner': $controller->user->status = 0; break;
             case 'impersonated_owner': $impersonating = true; break;
@@ -69,7 +70,9 @@ namespace {
         if(proc_close($process) !== 0) throw new \RuntimeException('Controller fixture failed: ' . $errors);
         return json_decode($output, true, 512, JSON_THROW_ON_ERROR);
     };
-    foreach(['other_admin', 'customer', 'inactive_owner', 'impersonated_owner'] as $case) $assert($run($case)['http'] === 404, 'Only the real active root owner may use push preferences.');
+    foreach(['customer', 'inactive_owner', 'impersonated_owner'] as $case) $assert($run($case)['http'] === 404, 'Only a real active administrator may use push preferences.');
+    $assert($run('other_admin')['status'] === 'success', 'Active administrator access must not depend on the old root account ID.');
+    $assert(str_contains($run('other_admin_get')['html'], 'Uključi na ovom uređaju'), 'The actual signed in administrator must be able to configure its own devices.');
     $assert($run('missing_csrf')['http'] === 403, 'Push writes require CSRF even for the owner.');
     foreach(['malformed_subscription', 'forged_endpoint'] as $case) $assert($run($case)['http'] === 422, 'Invalid subscriptions must be rejected before delivery.');
     $assert($run('subscribe')['details']['status'] === 'subscribed', 'Valid explicit owner subscription must be saved.');

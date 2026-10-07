@@ -75,16 +75,18 @@ function fcc_registration_admin_push_runtime_ready(): bool {
 }
 
 function fcc_registration_admin_push_owner(object $user): bool {
-    if((int) ($user->user_id ?? 0) !== 1 || (int) ($user->type ?? 0) !== 1
+    $user_id = (int) ($user->user_id ?? 0);
+    if($user_id < 1 || (int) ($user->type ?? 0) !== 1
         || (int) ($user->status ?? 0) !== 1) return false;
     if(!function_exists('session_has') || !session_has('admin_user_id')) return true;
-    /* A returned owner session may retain its own admin marker. Never allow a delegated identity. */
-    return function_exists('session_get') && (int) session_get('admin_user_id') === 1
-        && (int) session_get('user_id') === 1;
+    /* A returned admin session may retain its own marker. Never allow a delegated identity. */
+    return function_exists('session_get') && (int) session_get('admin_user_id') === $user_id
+        && (int) session_get('user_id') === $user_id;
 }
 
 function fcc_registration_admin_push_configuration(bool $create = false): ?object {
     fcc_registration_notifications_ensure_tables();
+    /* User 1 is the application signing key slot, never a push recipient filter. */
     $configuration = db()->where('user_id', 1)->getOne('fcc_registration_admin_push_configuration');
     if($configuration || !$create) return $configuration;
     if(!fcc_registration_admin_push_runtime_ready()) throw new \RuntimeException('FCC Web Push runtime is unavailable.');
@@ -103,10 +105,18 @@ function fcc_registration_admin_push_configuration(bool $create = false): ?objec
 }
 
 function fcc_registration_admin_push_subscribers(): array {
-    /* The FCC owner is the established root administrator, never an audience segment. */
-    $owner = db()->where('user_id', 1)->where('type', 1)->where('status', 1)->getOne('users', ['user_id']);
-    if(!$owner) return [];
-    return db()->where('user_id', 1)->where('is_enabled', 1)->get('fcc_registration_admin_push_subscriptions') ?: [];
+    /* Only active administrators who explicitly subscribed to FCC notifications are recipients. */
+    $admins = db()->where('type', 1)->where('status', 1)->get('users', null, ['user_id']) ?: [];
+    if(!$admins) return [];
+    $user_ids = array_map(static fn(object $admin): int => (int) $admin->user_id, $admins);
+    return db()->where('user_id', $user_ids, 'IN')->where('is_enabled', 1)->get('fcc_registration_admin_push_subscriptions') ?: [];
+}
+
+function fcc_registration_admin_push_subscription_count(object $user): int {
+    if(!fcc_registration_admin_push_owner($user)) return 0;
+    $user_id = (int) $user->user_id;
+    return count(array_filter(fcc_registration_admin_push_subscribers(),
+        static fn(object $subscriber): bool => (int) $subscriber->user_id === $user_id));
 }
 
 function fcc_registration_admin_push_endpoint(string $endpoint): string {
@@ -124,7 +134,8 @@ function fcc_registration_admin_push_endpoint(string $endpoint): string {
 }
 
 function fcc_registration_admin_push_subscribe(object $user, array $subscription): array {
-    if(!fcc_registration_admin_push_owner($user)) throw new \InvalidArgumentException('FCC owner authentication is required.');
+    if(!fcc_registration_admin_push_owner($user)) throw new \InvalidArgumentException('FCC administrator authentication is required.');
+    $user_id = (int) $user->user_id;
     $endpoint = fcc_registration_admin_push_endpoint((string) ($subscription['endpoint'] ?? ''));
     $keys = (array) ($subscription['keys'] ?? []);
     foreach(['p256dh' => 65, 'auth' => 16] as $key => $bytes) {
@@ -135,34 +146,41 @@ function fcc_registration_admin_push_subscribe(object $user, array $subscription
     fcc_registration_admin_push_configuration(true);
     $hash = hash('sha256', $endpoint);
     $existing = db()->where('endpoint_sha256', $hash)->getOne('fcc_registration_admin_push_subscriptions');
-    $values = ['user_id' => 1, 'endpoint_sha256' => $hash, 'endpoint' => $endpoint,
+    if($existing && (int) $existing->user_id !== $user_id) throw new \InvalidArgumentException('A different FCC administrator owns this subscription.');
+    $values = ['user_id' => $user_id, 'endpoint_sha256' => $hash, 'endpoint' => $endpoint,
         'keys' => json_encode(['p256dh' => $keys['p256dh'], 'auth' => $keys['auth']]), 'is_enabled' => 1, 'updated_at' => get_date()];
-    $saved = $existing ? db()->where('push_subscriber_id', $existing->push_subscriber_id)->update('fcc_registration_admin_push_subscriptions', $values)
+    $saved = $existing ? db()->where('push_subscriber_id', $existing->push_subscriber_id)->where('user_id', $user_id)->update('fcc_registration_admin_push_subscriptions', $values)
         : db()->insert('fcc_registration_admin_push_subscriptions', $values + ['created_at' => get_date()]);
     if(!$saved) throw new \RuntimeException('FCC owner push subscription could not be saved.');
-    return ['status' => 'subscribed', 'active_admin_subscribers' => count(fcc_registration_admin_push_subscribers())];
+    return ['status' => 'subscribed', 'active_admin_subscribers' => fcc_registration_admin_push_subscription_count($user)];
 }
 
 function fcc_registration_admin_push_unsubscribe(object $user, string $endpoint): array {
-    if(!fcc_registration_admin_push_owner($user)) throw new \InvalidArgumentException('FCC owner authentication is required.');
+    if(!fcc_registration_admin_push_owner($user)) throw new \InvalidArgumentException('FCC administrator authentication is required.');
     $hash = hash('sha256', fcc_registration_admin_push_endpoint($endpoint));
-    if(!db()->where('user_id', 1)->where('endpoint_sha256', $hash)->update('fcc_registration_admin_push_subscriptions', ['is_enabled' => 0, 'updated_at' => get_date()])) {
+    if(!db()->where('user_id', (int) $user->user_id)->where('endpoint_sha256', $hash)->update('fcc_registration_admin_push_subscriptions', ['is_enabled' => 0, 'updated_at' => get_date()])) {
         throw new \RuntimeException('FCC owner push subscription could not be disabled.');
     }
-    return ['status' => 'unsubscribed'];
+    return ['status' => 'unsubscribed', 'active_admin_subscribers' => fcc_registration_admin_push_subscription_count($user)];
 }
 
 function fcc_registration_admin_push_subscription_status(object $user, string $endpoint): array {
-    if(!fcc_registration_admin_push_owner($user)) throw new \InvalidArgumentException('FCC owner authentication is required.');
+    if(!fcc_registration_admin_push_owner($user)) throw new \InvalidArgumentException('FCC administrator authentication is required.');
     $hash = hash('sha256', fcc_registration_admin_push_endpoint($endpoint));
-    $subscription = db()->where('user_id', 1)->where('endpoint_sha256', $hash)->where('is_enabled', 1)
+    $subscription = db()->where('user_id', (int) $user->user_id)->where('endpoint_sha256', $hash)->where('is_enabled', 1)
         ->getOne('fcc_registration_admin_push_subscriptions', ['push_subscriber_id']);
     return ['status' => $subscription ? 'subscribed' : 'unsubscribed',
-        'active_admin_subscribers' => count(fcc_registration_admin_push_subscribers())];
+        'active_admin_subscribers' => fcc_registration_admin_push_subscription_count($user)];
 }
 
 function fcc_registration_admin_web_push_send(array $content, object $subscriber): bool {
-    if((int) ($subscriber->user_id ?? 0) !== 1 || empty($subscriber->is_enabled) || !fcc_registration_admin_push_available()) return false;
+    $user_id = (int) ($subscriber->user_id ?? 0);
+    if($user_id < 1 || empty($subscriber->is_enabled) || !fcc_registration_admin_push_available()) return false;
+    $admin = db()->where('user_id', $user_id)->where('type', 1)->where('status', 1)->getOne('users', ['user_id']);
+    if(!$admin) return false;
+    $subscriber = db()->where('push_subscriber_id', (int) ($subscriber->push_subscriber_id ?? 0))->where('user_id', $user_id)
+        ->where('is_enabled', 1)->getOne('fcc_registration_admin_push_subscriptions');
+    if(!$subscriber) return false;
     $configuration = fcc_registration_admin_push_configuration();
     $web_push = new \Minishlink\WebPush\WebPush(['VAPID' => ['subject' => url(''),
         'publicKey' => $configuration->public_key, 'privateKey' => $configuration->private_key]], [], 20,
@@ -172,7 +190,7 @@ function fcc_registration_admin_web_push_send(array $content, object $subscriber
         'endpoint' => $subscriber->endpoint, 'expirationTime' => null, 'keys' => json_decode($subscriber->keys, true),
     ]), json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ['TTL' => 5000, 'urgency' => 'normal']);
     if($report->isSubscriptionExpired()) {
-        db()->where('push_subscriber_id', $subscriber->push_subscriber_id)->where('user_id', 1)->update('fcc_registration_admin_push_subscriptions', ['is_enabled' => 0, 'updated_at' => get_date()]);
+        db()->where('push_subscriber_id', $subscriber->push_subscriber_id)->where('user_id', $user_id)->update('fcc_registration_admin_push_subscriptions', ['is_enabled' => 0, 'updated_at' => get_date()]);
     }
     return $report->isSuccess();
 }
@@ -328,7 +346,7 @@ function fcc_registration_process_admin_notifications(int $limit = 25): array {
 
 function fcc_registration_admin_notification_diagnostics(): array {
     fcc_registration_notifications_ensure_tables();
-    $summary = ['recipient_admin_user_id' => 1, 'provider' => 'fcc', 'runtime_ready' => fcc_registration_admin_push_runtime_ready(),
+    $summary = ['recipient_role' => 'active_admin', 'provider' => 'fcc', 'runtime_ready' => fcc_registration_admin_push_runtime_ready(),
         'internal_notifications_enabled' => !empty(settings()->internal_notifications->admins_is_enabled),
         'setup_route_available' => class_exists('Altum\\Router') && isset(\Altum\Router::$routes['admin']['fcc-push']),
         'setup_controller_available' => defined('APP_PATH') && file_exists(APP_PATH . 'controllers/admin/AdminFccPush.php'),
