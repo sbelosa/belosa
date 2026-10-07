@@ -115,6 +115,7 @@ function fcc_registration_automation_pending(int $limit = 100): array {
     $limit = max(1, min(500, $limit));
     $result = database()->query("SELECT u.user_id, u.name, u.email, u.country, u.datetime, u.type, u.status, u.source, u.preferences
         FROM users u LEFT JOIN fcc_registration_automation_audits a ON a.user_id = u.user_id AND a.registered_at = u.datetime
+          AND a.fbo_id = REPLACE(TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.foreverId')), '')), '-', '')
         WHERE u.type = 0 AND u.status = 0 AND u.source = 'direct' AND JSON_VALID(u.preferences) = 1
           AND NULLIF(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.fcc_access_requested_at')), '') IS NOT NULL
           AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(u.preferences, '$.meta.fcc_registration_verification_status')), '') IN ('pending', 'retry', 'manual_review')
@@ -340,7 +341,12 @@ function fcc_registration_automation_apply_decisions(array $decisions, bool $dry
         catch(\Throwable $exception) { error_log('FCC registration processing failed for audit user ' . $user_id . '.'); $results[] = ['user_id' => $user_id, 'status' => 'retry', 'reason' => 'processing_failed']; }
     }
     $deliveries = $dry_run ? [] : fcc_registration_automation_retry_notifications();
-    return ['dry_run' => $dry_run, 'results' => $results, 'deliveries' => $deliveries];
+    $summary = ['checked' => count($results), 'approved' => 0, 'rejected' => 0, 'manual_review' => 0, 'retry' => 0, 'unchanged' => 0];
+    foreach($results as $result) {
+        $status = $result['status'] ?? 'retry';
+        if(array_key_exists($status, $summary) && $status !== 'checked') $summary[$status]++;
+    }
+    return ['dry_run' => $dry_run, 'summary' => $summary, 'results' => $results, 'deliveries' => $deliveries];
 }
 
 /** Retry proven decisions without rechecking FLP or exposing recipients in machine responses. */
@@ -401,7 +407,15 @@ function fcc_registration_automation_status(): array {
     if(!$result) throw new \RuntimeException('Registration diagnostics are unavailable.');
     $groups = [];
     while($row = $result->fetch_assoc()) $groups[] = $row;
-    $status = ['root_fbo_id' => '360000760944', 'audit_groups' => $groups, 'generated_at' => get_date()];
+    $runtime_checks = [];
+    foreach(['db', 'database', 'get_date', 'url', 'fc_get_user_main_biolink_id', 'fc_resolve_language_name', 'get_email_template', 'send_mail',
+        'fcc_registration_automation_notify_approval', 'fcc_registration_process_admin_notifications'] as $function) {
+        $runtime_checks[$function] = function_exists($function);
+    }
+    $runtime_checks['user_model'] = class_exists('Altum\\Models\\User');
+    $runtime_checks['admin_push_class'] = class_exists('Altum\\Helpers\\PushNotifications');
+    $status = ['root_fbo_id' => '360000760944', 'audit_groups' => $groups, 'generated_at' => get_date(),
+        'runtime_ready' => !in_array(false, $runtime_checks, true), 'runtime_checks' => $runtime_checks];
     if(function_exists('fcc_registration_admin_notification_diagnostics')) $status['admin_notifications'] = fcc_registration_admin_notification_diagnostics();
     return $status;
 }

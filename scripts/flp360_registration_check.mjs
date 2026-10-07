@@ -102,6 +102,8 @@ function unwrapSingleRecord(payload) {
             const body = Object.hasOwn(candidate, 'body');
             if(data && body) return null;
             if(!data && !body) return candidate;
+            if(['distributorId', 'sponsorDistributorId', 'generation', 'firstname', 'lastname', 'email']
+                .some(key => Object.hasOwn(candidate, key))) return null;
             candidate = data ? candidate.data : candidate.body;
         } else return null;
     }
@@ -127,10 +129,9 @@ async function collectRegistrationEvidence(page, configuration, account, now = n
     evidence.sponsor_fbo_id = normalizeFboId(detail.sponsorDistributorId) || null;
     const rootDetail = fboId === ROOT_FBO_ID ? detail
         : await fetchExactDistributorDetail(page, configuration, ROOT_FBO_ID, [configuration.operatingCountryCode]);
-    const rootSponsorId = rootDetail && Number.isSafeInteger(rootDetail.generation) && rootDetail.generation === 0
-        ? normalizeFboId(rootDetail.sponsorDistributorId) : '';
+    const rootSponsorId = rootDetail ? normalizeFboId(rootDetail.sponsorDistributorId) : '';
     const chain = await verifySponsorChain(page, configuration, fboId, detail, countryCandidates, {rootSponsorId});
-    const rootConfirmed = chain.reachedRoot === true && chain.generationConsistent === true;
+    const rootConfirmed = chain.reachedRoot === true;
     evidence.authoritative_structure = rootConfirmed || chain.reachedOutsideBoundary === true;
     evidence.in_root_structure = rootConfirmed ? true : chain.reachedOutsideBoundary === true ? false : null;
     evidence.chain_checked_count = chain.checkedCount;
@@ -152,35 +153,33 @@ async function fetchExactDistributorDetail(page, configuration, fboId, countryCa
 async function verifySponsorChain(page, configuration, firstFboId, firstDetail, countryCandidates, options = {}) {
     let detail = firstDetail;
     let fboId = firstFboId;
-    let previousGeneration = null;
-    let generationConsistent = true;
+    let generationMetadataValid = true;
     const visited = new Set();
     for(let hop = 0; hop < MAX_SPONSOR_CHAIN_LENGTH; hop++) {
         if(visited.has(fboId) || !detail || normalizeFboId(detail.distributorId) !== fboId) break;
         visited.add(fboId);
         const generation = detail.generation;
-        if(!Number.isSafeInteger(generation) || generation < 0
-            || (previousGeneration !== null && generation !== previousGeneration - 1)) {
-            generationConsistent = false;
-        }
+        if(!Number.isSafeInteger(generation) || generation < 0) generationMetadataValid = false;
+        // The live FLP control profiles report generation=0 for both the root
+        // and its descendants. This field is diagnostic metadata and cannot
+        // measure distance or authorize either approval or rejection.
         if(fboId === ROOT_FBO_ID) return {reachedRoot: true,
             reachedOutsideBoundary: false,
-            generationConsistent: generationConsistent && generation === 0, checkedCount: visited.size};
+            generationMetadataValid, checkedCount: visited.size};
         // A freshly verified direct sponsor of the root is an ancestor above
         // this team. Reaching that ancestor without first reaching the root
         // positively proves a different branch; absence alone proves nothing.
         if(options.rootSponsorId && options.rootSponsorId !== ROOT_FBO_ID
             && fboId === options.rootSponsorId) {
-            return {reachedRoot: false, reachedOutsideBoundary: true, generationConsistent,
+            return {reachedRoot: false, reachedOutsideBoundary: true, generationMetadataValid,
                 checkedCount: visited.size};
         }
         const sponsorId = normalizeFboId(detail.sponsorDistributorId);
         if(!sponsorId || sponsorId === fboId || visited.has(sponsorId)) break;
-        previousGeneration = Number.isSafeInteger(generation) ? generation : null;
         fboId = sponsorId;
         detail = await fetchExactDistributorDetail(page, configuration, fboId, countryCandidates);
     }
-    return {reachedRoot: false, reachedOutsideBoundary: false, generationConsistent, checkedCount: visited.size};
+    return {reachedRoot: false, reachedOutsideBoundary: false, generationMetadataValid, checkedCount: visited.size};
 }
 
 function summarizeDecisions(decisions) {
@@ -192,7 +191,7 @@ function summarizeDecisions(decisions) {
 
 function safeServerSummary(summary) {
     return Object.fromEntries(['checked', 'processed', 'approved', 'rejected', 'approve', 'invalid_id',
-        'valid_id_not_team', 'manual_review', 'unconfirmed', 'skipped', 'pending']
+        'valid_id_not_team', 'manual_review', 'unconfirmed', 'skipped', 'pending', 'retry', 'unchanged']
         .filter(key => Number.isSafeInteger(summary?.[key]) && summary[key] >= 0)
         .map(key => [key, summary[key]]));
 }
@@ -208,21 +207,21 @@ async function main() {
     const dryRun = String(process.env.FCC_REGISTRATION_DRY_RUN || '').trim() === '1';
     const accounts = validatePendingPayload(await fccRequest('registration_pending', syncUrl, syncKey));
     if(process.argv.includes('--pending-count')) {
-        if(accounts.length === 0 && !dryRun) {
+        if(accounts.length === 0) {
             const response = await fccRequest('registration_decisions', syncUrl, syncKey,
-                {decisions: '[]', dry_run: '0'});
-            console.log(JSON.stringify({delivery_retry_processed: true, summary: safeServerSummary(response.summary)}));
+                {decisions: '[]', dry_run: dryRun ? '1' : '0'});
+            console.log(JSON.stringify({delivery_retry_processed: !dryRun, dry_run: dryRun,
+                summary: safeServerSummary(response.summary)}));
         }
         console.log(JSON.stringify({pending_count: accounts.length}));
         if(process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, `pending_count=${accounts.length}\n`);
         return;
     }
     if(accounts.length === 0) {
-        if(!dryRun) {
-            const response = await fccRequest('registration_decisions', syncUrl, syncKey,
-                {decisions: '[]', dry_run: '0'});
-            console.log(JSON.stringify({delivery_retry_processed: true, summary: safeServerSummary(response.summary)}));
-        }
+        const response = await fccRequest('registration_decisions', syncUrl, syncKey,
+            {decisions: '[]', dry_run: dryRun ? '1' : '0'});
+        console.log(JSON.stringify({delivery_retry_processed: !dryRun, dry_run: dryRun,
+            summary: safeServerSummary(response.summary)}));
         console.log(JSON.stringify({checked: 0, dry_run: dryRun}));
         return;
     }
@@ -241,12 +240,11 @@ async function main() {
             decisions.push(evaluateRegistration(account, evidence));
         }
         console.log(JSON.stringify({...summarizeDecisions(decisions), dry_run: dryRun}));
-        if(!dryRun) {
-            for(let start = 0; start < decisions.length; start += 25) {
-                const response = await fccRequest('registration_decisions', syncUrl, syncKey,
-                    {decisions: JSON.stringify(decisions.slice(start, start + 25)), dry_run: '0'});
-                console.log(JSON.stringify({batch_processed: true, summary: safeServerSummary(response.summary)}));
-            }
+        for(let start = 0; start < decisions.length; start += 25) {
+            const response = await fccRequest('registration_decisions', syncUrl, syncKey,
+                {decisions: JSON.stringify(decisions.slice(start, start + 25)), dry_run: dryRun ? '1' : '0'});
+            console.log(JSON.stringify({batch_processed: true, dry_run: dryRun,
+                summary: safeServerSummary(response.summary)}));
         }
     } finally {
         await context.close();

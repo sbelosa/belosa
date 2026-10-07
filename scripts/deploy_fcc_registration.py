@@ -18,8 +18,9 @@ LANGUAGES = ["app/languages/Hrvatski#hr.php", "app/languages/english#en.php",
              "app/languages/cache/Hrvatski#hr.php", "app/languages/cache/english#en.php"]
 
 
-def block(source):
-    pattern = rf"(?m)^[ \t]*/\* Custom code: {TAG}:.*?^[ \t]*/\* /Custom code: {TAG} \*/\n"
+def block(source, opening=None):
+    begin = re.escape(opening) if opening else rf"/\* Custom code: {TAG}:.*?"
+    pattern = rf"(?m)^[ \t]*{begin}.*?^[ \t]*/\* /Custom code: {TAG} \*/\n"
     matches = list(re.finditer(pattern, source, re.S))
     if len(matches) != 1:
         raise ValueError("Expected one reviewed controller patch")
@@ -28,8 +29,9 @@ def block(source):
 
 def patch_controller(path, live, source):
     addition = block(source)
-    if f"/* Custom code: {TAG}:" in live:
-        existing = block(live)
+    opening = addition.lstrip().splitlines()[0]
+    if opening in live:
+        existing = block(live, opening)
         return live.replace(existing, addition, 1)
     if path.endswith("/Register.php"):
         anchor = re.search(r"(?m)^([ \t]*)\$registered_user\s*=\s*\(new User\(\)\)->create\(", live)
@@ -138,13 +140,16 @@ def main():
         mkdirs(ftp, backup)
         for path, data in before.items():
             if data is not None:
-                ftp.storbinary("STOR " + backup + "/" + path.replace("/", "__"), io.BytesIO(data))
+                saved_path = backup + "/" + path.replace("/", "__")
+                ftp.storbinary("STOR " + saved_path, io.BytesIO(data))
+                if download(ftp, saved_path) != data:
+                    raise RuntimeError("Production backup verification failed")
         try:
             for path, data in after.items():
                 if before[path] == data:
                     continue
-                store_atomic(ftp, "/public_html/" + path, data, release[:12])
                 uploaded.append(path)
+                store_atomic(ftp, "/public_html/" + path, data, release[:12])
             status = fcc_request("registration_status")
             if not status.get("runtime_ready"):
                 raise RuntimeError("Production registration prerequisites are unavailable")
@@ -155,7 +160,8 @@ def main():
         except Exception:
             for path in reversed(uploaded):
                 if before[path] is None:
-                    ftp.delete("/public_html/" + path)
+                    if download(ftp, "/public_html/" + path, optional=True) is not None:
+                        ftp.delete("/public_html/" + path)
                 else:
                     store_atomic(ftp, "/public_html/" + path, before[path], release[:12] + "rollback")
             raise

@@ -4,12 +4,17 @@ namespace Altum\Models {
     class User {
         public function delete($id) {
             $GLOBALS['deleted_users'][] = $id;
+            if(isset($GLOBALS['real_database'])) {
+                $GLOBALS['real_database']->query('DELETE FROM users WHERE user_id = ' . (int) $id);
+                return;
+            }
             unset($GLOBALS['fake_db']->tables['users'][$id]);
         }
     }
 }
 namespace {
     define('ALTUMCODE', true);
+    define('DEBUG', false);
     define('SITE_URL', 'https://fcc.example/');
 
     final class RegistrationTestRows {
@@ -85,8 +90,8 @@ namespace {
         public function commit() { $this->transaction_backup = null; }
         public function rollback() { if($this->transaction_backup !== null) $this->tables = $this->transaction_backup; $this->transaction_backup = null; }
     }
-    function db() { return $GLOBALS['fake_db']; }
-    function database() { return db(); }
+    function db() { return $GLOBALS['real_db_builder'] ?? $GLOBALS['fake_db']; }
+    function database() { return $GLOBALS['real_database'] ?? db(); }
     function get_date() { return gmdate('Y-m-d H:i:s'); }
     function fc_resolve_language_name($language) { return $language ?: 'Hrvatski#hr'; }
     function fc_get_user_main_biolink_id($id) { return 42; }
@@ -133,6 +138,7 @@ namespace {
         return $user;
     }
     $GLOBALS['assertion_count'] = 0;
+    if(!getenv('FCC_REGISTRATION_TEST_DB_HOST')) {
     $user = reset_test_db();
     $now = time();
     $sponsor = ['user_id' => 20, 'fbo_id' => '360000000020', 'name' => 'Sponsor', 'status' => 1, 'type' => 0];
@@ -177,6 +183,7 @@ namespace {
     $before = db()->tables;
     $dry = fcc_registration_automation_apply_decisions([$decision], true);
     check($dry['results'][0]['status'] === 'approved' && db()->tables === $before && count($GLOBALS['mail_calls']) === 0, 'Dry run predicts the decision without writes, mail or notifications.');
+    check($dry['summary']['checked'] === 1 && $dry['summary']['approved'] === 1 && $dry['summary']['rejected'] === 0, 'Machine response includes safe aggregate decision counts.');
     $safe = fcc_registration_automation_safe_evidence($decision['evidence']);
     check(!isset($safe['flp_email'], $safe['flp_name']) && strlen($safe['flp_email_sha256']) === 64, 'Audit evidence does not store raw FLP names or email addresses.');
 
@@ -243,5 +250,78 @@ namespace {
     $source = file_get_contents(dirname(__DIR__) . '/app/controllers/Register.php');
     check(str_contains($source, "\$_POST['meta']['fcc_access_requested_at'] = get_date()"), 'Only the registration route explicitly tags new verification requests.');
     echo 'FCC registration automation safety checks passed: ' . $GLOBALS['assertion_count'] . PHP_EOL;
+    } else {
+        /* This opt-in test requires a disposable database called exactly the
+           fixed test name. It cannot run against the application's database. */
+        require dirname(__DIR__) . '/app/helpers/MysqliDb.php';
+        $GLOBALS['real_database'] = new \mysqli(getenv('FCC_REGISTRATION_TEST_DB_HOST'), 'root', 'offline-only');
+        database()->query('CREATE DATABASE IF NOT EXISTS fcc_registration_automation_offline_test');
+        database()->select_db('fcc_registration_automation_offline_test');
+        $GLOBALS['real_db_builder'] = new \Altum\Helpers\MysqliDb(database());
+        db()->returnType = 'object';
+        foreach(['users', 'links', 'users_vcards', 'fcc_registration_automation_audits'] as $table) database()->query('DROP TABLE IF EXISTS ' . $table);
+        database()->query("CREATE TABLE users (user_id INT UNSIGNED PRIMARY KEY, type TINYINT NOT NULL, status TINYINT NOT NULL,
+            source VARCHAR(32), name VARCHAR(128), email VARCHAR(255), country VARCHAR(8), datetime DATETIME,
+            preferences LONGTEXT, language VARCHAR(64), anti_phishing_code VARCHAR(32)) ENGINE=InnoDB");
+        database()->query('CREATE TABLE links (link_id INT PRIMARY KEY, user_id INT, type VARCHAR(32), url VARCHAR(128)) ENGINE=InnoDB');
+        database()->query('CREATE TABLE users_vcards (user_id INT PRIMARY KEY, vcard_id INT) ENGINE=InnoDB');
+        $user = fresh_user();
+        db()->insert('users', (array) $user);
+        $legacy = (array) fresh_user(); $legacy['user_id'] = 11; $legacy['preferences'] = json_encode(['meta' => ['foreverId' => '360000000011']]);
+        db()->insert('users', $legacy);
+        $sponsor = ['user_id' => 20, 'name' => 'Sponsor', 'status' => 1, 'type' => 0,
+            'preferences' => json_encode(['meta' => ['foreverId' => '360000000020']])];
+        db()->insert('users', $sponsor);
+        db()->insert('links', ['link_id' => 42, 'user_id' => 10, 'type' => 'biolink', 'url' => 'ana']);
+        db()->insert('users_vcards', ['user_id' => 10, 'vcard_id' => 43]);
+        $GLOBALS['mail_calls'] = []; $GLOBALS['mail_success'] = true; $GLOBALS['deleted_users'] = []; $GLOBALS['notification_audits'] = [];
+        $pending = fcc_registration_automation_pending();
+        check(count($pending['accounts']) === 1 && $pending['accounts'][0]['user_id'] === 10, 'MariaDB pending query excludes old disabled accounts and active sponsors.');
+        $decision = ['user_id' => 10, 'fbo_id' => '360000000010', 'registered_at' => $user->datetime, 'result' => 'approve',
+            'evidence' => ['source' => 'flp360', 'checked_at' => gmdate('c'), 'exact_fbo_id' => '360000000010',
+                'flp_email' => 'ana@example.test', 'sponsor_fbo_id' => '360000000020', 'root_fbo_id' => '360000760944',
+                'id_exists' => true, 'in_root_structure' => true, 'authoritative_structure' => true]];
+        $dry = fcc_registration_automation_apply_decisions([$decision], true);
+        check($dry['results'][0]['status'] === 'approved' && count($GLOBALS['mail_calls']) === 0
+            && (int) db()->where('user_id', 10)->getValue('users', 'status') === 0, 'MariaDB dry run validates eligibility without account mutations or mail.');
+        $applied = fcc_registration_automation_apply_decisions([$decision]);
+        check($applied['results'][0]['status'] === 'approved', 'MariaDB activation, audit insertion and named lock succeed.');
+        $stored = db()->where('user_id', 10)->getOne('users');
+        $meta = json_decode($stored->preferences)->meta;
+        check((int) $stored->status === 1 && (int) $meta->fcc_sponsor_user_id === 20 && !empty($meta->fcc_access_approval_email_sent_at), 'MariaDB activation persists verified sponsor and mail receipt.');
+        fcc_registration_automation_apply_decisions([$decision]);
+        check(count($GLOBALS['mail_calls']) === 1 && (int) db()->getValue('fcc_registration_automation_audits', 'COUNT(*)') === 1, 'MariaDB repeated decision has one audit and one email.');
+        check(count(fcc_registration_automation_pending()['accounts']) === 0, 'Approved account leaves the MariaDB pending queue.');
+        $rejected_user = (array) fresh_user(); $rejected_user['user_id'] = 30;
+        $rejected_user['preferences'] = json_encode(['meta' => ['foreverId' => '360000000030',
+            'fcc_access_requested_at' => $user->datetime, 'fcc_registration_verification_status' => 'pending']]);
+        db()->insert('users', $rejected_user);
+        $negative = ['user_id' => 30, 'fbo_id' => '360000000030', 'registered_at' => $user->datetime, 'result' => 'invalid_id',
+            'evidence' => ['source' => 'flp360', 'checked_at' => gmdate('c'), 'exact_fbo_id' => '360000000030',
+                'root_fbo_id' => '360000760944', 'id_exists' => false, 'authoritative_not_found' => true]];
+        $GLOBALS['mail_success'] = false;
+        fcc_registration_automation_apply_decisions([$negative]);
+        check(db()->where('user_id', 30)->has('users') && db()->where('user_id', 30)->getValue('fcc_registration_automation_audits', 'status') === 'rejection_pending', 'MariaDB rejection failure retains account and durable outbox.');
+        $GLOBALS['mail_success'] = true;
+        fcc_registration_automation_retry_notifications();
+        check(!db()->where('user_id', 30)->has('users') && db()->where('user_id', 30)->getValue('fcc_registration_automation_audits', 'status') === 'rejected', 'MariaDB rejection drain holds the account lock and completes deletion after sent mail.');
+        $mail_count = count($GLOBALS['mail_calls']);
+        fcc_registration_automation_apply_decisions([$negative]);
+        check(count($GLOBALS['mail_calls']) === $mail_count, 'MariaDB deleted registration is idempotent on later decisions.');
+        $status = fcc_registration_automation_status();
+        check(count($status['audit_groups']) === 2 && !str_contains(json_encode($status), 'ana@example.test'), 'MariaDB diagnostics expose counts without recipients.');
+        $changed_user = $rejected_user; $changed_user['user_id'] = 31;
+        $changed_user['preferences'] = json_encode(['meta' => ['foreverId' => '360000000031',
+            'fcc_access_requested_at' => $user->datetime, 'fcc_registration_verification_status' => 'pending']]);
+        db()->insert('users', $changed_user);
+        $old_audit = (array) db()->where('user_id', 30)->getOne('fcc_registration_automation_audits');
+        unset($old_audit['audit_id']);
+        $old_audit['user_id'] = 31; $old_audit['status'] = 'manual_review';
+        foreach(['360000000032', '360000000033'] as $old_fbo) { $old_audit['fbo_id'] = $old_fbo; db()->insert('fcc_registration_automation_audits', $old_audit); }
+        $pending = fcc_registration_automation_pending();
+        check(count($pending['accounts']) === 1 && $pending['accounts'][0]['user_id'] === 31, 'Changing a pending Forever ID does not duplicate the queue through older audit rows.');
+        database()->query('DROP DATABASE fcc_registration_automation_offline_test');
+        echo 'FCC registration MariaDB integration checks passed: ' . $GLOBALS['assertion_count'] . PHP_EOL;
+    }
 }
 /* /Custom code: FC-2026-10-07 */

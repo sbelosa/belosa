@@ -91,8 +91,6 @@ class ForeverBusinessSync extends Controller {
                         'delivery' => fcc_registration_process_admin_notifications()];
                 } else {
                     $data = fcc_registration_automation_status();
-                    $data['runtime_ready'] = function_exists('fc_get_user_main_biolink_id') && function_exists('fc_resolve_language_name')
-                        && function_exists('send_mail') && class_exists('Altum\\Helpers\\PushNotifications');
                 }
                 $this->output(['status' => 'success', 'metric' => $registration_metric] + $data);
             } catch(\InvalidArgumentException | \JsonException $exception) {

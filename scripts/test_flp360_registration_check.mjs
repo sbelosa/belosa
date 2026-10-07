@@ -33,6 +33,7 @@ assert.equal(unwrapSingleRecord([{body: {distributorId: account.fbo_id}}]).distr
 assert.equal(unwrapSingleRecord([]), null);
 assert.equal(unwrapSingleRecord([{}, {}]), null);
 assert.equal(unwrapSingleRecord({data: {}, body: {}}), null);
+assert.equal(unwrapSingleRecord({distributorId: '360999999999', data: {distributorId: account.fbo_id}}), null);
 assert.equal(unwrapSingleRecord({success: false, distributorId: account.fbo_id}), null);
 
 const pending = {status: 'success', metric: 'registration_pending', root_fbo_id: '360000760944', accounts: [account]};
@@ -62,7 +63,7 @@ assert.equal(missing.authoritative_not_found, false);
 const failure = await collectRegistrationEvidence(mockPage(null, true), configuration, account, now);
 assert.equal(evaluateRegistration(account, failure, now).result, 'unconfirmed');
 const rootDetail = {distributorId: '360000760944', generation: 0, sponsorDistributorId: '360987654321'};
-const memberDetail = {distributorId: account.fbo_id, generation: 1, sponsorDistributorId: rootDetail.distributorId,
+const memberDetail = {distributorId: account.fbo_id, generation: 0, sponsorDistributorId: rootDetail.distributorId,
     firstname: 'Test', lastname: 'Person', email: account.email};
 const chainPage = mockPage(url => url.includes(rootDetail.distributorId) ? rootDetail : memberDetail);
 const chain = await collectRegistrationEvidence(chainPage, configuration, account, now);
@@ -72,8 +73,8 @@ assert.equal(chain.sponsor_fbo_id, rootDetail.distributorId);
 assert.equal(evaluateRegistration(account, chain, now).result, 'approve');
 const inconsistentPage = mockPage(url => url.includes(rootDetail.distributorId) ? rootDetail : {...memberDetail, generation: 3});
 const inconsistent = await collectRegistrationEvidence(inconsistentPage, configuration, account, now);
-assert.equal(inconsistent.authoritative_structure, false);
-assert.equal(evaluateRegistration(account, inconsistent, now).result, 'unconfirmed');
+assert.equal(inconsistent.authoritative_structure, true);
+assert.equal(evaluateRegistration(account, inconsistent, now).result, 'approve');
 const selfSponsor = await collectRegistrationEvidence(mockPage({...memberDetail,
     sponsorDistributorId: account.fbo_id}), configuration, account, now);
 assert.equal(selfSponsor.authoritative_structure, false);

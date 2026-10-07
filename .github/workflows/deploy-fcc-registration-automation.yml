@@ -25,6 +25,16 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      registration-test-db:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: offline-only
+          MARIADB_DATABASE: registration_test
+        ports: [3306:3306]
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -44,6 +54,10 @@ jobs:
           php scripts/test_fcc_registration_automation.php
           php scripts/test_fcc_registration_notifications.php
           python3 scripts/test_deploy_fcc_registration.py
+      - name: Verify registration decisions against MariaDB
+        env:
+          FCC_REGISTRATION_TEST_DB_HOST: 127.0.0.1
+        run: php scripts/test_fcc_registration_automation.php
       - name: Validate the FLP evidence adapter
         run: |
           node scripts/test_flp360_cloud_sync.mjs

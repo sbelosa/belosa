@@ -15,6 +15,15 @@ class TargetedReleaseTests(unittest.TestCase):
             self.assertEqual(patched.replace(block(patched), ""), live)
             self.assertEqual(patch_controller(path, patched, source), patched)
 
+    def test_unrelated_patch_on_same_date_is_preserved(self):
+        unrelated = "/* Custom code: FC-2026-10-07: Different production change. */\n// Keep this live code.\n/* /Custom code: FC-2026-10-07 */\n"
+        for path in SHARED:
+            source = (ROOT / path).read_text()
+            live = source.replace(block(source), "") + unrelated
+            patched = patch_controller(path, live, source)
+            self.assertIn(unrelated, patched)
+            self.assertEqual(patch_controller(path, patched, source), patched)
+
     def test_language_patch_preserves_other_template_changes(self):
         for path in LANGUAGES:
             source = (ROOT / path).read_text()
