@@ -6,6 +6,21 @@ namespace Altum\Controllers;
 defined('ALTUMCODE') || die();
 
 class AdminFccPush extends Controller {
+    public function access_status() {
+        $owner = $this->user;
+        if($_SERVER['REQUEST_METHOD'] !== 'GET' || !is_object($owner) || (int) ($owner->type ?? 0) !== 1) throw_404();
+        require_once APP_PATH . 'helpers/fcc_registration_notifications.php';
+        header('Cache-Control: no-store');
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['owner_account' => (int) ($owner->user_id ?? 0) === 1,
+            'active_account' => (int) ($owner->status ?? 0) === 1,
+            'admin_preview_marker' => session_has('admin_user_id'),
+            'preview_owner' => (int) session_get('admin_user_id') === 1,
+            'session_owner' => (int) session_get('user_id') === 1,
+            'setup_allowed' => fcc_registration_admin_push_owner($owner)]);
+        exit;
+    }
+
     public function index() {
         require_once APP_PATH . 'helpers/fcc_registration_notifications.php';
         $owner = $this->user;
