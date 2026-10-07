@@ -27,7 +27,9 @@ namespace Altum {
 }
 namespace Altum\Controllers {
     class Controller {
-        public object $user;
+        private array $parameters = [];
+        public function __get(string $name) { return $this->parameters[$name] ?? null; }
+        public function __set(string $name, $value): void { $this->parameters[$name] = $value; }
         public function add_view_content(string $name, string $content): void { echo $content; }
     }
 }

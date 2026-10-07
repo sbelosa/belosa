@@ -327,6 +327,8 @@ function fcc_registration_admin_notification_diagnostics(): array {
     fcc_registration_notifications_ensure_tables();
     $summary = ['recipient_admin_user_id' => 1, 'provider' => 'fcc', 'runtime_ready' => fcc_registration_admin_push_runtime_ready(),
         'internal_notifications_enabled' => !empty(settings()->internal_notifications->admins_is_enabled),
+        'setup_route_available' => class_exists('Altum\\Router') && isset(\Altum\Router::$routes['admin']['fcc-push']),
+        'setup_controller_available' => defined('APP_PATH') && file_exists(APP_PATH . 'controllers/admin/AdminFccPush.php'),
         'setup_url' => url('admin/fcc-push/'), 'push_available' => fcc_registration_admin_push_available(),
         'active_admin_subscribers' => count(fcc_registration_admin_push_subscribers()), 'delivered' => 0, 'queued' => 0, 'failed' => 0];
     foreach(['delivered', 'queued', 'failed', 'no_subscribers', 'push_unavailable'] as $status) {

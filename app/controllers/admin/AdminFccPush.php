@@ -8,7 +8,8 @@ defined('ALTUMCODE') || die();
 class AdminFccPush extends Controller {
     public function index() {
         require_once APP_PATH . 'helpers/fcc_registration_notifications.php';
-        if(!isset($this->user) || !fcc_registration_admin_push_owner($this->user)) throw_404();
+        $owner = $this->user;
+        if(!is_object($owner) || !fcc_registration_admin_push_owner($owner)) throw_404();
         header('Cache-Control: no-store');
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Content-Type: application/json; charset=utf-8');
