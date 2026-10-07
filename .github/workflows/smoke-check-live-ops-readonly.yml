@@ -13,6 +13,9 @@ permissions:
 
 jobs:
   smoke-check:
+    # Custom code: FC-2026-10-07: A targeted release intentionally skips the full application deployment.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'skipped'
+    # /Custom code: FC-2026-10-07
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
