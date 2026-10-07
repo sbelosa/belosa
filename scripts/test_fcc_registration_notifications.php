@@ -42,6 +42,7 @@ namespace {
     function settings(): object { return (object) ['internal_notifications' => (object) ['admins_is_enabled' => 1]]; }
     function url(string $path): string { return 'https://fcc.invalid/' . $path; }
     function session_has(string $name): bool { return $name === 'admin_user_id' && $GLOBALS['impersonating']; }
+    function session_get(string $name) { return $GLOBALS['owner_session'][$name] ?? null; }
     if(!function_exists('mb_substr')) {
         function mb_substr(string $value, int $start, ?int $length = null): string { return substr($value, $start, $length); }
     }
@@ -112,6 +113,14 @@ namespace {
     }
     $impersonating = true;
     $assert(!fcc_registration_admin_push_owner($owner), 'An impersonated owner session must not be eligible.');
+    $owner_session = ['admin_user_id' => 1, 'user_id' => 1];
+    $assert(fcc_registration_admin_push_owner($owner), 'A returned authenticated owner with its own retained session marker must remain eligible.');
+    foreach([['admin_user_id' => 2, 'user_id' => 1], ['admin_user_id' => 1, 'user_id' => 99], ['admin_user_id' => 1]] as $owner_session) {
+        $assert(!fcc_registration_admin_push_owner($owner), 'Other identities and missing session identity must remain blocked.');
+    }
+    $owner_session = ['admin_user_id' => 1, 'user_id' => 1];
+    $assert(!fcc_registration_admin_push_owner((object) ['user_id' => 2, 'type' => 1, 'status' => 1]), 'The current authenticated account must always be the root owner.');
+    $owner_session = [];
     $impersonating = false;
     foreach(['http://fcm.googleapis.com/private', 'https://127.0.0.1/private', 'https://fcm.googleapis.com.attacker.invalid/private', 'https://name@fcm.googleapis.com/private', 'https://fcm.googleapis.com:444/private', 'https://fcm.googleapis.com/private#fragment'] as $endpoint) {
         $invalid(fn() => fcc_registration_admin_push_endpoint($endpoint));

@@ -46,6 +46,7 @@ namespace {
         $_POST = ['token' => 'fixture_csrf', 'action' => 'test', 'request_id' => 'controller_fixture_20261007'];
         switch($argv[2]) {
             case 'owner_get': $_SERVER['REQUEST_METHOD'] = 'GET'; break;
+            case 'returned_owner': $_SERVER['REQUEST_METHOD'] = 'GET'; $impersonating = true; $owner_session = ['admin_user_id' => 1, 'user_id' => 1]; break;
             case 'other_admin': $controller->user->user_id = 2; break;
             case 'customer': $controller->user->user_id = 99; $controller->user->type = 0; break;
             case 'inactive_owner': $controller->user->status = 0; break;
@@ -74,6 +75,7 @@ namespace {
     $assert($run('subscribe')['details']['status'] === 'subscribed', 'Valid explicit owner subscription must be saved.');
     $assert($run('test')['details']['test']['status'] === 'delivered', 'Test response must use the actual delivered event after draining the outbox.');
     $get = $run('owner_get');
+    $assert(str_contains($run('returned_owner')['html'], 'Uključi na ovom uređaju'), 'Returned owner session must support device notification setup.');
     $assert(str_contains($get['html'], 'Uključi na ovom uređaju') && str_contains($get['javascript'], 'Notification.requestPermission()'), 'Owner template must expose a consent button and browser permission flow.');
     $assert(!str_contains(json_encode($get), 'private_fixture_key'), 'Owner page must never expose the private VAPID key.');
     if(($argv[1] ?? '') === 'render-javascript') {

@@ -75,9 +75,12 @@ function fcc_registration_admin_push_runtime_ready(): bool {
 }
 
 function fcc_registration_admin_push_owner(object $user): bool {
-    return (int) ($user->user_id ?? 0) === 1 && (int) ($user->type ?? 0) === 1
-        && (int) ($user->status ?? 0) === 1
-        && (!function_exists('session_has') || !session_has('admin_user_id'));
+    if((int) ($user->user_id ?? 0) !== 1 || (int) ($user->type ?? 0) !== 1
+        || (int) ($user->status ?? 0) !== 1) return false;
+    if(!function_exists('session_has') || !session_has('admin_user_id')) return true;
+    /* A returned owner session may retain its own admin marker. Never allow a delegated identity. */
+    return function_exists('session_get') && (int) session_get('admin_user_id') === 1
+        && (int) session_get('user_id') === 1;
 }
 
 function fcc_registration_admin_push_configuration(bool $create = false): ?object {
