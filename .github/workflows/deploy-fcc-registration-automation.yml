@@ -1,0 +1,118 @@
+# Custom code: FC-2026-10-07: Validate and release only the reviewed registration automation.
+name: Release FCC registration automation
+
+on:
+  push:
+    branches: [main, codex/flp360-registration-automation]
+    paths:
+      - app/helpers/fcc_registration_automation.php
+      - app/helpers/fcc_registration_notifications.php
+      - app/controllers/Register.php
+      - app/controllers/ForeverBusinessSync.php
+      - app/languages/**
+      - scripts/*fcc_registration*
+      - scripts/*flp360_registration*
+      - .github/workflows/deploy-fcc-registration-automation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-cpanel-ftp-production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, mysqli
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate the PHP integration
+        run: |
+          php -l app/controllers/Register.php
+          php -l app/controllers/ForeverBusinessSync.php
+          php -l app/helpers/fcc_registration_automation.php
+          php -l app/helpers/fcc_registration_notifications.php
+          php scripts/test_fcc_registration_automation.php
+          php scripts/test_fcc_registration_notifications.php
+          python3 scripts/test_deploy_fcc_registration.py
+      - name: Validate the FLP evidence adapter
+        run: |
+          node scripts/test_flp360_cloud_sync.mjs
+          node scripts/test_flp360_registration_check.mjs
+
+  deploy:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[fcc-registration-targeted]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Patch and verify the production application
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+        run: python3 scripts/deploy_fcc_registration.py
+      - name: Verify the owner push notification
+        env:
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+        run: |
+          python3 - <<'PY'
+          import sys, os, json
+          sys.path.insert(0, 'scripts')
+          from deploy_fcc_registration import fcc_request
+          result = fcc_request('registration_notification_test', request_id='release_' + os.environ['GITHUB_SHA'][:20])
+          print(json.dumps({'test': result['test'], 'delivery': result['delivery']}))
+          if result['delivery'].get('delivered', 0) < 1 and result['test'].get('status') != 'delivered':
+              raise SystemExit('Administrator push delivery is not confirmed.')
+          PY
+      - name: Check pending registrations without changes
+        id: pending
+        env:
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_REGISTRATION_DRY_RUN: '1'
+        run: node scripts/flp360_registration_check.mjs --pending-count
+      - name: Install the FLP browser when there are pending registrations
+        if: steps.pending.outputs.pending_count != '0'
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify initial decisions without sending collaborator messages
+        if: steps.pending.outputs.pending_count != '0'
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_REGISTRATION_DRY_RUN: '1'
+        run: node scripts/flp360_registration_check.mjs
+      - name: Start the authorized production automation
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_REGISTRATION_DRY_RUN: '0'
+        run: node scripts/flp360_registration_check.mjs
+# /Custom code: FC-2026-10-07

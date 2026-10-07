@@ -1,0 +1,55 @@
+# Custom code: FC-2026-10-07: Verify newly requested FCC access every two hours.
+name: Verify FCC registrations
+
+on:
+  schedule:
+    - cron: '47 */2 * * *'
+      timezone: Europe/Zagreb
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Check registration evidence without changing accounts or sending messages'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flp360-fcc-production-sync
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate registration evidence boundaries
+        run: node scripts/test_flp360_registration_check.mjs
+      - name: Check pending registration count
+        id: queue
+        env:
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_REGISTRATION_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+        run: node scripts/flp360_registration_check.mjs --pending-count
+      - name: Install existing FLP browser runtime
+        if: steps.queue.outputs.pending_count != '0'
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify accounts awaiting FCC access
+        if: steps.queue.outputs.pending_count != '0'
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+          FCC_REGISTRATION_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+        run: node scripts/flp360_registration_check.mjs
+# /Custom code: FC-2026-10-07

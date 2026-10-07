@@ -19,6 +19,9 @@ concurrency:
 
 jobs:
   deploy:
+    # Custom code: FC-2026-10-07: This reviewed registration release deploys only its live patches.
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[fcc-registration-targeted]')
+    # /Custom code: FC-2026-10-07
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

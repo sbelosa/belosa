@@ -264,6 +264,10 @@ class Register extends Controller {
                 $plan_settings              = json_encode((new \Altum\Models\Plan())->get_plan_by_id(2)->settings ?? '');
                 $plan_expiration_date       = date( 'Y-m-d H:i:s', strtotime( ' + 10 years' ) );
 
+                /* Custom code: FC-2026-10-07: Only new explicit requests enter automatic verification. */
+                $_POST['meta']['fcc_access_requested_at'] = get_date();
+                $_POST['meta']['fcc_registration_verification_status'] = 'pending';
+                /* /Custom code: FC-2026-10-07 */
                 $registered_user = (new User())->create(
                     $_POST['email'],
                     $_POST['password'],

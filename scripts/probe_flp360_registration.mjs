@@ -6,6 +6,7 @@ import {
     login, flpApiConfiguration, flpGetJson, reportV2Url,
     normalizeFboId, resolveFccAccountCountryCode, zagrebPeriod,
 } from './flp360_cloud_sync.mjs';
+import {unwrapSingleRecord, verifySponsorChain} from './flp360_registration_check.mjs';
 
 const ROOT_FBO_ID = '360000760944';
 
@@ -47,6 +48,7 @@ async function main() {
         await login(page, username, password);
         const configuration = await flpApiConfiguration(page);
         const targets = [{kind: 'root', fboId: ROOT_FBO_ID, countryCode: configuration.operatingCountryCode}];
+        let verifiedRootSponsorId = '';
         for(const [metric, kind, limit] of [['fcc_accounts', 'active', 2], ['registration_pending', 'pending', 3]]) {
             try {
                 const payload = await fccRead(metric, syncUrl, syncKey);
@@ -67,11 +69,44 @@ async function main() {
                 try {
                     const payload = await flpGetJson(page, reportV2Url(configuration, relativePath), configuration);
                     console.log(JSON.stringify({sample: index + 1, kind: target.kind, source, schema: schemaOnly(payload)}));
+                    if(source === 'detail') {
+                        const detail = unwrapSingleRecord(payload);
+                        const exact = detail && normalizeFboId(detail.distributorId) === target.fboId;
+                        console.log(JSON.stringify({sample: index + 1, kind: target.kind,
+                            exact_identity: Boolean(exact), generation_zero: detail?.generation === 0,
+                            generation_negative: typeof detail?.generation === 'number' && detail.generation < 0,
+                            generation_nonnegative_integer: Number.isSafeInteger(detail?.generation) && detail.generation >= 0,
+                            sponsor_present: Boolean(normalizeFboId(detail?.sponsorDistributorId)),
+                            sponsor_is_root: normalizeFboId(detail?.sponsorDistributorId) === ROOT_FBO_ID,
+                            email_present: typeof detail?.email === 'string' && detail.email.trim() !== ''}));
+                        if(exact && target.kind !== 'root') {
+                            const chain = await verifySponsorChain(page, configuration, target.fboId, detail,
+                                [...new Set([target.countryCode, configuration.operatingCountryCode])],
+                                {rootSponsorId: verifiedRootSponsorId});
+                            console.log(JSON.stringify({sample: index + 1, kind: target.kind,
+                                chain_reached_root: chain.reachedRoot,
+                                outside_root_boundary_confirmed: chain.reachedOutsideBoundary,
+                                generation_consistent: chain.generationConsistent, checked_count: chain.checkedCount}));
+                        }
+                        if(exact && target.kind === 'root') {
+                            const sponsorId = normalizeFboId(detail.sponsorDistributorId);
+                            if(detail.generation === 0) verifiedRootSponsorId = sponsorId;
+                            if(sponsorId && sponsorId !== ROOT_FBO_ID) {
+                                targets.push({kind: 'root_sponsor_control', fboId: sponsorId,
+                                    countryCode: configuration.operatingCountryCode});
+                            }
+                        }
+                    }
                 } catch {
                     console.log(JSON.stringify({sample: index + 1, kind: target.kind, source, available: false}));
                 }
             }
         }
+        try {
+            const payload = await flpGetJson(page, reportV2Url(configuration,
+                `downlineLoggedInDetails/fboId/000000000000/country/${encodeURIComponent(configuration.operatingCountryCode)}`), configuration);
+            console.log(JSON.stringify({kind: 'empty_id_control', schema: schemaOnly(payload)}));
+        } catch {console.log(JSON.stringify({kind: 'empty_id_control', available: false}));}
         const scriptUrls = await page.evaluate(() => [...document.scripts].map(script => script.src).filter(Boolean));
         const hints = new Set();
         for(const url of scriptUrls.filter(url => /main|scripts/.test(url)).slice(0, 4)) {

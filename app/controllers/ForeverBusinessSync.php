@@ -72,6 +72,37 @@ class ForeverBusinessSync extends Controller {
 
     public function index() {
         $this->ensure_access();
+        /* Custom code: FC-2026-10-07: Authenticated registration verification and owner push diagnostics. */
+        $registration_metric = strtolower(trim((string) ($_POST['metric'] ?? '')));
+        if(in_array($registration_metric, ['registration_pending', 'registration_decisions', 'registration_status', 'registration_notification_test'], true)) {
+            require_once APP_PATH . 'helpers/fcc_registration_notifications.php';
+            require_once APP_PATH . 'helpers/fcc_registration_automation.php';
+            try {
+                if($registration_metric === 'registration_pending') {
+                    $data = fcc_registration_automation_pending((int) ($_POST['limit'] ?? 100));
+                } elseif($registration_metric === 'registration_decisions') {
+                    $encoded = (string) ($_POST['decisions'] ?? '[]');
+                    if(strlen($encoded) > 262144) $this->fail('invalid_decisions', 'Zahtjev za provjeru prijava je prevelik.', 413);
+                    $decisions = json_decode($encoded, true, 32, JSON_THROW_ON_ERROR);
+                    if(!is_array($decisions) || !array_is_list($decisions)) throw new \InvalidArgumentException('Invalid decisions.');
+                    $data = fcc_registration_automation_apply_decisions($decisions, filter_var($_POST['dry_run'] ?? false, FILTER_VALIDATE_BOOLEAN));
+                } elseif($registration_metric === 'registration_notification_test') {
+                    $data = ['test' => fcc_registration_notify_admin_test((string) ($_POST['request_id'] ?? '')),
+                        'delivery' => fcc_registration_process_admin_notifications()];
+                } else {
+                    $data = fcc_registration_automation_status();
+                    $data['runtime_ready'] = function_exists('fc_get_user_main_biolink_id') && function_exists('fc_resolve_language_name')
+                        && function_exists('send_mail') && class_exists('Altum\\Helpers\\PushNotifications');
+                }
+                $this->output(['status' => 'success', 'metric' => $registration_metric] + $data);
+            } catch(\InvalidArgumentException | \JsonException $exception) {
+                $this->fail('invalid_decisions', 'Zahtjev za provjeru prijava nije ispravan.', 422);
+            } catch(\Throwable $exception) {
+                error_log('FCC registration machine endpoint failed.');
+                $this->fail('registration_unavailable', 'Provjera FCC prijava trenutačno nije dostupna.', 503);
+            }
+        }
+        /* /Custom code: FC-2026-10-07 */
         forever_business_ensure_tables();
         forever_business_enforce_self_only_access();
 
