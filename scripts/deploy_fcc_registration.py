@@ -136,6 +136,13 @@ def main():
                 file = Path(directory) / f"patch{index}.php"
                 file.write_bytes(data)
                 subprocess.run(["php", "-l", str(file)], check=True, capture_output=True)
+        if os.environ.get('FCC_REGISTRATION_DEPLOY_DRY_RUN') == '1':
+            config = download(ftp, '/public_html/plugins/push-notifications/config.php', optional=True)
+            init = download(ftp, '/public_html/plugins/push-notifications/init.php', optional=True)
+            print(json.dumps({'live_patch_preflight_passed': True,
+                'native_push_config_found': config is not None, 'native_push_init_found': init is not None,
+                'native_push_config_active': bool(config and re.search(rb"['\"]status['\"]\s*=>\s*['\"]active['\"]", config))}))
+            return
         backup = "/.fcc-registration-backups/" + release
         mkdirs(ftp, backup)
         for path, data in before.items():

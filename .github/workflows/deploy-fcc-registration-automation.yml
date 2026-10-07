@@ -129,4 +129,22 @@ jobs:
           FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
           FCC_REGISTRATION_DRY_RUN: '0'
         run: node scripts/flp360_registration_check.mjs
+  live-preflight:
+    needs: validate
+    if: github.ref == 'refs/heads/codex/flp360-registration-automation'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Verify live patch compatibility without changing files
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FCC_REGISTRATION_DEPLOY_DRY_RUN: '1'
+        run: python3 scripts/deploy_fcc_registration.py
 # /Custom code: FC-2026-10-07
