@@ -2476,6 +2476,11 @@ if(process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.arg
 }
 
 export {
+    /* Custom code: FC-2026-10-07: Share authenticated read helpers with registration verification. */
+    login,
+    flpApiConfiguration,
+    flpGetJson,
+    /* /Custom code: FC-2026-10-07 */
     buildDownlineDownloadUrl,
     buildDownlineGenerationUrl,
     buildFourCcCsv,

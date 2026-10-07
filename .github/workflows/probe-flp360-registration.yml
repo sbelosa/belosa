@@ -1,0 +1,40 @@
+# Custom code: FC-2026-10-07: Read-only FLP registration source discovery.
+name: Probe FLP360 registration evidence
+
+on:
+  push:
+    branches: [codex/flp360-registration-automation]
+    paths:
+      - scripts/probe_flp360_registration.mjs
+      - scripts/flp360_cloud_sync.mjs
+      - .github/workflows/probe-flp360-registration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flp360-fcc-production-sync
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install existing FLP browser runtime
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Discover source contracts without modifying accounts
+        env:
+          FLP360_USERNAME: ${{ secrets.FLP360_USERNAME }}
+          FLP360_PASSWORD: ${{ secrets.FLP360_PASSWORD }}
+          FCC_FOREVER_SYNC_URL: ${{ secrets.FCC_FOREVER_SYNC_URL }}
+          FCC_FOREVER_SYNC_KEY: ${{ secrets.FCC_FOREVER_SYNC_KEY }}
+        run: node scripts/probe_flp360_registration.mjs
+# /Custom code: FC-2026-10-07
