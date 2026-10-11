@@ -1,4 +1,5 @@
-.fpe-page { --fpe-surface: #fff; --fpe-soft: #f6f8f4; --fpe-text: #183b37; --fpe-muted: #617369; --fpe-border: #dfe7de; --fpe-green: #177968; --fpe-green-soft: #eaf4ec; --fpe-amber: #f8f3e7; max-width: 1180px; padding-top: .5rem; padding-bottom: 1.5rem; color: var(--fpe-text); }
+/* Custom code: FC-2026-10-11: Light academy colours follow the shared workspace palette (--fp-*) with the previous values as fallback. */
+.fpe-page { --fpe-surface: #fff; --fpe-soft: #f6f8f4; --fpe-text: var(--fp-ink, #183b37); --fpe-muted: var(--fp-muted, #617369); --fpe-border: var(--fp-line, #dfe7de); --fpe-green: var(--fp-green, #177968); --fpe-green-soft: var(--fp-light, #eaf4ec); --fpe-amber: #f8f3e7; max-width: 1180px; padding-top: .5rem; padding-bottom: 1.5rem; color: var(--fpe-text); }
 [data-theme-style="dark"] .fpe-page { --fpe-surface: #171e23; --fpe-soft: #1c252b; --fpe-text: #e4ece6; --fpe-muted: #a1b2a8; --fpe-border: #34413b; --fpe-green: #94d8ac; --fpe-green-soft: #20392d; --fpe-amber: #302d24; }
 .fpe-page h1, .fpe-page h2, .fpe-page h3, .fpe-page h4 { color: inherit; letter-spacing: -.025em; }
 .fpe-page p, .fpe-page li { line-height: 1.7; }

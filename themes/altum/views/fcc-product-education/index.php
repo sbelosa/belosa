@@ -724,7 +724,7 @@ $fpe_product_cards = static function(array $products, bool $favorite_view = fals
 </div>
 
 <?php ob_start() ?>
-<link href="<?= $fpe_escape(ASSETS_FULL_URL . 'css/fcc-product-education.css?v=' . PRODUCT_CODE . '&fpe=20261011v16starter') ?>" rel="stylesheet" media="screen,print">
+<link href="<?= $fpe_escape(ASSETS_FULL_URL . 'css/fcc-product-education.css?v=' . PRODUCT_CODE . '&fpe=20261011v17palette') ?>" rel="stylesheet" media="screen,print">
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 <?php if(in_array($fpe_section, ['products', 'favorites'], true) && !$fpe_product): ?>
 <?php ob_start() ?>

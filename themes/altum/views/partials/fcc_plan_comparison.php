@@ -113,7 +113,7 @@ $blockLabel = static function(string $key): string {
     return $label !== '' && $label !== $translationKey ? strip_tags($label) : ucfirst(str_replace('_', ' ', $key));
 };
 ?>
-<link rel="stylesheet" href="<?= $escape(ASSETS_FULL_URL . 'css/fcc-plan-comparison.css?v=20261009b') ?>" media="screen,print">
+<link rel="stylesheet" href="<?= $escape(ASSETS_FULL_URL . 'css/fcc-plan-comparison.css?v=20261011a') ?>" media="screen,print">
 <section class="fcc-pc" id="fcc-plan-features" aria-labelledby="fcc-pc-title">
     <header class="fcc-pc-heading">
         <span class="fcc-pc-eyebrow"><?= $escape($text('eyebrow')) ?></span>

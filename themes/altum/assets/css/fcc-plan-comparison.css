@@ -1,8 +1,9 @@
+/* Custom code: FC-2026-10-11: Inside the workspace the comparison uses the shared palette (--fp-*); public pages keep the fallbacks. */
 .fcc-pc {
-    --fcc-pc-ink: #173b30;
-    --fcc-pc-muted: #596c62;
-    --fcc-pc-border: #dce5df;
-    --fcc-pc-green: #245540;
+    --fcc-pc-ink: var(--fp-ink, #173b30);
+    --fcc-pc-muted: var(--fp-muted, #596c62);
+    --fcc-pc-border: var(--fp-line, #dce5df);
+    --fcc-pc-green: var(--fp-green, #245540);
     --fcc-pc-pale: #f2f7f3;
     --fcc-pc-gold: #a78038;
     color: var(--fcc-pc-ink);
