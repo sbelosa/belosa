@@ -44588,8 +44588,7 @@ Kto może mi pomóc:',
     'je cjelovit program prehrane i kretanja osmišljen kao
       prirodan nastavak nakon C9 programa ili kao samostalan korak za sve koji žele
       više strukture, jasniji plan i vidljive promjene u relativno kratkom vremenu.' => 'to kompletny program żywieniowy i ruchowy, zaprojektowany jako
-      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce
-      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.',
+      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.',
     'Demo red' => 'Kolejka demonstracyjna',
     'Ne mogu proglasiti' => 'Nie mogę zadeklarować',
     'Bez upita objavi samostalni vodič od jedne svakodnevne potrebe do prikladne opcije.' => 'Jeśli nikt nie pyta, opublikuj samodzielny poradnik, który pomoże przejść od codziennej potrzeby do odpowiedniego rozwiązania.',
@@ -58674,8 +58673,7 @@ Wskazówki nie powinny oceniać własnej odpowiedzi, na przykład: „Ta wiadomo
       prirodan nastavak nakon C9 programa ili kao samostalan korak za sve koji žele
       više strukture, jasniji plan i vidljive promjene u relativno kratkom vremenu.
     ' => ' to kompletny program żywieniowy i ruchowy, zaprojektowany jako
-      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce
-      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.
+      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.
     ',
     '
       Tijekom 15 dana F15 vas vodi kroz jasno definirane faze koje pomažu tijelu da se
