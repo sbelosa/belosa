@@ -103,6 +103,10 @@ $dashboard_stats = $extract_function($dashboard, 'get_stats_ajax');
 $plan_expiration = $extract_function($user_model, 'process_user_plan_expiration_by_user');
 $trusted_country_resolver = $extract_function($link_helper, 'get_trusted_forever_request_country_code');
 $vip_business_url = $extract_function($vip_funnel, 'vip_funnel_get_forever_business_referral_url');
+/* Custom code: FC-2026-10-11: Country detection is centralized in the Forever routing helper. */
+$forever_routing = $read('app/helpers/fcc_forever_routing.php');
+$country_context = $extract_function($forever_routing, 'fcc_forever_country_context');
+/* /Custom code: FC-2026-10-11 */
 
 $assert($sandbox_check !== '', 'Sandbox user check is missing.');
 $sandbox_payload_position = strpos($sandbox_check, 'vip_funnel_demo_get_user_payload');
@@ -178,12 +182,13 @@ $assert(
 
 $assert($trusted_country_resolver !== '', 'Trusted country resolver is missing.');
 $assert(strpos($trusted_country_resolver, 'HTTP_X_COUNTRY_CODE') === false && strpos($trusted_country_resolver, 'HTTP_X_COUNTRY') === false, 'Client-controlled country headers must not be treated as trusted proxy signals.');
-$vip_local_geo_position = strpos($vip_business_url, 'GeoLite2-City.mmdb');
-$vip_external_geo_position = strpos($vip_business_url, 'get_external_geo_country_code');
-$assert($vip_local_geo_position !== false && $vip_external_geo_position !== false && $vip_local_geo_position < $vip_external_geo_position, 'VIP public render must try local GeoLite before external geo services.');
-$biolink_local_geo_position = strpos($public_biolink, "isset(\$maxmind['country']['iso_code'])");
-$biolink_external_geo_position = strpos($public_biolink, 'get_external_geo_country_code');
-$assert($biolink_local_geo_position !== false && $biolink_external_geo_position !== false && $biolink_local_geo_position < $biolink_external_geo_position, 'Public biolink render must try local GeoLite before external geo services.');
+/* Custom code: FC-2026-10-11: VIP and biolink renders delegate to fcc_forever_country_context(), the only external geo caller. */
+$assert(strpos($vip_business_url, 'get_external_geo_country_code') === false && strpos($vip_business_url, 'fcc_forever_entry_url') !== false, 'VIP business link must use the shared Forever routing instead of its own external geo lookup.');
+$assert(strpos($public_biolink, 'get_external_geo_country_code') === false && strpos($public_biolink, 'fcc_forever_country_context') !== false, 'Public biolink render must use the shared Forever country context.');
+$context_local_geo_position = strpos($country_context, 'get_maxmind_reader_city');
+$context_external_geo_position = strpos($country_context, 'get_external_geo_country_code');
+$assert($context_local_geo_position !== false && $context_external_geo_position !== false && $context_local_geo_position < $context_external_geo_position, 'Forever country context must try local GeoLite before external geo services.');
+/* /Custom code: FC-2026-10-11 */
 
 if($failures) {
     fwrite(STDERR, "Request performance guard failures:\n- " . implode("\n- ", $failures) . "\n");

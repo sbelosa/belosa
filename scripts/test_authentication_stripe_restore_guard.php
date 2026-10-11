@@ -140,6 +140,12 @@ namespace Stripe\HttpClient {
     }
 }
 
+namespace Altum {
+    final class Router {
+        public static array $controller_settings = ['no_authentication_check' => false];
+    }
+}
+
 namespace {
     $workspace_root = dirname(__DIR__);
     $authentication_path = $workspace_root . '/app/core/Authentication.php';
@@ -270,19 +276,24 @@ namespace {
         'public static function check()',
         '/* Custom code */'
     );
-    $already_logged_in_source = $extract_source(
-        $check_source,
-        '/* Already logged in from previous checks */',
-        '/* Check the cookies first */'
-    );
 
     $attempt_marker_position = strpos($maybe_restore_source, 'self::$stripe_plan_restore_attempted_user_ids[$user_id] = true;');
     $session_close_position = strpos($maybe_restore_source, 'session_write_close();');
     $cooldown_position = strpos($maybe_restore_source, 'self::acquire_stripe_plan_restore_cooldown($user_id)');
     $stripe_lookup_position = strpos($maybe_restore_source, 'self::get_active_stripe_subscription_for_user($user)');
 
-    $assertions['already-authenticated checks do not repeat restore'] = $already_logged_in_source !== ''
-        && !str_contains($already_logged_in_source, 'maybe_restore_stripe_plan_access');
+    $previous_logged_in = \Altum\Authentication::$is_logged_in;
+    $previous_user_id = \Altum\Authentication::$user_id;
+    $requests_before_check = \Stripe\StripeRestoreGuardTestState::$request_count;
+    \Altum\Authentication::$is_logged_in = true;
+    \Altum\Authentication::$user_id = 4242;
+    $first_check = \Altum\Authentication::check();
+    $second_check = \Altum\Authentication::check();
+    $assertions['already-authenticated checks do not repeat restore'] = $first_check === 4242
+        && $second_check === 4242
+        && \Stripe\StripeRestoreGuardTestState::$request_count === $requests_before_check;
+    \Altum\Authentication::$is_logged_in = $previous_logged_in;
+    \Altum\Authentication::$user_id = $previous_user_id;
     $assertions['initial cookie and session authentication retain exactly two restore call sites'] = substr_count($check_source, 'self::maybe_restore_stripe_plan_access(') === 2;
     $assertions['request attempt is marked before Stripe lookup'] = $attempt_marker_position !== false
         && $stripe_lookup_position !== false

@@ -24,6 +24,10 @@ namespace {
     function get_domain_from_email($email) { return explode('@', $email)[1] ?? ''; }
     function get_ip() { return '192.0.2.1'; }
     function get_this_device_type() { return 'desktop'; }
+    /* Custom code: FC-2026-10-11: The live controller stamps the verification request time. */
+    function get_date($format = 'Y-m-d H:i:s') { return (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format($format); }
+    function fcc_t($source, $replace = [], $locale = null) { return strtr((string) $source, (array) $replace); }
+    /* /Custom code: FC-2026-10-11 */
     function get_maxmind_reader_country() { throw new \RuntimeException('No GeoIP in offline test'); }
     function output_alert($type, $message) { return '<p>' . e($message) . '</p>'; }
     class RegistrationDatabase {
@@ -32,12 +36,20 @@ namespace {
         public function getValue(...$args) { return $GLOBALS['recent_registrations'] ?? 0; }
     }
     function db() { return new RegistrationDatabase(); }
+    function fcc_legal_url($page) { return url($page === 'privacy' ? 'privacy-policy' : 'terms-of-service'); }
+    function fcc_legal_config() { return require APP_PATH . 'config/fcc_legal.php'; }
+    function fcc_partner_query($sql, $params) {
+        if(!str_starts_with($sql, "UPDATE users SET preferences=JSON_SET(preferences,'$.legal_acceptance'")) throw new \RuntimeException('Unexpected database mutation in registration fixture');
+        $GLOBALS['legal_acceptance_fixture'] = json_decode($params[0], true);
+        return new \stdClass();
+    }
     require APP_PATH . 'helpers/strings.php';
     require APP_PATH . 'core/Alerts.php';
     require APP_PATH . 'core/Csrf.php';
     require APP_PATH . 'core/Captcha.php';
 }
 namespace Altum {
+    class Language { public static $code = 'hr'; }
     class Authentication { public static function guard($role) {} }
     class CustomHooks { public static function user_initiate_registration() {} }
     class Plugin { public static function is_active($name) { return false; } }
@@ -104,7 +116,7 @@ namespace {
             'meta_foreverId' => '001234567890', 'meta_address' => 'Test 1', 'meta_city' => 'Zagreb',
             'meta_zip' => '10000', 'meta_country' => 'Hrvatska', 'meta_phone' => '0911234567',
             'meta_phone_country_code' => 'HR', 'captcha' => 'AbC234',
-            'registration_token' => \Altum\Csrf::get('registration_token'), 'registration_website' => '',
+            'registration_token' => \Altum\Csrf::get('registration_token'), 'registration_website' => '', 'accept' => '1',
         ];
     }
     function submit(): bool {

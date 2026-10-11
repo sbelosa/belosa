@@ -11,8 +11,12 @@ namespace {
         return $GLOBALS['translations'][$key];
     }
     function nr($value, $decimals = 0) { return number_format((float) $value, $decimals, ',', '.'); }
+    /* Custom code: FC-2026-10-11: The live view wraps copy in fcc_t(); this offline test keeps source strings. */
+    function fcc_t($source, $replace = [], $locale = null) { return strtr((string) $source, (array) $replace); }
+    /* /Custom code: FC-2026-10-11 */
     function currency() { return 'EUR'; }
     function url($path) { return 'http://localhost:8091/' . $path; }
+    function fcc_partner_enabled() { return false; }
     function settings() { return $GLOBALS['test_settings']; }
     function vip_funnel_demo_is_sandbox_user($user) { return !empty($user->demo); }
     function vip_funnel_demo_get_locked_action_message($route) { return 'Demo account'; }

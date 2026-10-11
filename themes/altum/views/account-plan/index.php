@@ -254,7 +254,9 @@ try {
 } catch(\Throwable $exception) {
     /* Missing or invalid dates must not imply a new renewal date. */
 }
-$is_lifetime = !$is_free_plan && !$has_subscription && $expiration_date && $expiration_date > (new \DateTimeImmutable())->modify(fcc_t('+10 years'));
+/* Custom code: FC-2026-10-11: Date modifiers stay untranslated so lifetime detection works in every language. */
+$is_lifetime = !$is_free_plan && !$has_subscription && $expiration_date && $expiration_date > (new \DateTimeImmutable())->modify('+10 years');
+/* /Custom code: FC-2026-10-11 */
 $has_paid_access = !$is_free_plan && $expiration_date && $expiration_date > new \DateTimeImmutable();
 $expiration_label = $expiration_date ? \Altum\Date::get($this->user->plan_expiration_date, 2) : l('global.na');
 $renewal_state = $has_subscription ? 'on' : 'off';

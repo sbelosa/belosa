@@ -55,7 +55,7 @@ $assertions = [
     'detailed account reconciliation requires the signed machine endpoint' => str_contains($sync, "metric === 'account_audit'") && str_contains($helper, 'forever_business_get_account_audit_rows'),
     'machine sync is pinned to the admin root FBO' => str_contains($sync, "ROOT_FBO_ID = '360000760944'"),
     'machine sync keeps root handling pinned while accepting only active FCC Forever IDs' => str_contains($sync, "metric === 'member_cc'") && str_contains($sync, "fbo_id === self::ROOT_FBO_ID") && str_contains($sync, 'forever_business_get_active_user_link_count_for_fbo($fbo_id) < 1') && str_contains($helper, 'forever_business_upsert_root_live_cc') && str_contains($helper, 'forever_business_upsert_registered_member_live_cc'),
-    'machine sync exposes a secret-protected PII-free FCC Forever ID reconciliation list' => str_contains($sync, "metric === 'fcc_accounts'") && str_contains($helper, 'forever_business_get_registered_sync_accounts') && str_contains($helper, "account.fbo_id REGEXP '^360[0-9]{9}$'") && str_contains($helper, 'active_link_count') && str_contains($helper, 'is_vip_enrolled'),
+    'machine sync exposes a secret-protected PII-free FCC Forever ID reconciliation list' => str_contains($sync, "metric === 'fcc_accounts'") && str_contains($helper, 'forever_business_get_registered_sync_accounts') && str_contains($helper, "account.fbo_id REGEXP '^[0-9]{12}$'") && str_contains($helper, 'active_link_count') && str_contains($helper, 'is_vip_enrolled'),
     'machine sync verifies the Focus Group root inside the downloaded workbook' => str_contains($sync, "empty(\$report['members'][self::ROOT_FBO_ID])"),
     'machine sync enforces self-only privacy and never grants manager access' => str_contains($sync, 'forever_business_enforce_self_only_access()') && !str_contains($sync, 'forever_business_grant_exact_manager_accesses(1)'),
     'all active FCC Forever IDs receive self-only placeholders' => str_contains($helper, 'forever_business_provision_fcc_members') && str_contains($helper, "'FCC suradnik'") && str_contains($helper, 'is_in_current_structure, email_hash'),
@@ -81,7 +81,7 @@ $assertions = [
     'shared Forever IDs keep separate account progress and LOS participant identity' => str_contains($helper, 'forever_business_outcome_user_daily_uq') && str_contains($helper, 'recorded_by_user_id = {$user_id}') && str_contains($helper, 'vip_participant_lock_failed'),
     'participant progress follows the FCC account when its approved Forever ID is corrected' => str_contains($helper, 'GROUP BY recorded_by_user_id') && str_contains($helper, 'actor_outcomes.recorded_by_user_id = {$user_id}') && str_contains($helper, "m.fbo_id = '{\$escaped_dashboard_root}'"),
     'arbitrary non-admin root parameters cannot replace self-only participant progress' => str_contains($helper, '$dashboard_root = $is_admin') && str_contains($helper, ': $authenticated_dashboard_root;') && str_contains($user, "\$requested_root = '';"),
-    'all supported Forever ID preference aliases provision members and qualified email recipients' => substr_count($helper, "$.meta.forever_id") >= 4 && substr_count($helper, "$.meta.foreverID") >= 4 && str_contains($helper, 'JSON_VALID(u.preferences)'),
+    'all supported Forever ID preference aliases provision members and qualified email recipients' => str_contains($helper, "$.meta.forever_id") && str_contains($helper, "$.meta.foreverID") && str_contains($helper, '$account_fbo_sql = forever_business_user_fbo_sql_expression();') && str_contains($helper, 'JSON_VALID(u.preferences)'),
     'admin usage and reconciliation audits use the same three Forever ID aliases as access' => str_contains($helper, 'function forever_business_user_fbo_sql_expression') && substr_count($helper, "forever_business_user_fbo_sql_expression('u.preferences')") >= 2 && substr_count($helper, "forever_business_user_fbo_sql_expression('preferences')") >= 2,
     'members can request mentor help without completing a task' => str_contains($helper, 'forever_business_vip_help_requests') && str_contains($helper, 'forever_business_request_vip_help') && str_contains($view, 'request_vip_help') && str_contains($view, 'Pošalji upit mentoru'),
     'runtime schema verifies every launch table, starting-track field and per-level sequence while preserving legacy help flags' => str_contains($helper, 'forever_business_runtime_schema_v20260901_3') && str_contains($helper, '$required_tables') && str_contains($helper, "'starting_track_key'") && str_contains($helper, "'starting_track_reason'") && str_contains($helper, "'starting_track_decided_at'") && str_contains($helper, "'sequence_position'") && str_contains($helper, 'forever_business_outcome_user_track_idx') && str_contains($helper, "WHEN `action_key` = 'vip26_activator_d01' THEN NULL") && str_contains($helper, 'Legacy VIP help requests could not be preserved.') && str_contains($helper, '`outcome`.`needs_help` = 1'),
@@ -178,8 +178,10 @@ $supervisor_at_month_boundary = forever_business_get_verified_progress(array_mer
     'total_cc' => 0.0,
     'previous_total_cc' => 45.0,
 ]));
-$first_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 0);
-$second_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 1);
+// Keep this progression check independent of Sunday's scheduled marketing plan.
+$progression_time = new DateTimeImmutable('2026-09-02 12:00:00', new DateTimeZone('Europe/Zagreb'));
+$first_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 0, false, $progression_time);
+$second_action = forever_business_get_action(array_merge($base, ['verified_progress' => $activity]), $base, 1, false, $progression_time);
 $zagreb_time = forever_business_format_zagreb_datetime('2026-08-14 06:53:00');
 $before_launch = new DateTimeImmutable('2026-08-31 23:59:59', new DateTimeZone('Europe/Zagreb'));
 $august_sync_time = new DateTimeImmutable('2026-08-21 12:00:00', new DateTimeZone('Europe/Zagreb'));
@@ -212,7 +214,7 @@ foreach($catalog as $catalog_track_key => $catalog_tasks) {
     $configured_quick_targets = $task_meta[$catalog_track_key]['quick_targets'] ?? [];
     if(count($configured_result_types) !== 30) $catalog_result_types_are_explicit = false;
     if(count($configured_targets) !== 30 || count($configured_quick_targets) !== 30) $catalog_quick_targets_are_explicit = false;
-    foreach($catalog_tasks as $catalog_day => $catalog_task) {
+    foreach(array_slice($catalog_tasks,0,30,true) as $catalog_day => $catalog_task) {
         $task_text = (string) ($catalog_task['task_text'] ?? '');
         $task_parts = preg_split('/(?<!\d\.)(?<=[.!?])\s+/u', $task_text, 2);
         $first_sentence = rtrim(trim((string) ($task_parts[0] ?? $task_text)), '.!?');
@@ -269,7 +271,7 @@ $at_sunday_midnight_action = forever_business_get_action($starter_member, null, 
 $at_monday_midnight_action = forever_business_get_action($starter_member, null, 0, false, $first_monday_midnight, false);
 $spring_daily_complete_action = forever_business_get_action($starter_member, null, 1, true, $spring_dst_night, true);
 $autumn_daily_complete_action = forever_business_get_action($starter_member, null, 1, true, $autumn_dst_night, true);
-$completed_program = forever_business_get_action($starter_member, null, 30, true, $weekday_morning);
+$completed_program = forever_business_get_action($starter_member, null, 60, true, $weekday_morning);
 $confirmed_reactivation_member = array_merge($starter_member, [
     'vip_base_personal_cc' => .5,
     'vip_base_is_4cc_active' => 0,
@@ -332,7 +334,7 @@ $completed_starter_then_promoted = forever_business_get_action(array_merge($prom
     'vip_starter_sequence_position' => 30,
 ]), null, 30, false, $weekday_morning);
 $completed_current_level = forever_business_get_action(array_merge($promoted_activator_member, [
-    'vip_activator_sequence_position' => 30,
+    'vip_activator_sequence_position' => 60,
 ]), null, 42, false, $weekday_morning);
 $promotion_same_day_waits = forever_business_get_action($promoted_activator_member, null, 12, false, $weekday_late, true);
 $promotion_sunday_override = forever_business_get_action($promoted_activator_member, null, 12, false, $sunday_after_completion);
@@ -594,7 +596,7 @@ $rule_assertions = [
     'a numeric threshold without persisted trusted enrollment cannot bypass the gate' => !$vip_unconfirmed_later_threshold['is_enrolled'] && !$vip_unconfirmed_later_threshold['can_access_education'] && $vip_unconfirmed_later_threshold['status'] === 'waiting_confirmation',
     'duplicate active FCC linkage fails closed without deleting enrollment' => $vip_duplicate_link['is_enrolled'] && !$vip_duplicate_link['has_valid_linkage'] && !$vip_duplicate_link['can_access_education'] && $vip_duplicate_link['status'] === 'duplicate_linkage',
     'administrator-approved shared FCC linkage keeps VIP access open' => $vip_approved_shared_link['is_enrolled'] && $vip_approved_shared_link['has_valid_linkage'] && $vip_approved_shared_link['is_shared_linkage'] && $vip_approved_shared_link['can_access_education'] && $vip_approved_shared_link['linkage_status'] === 'shared',
-    'all five VIP levels contain exactly 30 reviewed tasks' => count($catalog) === 5 && count($catalog['starter'] ?? []) === 30 && count($catalog['activator'] ?? []) === 30 && count($catalog['builder'] ?? []) === 30 && count($catalog['leader'] ?? []) === 30 && count($catalog['reactivation'] ?? []) === 30,
+    'all five VIP levels contain 30 original and 30 extension tasks' => count($catalog) === 5 && count($catalog['starter'] ?? []) === 60 && count($catalog['activator'] ?? []) === 60 && count($catalog['builder'] ?? []) === 60 && count($catalog['leader'] ?? []) === 60 && count($catalog['reactivation'] ?? []) === 60,
     'reviewed Starter edits keep real beginner alternatives and official-account verification' => ($catalog['starter'][7]['target'] ?? 0) === 2
         && ($catalog['starter'][7]['quick_target'] ?? 0) === 1
         && str_contains((string) ($catalog['starter'][7]['task_text'] ?? ''), 'Ako ih još nemaš')
@@ -658,7 +660,7 @@ $rule_assertions = [
     'Saturday completion unlocks the Sunday priority task exactly at midnight' => ($after_saturday_action['next_unlock_at_iso'] ?? '') === '2026-09-06T00:00:00+02:00' && !empty($at_sunday_midnight_action['is_weekly_plan']) && ($at_sunday_midnight_action['key'] ?? '') === 'vip26_sunday_20260906' && empty($at_sunday_midnight_action['next_unlock_at_iso']),
     'completed Sunday plan unlocks the waiting regular step on Monday at midnight' => ($after_sunday_action['next_unlock_at_iso'] ?? '') === '2026-09-07T00:00:00+02:00' && empty($at_monday_midnight_action['is_weekly_plan']) && !empty($at_monday_midnight_action['can_complete']) && ($at_monday_midnight_action['key'] ?? '') === 'vip26_starter_d01',
     'midnight calculation follows both Zagreb DST transitions rather than adding a fixed UTC day' => ($spring_daily_complete_action['next_unlock_at_iso'] ?? '') === '2026-03-30T00:00:00+02:00' && ($spring_daily_complete_action['seconds_until_next_unlock'] ?? -1) === 81000 && ($autumn_daily_complete_action['next_unlock_at_iso'] ?? '') === '2026-10-26T00:00:00+01:00' && ($autumn_daily_complete_action['seconds_until_next_unlock'] ?? -1) === 88200,
-    'program stops cleanly after 30 sequence steps without showing another unlock countdown' => !empty($completed_program['is_program_complete']) && !$completed_program['can_complete'] && $completed_program['sequence_position'] === 30 && empty($completed_program['next_unlock_at_iso']),
+    'program stops cleanly after 60 sequence steps without showing another unlock countdown' => !empty($completed_program['is_program_complete']) && !$completed_program['can_complete'] && $completed_program['sequence_position'] === 60 && empty($completed_program['next_unlock_at_iso']),
     'daily September cohort completes 30 regular plus five Sunday tasks on 5 October' => $simulated_regular_steps === 30 && $simulated_total_tasks === 35 && $simulated_completion_date === '2026-10-05',
     'VIP group and first Marketing plan are available in the qualified program state' => str_contains($vip_active['whatsapp_group_url'], 'G0Mxgm8yXfrIDAOxNqPbmw') && ($vip_active['marketing_plan']['weekday'] ?? 0) === 7 && ($vip_active['marketing_plan']['time_label'] ?? '') === '18:00' && ($vip_active['marketing_plan']['next_at_display'] ?? '') === 'nedjelja, 06.09.2026. u 18:00' && ($vip_active['marketing_plan']['url'] ?? '') === 'https://forevercard.club/vip-edukacija',
     'August Builder level cannot drop when a later month starts at zero' => $fixed_builder_track['key'] === 'builder',

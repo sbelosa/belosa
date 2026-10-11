@@ -217,9 +217,10 @@
                         <?= include_view(THEME_PATH . 'views/partials/plans_plan_content.php', ['plan_settings' => $plan->settings]) ?>
 
                         <?php if(settings()->users->register_is_enabled || is_logged_in()): ?>
-                            <a href="<?= url('register?redirect=pay/' . $plan->plan_id) ?>" class="btn btn-block btn-primary rounded-2x <?= is_logged_in() && $this->user->plan_id == $plan->plan_id && (new \DateTime($this->user->plan_expiration_date)) > (new \DateTime())->modify(fcc_t('+10 years')) ? 'disabled' : null ?>" style="<?= $plan->color ? 'background-color: ' . $plan->color : null ?>">
+                            <?php /* Custom code: FC-2026-10-11: Date modifiers stay untranslated so lifetime detection works in every language. */ ?>
+                            <a href="<?= url('register?redirect=pay/' . $plan->plan_id) ?>" class="btn btn-block btn-primary rounded-2x <?= is_logged_in() && $this->user->plan_id == $plan->plan_id && (new \DateTime($this->user->plan_expiration_date)) > (new \DateTime())->modify('+10 years') ? 'disabled' : null ?>" style="<?= $plan->color ? 'background-color: ' . $plan->color : null ?>">
                                 <?php if(is_logged_in()): ?>
-                                    <?php if($this->user->plan_id == $plan->plan_id && (new \DateTime($this->user->plan_expiration_date)) > (new \DateTime())->modify(fcc_t('+10 years'))): ?>
+                                    <?php if($this->user->plan_id == $plan->plan_id && (new \DateTime($this->user->plan_expiration_date)) > (new \DateTime())->modify('+10 years')): ?>
                                         <?= l('plans.lifetime') ?>
                                     <?php elseif(!$this->user->plan_trial_done && $plan->trial_days): ?>
                                         <?= sprintf(l('plans.trial'), $plan->trial_days) ?>
