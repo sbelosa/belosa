@@ -27,7 +27,7 @@ function fcc_coach_features(object $user): array {
         ['personal_webinar', 'Moji webinari', 'partner-webinar?view=events', 'PRO omogućuje svoj naziv, temu, termin i pristupnu poveznicu te osobnu pozivnicu. Zoom ili drugu sobu suradnik kreira u tom servisu. Može dodati vlastiti video ili pozivnicu bez videa. Postojeći budući susret može urediti ili ukloniti.'],
         ['webinar_guests', 'Moje prijave na webinare', 'partner-webinar?view=activity', 'Vlastite prijave na standardne, video i individualne pozivnice. Prijava ne dokazuje dolazak. Dopuštenje javljanja provjeri prije poruke.'],
         ['cards', 'Moja kartica', 'partner/cards', 'Uredi svoju FCC karticu, blokove, poveznice i kontakt. Glavna aktivna kartica daje osobni referal.'],
-        ['results', 'FCC Rezultati', 'fcc-results', 'Vlastiti kvalificirani odlasci s kartice ili podijeljenog članka prema Forever trgovini u zadnjih 30 dana. Posjet članku nije takav klik. 15 je prag za istaknute aplikacije; 50 za preporučene sponzore i javni profil uz uvjete javne objave. Nema jamstva Google ili AI indeksacije.'],
+        ['results', 'FCC Rezultati', 'fcc-results', 'Osobna statistika odlazaka s kartice i podijeljenih članaka prema Forever trgovini. Klikovi više nisu uvjet ni za što: Istaknute aplikacije traže PRO i 1 osobni CC, a Preporučeni sponzori i 4CC grupa PRO i 4CC, u ovom ili prošlom mjesecu.'], /* Custom code: FC-2026-10-11 */
         ['cc', 'Moji Forever bodovi', 'forever-business', 'Vlastiti CC i stanje pristupa. CC je uvezeni zbir za period, nije dokaz tko je kupio koji proizvod.'],
         ['team', 'Moj tim', 'partner/team', 'Prikazuje samo dio tima koji račun smije vidjeti. Coach koristi samo članove iz team_activity, bez tuđih privatnih razgovora i CRM bilješki.'],
         ['notifications', 'Obavijesti i podsjetnici', 'partner/notifications', 'Vlastite obavijesti i odabir podsjetnika. Za push je potrebna dozvola uređaja.'],
@@ -37,7 +37,6 @@ function fcc_coach_features(object $user): array {
         ['payments', 'Moje uplate i računi', 'account-payments', 'Vlastite uplate i računi. Ne zaključuj da je naplata provedena iz roka trajanja paketa.'],
         ['install', 'Instalacija aplikacije', 'partner/install', 'Upute za instalaciju na iPhone i Android. Koristi postojeći FCC račun.'],
         ['advisors', 'FCC AI savjetnici i upiti', 'fcc-ai', 'Postavke dostupnih javnih AI savjetnika i njihovi upiti. Dostupnost savjetnika ovisi o paketu i postavkama kartice.'],
-        ['review', 'AI pregled kartice', 'ai-app-review', 'Dodatni pregled kartice kad je uključen i dostupan. Za osobne poruke uz zadatak koristi Coach, bez stvaranja dodatnih planova.'],
         ['advanced', 'Biblioteka i napredni alati', 'partner/more', 'Na FCC webu su i QR kodovi, poveznice, statistika, projekti, domene te Funnel studio. Nisu potrebni za početak; svaki alat provjerava prava paketa.'],
     ];
     if(fcc_business_landing_access((int)$user->user_id))foreach($features as &$feature)if($feature[0]==='business_presentation')$feature=['business_presentation','Poslovna prezentacija','partner-marketing','Završna stranica za odluku i početak u Foreveru, tri modela, osobna preporuka, početni paket i izravni WhatsApp. Kontaktni upit je dobrovoljan. Odlazni klik nije dokaz kupnje ili registracije.'];unset($feature);

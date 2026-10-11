@@ -305,11 +305,14 @@ class Links extends Controller {
     }
 
     private function get_featured_profile_builder_state(?object $main_biolink, array $signal_snapshot = []): array {
-        $qualified_target = max(15, (int) ($signal_snapshot['qualified_target'] ?? 15));
-        $growth_signal_30d = max(0, (int) ($signal_snapshot['growth_signal_30d'] ?? 0));
+        /* Custom code: FC-2026-10-11: The public profile unlocks with the Featured apps CC rule, not 15+ clicks. */
+        $qualified_target = 1;
+        $cc_unlocked = in_array(fcc_ccv_user_state((int) ($this->user->user_id ?? 0))['cc_level'], ['featured', '4cc'], true);
+        $growth_signal_30d = $cc_unlocked ? 1 : 0;
+        /* /Custom code: FC-2026-10-11 */
         $generated_payload = $this->get_featured_profile_generated_payload($main_biolink->fcc_featured_profile_generated ?? null);
         $generated_at = trim((string) ($generated_payload['generated_at'] ?? ''));
-        $can_generate_now = $growth_signal_30d >= $qualified_target;
+        $can_generate_now = $cc_unlocked;
         $cooldown_days = 7;
         $next_generate_at = '';
 
@@ -328,7 +331,7 @@ class Links extends Controller {
         }
 
         return [
-            'is_unlocked' => $growth_signal_30d >= $qualified_target,
+            'is_unlocked' => $cc_unlocked,
             'growth_signal_30d' => $growth_signal_30d,
             'qualified_target' => $qualified_target,
             'missing_to_unlock' => max(0, $qualified_target - $growth_signal_30d),

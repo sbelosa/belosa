@@ -29,6 +29,6 @@ if(empty(settings()->codes->qr_codes_is_enabled)) unset($fp_tools['qr-codes']);
 </section>
 <details class="fp-panel fp-tools-library"><summary><?= htmlspecialchars(fcc_t('Materijali, podrška i račun'), ENT_QUOTES, 'UTF-8') ?></summary>
 <div class="fp-admin-links">
-<?php foreach([[fcc_t('Materijali uz moj program'),'partner?view=materials'],[fcc_t('Članci i proizvodi'),'partner/share'],[fcc_t('Moj AI savjetnik'),'fcc-ai'],[fcc_t('AI pregled kartice'),'ai-app-review'],[fcc_t('Moj Forever i CC bodovi'),'forever-business'],[fcc_t('Moj napredak'),'partner?view=progress'],[fcc_t('Pomoć i moji zahtjevi'),'feedback-tickets'],[fcc_t('Moje uplate i računi'),'account-payments']] as [$label,$path]): ?><a href="<?= url($path) ?>"><?= $h($label) ?><span>→</span></a><?php endforeach ?>
+<?php foreach([[fcc_t('Materijali uz moj program'),'partner?view=materials'],[fcc_t('Članci i proizvodi'),'partner/share'],[fcc_t('Moj AI savjetnik'),'fcc-ai'],[fcc_t('Moj Forever i CC bodovi'),'forever-business'],[fcc_t('Moj napredak'),'partner?view=progress'],[fcc_t('Pomoć i moji zahtjevi'),'feedback-tickets'],[fcc_t('Moje uplate i računi'),'account-payments']] as [$label,$path]): ?><a href="<?= url($path) ?>"><?= $h($label) ?><span>→</span></a><?php endforeach ?>
 <?php foreach(settings()->content->pages_is_enabled?(new \Altum\Models\Page())->get_pages('top'):[] as $page): ?><a href="<?= $h($page->url) ?>" <?= $page->target==='_blank'?'target="_blank" rel="noopener"':'' ?>><?= $h($page->title) ?><span>→</span></a><?php endforeach ?>
 </div></details>

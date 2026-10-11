@@ -36,8 +36,7 @@
                             <?php if(!empty($sponsor['public_market'])): ?>
                                 <span class="fcc-sponsor-profile__pill"><?= $ui['profile_market_label'] ?>: <?= $sponsor['public_market'] ?></span>
                             <?php endif ?>
-                            <span class="fcc-sponsor-profile__pill fcc-sponsor-profile__pill--accent"><?= $ui['profile_signal_label'] ?>: <?= nr($sponsor['growth_signal_30d']) ?></span>
-                            <span class="fcc-sponsor-profile__pill"><?= $ui['profile_weekly_label'] ?>: <?= nr($sponsor['growth_signal_7d']) ?></span>
+                            <?php /* Custom code: FC-2026-10-11 */ ?><span class="fcc-sponsor-profile__pill fcc-sponsor-profile__pill--accent"><?= $ui['profile_signal_label'] ?></span>
                         </div>
 
                         <?php if(!empty($sponsor['public_use_case'])): ?>
@@ -111,8 +110,7 @@
                                 </div>
 
                                 <div class="fcc-sponsor-related__meta mb-3">
-                                    <span class="fcc-sponsor-profile__pill fcc-sponsor-profile__pill--accent"><?= $ui['profile_signal_label'] ?>: <?= nr($related['growth_signal_30d']) ?></span>
-                                    <span class="fcc-sponsor-profile__pill"><?= $ui['profile_weekly_label'] ?>: <?= nr($related['growth_signal_7d']) ?></span>
+                                    <?php /* Custom code: FC-2026-10-11 */ ?><span class="fcc-sponsor-profile__pill fcc-sponsor-profile__pill--accent"><?= $ui['profile_signal_label'] ?></span>
                                 </div>
 
                                 <p class="small text-muted mb-3"><?= $related['public_summary'] ?></p>

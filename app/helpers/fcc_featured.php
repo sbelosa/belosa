@@ -437,8 +437,13 @@ function fcc_featured_get_user_public_profile_state($user, string $language = 'h
     $opt_in_enabled = !empty($main_biolink->fcc_featured_opt_in);
     $is_approved = !empty($main_biolink->fcc_featured_is_approved);
     $is_public_base_ready = (int)($source->status ?? $user->status ?? 0) === 1 && $has_growth_pro && !empty($main_biolink->is_enabled) && $opt_in_enabled && $is_approved;
-    $featured_list_ready = $is_public_base_ready && $public_signal_30d >= $qualified_target;
-    $recommended_list_ready = $featured_list_ready && $public_signal_30d >= $top_target && !empty($sales_link_summary['has_valid_enabled_link']);
+    /* Custom code: FC-2026-10-11: Public lists follow FLP360 CC of the current or previous month. */
+    $cc_level = $user_id > 0 ? fcc_ccv_user_state($user_id)['cc_level'] : 'none';
+    $featured_threshold_reached = in_array($cc_level, ['featured', '4cc'], true);
+    $recommended_threshold_reached = $cc_level === '4cc';
+    $featured_list_ready = $is_public_base_ready && $featured_threshold_reached;
+    $recommended_list_ready = $featured_list_ready && $recommended_threshold_reached && !empty($sales_link_summary['has_valid_enabled_link']);
+    /* /Custom code: FC-2026-10-11 */
     $profile_slug = $main_biolink ? fcc_featured_build_profile_slug((string) ($main_biolink->name ?? ($user->name ?? '')), (int) ($main_biolink->link_id ?? 0)) : '';
     $profile_edit_url = url('links?type=biolink&fcc_profile_modal=1');
 
@@ -464,8 +469,9 @@ function fcc_featured_get_user_public_profile_state($user, string $language = 'h
         'qualified_target' => $qualified_target,
         'top_target' => $top_target,
         'weekly_check_target' => $weekly_check_target,
-        'featured_threshold_reached' => $public_signal_30d >= $qualified_target,
-        'recommended_threshold_reached' => $public_signal_30d >= $top_target,
+        'cc_level' => $cc_level,
+        'featured_threshold_reached' => $featured_threshold_reached,
+        'recommended_threshold_reached' => $recommended_threshold_reached,
         'featured_list_ready' => $featured_list_ready,
         'recommended_list_ready' => $recommended_list_ready,
         'has_generated_profile' => $has_generated_profile,
@@ -477,7 +483,7 @@ function fcc_featured_get_user_public_profile_state($user, string $language = 'h
         'public_summary' => $public_summary,
         'profile_intro' => trim((string) ($generated_profile['profile_intro'] ?? '')),
         'meta_description' => trim((string) ($generated_profile['meta_description'] ?? '')),
-        'needs_profile_generation' => $public_signal_30d >= $qualified_target && !$profile_generated_complete,
+        'needs_profile_generation' => $featured_threshold_reached && !$profile_generated_complete,
         'sales_link_ready' => !empty($sales_link_summary['has_valid_enabled_link']),
         'sales_link_status_key' => (string) ($sales_link_summary['status_key'] ?? 'missing'),
         'sales_link_status_label' => (string) ($sales_link_summary['status_label'] ?? ''),
@@ -841,9 +847,13 @@ function fcc_featured_get_catalog(array $options = []): array {
     $limit = isset($options['limit']) ? max(0, (int) $options['limit']) : 0;
     $only_link_id = max(0, (int) ($options['only_link_id'] ?? 0));
     $only_user_id = max(0, (int) ($options['only_user_id'] ?? 0));
+    /* Custom code: FC-2026-10-11: Listing follows FLP360 CC. 'featured' needs PRO and 1 personal CC, '4cc' needs PRO and 4CC, current or previous month. */
+    $required_cc_level = in_array($options['cc_level'] ?? null, ['featured', '4cc'], true) ? (string) $options['cc_level'] : (($require_experience_signal || $min_signal_30d >= 50) ? '4cc' : 'featured');
+    /* /Custom code: FC-2026-10-11 */
 
     $cache_key = 'fcc_featured_catalog?hash=' . md5(json_encode([
-        'version' => '2026-09-24-qualified-clicks-v3',
+        'version' => '2026-10-11-cc-visibility-v1',
+        'required_cc_level' => $required_cc_level,
         'language' => $language,
         'min_signal_30d' => $min_signal_30d,
         'experience_signal_target' => $experience_signal_target,
@@ -864,7 +874,8 @@ function fcc_featured_get_catalog(array $options = []): array {
         $require_valid_sales_link,
         $limit,
         $only_link_id,
-        $only_user_id
+        $only_user_id,
+        $required_cc_level
     ) {
         $items = [];
         $seen_featured_user_ids = [];
@@ -919,7 +930,13 @@ function fcc_featured_get_catalog(array $options = []): array {
             ORDER BY `users`.`name` ASC
         ");
 
-        while($row = $candidate_apps_result->fetch_object()) {
+        /* Custom code: FC-2026-10-11: One CC lookup for all candidates. */
+        $candidate_rows = [];
+        while($candidate_row = $candidate_apps_result->fetch_object()) $candidate_rows[] = $candidate_row;
+        $candidate_cc = fcc_ccv_cc_by_forever_id(array_map(static fn($candidate) => fcc_forever_id($candidate->preferences ?? null), $candidate_rows));
+        /* /Custom code: FC-2026-10-11 */
+
+        foreach($candidate_rows as $row) {
             $link_id = (int) ($row->link_id ?? 0);
             $user_id = (int) ($row->user_id ?? 0);
 
@@ -937,17 +954,15 @@ function fcc_featured_get_catalog(array $options = []): array {
                 continue;
             }
 
-            $signal_snapshot = fcc_ai_get_user_public_visibility_signal_snapshot($user_id);
-            $growth_signal_7d = (int) ($signal_snapshot['growth_signal_7d'] ?? 0);
-            $growth_signal_30d = (int) ($signal_snapshot['growth_signal_30d'] ?? 0);
-
-            if($growth_signal_30d < $min_signal_30d) {
+            /* Custom code: FC-2026-10-11: CC level replaces the 15+ and 50+ click thresholds. */
+            $cc_level = fcc_ccv_level_from_cc($candidate_cc[fcc_forever_id($row->preferences ?? null)] ?? null);
+            if($cc_level === 'none' || ($required_cc_level === '4cc' && $cc_level !== '4cc')) {
                 continue;
             }
-
-            if($require_experience_signal && $growth_signal_30d < $experience_signal_target) {
-                continue;
-            }
+            $signal_snapshot = [];
+            $growth_signal_7d = 0;
+            $growth_signal_30d = 0;
+            /* /Custom code: FC-2026-10-11 */
 
             $sales_link_summary = fcc_ai_get_user_sales_link_summary($row, $language);
             if($require_valid_sales_link && empty($sales_link_summary['has_valid_enabled_link'])) {
@@ -971,8 +986,11 @@ function fcc_featured_get_catalog(array $options = []): array {
                 'profile_slug' => $profile_slug,
                 'growth_signal_7d' => $growth_signal_7d,
                 'growth_signal_30d' => $growth_signal_30d,
-                'has_weekly_check_7d' => $growth_signal_7d >= $weekly_check_target,
-                'has_experience_signal_30d' => $growth_signal_30d >= $experience_signal_target,
+                /* Custom code: FC-2026-10-11 */
+                'cc_level' => $cc_level,
+                'has_weekly_check_7d' => false,
+                'has_experience_signal_30d' => $cc_level === '4cc',
+                /* /Custom code: FC-2026-10-11 */
                 'app_clicks_7d' => (int) ($signal_snapshot['app_clicks_7d'] ?? 0),
                 'blog_clicks_7d' => (int) ($signal_snapshot['blog_clicks_7d'] ?? 0),
                 'funnel_shop_clicks_7d' => (int) ($signal_snapshot['funnel_shop_clicks_7d'] ?? 0),
@@ -1012,17 +1030,13 @@ function fcc_featured_get_catalog(array $options = []): array {
                 return $experience_compare;
             }
 
-            $signal_30d_compare = ((int) ($b['growth_signal_30d'] ?? 0)) <=> ((int) ($a['growth_signal_30d'] ?? 0));
+            /* Custom code: FC-2026-10-11: Within a level, the most recently updated card comes first. */
+            $freshness_compare = strcmp((string) ($b['link_lastmod'] ?? ''), (string) ($a['link_lastmod'] ?? ''));
 
-            if($signal_30d_compare !== 0) {
-                return $signal_30d_compare;
+            if($freshness_compare !== 0) {
+                return $freshness_compare;
             }
-
-            $signal_7d_compare = ((int) ($b['growth_signal_7d'] ?? 0)) <=> ((int) ($a['growth_signal_7d'] ?? 0));
-
-            if($signal_7d_compare !== 0) {
-                return $signal_7d_compare;
-            }
+            /* /Custom code: FC-2026-10-11 */
 
             return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
         });

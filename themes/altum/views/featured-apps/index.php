@@ -17,10 +17,12 @@
             <p class="text-muted mb-0"><?= l('featured_apps.subheader') ?></p>
         </div>
 
-        <div class="featured-apps-note">
-            <strong class="d-block mb-1"><?= l('featured_apps.notice_title') ?></strong>
-            <span><?= sprintf(l('featured_apps.notice_text'), nr($data->signal_target), nr($data->qualified_period_days), nr($data->experience_signal_target), nr($data->weekly_check_target), nr($data->weekly_check_period_days)) ?></span>
+        <?php /* Custom code: FC-2026-10-11: Public rules based on FLP360 CC. */ ?>
+        <div class="featured-apps-note" id="pravila">
+            <strong class="d-block mb-1"><?= htmlspecialchars(fcc_t('Pravila prikaza'), ENT_QUOTES, 'UTF-8') ?></strong>
+            <ul class="mb-0 pl-3"><?php foreach(fcc_ccv_rules_points() as $fcc_rule): ?><li><?= htmlspecialchars($fcc_rule, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach ?></ul>
         </div>
+        <?php /* /Custom code: FC-2026-10-11 */ ?>
     </section>
 
     <?php if(empty($data->featured_apps)): ?>
@@ -56,17 +58,15 @@
                                     <span class="featured-app-pill"><?= l('featured_apps.market') ?>: <?= $app['public_market'] ?></span>
                                 <?php endif ?>
 
-                                <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?>: <?= nr($app['growth_signal_30d']) ?></span>
-                                <span class="featured-app-pill"><?= $featured_app_weekly_check_label ?>: <?= nr($app['growth_signal_7d']) ?></span>
-                                <?php if(!empty($app['has_weekly_check_7d'])): ?>
-                                    <span class="featured-app-pill"><?= $fcc_is_hr ? fcc_t('Ritam potvrđen') : fcc_t('Rhythm confirmed') ?></span>
-                                <?php endif ?>
+                                <?php /* Custom code: FC-2026-10-11: Status badges instead of click counts. */ ?>
+                                <span class="featured-app-pill featured-app-pill--accent"><?= htmlspecialchars(fcc_t('Aktivan Forever suradnik'), ENT_QUOTES, 'UTF-8') ?></span>
                                 <?php if(!empty($app['has_experience_signal_30d'])): ?>
-                                    <span class="featured-app-pill featured-app-pill--experience"><?= l('featured_apps.experience_badge') ?></span>
+                                    <span class="featured-app-pill featured-app-pill--experience"><?= htmlspecialchars(fcc_t('4CC aktivnost potvrđena'), ENT_QUOTES, 'UTF-8') ?></span>
                                 <?php endif ?>
+                                <?php /* /Custom code: FC-2026-10-11 */ ?>
                             </div>
 
-                            <div class="small text-muted mb-3 featured-app-card__breakdown"><?= $featured_app_weekly_breakdown_label ?> · <?= $featured_app_app_clicks_label ?>: <?= nr($app['app_clicks_7d']) ?> · <?= $featured_app_blog_clicks_label ?>: <?= nr($app['blog_clicks_7d']) ?> · <?= $featured_app_funnel_clicks_label ?>: <?= nr($app['funnel_shop_clicks_7d']) ?> · <?= $featured_app_funnel_contacts_label ?>: <?= nr($app['funnel_contacts_7d']) ?></div>
+                            <?php /* Custom code: FC-2026-10-11: Click breakdown removed from the public card. */ ?>
 
                             <?php if(!empty($app['public_summary'])): ?>
                                 <div class="featured-app-section mb-3">

@@ -10721,6 +10721,11 @@ class AiPlan extends Controller {
 
     public function index() {
         \Altum\Authentication::guard();
+        /* Custom code: FC-2026-10-11: AI app review and weekly plan are retired for members; admins keep history access. */
+        if(!\Altum\Authentication::is_admin()) {
+            redirect((\Altum\Router::$controller_key ?? '') === 'ai-app-review' ? 'partner/cards' : 'partner');
+        }
+        /* /Custom code: FC-2026-10-11 */
         if(fcc_journey_enabled() && (\Altum\Router::$controller_key ?? '') !== 'ai-app-review') {
             $view=match((string)($_GET['section']??'')) {'profile'=>'goal','weekly'=>'review','app_review'=>'card',default=>'history'};
             redirect($view==='card'?'ai-app-review':'partner?view='.$view);

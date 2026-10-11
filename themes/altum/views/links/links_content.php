@@ -2070,21 +2070,12 @@ if($fcc_links_type === 'biolink') {
                             <div class="fcc-featured-profile-lock">
                                 <div class="fcc-featured-profile-lock__title"><?= $fcc_featured_profile_status_locked ?></div>
                                 <p class="text-muted mb-3"><?= $fcc_featured_profile_locked_text ?></p>
-                                <div class="fcc-featured-profile-lock__progress">
-                                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
-                                        <div class="small text-uppercase text-muted font-weight-bold"><?= $fcc_featured_profile_unlock_progress ?></div>
-                                        <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_signal_now ?> / <?= $fcc_featured_profile_signal_target ?></span>
-                                    </div>
-                                    <div class="fcc-featured-profile-lock__bar">
-                                        <span style="width: <?= min(100, max(8, $fcc_featured_profile_signal_target > 0 ? ($fcc_featured_profile_signal_now / $fcc_featured_profile_signal_target) * 100 : 0)) ?>%"></span>
-                                    </div>
-                                    <div class="small text-muted mt-2"><?= sprintf($fcc_featured_profile_unlock_missing, nr($fcc_featured_profile_missing)) ?></div>
-                                </div>
+                                <?php /* Custom code: FC-2026-10-11: The lock explains the CC rule instead of a click counter. */ ?>
+                                <ul class="small text-muted mb-0 pl-3"><?php foreach(array_slice(fcc_ccv_rules_points(), 0, 1) as $fcc_rule): ?><li><?= htmlspecialchars($fcc_rule, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach ?></ul>
                             </div>
                         <?php else: ?>
                             <div class="fcc-featured-profile-card__status">
                                 <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_status_ready ?></span>
-                                <span class="fcc-main-app-featured-pill"><?= $fcc_featured_profile_signal_now ?> / <?= $fcc_featured_profile_signal_target ?></span>
                                 <?php if($fcc_featured_profile_generated_at): ?>
                                     <span class="fcc-main-app-featured-pill"><?= \Altum\Date::get($fcc_featured_profile_generated_at, 2) ?></span>
                                 <?php endif ?>

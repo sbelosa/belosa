@@ -30,33 +30,34 @@ class RecommendedSponsors extends Controller {
         return $alternate_urls;
     }
 
+    /* Custom code: FC-2026-10-11: Copy follows the CC-based recommendation rule. */
     private function get_ui(): array {
         if(\Altum\Language::$code === 'hr') {
             return [
                 'hub_title' => 'Preporučeni FCC sponzori',
-                'hub_description' => 'Upoznajte Forever suradnike s odobrenom javnom FCC karticom, valjanom prodajnom poveznicom i najmanje 50 priznatih Forever klikova u posljednjih 30 dana. Na profilu pročitajte kako rade i javite se osobi čiji vam pristup odgovara.',
+                'hub_description' => 'Upoznajte Forever suradnike s odobrenom javnom FCC karticom, valjanom prodajnom poveznicom i potvrđenom 4CC aktivnošću u ovom ili prošlom mjesecu. Na profilu pročitajte kako rade i javite se osobi čiji vam pristup odgovara.',
                 'hub_eyebrow' => 'Preporučeni sponzori',
                 'hub_note_title' => 'Što znači preporučeni FCC sponsor',
                 'hub_note_points' => [
                     'To su suradnici koji FCC koriste kao aktivan poslovni sustav, s javnom i odobrenom glavnom aplikacijom.',
                     'Na glavnoj aplikaciji imaju aktivan Forever prodajni link kako bi preporuke i kontakti vodili kroz jasan put.',
-                    'Najmanje 50 priznatih odlazaka prema Foreveru u posljednjih 30 dana.',
+                    'U ovom ili prošlom kalendarskom mjesecu imaju 4CC aktivnost potvrđenu u Forever FLP360 sustavu.',
                     'Na njihovim profilima možeš pročitati kako pomažu ljudima i odabrati osobu kojoj se želiš javiti.',
                 ],
-                'hub_empty' => 'Trenutno nema javnih FCC sponzora koji drže 50+ signal u 30 dana i ispunjavaju uvjete za preporuku.',
+                'hub_empty' => 'Trenutno nema javnih FCC sponzora s potvrđenom 4CC aktivnošću koji ispunjavaju uvjete za preporuku.',
                 'hub_profile_cta' => 'Otvori sponsor profil',
                 'hub_app_cta' => 'Pogledaj aplikaciju',
                 'hub_market_label' => 'Tržište',
                 'hub_use_case_label' => 'Kako koriste FCC',
-                'hub_signal_label' => '30d signal',
-                'hub_weekly_label' => '7d provjera',
+                'hub_signal_label' => '4CC aktivnost potvrđena',
+                'hub_weekly_label' => '',
                 'hub_sales_link_ready' => 'Forever prodajni link aktivan',
                 'hub_footer_note' => 'Kupnja proizvoda i dalje se odvija preko službenog Forever web shopa. FCC je neovisni poslovni sustav za partnere.',
                 'profile_back' => 'Svi preporučeni sponzori',
                 'profile_title_format' => '%s | Preporučeni FCC sponzor',
                 'profile_strength_title' => 'Zašto je ovaj sponsor istaknut',
                 'profile_strength_points' => [
-                    'Drži 50+ kvalificiranih Forever klikova u zadnjih 30 dana.',
+                    'Ima 4CC aktivnost potvrđenu u FLP360 sustavu u ovom ili prošlom mjesecu.',
                     'Glavna FCC aplikacija je javna, odobrena i aktivno korištena.',
                     'Forever prodajni link je aktivan na glavnoj aplikaciji.',
                 ],
@@ -69,37 +70,37 @@ class RecommendedSponsors extends Controller {
                 'profile_summary_label' => 'Javni opis',
                 'profile_features_label' => 'Što ova aplikacija koristi',
                 'profile_related_title' => 'Još preporučenih FCC sponzora',
-                'profile_signal_label' => '30d signal',
-                'profile_weekly_label' => '7d provjera',
+                'profile_signal_label' => '4CC aktivnost potvrđena',
+                'profile_weekly_label' => '',
                 'profile_description_fallback' => 'Upoznaj preporučenog FCC sponzora, pročitaj njegov javni profil i otvori glavnu FCC karticu.',
             ];
         }
 
         return [
             'hub_title' => 'Recommended FCC Sponsors',
-            'hub_description' => 'Meet Forever collaborators with an approved public FCC card, a valid sales link and at least 50 qualifying Forever clicks in the last 30 days. Read how they work and contact someone whose approach suits you.',
+            'hub_description' => 'Meet Forever collaborators with an approved public FCC card, a valid sales link and 4CC activity confirmed this month or last month. Read how they work and contact someone whose approach suits you.',
             'hub_eyebrow' => 'Recommended sponsors',
             'hub_note_title' => 'What a recommended FCC sponsor means',
             'hub_note_points' => [
                 'These are collaborators who use FCC as an active business system, with a public and approved main app.',
                 'Their main app includes an active Forever sales link so referrals and contacts move through a clear path.',
-                'At least 50 qualifying visits to Forever in the last 30 days.',
+                '4CC activity confirmed in Forever FLP360 this calendar month or last month.',
                 'Their profiles explain how they help people, so you can choose someone to contact.',
             ],
-            'hub_empty' => 'There are currently no public FCC sponsors holding the 50+ / 30d signal while meeting the recommendation criteria.',
+            'hub_empty' => 'There are currently no public FCC sponsors with confirmed 4CC activity who meet the recommendation criteria.',
             'hub_profile_cta' => 'Open sponsor profile',
             'hub_app_cta' => 'View app',
             'hub_market_label' => 'Market',
             'hub_use_case_label' => 'How they use FCC',
-            'hub_signal_label' => '30d signal',
-            'hub_weekly_label' => '7d check',
+            'hub_signal_label' => '4CC activity confirmed',
+            'hub_weekly_label' => '',
             'hub_sales_link_ready' => 'Forever sales link active',
             'hub_footer_note' => 'Product purchases still happen through the official Forever webshop. FCC is an independent business system for partners.',
             'profile_back' => 'All recommended sponsors',
             'profile_title_format' => '%s | Recommended FCC sponsor',
             'profile_strength_title' => 'Why this sponsor is highlighted',
             'profile_strength_points' => [
-                'They hold 50+ qualifying Forever clicks in the last 30 days.',
+                '4CC activity confirmed in FLP360 this month or last month.',
                 'Their main FCC app is public, approved, and actively used.',
                 'A valid Forever sales link is active on the main app.',
             ],
@@ -112,8 +113,8 @@ class RecommendedSponsors extends Controller {
             'profile_summary_label' => 'Public summary',
             'profile_features_label' => 'What this app uses',
             'profile_related_title' => 'More recommended FCC sponsors',
-            'profile_signal_label' => '30d signal',
-            'profile_weekly_label' => '7d check',
+            'profile_signal_label' => '4CC activity confirmed',
+            'profile_weekly_label' => '',
             'profile_description_fallback' => 'Meet a recommended FCC sponsor, read their public profile and open their main FCC card.',
         ];
     }

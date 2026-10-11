@@ -64,8 +64,7 @@
                                 <?php if(!empty($sponsor['public_market'])): ?>
                                     <span class="fcc-sponsor-pill"><?= $ui['hub_market_label'] ?>: <?= $sponsor['public_market'] ?></span>
                                 <?php endif ?>
-                                <span class="fcc-sponsor-pill fcc-sponsor-pill--accent"><?= $ui['hub_signal_label'] ?>: <?= nr($sponsor['growth_signal_30d']) ?></span>
-                                <span class="fcc-sponsor-pill"><?= $ui['hub_weekly_label'] ?>: <?= nr($sponsor['growth_signal_7d']) ?></span>
+                                <?php /* Custom code: FC-2026-10-11: Status badge instead of click counts. */ ?><span class="fcc-sponsor-pill fcc-sponsor-pill--accent"><?= $ui['hub_signal_label'] ?></span>
                                 <span class="fcc-sponsor-pill fcc-sponsor-pill--success"><?= $ui['hub_sales_link_ready'] ?></span>
                             </div>
 
