@@ -101,3 +101,14 @@ Najteža posljedica sadašnjeg pravila odnosi se na PRO. Ponavljajuća AI analiz
 4. Obavijesti o događajima i povučene timske obavijesti.
 5. Prvi tjedan Mojeg puta za neupisane, ako to potvrdite.
 6. Testovi, lokalna provjera i ažuriranje dokumenta stanja.
+
+## 8. Odluke i provedba
+
+Korisnik je 11. listopada 2026. potvrdio sljedeće odluke, a sve su provedene lokalno. Detalji su u `docs/STANJE_SUSTAVA.md`, u odjeljku 5c.
+
+1. Istaknute aplikacije: PRO i 1 osobni CC u tekućem ili prošlom kalendarskom mjesecu.
+2. Preporučeni sponzori: PRO i 4CC u tekućem ili prošlom mjesecu.
+3. Pravila su javno navedena, a postoji i članak u Uputama za FCC.
+4. AI analiza aplikacije i tjedni plan su ukinuti. Umjesto njih PRO s 4CC dobiva poziv u 4CC WhatsApp grupu i gumb Već sam član. Gubitkom kvalifikacije suradnik dolazi na administratorski popis za uklanjanje, a poziv se ponovno prikazuje čim opet ostvari uvjet.
+5. Podsjetnici za događaje stižu samo uz potvrđen dolazak.
+6. Prvih 7 koraka Mojeg puta otvoreno je i bez upisa.

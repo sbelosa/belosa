@@ -850,6 +850,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Nyilvános listák, CC pontok és a 4CC csoport",
+      "summary": "Hogyan kerülsz a Kiemelt alkalmazások, az Ajánlott szponzorok közé és a 4CC WhatsApp-csoportba.",
+      "keywords": [
+        "kiemelt alkalmazások",
+        "ajánlott szponzorok",
+        "4CC",
+        "CC pontok",
+        "szabályok",
+        "WhatsApp-csoport"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Minden szabály egy helyen",
+          "paragraphs": [
+            "A nyilvános FCC listák a Forever FLP360 rendszerből származó CC pontjaidat követik. A kártyádon és a cikkekben történő kattintások a személyes statisztikád maradnak, és semminek sem feltételei.",
+            "Kiemelt alkalmazások: aktív PRO csomag, a fő kártya jóváhagyott nyilvános megjelenítése és legalább 1 személyes CC ebben vagy az előző naptári hónapban.",
+            "Ajánlott szponzorok és a 4CC WhatsApp-csoport: aktív PRO csomag és az FLP360-ban megerősített 4CC aktivitás ebben vagy az előző naptári hónapban. Az Ajánlott szponzorokhoz aktív Forever értékesítési link is kell a kártyán."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hogyan működik",
+          "steps": [
+            "A CC pontokat naponta kétszer vesszük át az FLP360-ból.",
+            "Amint a feltétel megjelenik az adatokban, a kártyád a megfelelő listára kerül.",
+            "A feltétel az aktuális vagy az előző naptári hónapra vonatkozik, így senki sem esik le a listáról a hónap első napján.",
+            "Megerősített 4CC aktivitással és PRO csomaggal a Ma oldalon megjelenik a 4CC csoport meghívója. Csatlakozás után válaszd a Már tag vagyok lehetőséget.",
+            "Ha sem ebben, sem az előző hónapban nincs 4CC aktivitásod, az adminisztrátor eltávolít a csoportból, és a meghívó újra megjelenik, amint ismét teljesíted a feltételt."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakori kérdések",
+          "questions": [
+            {
+              "question": "Nyilvánosak a CC pontjaim?",
+              "answer": "Nem. A CC értékek soha nem jelennek meg nyilvánosan. Csak a listák feltételeként használjuk őket."
+            },
+            {
+              "question": "Számítanak még a 15+ és 50+ kattintások?",
+              "answer": "Nem. A kattintásaidat továbbra is látod az FCC Eredményekben személyes statisztikaként, de már nem nyitnak meg előnyöket."
+            }
+          ]
+        }
+      ]
     }
   }
 }

@@ -213,7 +213,7 @@ class FeaturedApps extends Controller {
         ]);
 
         Title::set(l('featured_apps.title'));
-        Meta::set_description(l('featured_apps.subheader'));
+        Meta::set_description(fcc_t('Ovdje se prikazuju javne glavne FCC kartice suradnika s aktivnim PRO paketom i najmanje 1 osobnim CC u ovom ili prošlom kalendarskom mjesecu. Suradnici s potvrđenom 4CC aktivnošću označeni su i kao preporučeni sponzori.')); /* Custom code: FC-2026-10-11 */
         Meta::set_canonical_url(url('featured-apps'));
         Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
 

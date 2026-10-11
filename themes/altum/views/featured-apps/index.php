@@ -14,7 +14,7 @@
         <div>
             <div class="featured-apps-eyebrow"><?= l('featured_apps.header') ?></div>
             <h1 class="h2 mb-2"><?= l('featured_apps.header') ?></h1>
-            <p class="text-muted mb-0"><?= l('featured_apps.subheader') ?></p>
+            <p class="text-muted mb-0"><?= htmlspecialchars(fcc_t('Ovdje se prikazuju javne glavne FCC kartice suradnika s aktivnim PRO paketom i najmanje 1 osobnim CC u ovom ili prošlom kalendarskom mjesecu. Suradnici s potvrđenom 4CC aktivnošću označeni su i kao preporučeni sponzori.'), ENT_QUOTES, 'UTF-8') ?></p><?php /* Custom code: FC-2026-10-11 */ ?>
         </div>
 
         <?php /* Custom code: FC-2026-10-11: Public rules based on FLP360 CC. */ ?>

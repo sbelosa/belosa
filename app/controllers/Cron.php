@@ -1201,6 +1201,9 @@ class Cron extends Controller {
     }
 
     private function fcc_public_signal_notifications() {
+        /* Custom code: FC-2026-10-11: 15+ and 50+ click tiers no longer unlock anything, so their emails stop. CC changes already have their own FLP360 notices. */
+        return;
+        /* /Custom code: FC-2026-10-11 */
         $active_growth_pro_condition = fcc_ai_get_active_growth_pro_user_condition_sql('`users`', get_date());
         $users_result = database()->query("SELECT
                 `users`.`user_id`,

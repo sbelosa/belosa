@@ -46,6 +46,18 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 6. Akademija i usporedba paketa unutar radnog prostora koriste zajedničku paletu `--fp-*` iz `fcc-partner-premium.css`.
 7. Svi novi tekstovi prevedeni su na 12 jezika u `app/config/locales`.
 
+## 5c. Veliki update prema CC bodovima (lokalno, čeka objavu)
+
+1. **Javni popisi prate CC iz FLP360.** Istaknute aplikacije traže PRO i najmanje 1 osobni CC, a Preporučeni sponzori PRO i potvrđenu 4CC aktivnost. Oba uvjeta vrijede za tekući ili prošli kalendarski mjesec po vremenu Europe/Zagreb. Jedini izvor pravila je `app/helpers/fcc_cc_visibility.php`. Iznosi CC bodova nigdje se javno ne prikazuju. Na kopiji podataka popis Istaknutih aplikacija narastao je s 14 na 46, a Preporučenih sponzora s 5 na oko 25.
+2. **Klikovi su samo statistika.** FCC Rezultati, uređivač kartice, statistika i Coach više ne spominju pragove 15+ i 50+. Emailovi o prelasku praga klikova su ugašeni.
+3. **AI analiza aplikacije i tjedni AI plan su ukinuti.** Rute `ai-plan` i `ai-app-review` preusmjeravaju suradnike na Danas i Moju karticu, a administrator zadržava pristup povijesti. Usporedba paketa na 13 jezika opisuje novu PRO vrijednost.
+4. **4CC WhatsApp grupa.** PRO suradnik s 4CC vidi poziv na stranici Danas, s gumbima Pridruži se grupi i Već sam član. Članstvo vrijedi dok je suradnik bez prekida kvalificiran. U administraciji (`partner/admin#cc4-group`) upisuje se poveznica grupe, a tamo su i popis za uklanjanje te popis kvalificiranih koji se još nisu pridružili. Bez upisane poveznice poziv se ne prikazuje.
+5. **Podsjetnici za događaje** stižu samo suradnicima koji su potvrdili dolazak ili imaju prijavljene goste. Na kartici događaja na stranici Danas dodan je gumb Dolazim. Na kopiji podataka od 3.000 podsjetnika na čekanju ostao bi 21.
+6. **Povučene timske obavijesti** više se ne prikazuju u popisu obavijesti.
+7. **Prvi tjedan Mojeg puta**, koraci 1 do 7, otvoren je i bez upisa od 0,33 CC. Nakon 7. koraka prikazuje se jasna poruka da se program nastavlja nakon prve narudžbe.
+8. **Pravila su javna.** Prikazana su na stranicama Istaknute aplikacije i Preporučeni sponzori, a novi članak „Javni popisi, CC bodovi i 4CC grupa” u Uputama za FCC postoji na 13 jezika.
+9. **Novi test** `scripts/test_cc_visibility.php` dodan je u deploy workflow.
+
 ## 5b. Već provedeno na produkciji prije ove dorade
 
 1. Svi aktivni suradnici dobivaju sadržaj programa v8. Ciklusi označeni s v6 ili v7 otvaraju sljedeći korak iz v8 kataloga, pa migracija podataka nije potrebna.
@@ -67,9 +79,10 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 
 ## 6a. Lokalno testiranje
 
+1. Lokalni testni računi: administrator, Beginner i PRO s 4CC (sintetički Forever ID 999000000001 i sintetički CC zapis), u privatnoj datoteci `FCC-runtime/LOCAL_TEST_ACCOUNT.txt`.
 1. Okruženje se pokreće iz `ClaudeWorkspaces/FCC-runtime` naredbom `docker compose up -d`, a otvara na `http://localhost:8099`.
 2. Može se prijaviti stvarnim produkcijskim podacima, jer je baza kopija. Lokalni testni računi, administratorski i Beginner, nalaze se u privatnoj datoteci `FCC-runtime/LOCAL_TEST_ACCOUNT.txt`.
-3. Provjereno 11. listopada: PHP lint za 1.859 datoteka, 13 testova koji se pokreću prije objave i 42 stranice za PRO i Beginner račun, uključujući engleski i njemački. Nije bilo PHP grešaka ni upozorenja.
+3. Provjereno 11. listopada: PHP lint za 1.862 datoteke, 14 testova koji se pokreću prije objave i 42 stranice za PRO i Beginner račun, uključujući engleski i njemački. Nije bilo PHP grešaka ni upozorenja.
 
 ## 7. Put objave
 

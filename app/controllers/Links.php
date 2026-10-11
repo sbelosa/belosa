@@ -1141,7 +1141,7 @@ class Links extends Controller {
                 }
 
                 if($generate_requested && !$builder_state['is_unlocked']) {
-                    Alerts::add_error(l('links.biolink_workspace.featured_profile.error.unlock'));
+                    Alerts::add_error(fcc_t('AI profil za javni prikaz otključava se uz aktivni PRO i najmanje 1 osobni CC u ovom ili prošlom kalendarskom mjesecu.') /* Custom code: FC-2026-10-11 */);
                 }
 
                 if($generate_requested && $builder_state['is_unlocked'] && !$builder_state['can_generate_now']) {

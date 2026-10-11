@@ -850,6 +850,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Javni seznami, točke CC in skupina 4CC",
+      "summary": "Kako se uvrstiš med Izpostavljene aplikacije, Priporočene sponzorje in v skupino 4CC na WhatsAppu.",
+      "keywords": [
+        "izpostavljene aplikacije",
+        "priporočeni sponzorji",
+        "4CC",
+        "točke CC",
+        "pravila",
+        "WhatsApp skupina"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Pravila na enem mestu",
+          "paragraphs": [
+            "Javni seznami FCC sledijo tvojim točkam CC iz sistema Forever FLP360. Kliki na kartici in v člankih ostanejo tvoja osebna statistika in niso pogoj za nič.",
+            "Izpostavljene aplikacije: aktiven paket PRO, odobren javni prikaz glavne kartice in vsaj 1 osebni CC v tem ali prejšnjem koledarskem mesecu.",
+            "Priporočeni sponzorji in skupina 4CC na WhatsAppu: aktiven paket PRO in aktivnost 4CC, potrjena v FLP360 v tem ali prejšnjem koledarskem mesecu. Za Priporočene sponzorje je potrebna tudi aktivna prodajna povezava Forever na kartici."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Kako deluje",
+          "steps": [
+            "Točke CC se iz FLP360 prenašajo dvakrat na dan.",
+            "Takoj ko se pogoj pojavi v podatkih, se kartica uvrsti na ustrezen seznam.",
+            "Pogoj velja za tekoči ali prejšnji koledarski mesec, zato nihče ne izpade s seznama prvi dan v mesecu.",
+            "S potrjeno aktivnostjo 4CC in paketom PRO se na strani Danes pojavi povabilo v skupino 4CC. Po pridružitvi označi Sem že član.",
+            "Če 4CC nimaš ne v tekočem ne v prejšnjem mesecu, te skrbnik odstrani iz skupine, povabilo pa se ponovno prikaže, ko znova izpolniš pogoj."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pogosta vprašanja",
+          "questions": [
+            {
+              "question": "Se moje točke CC objavljajo?",
+              "answer": "Ne. Zneski točk CC se javno ne prikazujejo. Uporabljajo se samo kot pogoj za seznam."
+            },
+            {
+              "question": "Ali se kliki 15+ in 50+ še štejejo?",
+              "answer": "Ne. Klike še vedno vidiš v Rezultatih FCC kot osebno statistiko, vendar ne odklepajo več ugodnosti."
+            }
+          ]
+        }
+      ]
     }
   }
 }

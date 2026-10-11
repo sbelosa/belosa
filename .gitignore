@@ -56,3 +56,4 @@
 # Custom code: FC-2026-10-11: Living production status document
 !docs/STANJE_SUSTAVA.md
 !docs/ANALIZA_MODULA_2026-10-11.md
+!scripts/test_cc_visibility.php

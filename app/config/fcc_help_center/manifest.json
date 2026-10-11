@@ -204,6 +204,17 @@
       "pro": false,
       "route": "feedback-tickets",
       "screen": "support"
+    },
+    "visibility": {
+      "id": "visibility",
+      "status": "published",
+      "source_version": "2026.10.05.1",
+      "version": "2026.10.05.1",
+      "category": "growth",
+      "minutes": 3,
+      "pro": false,
+      "route": "fcc-results",
+      "screen": "results"
     }
   }
 }

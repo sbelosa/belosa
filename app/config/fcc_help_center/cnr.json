@@ -850,6 +850,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Javni spiskovi, CC bodovi i 4CC grupa",
+      "summary": "Kako se ulazi među Istaknute aplikacije, Preporučene sponzore i u 4CC WhatsApp grupu.",
+      "keywords": [
+        "istaknute aplikacije",
+        "preporučeni sponzori",
+        "4CC",
+        "CC bodovi",
+        "pravila",
+        "WhatsApp grupa"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Pravila na jednom mjestu",
+          "paragraphs": [
+            "Javni FCC spiskovi prate tvoje CC bodove iz Forever FLP360 sistema. Klikovi na kartici i u člancima ostaju tvoja lična statistika i nijesu uslov ni za šta.",
+            "Istaknute aplikacije: aktivan PRO paket, odobren javni prikaz glavne kartice i najmanje 1 lični CC u ovom ili prošlom kalendarskom mjesecu.",
+            "Preporučeni sponzori i 4CC WhatsApp grupa: aktivan PRO paket i 4CC aktivnost potvrđena u FLP360 u ovom ili prošlom kalendarskom mjesecu. Za Preporučene sponzore potreban je i aktivan Forever prodajni link na kartici."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Kako to funkcioniše",
+          "steps": [
+            "CC bodovi se preuzimaju iz FLP360 dva puta dnevno.",
+            "Čim se uslov pojavi u podacima, kartica ulazi na odgovarajući spisak.",
+            "Uslov važi za tekući ili prošli kalendarski mjesec, pa niko ne ispada sa spiska prvog dana u mjesecu.",
+            "Sa potvrđenom 4CC aktivnošću i PRO paketom na stranici Danas pojavljuje se poziv u 4CC grupu. Nakon pridruživanja označi Već sam član.",
+            "Ako ni u tekućem ni u prošlom mjesecu nemaš 4CC, administrator te uklanja iz grupe, a poziv se ponovo prikazuje čim opet ostvariš uslov."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Česta pitanja",
+          "questions": [
+            {
+              "question": "Da li se moji CC bodovi objavljuju?",
+              "answer": "Ne. Iznosi CC bodova se ne prikazuju javno. Koriste se samo kao uslov za prikaz."
+            },
+            {
+              "question": "Da li se klikovi 15+ i 50+ još računaju?",
+              "answer": "Ne. Klikove i dalje vidiš u FCC Rezultatima kao ličnu statistiku, ali više ne otključavaju nikakve pogodnosti."
+            }
+          ]
+        }
+      ]
     }
   }
 }

@@ -35,7 +35,7 @@ function fcc_j90_access(int $uid): array {
  if(!fcc_j90_enabled($uid))throw new InvalidArgumentException(fcc_t('Novi program trenutačno nije uključen. Povijest ostaje sačuvana.'));
  $u=fcc_journey_user($uid);
  if(!in_array(fcc_locale((string)\Altum\Language::$name), ['hr','sl','en','de','sr', 'sq', 'cnr', 'fr', 'es','sv','hu','pl','ro'], true))throw new InvalidArgumentException(fcc_t('Odaberi dostupan jezik u postavkama.'));
- $state=forever_business_get_vip_program_state($uid);
+ $state=fcc_journey_starter_access($uid,forever_business_get_vip_program_state($uid));
  if(empty($state['can_access_education']))throw new InvalidArgumentException(fcc_t('Za ovaj program potreban je postojeći odobren pristup edukaciji.'));
  $videos=fcc_journey_videos($u);
  if($videos['enabled']&&!$videos['completed'])throw new InvalidArgumentException(fcc_t('Najprije dovrši svoj postojeći uvod u Materijalima.'));
@@ -269,3 +269,24 @@ function fcc_j90_cc(int $uid,array $access,DateTimeImmutable $now): array {
  }
  return $result;
 }
+
+/* Custom code: FC-2026-10-11: The first week of Moj put is open before enrolment.
+ * A verified collaborator without the 0.33 CC enrolment may complete steps 1 to 7.
+ * From step 8 the regular enrolment rule applies; progress stays saved. */
+const FCC_JOURNEY_STARTER_STEPS = 7;
+function fcc_journey_starter_completed(int $uid): int {
+ $cycle=fcc_j90_cycle($uid);
+ return $cycle?count(fcc_j90_rows($uid,(int)$cycle['id'])):0;
+}
+function fcc_journey_starter_access(int $uid,array $state): array {
+ $state['starter_access']=false;
+ $state['starter_steps']=FCC_JOURNEY_STARTER_STEPS;
+ if(!empty($state['can_access_education'])||!empty($state['is_enrolled'])||empty($state['is_launched'])||empty($state['has_valid_linkage']))return $state;
+ $completed=fcc_journey_starter_completed($uid);
+ $state['starter_completed']=$completed;
+ if($completed>=FCC_JOURNEY_STARTER_STEPS){$state['starter_finished']=true;return $state;}
+ $state['can_access_education']=true;
+ $state['starter_access']=true;
+ return $state;
+}
+/* /Custom code: FC-2026-10-11 */

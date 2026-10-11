@@ -850,6 +850,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Liste publice, puncte CC și grupul 4CC",
+      "summary": "Cum intri în Aplicațiile evidențiate, Sponsorii recomandați și grupul WhatsApp 4CC.",
+      "keywords": [
+        "aplicații evidențiate",
+        "sponsori recomandați",
+        "4CC",
+        "puncte CC",
+        "reguli",
+        "grup WhatsApp"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Toate regulile într-un loc",
+          "paragraphs": [
+            "Listele publice FCC urmează punctele tale CC din sistemul Forever FLP360. Clicurile pe cardul tău și în articole rămân statistica ta personală și nu sunt condiție pentru nimic.",
+            "Aplicații evidențiate: pachet PRO activ, afișare publică aprobată a cardului principal și cel puțin 1 CC personal în luna calendaristică curentă sau în cea trecută.",
+            "Sponsori recomandați și grupul WhatsApp 4CC: pachet PRO activ și activitate 4CC confirmată în FLP360 în luna calendaristică curentă sau în cea trecută. Sponsorii recomandați au nevoie și de un link de vânzare Forever activ pe card."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Cum funcționează",
+          "steps": [
+            "Punctele CC sunt preluate din FLP360 de două ori pe zi.",
+            "Imediat ce condiția apare în date, cardul tău intră în lista potrivită.",
+            "Condiția se aplică lunii calendaristice curente sau celei trecute, așa că nimeni nu iese din listă în prima zi a lunii.",
+            "Cu activitate 4CC confirmată și PRO, pe pagina Azi apare o invitație în grupul 4CC. După ce te alături, alege Sunt deja membru.",
+            "Dacă nu ai 4CC nici luna aceasta, nici luna trecută, administratorul te scoate din grup, iar invitația reapare imediat ce îndeplinești din nou condiția."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebări frecvente",
+          "questions": [
+            {
+              "question": "Se publică punctele mele CC?",
+              "answer": "Nu. Valorile CC nu sunt afișate public niciodată. Sunt folosite doar ca o condiție pentru liste."
+            },
+            {
+              "question": "Mai contează clicurile 15+ și 50+?",
+              "answer": "Nu. Îți vezi în continuare clicurile în Rezultate FCC ca statistică personală, dar nu mai deblochează niciun beneficiu."
+            }
+          ]
+        }
+      ]
     }
   }
 }

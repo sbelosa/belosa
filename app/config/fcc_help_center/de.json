@@ -849,6 +849,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Öffentliche Listen, CC-Punkte und die 4CC-Gruppe",
+      "summary": "So kommst du zu den Hervorgehobenen Apps, den Empfohlenen Sponsoren und in die 4CC-WhatsApp-Gruppe.",
+      "keywords": [
+        "hervorgehobene apps",
+        "empfohlene sponsoren",
+        "4CC",
+        "CC-Punkte",
+        "regeln",
+        "WhatsApp-Gruppe"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Alle Regeln an einem Ort",
+          "paragraphs": [
+            "Die öffentlichen FCC-Listen richten sich nach deinen CC-Punkten aus dem Forever FLP360 System. Klicks auf deiner Karte und in Artikeln bleiben deine persönliche Statistik und sind keine Voraussetzung.",
+            "Hervorgehobene Apps: aktives PRO-Paket, freigegebene öffentliche Anzeige deiner Hauptkarte und mindestens 1 persönlicher CC in diesem oder im letzten Kalendermonat.",
+            "Empfohlene Sponsoren und die 4CC-WhatsApp-Gruppe: aktives PRO-Paket und in FLP360 bestätigte 4CC-Aktivität in diesem oder im letzten Kalendermonat. Für Empfohlene Sponsoren ist außerdem ein aktiver Forever-Verkaufslink auf der Karte nötig."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "So funktioniert es",
+          "steps": [
+            "CC-Punkte werden zweimal täglich aus FLP360 übernommen.",
+            "Sobald die Bedingung in den Daten erscheint, kommt deine Karte auf die passende Liste.",
+            "Die Bedingung gilt für den aktuellen oder den letzten Kalendermonat, daher fällt niemand am Monatsersten von der Liste.",
+            "Mit bestätigter 4CC-Aktivität und PRO erscheint auf der Seite Heute eine Einladung in die 4CC-Gruppe. Nach dem Beitritt wähle Ich bin schon Mitglied.",
+            "Wenn du weder im aktuellen noch im letzten Monat 4CC hast, entfernt dich der Administrator aus der Gruppe, und die Einladung erscheint wieder, sobald du die Bedingung erfüllst."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Häufige Fragen",
+          "questions": [
+            {
+              "question": "Werden meine CC-Punkte veröffentlicht?",
+              "answer": "Nein. CC-Werte werden nie öffentlich angezeigt. Sie dienen nur als Bedingung für die Listen."
+            },
+            {
+              "question": "Zählen 15+ und 50+ Klicks noch?",
+              "answer": "Nein. Deine Klicks siehst du weiterhin in den FCC-Ergebnissen als persönliche Statistik, sie schalten aber keine Vorteile mehr frei."
+            }
+          ]
+        }
+      ]
     }
   }
 }

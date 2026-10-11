@@ -12,6 +12,7 @@ if(($section??'')==='contacts'&&($_GET['source']??'')==='business')\Altum\Event:
  <?= \Altum\Alerts::output_alerts() ?>
  <?php if($data->error): ?><div class="fp-message fp-error" role="alert"><?= $h($data->error) ?></div><?php endif ?>
  <?php if(($data->journey_view??'')!=='materials'): ?>
+ <?php if($section==='today')require THEME_PATH.'views/partner/cc4-group.php'; /* Custom code: FC-2026-10-11 */ ?>
  <?php if($section==='today'&&fcc_business_enabled($uid)){ $businessWork=$data->business_work;require THEME_PATH.'views/partner/business-next.php'; } ?>
  <?php if($section==='today')require THEME_PATH.'views/partner/team-outreach-due.php'; ?>
  <?php endif ?>

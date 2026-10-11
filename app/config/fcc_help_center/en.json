@@ -849,6 +849,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Public lists, CC points and the 4CC group",
+      "summary": "How to join the Featured apps, the Recommended sponsors and the 4CC WhatsApp group.",
+      "keywords": [
+        "featured apps",
+        "recommended sponsors",
+        "4CC",
+        "CC points",
+        "rules",
+        "WhatsApp group"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "All rules in one place",
+          "paragraphs": [
+            "Public FCC lists follow your CC points from the Forever FLP360 system. Clicks on your card and in articles remain your personal statistics and are not a condition for anything.",
+            "Featured apps: active PRO plan, approved public display of your main card and at least 1 personal CC this calendar month or last month.",
+            "Recommended sponsors and the 4CC WhatsApp group: active PRO plan and 4CC activity confirmed in FLP360 this calendar month or last month. Recommended sponsors also need an active Forever sales link on the card."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "How it works",
+          "steps": [
+            "CC points are imported from FLP360 twice a day.",
+            "As soon as the condition appears in the data, your card joins the matching list.",
+            "The condition applies to the current or the previous calendar month, so nobody drops off on the first day of a month.",
+            "With confirmed 4CC activity and PRO, an invitation to the 4CC group appears on your Today page. After joining, select I am already a member.",
+            "If you have no 4CC this month or last month, the administrator removes you from the group, and the invitation shows again as soon as you meet the condition."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Frequent questions",
+          "questions": [
+            {
+              "question": "Are my CC points published?",
+              "answer": "No. CC amounts are never shown publicly. They are used only as a condition for the lists."
+            },
+            {
+              "question": "Do 15+ and 50+ clicks still count?",
+              "answer": "No. You still see your clicks in FCC Results as personal statistics, but they no longer unlock any benefit."
+            }
+          ]
+        }
+      ]
     }
   }
 }

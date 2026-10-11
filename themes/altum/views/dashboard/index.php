@@ -1897,7 +1897,7 @@ $dashboard_format_cc = static function($value): string {
                         <span><?= l('dashboard.growth.ai_status_label') ?></span>
                         <strong id="dashboard_growth_stage_label"><?= l('dashboard.dynamic.stage.building.label') ?></strong>
                     </div>
-                    <div class="dashboard-growth-aside-row">
+                    <div class="dashboard-growth-aside-row" hidden style="display:none">
                         <span><?= l('dashboard.growth.next_unlock_label') ?></span>
                         <strong id="dashboard_next_unlock"><?= l('dashboard.growth.remaining_label') ?> 15</strong>
                     </div>
@@ -1906,7 +1906,7 @@ $dashboard_format_cc = static function($value): string {
                         <strong id="dashboard_blog_signal_30d">0</strong>
                     </div>
 
-                    <div class="dashboard-growth-aside-progress">
+                    <div class="dashboard-growth-aside-progress" hidden style="display:none"><?php /* Custom code: FC-2026-10-11: click thresholds no longer unlock anything */ ?>
                         <div class="dashboard-growth-aside-progress-card">
                             <div class="dashboard-growth-aside-progress-top">
                                 <div class="dashboard-growth-aside-progress-label"><?= l('dashboard.growth.active_threshold_label') ?></div>
@@ -1941,7 +1941,7 @@ $dashboard_format_cc = static function($value): string {
                     </div>
 
                     <div class="dashboard-growth-aside-note" id="dashboard_growth_note">
-                        <?= l('dashboard.growth.note_default') ?>
+                        <?= htmlspecialchars(fcc_t('Klikovi i kontakti ovdje su tvoja osobna statistika. Za Istaknute aplikacije i Preporučene sponzore vrijede CC bodovi iz FLP360.'), ENT_QUOTES, 'UTF-8') ?><?php /* Custom code: FC-2026-10-11 */ ?>
                     </div>
                 </div>
             </div>
@@ -2365,7 +2365,7 @@ $dashboard_format_cc = static function($value): string {
                 vip_progress_remaining: <?= json_encode(l('dashboard.dynamic.vip_progress_remaining')) ?>,
                 vip_progress_unlocked: <?= json_encode(l('dashboard.dynamic.vip_progress_unlocked')) ?>,
                 growth_note_webinars: <?= json_encode(l('dashboard.dynamic.growth_note_webinars')) ?>,
-                growth_note_default: <?= json_encode(l('dashboard.growth.note_default')) ?>,
+                growth_note_default: <?= json_encode(fcc_t('Klikovi i kontakti ovdje su tvoja osobna statistika. Za Istaknute aplikacije i Preporučene sponzore vrijede CC bodovi iz FLP360.')) ?>, /* Custom code: FC-2026-10-11 */
                 best_content_blog: <?= json_encode(l('dashboard.dynamic.best_content_blog')) ?>,
                 best_content_app: <?= json_encode(l('dashboard.dynamic.best_content_app')) ?>,
                 best_content_none: <?= json_encode(l('dashboard.dynamic.best_content_none')) ?>,

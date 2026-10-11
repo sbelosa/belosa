@@ -267,6 +267,9 @@ function fcc_event_delivery_allowed(int $uid,string $key,?DateTimeImmutable $now
  if(!fcc_events_enabled())return false;
  $s=fcc_partner_one('SELECT * FROM fcc_webinar_sessions WHERE id=?',[(int)$m[1]]);if(!$s||(int)$s['revision']!==(int)$m[2])return false;
  if(str_contains($key,':reminder')&&(fcc_event_rsvp($uid,(int)$s['id'])['state']??'')==='cancelled')return false;
+ /* Custom code: FC-2026-10-11: Team event reminders go only to members who confirmed attendance or registered their own guests. Everyone still sees the next event on Today. */
+ if(str_contains($key,':reminder')&&(fcc_event_rsvp($uid,(int)$s['id'])['state']??'')!=='going'&&!(function_exists('fcc_wl_summary')&&fcc_wl_summary($uid,(int)$s['id'])['total_count']>0))return false;
+ /* /Custom code: FC-2026-10-11 */
  $p=fcc_partner_one('SELECT muted FROM fcc_webinar_member_access WHERE session_id=? AND user_id=?',[(int)$s['id'],$uid]);return empty($p['muted'])&&fcc_event_access($uid,$s,$now)['allowed'];
 }
 function fcc_event_run_jobs(?DateTimeImmutable $now=null,int $limit=100,?int $onlySession=null): array {

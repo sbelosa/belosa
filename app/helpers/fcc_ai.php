@@ -2555,7 +2555,7 @@ function fcc_ai_get_mentor_intelligence_stage_label(string $stage_key, string $l
         return match($stage_key) {
             'blocked_setup' => 'Blocked by setup',
             'starter_cycle' => 'PRO intro momentum',
-            'building_signal' => 'Building the 15+ signal',
+            'building_signal' => 'Building toward the first personal CC',
             'serious_focus' => 'Serious and focused',
             'top_momentum' => 'Recommended sponsor',
             'scattered_focus' => 'Scattered focus',
@@ -2569,7 +2569,7 @@ function fcc_ai_get_mentor_intelligence_stage_label(string $stage_key, string $l
     return match($stage_key) {
         'blocked_setup' => 'Blokiran setupom',
         'starter_cycle' => 'PRO intro momentum',
-        'building_signal' => 'Gradi 15+ signal',
+        'building_signal' => 'Gradi prema prvom osobnom CC',
         'serious_focus' => 'Ozbiljan i fokusiran',
         'top_momentum' => 'Preporučeni sponzor',
         'scattered_focus' => 'Rasprsen fokus',
@@ -2589,9 +2589,9 @@ function fcc_ai_get_mentor_intelligence_priority_label(string $priority_key, str
             'sales_link' => 'Sales link setup',
             'portfolio_cleanup' => 'Portfolio cleanup',
             'starter_unlock' => 'Initial PRO unlock',
-            'signal_build' => '15+ signal build',
+            'signal_build' => 'First personal CC',
             'ai_cycle' => 'Weekly AI cycle',
-            'top_signal' => '50+ / 30d sponsor level',
+            'top_signal' => '4CC sponsor level',
             'pro_upgrade' => 'PRO activation',
             default => 'Next step',
         };
@@ -2601,9 +2601,9 @@ function fcc_ai_get_mentor_intelligence_priority_label(string $priority_key, str
         'sales_link' => 'Setup prodajnog linka',
         'portfolio_cleanup' => 'Ciscenje portfelja',
         'starter_unlock' => 'Pocetni PRO unlock',
-        'signal_build' => 'Gradnja 15+ signala',
+        'signal_build' => 'Prvi osobni CC',
         'ai_cycle' => 'Tjedni AI ciklus',
-        'top_signal' => '50+ / 30d status sponzora',
+        'top_signal' => '4CC status sponzora',
         'pro_upgrade' => 'Aktivacija PRO paketa',
         default => 'Sljedeci korak',
     };
@@ -2688,29 +2688,29 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
         $primary_url = url('ai-plan');
         $primary_url_label = $language === 'en' ? 'Open AI cycle' : 'Otvori AI ciklus';
         $next_action = $language === 'en'
-            ? 'Protect the 50+ / 30d sponsor status, keep the 7-day rhythm healthy, and use the visibility on the homepage plus recommended sponsors.'
-            : 'Zadrzi 50+ / 30d status preporucenog sponzora, cuvaj zdravi 7-dnevni ritam i iskoristi vidljivost na naslovnici i među preporucenim sponzorima.';
+            ? 'Protect monthly 4CC activity, which keeps the recommended sponsor visibility and the 4CC group.'
+            : 'Zadrzi mjesecnu 4CC aktivnost, koja cuva status preporucenog sponzora i 4CC grupu, i iskoristi vidljivost na naslovnici i među preporucenim sponzorima.';
         $admin_action = $language === 'en'
-            ? 'Keep this collaborator on weekly review, preserve the 50+ / 30d sponsor level, and use them as a visible homepage example.'
-            : 'Drzi ovog suradnika na tjednom pregledu, cuvaj 50+ / 30d razinu preporucenog sponzora i iskoristi ga kao vidljiv primjer za naslovnicu.';
+            ? 'Keep this collaborator on weekly review, preserve monthly 4CC activity, and use them as a visible homepage example.'
+            : 'Drzi ovog suradnika na tjednom pregledu, cuvaj mjesecnu 4CC aktivnost i iskoristi ga kao vidljiv primjer za naslovnicu.';
     } elseif($access_tier === 'qualified' || $public_signal_30d >= 15) {
         $stage_key = 'serious_focus';
         $priority_key = 'ai_cycle';
         $primary_url = url('ai-plan');
         $primary_url_label = $language === 'en' ? 'Open weekly AI' : 'Otvori tjedni AI';
         $next_action = $language === 'en'
-            ? 'Maintain the 15+ / 30d signal to stay on Featured Apps, use the weekly AI plan, and build toward 50+ / 30d for homepage recommended sponsor visibility.'
-            : 'Odrzavaj 15+ / 30d signal kako bi ostao na popisu Istaknutih aplikacija, koristi tjedni AI plan i gradi prema 50+ / 30d za vidljivost preporucenog sponzora na naslovnici.';
+            ? 'Keep at least 1 personal CC each month to stay on Featured Apps and build toward 4CC activity for recommended sponsor visibility.'
+            : 'Odrzavaj najmanje 1 osobni CC mjesecno kako bi ostao na popisu Istaknutih aplikacija, koristi dnevne korake i gradi prema 4CC aktivnosti za vidljivost preporucenog sponzora.';
         $admin_action = $language === 'en'
-            ? 'Coach around execution discipline, weekly AI cadence, staying above 15+ / 30d, and climbing toward 50+ / 30d.'
-            : 'Mentorski drzi disciplinu izvedbe, tjedni AI ritam, ostanak iznad 15+ / 30d i penjanje prema 50+ / 30d.';
+            ? 'Coach around execution discipline, daily steps, keeping 1 personal CC monthly, and climbing toward 4CC activity.'
+            : 'Mentorski drzi disciplinu izvedbe, dnevne korake, najmanje 1 osobni CC mjesecno i penjanje prema 4CC aktivnosti.';
     } elseif($is_pro && $intro_cycle_available) {
         $stage_key = 'starter_cycle';
         $priority_key = 'starter_unlock';
         $primary_url = url('ai-plan');
         $primary_url_label = $language === 'en' ? 'Open starter AI' : 'Otvori pocetni AI';
         $next_action = $language === 'en'
-            ? 'Use the initial app review and first weekly AI plan immediately, then let Coach guide the collaborator towards 15+ in 30 days.'
+            ? 'Start with today\'s step in My path and let Coach guide the collaborator towards the first personal CC.'
             : 'Odmah iskoristi pocetnu analizu aplikacije i prvi tjedni AI plan, pa neka Coach vodi suradnika prema 15+ u 30 dana.';
         $admin_action = $language === 'en'
             ? 'Make sure the intro app review and intro weekly plan are actually used, then track whether the collaborator starts building signal.'
@@ -2721,7 +2721,7 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
         $primary_url = url('ai-plan');
         $primary_url_label = $language === 'en' ? 'Open progress path' : 'Otvori put napretka';
         $next_action = $language === 'en'
-            ? 'Coach should push a simple weekly rhythm of stories, direct contact and webshop clicks until the collaborator reaches 15+ in 30 days.'
+            ? 'Coach should push a simple weekly rhythm of stories, direct contact and real recommendations until the collaborator reaches the first personal CC.'
             : 'Coach treba gurati jednostavan tjedni ritam storyja, direktnog kontakta i webshop klikova dok suradnik ne ude u 15+ u 30 dana.';
         $admin_action = $language === 'en'
             ? 'Keep the collaborator on one narrow growth routine until they qualify for the weekly AI cycle.'
@@ -3279,13 +3279,16 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
     $growth_signal_7d = (int) ($signal_snapshot['growth_signal_7d'] ?? 0);
     $public_signal_30d = (int) ($public_signal_snapshot['growth_signal_30d'] ?? 0);
     $public_signal_7d = (int) ($public_signal_snapshot['growth_signal_7d'] ?? 0);
-    $analysis_unlocked = $is_pro && ($growth_signal_30d >= 15 || in_array($manual_tier, ['qualified', 'top'], true));
-    $top_performer = $is_pro && ($public_signal_30d >= 50 || $manual_tier === 'top');
-    $weekly_check_passed = $public_signal_7d >= 15;
+    /* Custom code: FC-2026-10-11: The AI app review and weekly plan are retired; public levels follow FLP360 CC. */
+    $cc_level = function_exists('fcc_ccv_user_state') ? fcc_ccv_user_state((int) ($user->user_id ?? 0))['cc_level'] : 'none';
+    $analysis_unlocked = false;
+    $top_performer = $is_pro && ($cc_level === '4cc' || $manual_tier === 'top');
+    $weekly_check_passed = false;
+    /* /Custom code: FC-2026-10-11 */
     $starter_app_review_used = min(1, max(0, (int) ($access->starter_app_review_used ?? (!empty($app_reviews) ? 1 : 0))));
     $starter_weekly_plan_used = min(1, max(0, (int) ($access->starter_weekly_plan_used ?? (!empty($weekly_plans) ? 1 : 0))));
-    $starter_app_review_available = $is_pro && !$analysis_unlocked && !$starter_app_review_used;
-    $starter_weekly_plan_available = $is_pro && !$analysis_unlocked && !$starter_weekly_plan_used;
+    $starter_app_review_available = false; /* Custom code: FC-2026-10-11: retired */
+    $starter_weekly_plan_available = false;
     $starter_cycle_available = $starter_app_review_available || $starter_weekly_plan_available;
     $app_review_cooldown = $analysis_unlocked ? fcc_ai_get_unlock_cooldown_payload((string) ($latest_app_review['generated_at'] ?? ''), 7) : ['is_locked' => false, 'next_at' => null];
     $weekly_cooldown = $analysis_unlocked ? fcc_ai_get_unlock_cooldown_payload((string) ($latest_weekly_checkin['submitted_at'] ?? ''), 7) : ['is_locked' => false, 'next_at' => null];
@@ -3325,7 +3328,7 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
             ? 'PRO is active and your first weekly plan is available now'
             : 'PRO je aktivan i prvi tjedni plan dostupan je odmah';
     } else {
-        $access_label = $language === 'en' ? 'PRO is active, signal is building toward 15+' : 'PRO je aktivan, signal se gradi prema 15+';
+        $access_label = $language === 'en' ? 'PRO is active, building toward the first personal CC' : 'PRO je aktivan, gradi se prema prvom osobnom CC';
     }
 
     return [
@@ -3341,6 +3344,7 @@ function fcc_ai_get_user_ai_plan_summary(object $user, string $language = 'hr'):
             'label' => $access_label,
             'analysis_unlocked' => $analysis_unlocked,
             'top_performer' => $top_performer,
+            'cc_level' => $cc_level,
             'weekly_check_passed' => $weekly_check_passed,
             'starter_cycle_available' => $starter_cycle_available,
             'starter_app_review_available' => $starter_app_review_available,
@@ -3553,11 +3557,11 @@ function fcc_ai_get_internal_coach_primary_destination(array $ai_plan_summary, s
     if(empty($access_summary['analysis_unlocked']) && !empty($ai_plan_summary['profile_complete'])) {
         return [
             'key' => 'dashboard',
-            'title' => $language === 'en' ? 'Build signal to 15+' : 'Dođi do 15+',
-            'url' => url('dashboard'),
+            'title' => $language === 'en' ? 'Your next step' : 'Tvoj današnji korak', /* Custom code: FC-2026-10-11 */
+            'url' => url('partner'),
             'description' => $language === 'en'
-                ? 'Use the dashboard and daily actions to reach 15+ in the last 30 days.'
-                : 'Kroz dashboard i dnevne poteze dođi do 15+ u zadnjih 30 dana.',
+                ? 'Continue with today\'s step in My path and follow your CC points in FCC.'
+                : 'Nastavi s današnjim korakom Mojeg puta i prati svoje CC bodove u FCC-u.',
         ];
     }
 
@@ -3752,26 +3756,28 @@ function fcc_ai_get_internal_coach_page_priority_instruction(array $page, string
 
     if($route === 'account-plan') {
         return $language === 'en'
-            ? 'Page priority: explain the plan difference simply, especially Beginner versus PRO, Beginner Coach versus VIP Coach, and which actions unlock the weekly AI cycle.'
-            : 'Prioritet stranice: jednostavno objasni razliku paketa, posebno Beginner naspram PRO, Beginner Coach naspram VIP Coach i koje akcije otključavaju tjedni AI ciklus.';
+            ? 'Page priority: explain the plan difference simply, especially Beginner versus PRO and Beginner Coach versus VIP Coach, and that public lists and the 4CC group follow CC points.'
+            : 'Prioritet stranice: jednostavno objasni razliku paketa, posebno Beginner naspram PRO i Beginner Coach naspram VIP Coach, te da javni popisi i 4CC grupa prate CC bodove.';
     }
 
+    /* Custom code: FC-2026-10-11: Public lists follow FLP360 CC. */
     if($route === 'featured-apps') {
         return $language === 'en'
-            ? 'Page priority: explain that 15+ in 30 days is the first public proof layer for Featured Apps, while 50+ in 30 days is the main public goal because it unlocks homepage recommended sponsor positioning, stronger public brand visibility, and a cleaner Google/AI understanding of the collaborator through FCC. Treat 15+ in 7 days only as a rhythm confirmation.'
-            : 'Prioritet stranice: objasni da je 15+ u 30 dana prvi javni sloj dokaza za Istaknute aplikacije, dok je 50+ u 30 dana glavni javni cilj jer otključava poziciju preporučenog sponzora na naslovnici, jaču javnu vidljivost branda i jasniji Google/AI signal kroz FCC. 15+ u 7 dana tretiraj samo kao provjeru ritma.';
+            ? 'Page priority: explain that Featured apps show PRO members with an approved public card and at least 1 personal CC this month or last month. Clicks do not count. Point to the rules on the page.'
+            : 'Prioritet stranice: objasni da Istaknute aplikacije prikazuju PRO suradnike s odobrenom javnom karticom i najmanje 1 osobnim CC u ovom ili prošlom mjesecu. Klikovi se ne broje. Uputi na pravila na stranici.';
     }
 
     if($route === 'recommended-sponsors') {
         return $language === 'en'
-            ? 'Page priority: explain that homepage recommended sponsors are the strongest FCC public layer, connect that to the 50+ / 30d signal, and show the collaborator why that matters for sponsor positioning, stronger personal brand visibility, and better Google/AI understanding through FCC. Then guide them toward protecting setup quality, public clarity, and weekly rhythm.'
-            : 'Prioritet stranice: objasni da su preporučeni sponzori na naslovnici najjači FCC javni sloj, poveži to s 50+ / 30d signalom i pokaži suradniku zašto je to važno za sponsor pozicioniranje, jaču vidljivost osobnog branda i bolju Google/AI razumljivost kroz FCC. Zatim ga vodi prema zaštiti kvalitete setupa, javne jasnoće i tjednog ritma.';
+            ? 'Page priority: explain that Recommended sponsors are PRO members with 4CC activity confirmed in FLP360 this month or last month, a valid sales link and an approved public card; the same level opens the 4CC WhatsApp group.'
+            : 'Prioritet stranice: objasni da su Preporučeni sponzori PRO suradnici s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu, valjanom prodajnom poveznicom i odobrenom javnom karticom; ista razina otvara 4CC WhatsApp grupu.';
     }
+    /* /Custom code: FC-2026-10-11 */
 
     if($route === 'blog' && (str_contains($slug, 'blog/category/forever-proizvodi') || str_contains($slug, 'blog/category/forever-products'))) {
         return $language === 'en'
-            ? 'Page priority: explain the logged-in product share helper clearly. Show how the collaborator should use the share/copy area at the top of product articles, warn them not to copy the raw URL, and connect Beginner sharing versus the PRO product block and 15+ click-building.'
-            : 'Prioritet stranice: jasno objasni prijavljeni helper za dijeljenje proizvoda. Pokaži kako suradnik treba koristiti share/copy dio na vrhu članaka o proizvodima, upozori da ne kopira običan URL i poveži Beginner dijeljenje s PRO blokom proizvoda i gradnjom 15+ klikova.';
+            ? 'Page priority: explain the logged-in product share helper clearly. Show how the collaborator should use the share/copy area at the top of product articles, warn them not to copy the raw URL, and connect Beginner sharing with the PRO product block.'
+            : 'Prioritet stranice: jasno objasni prijavljeni helper za dijeljenje proizvoda. Pokaži kako suradnik treba koristiti share/copy dio na vrhu članaka o proizvodima, upozori da ne kopira običan URL i poveži Beginner dijeljenje s PRO blokom proizvoda.';
     }
 
     return $language === 'en'
@@ -3833,12 +3839,12 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
         'featured_apps' => [
             'title' => $language === 'en' ? 'Featured Apps' : 'Istaknute aplikacije',
             'url' => url('featured-apps'),
-            'description' => $language === 'en' ? 'See the 15+ / 30d Featured Apps list as the first public proof layer and the path toward 50+ / 30d sponsor visibility.' : 'Pogledaj 15+ / 30d popis Istaknutih aplikacija kao prvi javni sloj dokaza i put prema 50+ / 30d sponsor vidljivosti.',
+            'description' => $language === 'en' ? 'Featured apps: PRO with at least 1 personal CC this month or last month.' : 'Istaknute aplikacije: PRO i najmanje 1 osobni CC u ovom ili prošlom mjesecu.', /* Custom code: FC-2026-10-11 */
         ],
         'recommended_sponsors' => [
             'title' => $language === 'en' ? 'Recommended sponsors' : 'Preporučeni sponzori',
             'url' => url('recommended-sponsors'),
-            'description' => $language === 'en' ? 'See the 50+ / 30d homepage sponsor layer, public sponsor profiles, and the stronger FCC signal for Google/AI understanding of your brand.' : 'Pogledaj 50+ / 30d sloj sponsora za naslovnicu, javne sponsor profile i jači FCC signal za Google/AI razumijevanje tvog branda.',
+            'description' => $language === 'en' ? 'Recommended sponsors and the 4CC group: PRO with 4CC activity this month or last month.' : 'Preporučeni sponzori i 4CC grupa: PRO i 4CC aktivnost u ovom ili prošlom mjesecu.', /* Custom code: FC-2026-10-11 */
         ],
         'education' => [
             'title' => $language === 'en' ? 'FCC education' : 'FCC edukacija',
@@ -4330,7 +4336,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
         }
 
         if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you first toward 15+ / 30d and then toward the main public goal of 50+ / 30d sponsor visibility.' . $campaign_line;
+            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. I help you turn your contacts, content and daily steps into the next clear move, and I can explain how 1 personal CC and 4CC activity open the public FCC lists and the 4CC WhatsApp group.' . $campaign_line;
         }
 
         if($is_vip && $starter_weekly_plan_available) {
@@ -4338,7 +4344,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
         }
 
         return $is_vip
-            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ / 30d for Featured Apps, 50+ / 30d as the main public sponsor goal, stronger homepage visibility, and a healthy 7-day rhythm.' . $campaign_line
+            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can explain how 1 personal CC opens the Featured apps and how 4CC activity opens the Recommended sponsors and the 4CC WhatsApp group.' . $campaign_line
             : 'Hi ' . $name_prefix . 'I am your Beginner Coach. Right now you are on the basic intelligence package, but I can already help you with the next move inside FCC, social content, follow-up, and app direction. When you activate PRO or trial, I switch into VIP Coach with personal support for the FCC tools available in your plan.' . $campaign_line;
     }
 
@@ -4347,7 +4353,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     }
 
     if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prvo prema 15+ / 30d, a zatim i prema glavnom javnom cilju 50+ / 30d.' . $campaign_line;
+        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Pomažem ti pretvoriti kontakte, sadržaj i dnevne korake u sljedeći jasan potez, a mogu ti objasniti kako 1 osobni CC i 4CC aktivnost otvaraju javne FCC popise i 4CC WhatsApp grupu.' . $campaign_line;
     }
 
     if($is_vip && $starter_weekly_plan_available) {
@@ -4355,7 +4361,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     }
 
     return $is_vip
-        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ / 30d za Istaknute aplikacije, 50+ / 30d kao glavnom javnom sponsor cilju, jačoj vidljivosti na naslovnici i zdravom 7-dnevnom ritmu.' . $campaign_line
+        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu ti i objasniti kako 1 osobni CC otvara Istaknute aplikacije, a 4CC aktivnost Preporučene sponzore i 4CC WhatsApp grupu.' . $campaign_line
         : 'Bok ' . $name_prefix . 'ja sam tvoj Beginner Coach. Trenutno si na osnovnom paketu inteligencije, ali ti i dalje mogu pomoći oko sljedećeg poteza u FCC-u, sadržaja za društvene mreže, follow-upa i smjera za aplikaciju. Kad aktiviraš PRO ili trial, prebacujem se u VIP Coach s osobnom podrškom za FCC alate dostupne u tvojem paketu.' . $campaign_line;
 }
 
@@ -4504,7 +4510,7 @@ function fcc_ai_get_internal_coach_operating_playbook(string $language = 'hr'): 
             '8. Blocked mode: calm the collaborator down, simplify the situation and give one move they can finish fast.',
             '9. Product clarification mode: if the product name is unclear, stop and ask for the exact Forever name, article link or screenshot before positioning it.',
             '10. Market guard mode: when promotions, percentages, Titan or local campaign rules matter, confirm the market before writing the final story or offer text.',
-            '11. Product referral mode: explain the logged-in share helper on product blog articles, tell the collaborator to use copy/share instead of the raw URL, and connect Beginner sharing with the PRO product block and 15+ click-building.',
+            '11. Product referral mode: explain the logged-in share helper on product blog articles, tell the collaborator to use copy/share instead of the raw URL, and connect Beginner sharing with the PRO product block.',
             '12. Sales link mode: if the Forever sales link is missing, invalid or disabled, make that the first priority before other growth advice because FCC cannot drive webshop recommendation results without it.',
         ]);
     }
@@ -4522,7 +4528,7 @@ function fcc_ai_get_internal_coach_operating_playbook(string $language = 'hr'): 
             '8. Način blokade: umiri situacijo, jo poenostavi in daj eno potezo, ki jo uporabnik lahko hitro zaključi.',
             '9. Način razjasnitve izdelka: če ime izdelka ni jasno, ustavi priporočanje in prosi za točno Forever ime, povezavo do članka ali screenshot.',
             '10. Market guard način: ko so pomembni akcije, odstotki, Titan ali lokalna pravila kampanje, najprej potrdi trg in šele nato napiši končno zgodbo ali ponudbo.',
-            '11. Način priporočila izdelka: razloži prijavljeni share helper na blog člankih o izdelkih, povej sodelavcu naj uporablja copy/share namesto navadnega URL-ja in poveži Beginner deljenje s PRO blokom izdelkov ter gradnjo 15+ klikov.',
+            '11. Način priporočila izdelka: razloži prijavljeni share helper na blog člankih o izdelkih, povej sodelavcu naj uporablja copy/share namesto navadnega URL-ja in poveži Beginner deljenje s PRO blokom izdelkov.',
             '12. Način prodajnega linka: če Forever prodajni link manjka, je neveljaven ali izklopljen, naj bo to prva prioriteta pred ostalimi growth nasveti, ker brez njega FCC ne more graditi webshop rezultatov priporočil.',
         ]);
     }
@@ -4539,7 +4545,7 @@ function fcc_ai_get_internal_coach_operating_playbook(string $language = 'hr'): 
         '8. Režim blokade: smiri situaciju, pojednostavni je i daj jedan potez koji korisnik može brzo završiti.',
         '9. Režim razjašnjenja proizvoda: ako naziv proizvoda nije jasan, zaustavi preporuku i traži točan Forever naziv, link na članak ili screenshot.',
         '10. Market guard režim: kad su važni akcija, postoci, Titan ili lokalna pravila kampanje, prvo potvrdi tržište pa tek onda napiši konačnu priču ili ponudu.',
-        '11. Režim preporuke proizvoda: objasni prijavljeni share helper na blog člancima o proizvodima, reci suradniku da koristi copy/share umjesto običnog URL-a i poveži Beginner dijeljenje s PRO blokom proizvoda i gradnjom 15+ klikova.',
+        '11. Režim preporuke proizvoda: objasni prijavljeni share helper na blog člancima o proizvodima, reci suradniku da koristi copy/share umjesto običnog URL-a i poveži Beginner dijeljenje s PRO blokom proizvoda.',
         '12. Režim prodajnog linka: ako Forever prodajni link nedostaje, neispravan je ili je ugašen, postavi to kao prvi prioritet prije ostalih growth savjeta jer bez njega FCC ne može graditi webshop rezultate preporuke.',
     ]);
 }
@@ -4567,7 +4573,7 @@ function fcc_ai_get_internal_coach_reference_examples(string $language = 'hr'): 
             'Assistant style: "We do not need everything today. Your only move now is this: open Contacts, choose one person, and send one short follow-up. When that is done, we take the next step."',
             '6. Product referral example',
             'User: "How should I share a product recommendation?"',
-            'Assistant style: "Use the share/copy section at the top of the logged-in product article, because that embeds your recommendation automatically. Do not copy the raw browser URL. On Beginner, use that link for a story or DM. On PRO, you can also place the product block inside your FCC app, and those outbound product clicks help build your 15+ signal."',
+            'Assistant style: "Use the share/copy section at the top of the logged-in product article, because that embeds your recommendation automatically. Do not copy the raw browser URL. On Beginner, use that link for a story or DM. On PRO, you can also place the product block inside your FCC app, and you can follow those outbound product clicks in FCC Results."',
             '7. Sales link example',
             'User: "I still do not have the Forever webshop link on my app."',
             'Assistant style: "That is the first thing we fix, because without an active Forever sales link FCC cannot drive real webshop recommendation results. Open Blocks, click Add block, in Forever Card Club choose Forever Web Shop, watch the Link Builder video, create your own link inside Foreverliving.com, and only then paste that link into the block."',
@@ -4602,7 +4608,7 @@ function fcc_ai_get_internal_coach_reference_examples(string $language = 'hr'): 
         'Stil odgovora: "Ne trebamo rješavati sve danas. Tvoj jedini potez sada je ovo: otvori Kontakte, odaberi jednu osobu i pošalji jedan kratki follow-up. Kad to završiš, idemo na sljedeći korak."',
         '6. Primjer za preporuku proizvoda',
         'Korisnik: "Kako da podijelim preporuku za proizvod?"',
-        'Stil odgovora: "Koristi share/copy dio na vrhu prijavljenog članka o proizvodu jer on automatski ugradi tvoju preporuku. Nemoj kopirati običan URL iz browsera. Ako si na Beginneru, taj link koristi za story ili DM. Ako si na PRO, isti proizvod možeš dodati i kroz blok za preporuku proizvoda u FCC aplikaciji, a ti odlazni klikovi prema Foreveru pomažu ti graditi 15+ signal."',
+        'Stil odgovora: "Koristi share/copy dio na vrhu prijavljenog članka o proizvodu jer on automatski ugradi tvoju preporuku. Nemoj kopirati običan URL iz browsera. Ako si na Beginneru, taj link koristi za story ili DM. Ako si na PRO, isti proizvod možeš dodati i kroz blok za preporuku proizvoda u FCC aplikaciji, a te odlazne klikove prema Foreveru pratiš u FCC Rezultatima."',
         '7. Primjer za prodajni link',
         'Korisnik: "Još nemam Forever webshop link na aplikaciji."',
         'Stil odgovora: "To je prva stvar koju sada rjesavamo, jer bez aktivnog Forever prodajnog linka FCC ne moze graditi stvarne webshop rezultate preporuke. Otvori Blokove, klikni Dodaj blok, u Forever Card Club rubrici odaberi Forever Web trgovina, pogledaj video za Link Builder, sam izradi svoj link na Foreverliving.com i tek onda taj link zalijepi u blok."',
@@ -4764,7 +4770,7 @@ function fcc_ai_get_internal_coach_test_scenarios(string $language = 'hr'): arra
                 'route' => 'blog',
                 'section' => '',
                 'user_message' => 'How should I share a product article with my recommendation?',
-                'expected_focus' => 'Coach should explain the logged-in share helper, warn against copying the raw URL, and connect Beginner sharing with the PRO product block and 15+ signal.',
+                'expected_focus' => 'Coach should explain the logged-in share helper, warn against copying the raw URL, and connect Beginner sharing with the PRO product block.',
                 'expected_output_type' => 'product_referral_explainer',
             ],
             [
@@ -4921,7 +4927,7 @@ function fcc_ai_get_internal_coach_test_scenarios(string $language = 'hr'): arra
             'route' => 'blog',
             'section' => '',
             'user_message' => 'Kako da podijelim članak o proizvodu sa svojom preporukom?',
-            'expected_focus' => 'Coach treba objasniti prijavljeni share helper, upozoriti da se ne kopira običan URL te povezati Beginner dijeljenje s PRO blokom proizvoda i 15+ signalom.',
+            'expected_focus' => 'Coach treba objasniti prijavljeni share helper, upozoriti da se ne kopira običan URL te povezati Beginner dijeljenje s PRO blokom proizvoda.',
             'expected_output_type' => 'product_referral_explainer',
         ],
         [
@@ -5026,7 +5032,7 @@ function fcc_ai_get_internal_coach_product_referral_explainer(bool $is_pro, stri
         ];
 
         if($is_pro) {
-            $lines[] = 'On PRO, you can also place the product recommendation block inside your FCC app. Those outbound Forever product clicks are one of the practical ways to build your 15+ signal.';
+            $lines[] = 'On PRO, you can also place the product recommendation block inside your FCC app. You can follow those outbound Forever product clicks in FCC Results.';
         } else {
             $lines[] = 'On Beginner, this is a strong move for a story, a DM, or a direct recommendation when you want to send one product or one product group quickly. On PRO, you additionally unlock the product recommendation block inside your FCC app.';
         }
@@ -5043,7 +5049,7 @@ function fcc_ai_get_internal_coach_product_referral_explainer(bool $is_pro, stri
     ];
 
     if($is_pro) {
-        $lines[] = 'Ako si na PRO, isti princip možeš koristiti i kroz blok za preporuku proizvoda unutar FCC aplikacije. Ti odlazni klikovi prema Foreveru su jedan od praktičnih načina da gradiš svoj 15+ signal.';
+        $lines[] = 'Ako si na PRO, isti princip možeš koristiti i kroz blok za preporuku proizvoda unutar FCC aplikacije. Te odlazne klikove prema Foreveru pratiš u FCC Rezultatima.';
     } else {
         $lines[] = 'Ako si na Beginneru, ovo je super varijanta za story, DM ili direktnu preporuku kad želiš nekome brzo poslati jedan proizvod ili jednu grupu proizvoda. Na PRO paketu dodatno otključavaš i blok za preporuku proizvoda unutar FCC aplikacije.';
     }
@@ -5233,71 +5239,38 @@ function fcc_ai_get_internal_coach_portfolio_explainer(array $portfolio_summary 
 }
 
 function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan = [], string $language = 'hr'): string {
+    /* Custom code: FC-2026-10-11: Public visibility follows FLP360 CC instead of click thresholds. */
     $language = fcc_ai_resolve_public_reply_language($language);
     $access_summary = is_array($ai_plan['access_summary'] ?? null) ? $ai_plan['access_summary'] : [];
-    $public_signal_summary = is_array($ai_plan['public_signal_summary'] ?? null) ? $ai_plan['public_signal_summary'] : [];
-    $signal_summary = !empty($public_signal_summary) ? $public_signal_summary : (is_array($ai_plan['signal_summary'] ?? null) ? $ai_plan['signal_summary'] : []);
-    $growth_signal_30d = max(0, (int) ($signal_summary['growth_signal_30d'] ?? 0));
-    $growth_signal_7d = max(0, (int) ($signal_summary['growth_signal_7d'] ?? 0));
-    $qualified_target = max(1, (int) ($signal_summary['qualified_target'] ?? 15));
-    $top_target = max($qualified_target, (int) ($signal_summary['top_target'] ?? 50));
-    $weekly_check_target = max(1, (int) ($signal_summary['weekly_check_target'] ?? 15));
-    $missing_to_qualified = max(0, (int) ($signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $growth_signal_30d)));
-    $missing_to_top = max(0, (int) ($signal_summary['missing_to_top'] ?? max(0, $top_target - $growth_signal_30d)));
-    $analysis_unlocked = !empty($access_summary['analysis_unlocked']);
-    $top_performer = !empty($access_summary['top_performer']) || $growth_signal_30d >= $top_target;
+    $cc_level = (string) ($access_summary['cc_level'] ?? 'none');
+    $is_pro = !empty($access_summary['is_pro']);
 
     if($language === 'en') {
-        if($top_performer) {
-            return implode("\n", [
-                $top_target . '+ / 30d is your main public FCC goal and you already hold it.',
-                'That is the simplest way for FCC to promote you as an active recommended sponsor on the homepage and through the public sponsor profile layer.',
-                'It also gives Google and AI systems a cleaner signal about who you are, how you work inside FCC, and why you are relevant as an active sponsor with real results.',
-                'The 15+ / 7d check stays only as a weekly rhythm confirmation: right now you are on ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.',
-            ]);
-        }
-
-        if($analysis_unlocked) {
-            return implode("\n", [
-                $qualified_target . '+ / 30d is your first public proof layer because it keeps you on Featured Apps.',
-                'But the main public goal is ' . $top_target . '+ / 30d, because that is the simplest path for FCC to promote you as an active recommended sponsor on the homepage and through a public sponsor profile.',
-                'That helps strengthen your personal brand inside FCC and gives Google and AI chats a stronger signal that you are an active sponsor with real FCC results.',
-                'From where you are now, you are missing ' . $missing_to_top . ' to reach that sponsor level.',
-            ]);
-        }
-
-        return implode("\n", [
-            $qualified_target . '+ / 30d is the first public threshold because it places you on Featured Apps.',
-            'The main public goal is ' . $top_target . '+ / 30d, because that is the simplest way for FCC to promote you as an active recommended sponsor.',
-            'That public layer strengthens your sponsor profile, personal brand, and how Google and AI systems understand you through FCC.',
-            'Right now you are missing ' . $missing_to_qualified . ' to reach Featured Apps and ' . $missing_to_top . ' to reach the recommended sponsor layer.',
-        ]);
+        $lines = [
+            'Public FCC lists follow your CC points from FLP360, not clicks.',
+            'Featured apps: active PRO, an approved public main card and at least 1 personal CC this calendar month or last month.',
+            'Recommended sponsors and the 4CC WhatsApp group: active PRO and 4CC activity confirmed in FLP360 this month or last month.',
+        ];
+        $lines[] = $cc_level === '4cc'
+            ? ($is_pro ? 'You meet the 4CC level now, so you can appear among the Recommended sponsors and your 4CC group invitation is on the Today page.' : 'You meet the 4CC level; with PRO you would appear among the Recommended sponsors.')
+            : ($cc_level === 'featured'
+                ? ($is_pro ? 'You meet the 1 CC level now, so your card can appear among the Featured apps. The next level is 4CC activity.' : 'You meet the 1 CC level; with PRO your card would appear among the Featured apps.')
+                : 'Your next step is your first personal CC this month; it opens the Featured apps together with PRO.');
+        return implode("\n", $lines);
     }
 
-    if($top_performer) {
-        return implode("\n", [
-            $top_target . '+ / 30d je tvoj glavni javni FCC cilj i ti ga već držiš.',
-            'To je najjednostavniji način da te FCC promovira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil.',
-            'Tako Google i AI sustavi dobivaju jasniji signal tko si, kako radiš unutar FCC-a i zašto si relevantan kao aktivan sponsor sa stvarnim rezultatima.',
-            'Prag ' . $qualified_target . '+ / 7d ostaje samo tjedna provjera ritma: trenutno si na ' . $growth_signal_7d . ' / ' . $weekly_check_target . '.',
-        ]);
-    }
-
-    if($analysis_unlocked) {
-        return implode("\n", [
-            $qualified_target . '+ / 30d je prvi javni sloj dokaza jer te drži na popisu Istaknutih aplikacija.',
-            'Ali glavni javni cilj je ' . $top_target . '+ / 30d, jer je to najjednostavniji put da te FCC promovira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil.',
-            'To ti diže osobni brand unutar FCC-a i daje Googleu i AI chatovima jači signal da si aktivan sponsor sa stvarnim FCC rezultatima.',
-            'Iz ove točke ti do tog sponsor cilja nedostaje još ' . $missing_to_top . '.',
-        ]);
-    }
-
-    return implode("\n", [
-        $qualified_target . '+ / 30d je prvi javni prag jer te on uvodi na Istaknute aplikacije.',
-        'Glavni javni cilj je ' . $top_target . '+ / 30d, jer je to najjednostavniji način da te FCC promovira kao aktivnog preporučenog sponzora.',
-        'Na taj način jačaš svoj javni profil, osobni brand i mogućnost da te Google i AI sustavi lakše prepoznaju kroz FCC kontekst.',
-        'Trenutno ti do ' . $qualified_target . '+ nedostaje još ' . $missing_to_qualified . ', a do ' . $top_target . '+ još ' . $missing_to_top . '.',
-    ]);
+    $lines = [
+        'Javni FCC popisi prate tvoje CC bodove iz FLP360, a ne klikove.',
+        'Istaknute aplikacije: aktivni PRO, odobrena javna glavna kartica i najmanje 1 osobni CC u ovom ili prošlom kalendarskom mjesecu.',
+        'Preporučeni sponzori i 4CC WhatsApp grupa: aktivni PRO i 4CC aktivnost potvrđena u FLP360 u ovom ili prošlom mjesecu.',
+    ];
+    $lines[] = $cc_level === '4cc'
+        ? ($is_pro ? 'Sada ispunjavaš 4CC razinu, pa možeš biti među Preporučenim sponzorima, a poziv u 4CC grupu je na stranici Danas.' : 'Ispunjavaš 4CC razinu; uz PRO bio/la bi među Preporučenim sponzorima.')
+        : ($cc_level === 'featured'
+            ? ($is_pro ? 'Sada ispunjavaš razinu od 1 CC, pa tvoja kartica može biti među Istaknutim aplikacijama. Sljedeća razina je 4CC aktivnost.' : 'Ispunjavaš razinu od 1 CC; uz PRO tvoja kartica bila bi među Istaknutim aplikacijama.')
+            : 'Tvoj sljedeći korak je prvi osobni CC u ovom mjesecu; uz PRO on otvara Istaknute aplikacije.');
+    return implode("\n", $lines);
+    /* /Custom code: FC-2026-10-11 */
 }
 
 function fcc_ai_get_internal_coach_campaign_explainer(array $campaign = [], array $ai_plan = [], string $language = 'hr'): string {
@@ -28125,9 +28098,12 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Sales link rule: if sales_link_summary says the Forever sales link is missing, invalid or disabled, treat that as the first operational priority before profile polishing, app review, weekly AI cycles or PRO upsell. Explain that both Beginner and PRO can use it, that the correct setup flow is Blocks -> Add block -> Forever Card Club -> Forever Web Shop -> create the user\'s own Link Builder URL on Foreverliving.com -> paste it into the block, and that without it FCC cannot drive real webshop recommendation results. Make clear that only the collaborator can create that link inside their own Foreverliving account.',
         'Campaign rule: use active_campaign only when the collaborator explicitly asks about the current campaign, promo, challenge, offer or a campaign-specific content task. Do not inject the active campaign into generic questions about clicks, traffic, publishing rhythm or general next steps unless the collaborator clearly points to that campaign. When campaign context is explicitly requested, the preferred move is to place the campaign on the main FCC app through a dedicated button or link block with the collaborator\'s own personal Link Builder URL. Never tell them to paste or share a raw Forever product URL without their own personal Link Builder URL.',
         'Portfolio rule: when the collaborator asks about too many apps, which app to focus on, how to connect niche pages, or what to disable, use portfolio_summary and portfolio_details. Recommend a focused portfolio, keep only apps with a clear business role or signal, and gently suggest disabling dead-end apps that have no meaningful traffic, result or purpose.',
-        'Coach commerce rule: help first. If the collaborator is on Beginner, you may gently mention PRO or trial only when it clearly unlocks the next value they want. If PRO is active and the initial app review or first weekly plan are still available, guide them through that intro cycle before pushing the 15+ signal. If PRO is active but the intro cycle is already spent and the 15+ signal is not there yet, focus on the fastest path to 15+ in 30 days. Once the collaborator holds 15+ / 30d, explain that this keeps them on Featured Apps as the first public proof layer, but that 50+ / 30d is the main public goal because FCC can promote them as an active recommended sponsor on the homepage and through public sponsor profiles. When relevant, explain that this also strengthens how Google and AI systems understand their brand and sponsor relevance through FCC. Treat 15+ / 7d as a weekly rhythm check, not as the main sponsor threshold.',
+        'Coach commerce rule: help first. If the collaborator is on Beginner, you may gently mention PRO or trial only when it clearly unlocks the next value they want. If PRO is active, focus on today\'s step, real conversations and the first personal CC. With at least 1 personal CC this month or last month a PRO member stays on Featured Apps; 4CC activity confirmed in FLP360 adds the Recommended sponsors and the 4CC WhatsApp group. When relevant, explain that public visibility also strengthens how Google and AI systems understand their brand through FCC.',
         'Availability rule: use availability_summary whenever you coach around app reviews or weekly plans. If something is available now, say it clearly. If it is locked, mention the exact next unlock time when provided and redirect the collaborator toward the best thing to do until then.',
-        'Product referral rule: when relevant, explain the logged-in share/copy helper on Forever product blog articles. Tell the collaborator to use that helper instead of copying the raw URL. Beginner can use it for stories and direct recommendations. PRO can additionally use the FCC product recommendation block, and those outbound Forever clicks help build the 15+ signal.',
+        'Product referral rule: when relevant, explain the logged-in share/copy helper on Forever product blog articles. Tell the collaborator to use that helper instead of copying the raw URL. Beginner can use it for stories and direct recommendations. PRO can additionally use the FCC product recommendation block, and those outbound Forever clicks appear in FCC Results as personal statistics.',
+        /* Custom code: FC-2026-10-11: Current visibility rules override older context. */
+        'Visibility rule (current, overrides any older context): public clicks no longer unlock anything and are only personal statistics. Featured apps need active PRO, an approved public main card and at least 1 personal CC in the current or previous calendar month. Recommended sponsors and the 4CC WhatsApp group need active PRO and 4CC activity confirmed in FLP360 in the current or previous calendar month; the group invitation appears on the Today page. CC points sync from FLP360 twice a day. The AI app review and the weekly AI plan are retired; never offer them. Never mention 15+ or 50+ click thresholds, 7-day rhythm checks or click targets. Use access_summary.cc_level (none, featured, 4cc) and point to Moji CC bodovi or the public rules on the Featured apps page.',
+        /* /Custom code: FC-2026-10-11 */
         $page_priority_instruction,
         'Stay within FCC coaching and platform support. Do not act like the public product advisor, do not diagnose, and do not give medical treatment claims. Help the collaborator write a neutral message for the same contact and locate verified product information for clinician review when relevant; do not redirect to another contact or another AI merely because a health condition was mentioned.',
         'Do not invent FCC pages, settings, analytics, app features or team data that are not present in the provided context. If something is missing, be honest and guide the user with what is available now.',
@@ -28298,8 +28274,10 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $public_missing_to_qualified = max(0, (int) ($public_signal_summary['missing_to_qualified'] ?? max(0, $qualified_target - $public_signal_30d)));
     $public_missing_to_top = max(0, (int) ($public_signal_summary['missing_to_top'] ?? max(0, $top_target - $public_signal_30d)));
     $public_missing_to_weekly_check = max(0, (int) ($public_signal_summary['missing_to_weekly_check'] ?? max(0, $weekly_check_target - $public_signal_7d)));
-    $public_top_performer = $public_signal_30d >= $top_target;
-    $public_featured_ready = $public_signal_30d >= $qualified_target;
+    /* Custom code: FC-2026-10-11: Public levels follow FLP360 CC. */
+    $public_top_performer = ($access_summary['cc_level'] ?? 'none') === '4cc';
+    $public_featured_ready = in_array($access_summary['cc_level'] ?? 'none', ['featured', '4cc'], true);
+    /* /Custom code: FC-2026-10-11 */
     $weekly_check_passed = !empty($access_summary['weekly_check_passed']) || !empty($public_signal_summary['weekly_check_passed']) || !empty($signal_summary['weekly_check_passed']) || $public_signal_7d >= $weekly_check_target;
     $campaign_active = !empty($active_campaign['id']);
     $conversation_id = (int) ($context['conversation_id'] ?? 0);
@@ -28927,8 +28905,8 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
             : 'PRO je aktivan, ali se tjedni AI ciklus otključava nakon ' . $qualified_target . '+ klikova, prijava, WhatsApp akcija i AI chat leadova u zadnjih 30 dana. Sada si na ' . $growth_signal_30d . ', pa nam je cilj što brže izgraditi preostali signal.';
     } elseif($should_lead_with_step && !$is_pro) {
         $blocks[] = $language === 'en'
-            ? 'The strongest upgrade from here is activating PRO or trial, because that switches you from Beginner Coach to VIP Coach and opens the stronger AI cycle when signal reaches 15+.'
-            : 'Najjači sljedeći upgrade iz ove točke je aktivirati PRO ili trial, jer te to prebacuje iz Beginner Coacha u VIP Coach i otvara jači AI ciklus čim signal dođe do 15+.';
+            ? 'The strongest upgrade from here is activating PRO or trial, because that switches you from Beginner Coach to VIP Coach and adds team overview, video invitations and the public FCC lists when your CC level allows it.'
+            : 'Najjači sljedeći upgrade iz ove točke je aktivirati PRO ili trial, jer te to prebacuje iz Beginner Coacha u VIP Coach i dodaje pregled tima, video pozivnice i javne FCC popise kad to dopusti tvoja CC razina.';
     } elseif($should_lead_with_step && $current_step === 'weekly' && $starter_weekly_plan_available) {
         $blocks[] = $language === 'en'
             ? 'Your first weekly plan is available now. Send the weekly check-in so I can connect your app review, the coach notes and your real situation into one focused next 7 days.'
@@ -29003,49 +28981,25 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 : 'PRO je aktivan pa je VIP Coach već uključen. Tvoj trenutačni growth status je: ' . ($access_label !== '' ? $access_label : 'PRO aktivan') . '.';
         }
 
-        if($is_pro && $starter_cycle_available) {
-            $blocks[] = $language === 'en'
-                ? 'Before we chase 15+, your intro VIP cycle is here to use now: one initial app review and one first weekly plan. That gives me the right context to coach you better.'
-                : 'Prije nego krenemo loviti 15+, tvoj početni VIP ciklus je sada spreman za korištenje: jedna početna analiza aplikacije i jedan prvi tjedni plan. To mi daje pravi kontekst da te dalje bolje vodim.';
-        } elseif($is_pro && !$analysis_unlocked) {
-            $blocks[] = $language === 'en'
-                ? 'To unlock the weekly AI plan and app review, you need ' . $qualified_target . '+ signal in 30 days. Right now you have ' . $growth_signal_30d . ', so you are missing ' . $missing_to_qualified . '.'
-                : 'Za otključavanje tjednog AI plana i AI analize aplikacije trebaš ' . $qualified_target . '+ signala u 30 dana. Trenutno imaš ' . $growth_signal_30d . ', znači nedostaje ti još ' . $missing_to_qualified . '.';
-        }
-
-        if($app_review_available_now && !empty($latest_app_review)) {
-            $blocks[] = $language === 'en'
-                ? 'Your next app review is already available now, so we can use it as the next improvement step.'
-                : 'Tvoja sljedeća analiza aplikacije već je dostupna sada, pa je možemo uzeti kao sljedeći korak unaprijeđenja.';
-        } elseif($app_review_locked && $app_review_next_label !== '') {
-            $blocks[] = $language === 'en'
-                ? 'The next app review becomes available on ' . $app_review_next_label . '.'
-                : 'Sljedeća analiza aplikacije postaje dostupna ' . $app_review_next_label . '.';
-        }
-
-        if($weekly_available_now && !empty($latest_app_review)) {
-            $blocks[] = $language === 'en'
-                ? 'The next weekly check-in is available right now.'
-                : 'Novi tjedni unos dostupan je odmah.';
-        } elseif($weekly_locked && $weekly_next_label !== '') {
-            $blocks[] = $language === 'en'
-                ? 'The next weekly check-in becomes available on ' . $weekly_next_label . ($weekly_countdown_days !== null ? ' (' . max(0, $weekly_countdown_days) . ' day(s)).' : '.')
-                : 'Novi tjedni unos postaje dostupan ' . $weekly_next_label . ($weekly_countdown_days !== null ? ' (' . max(0, $weekly_countdown_days) . ' dana).' : '.');
-        }
-
+        /* Custom code: FC-2026-10-11: Public levels and the 4CC group follow FLP360 CC; the AI app review and weekly plan are retired. */
         if($public_top_performer) {
             $blocks[] = $language === 'en'
-                ? 'You already hold the 50+ / 30d sponsor level with ' . $public_signal_30d . ' in 30 days. The extra weekly check is ' . $public_signal_7d . ' / ' . $weekly_check_target . ' in 7 days.'
-                : 'Vec drzis 50+ / 30d razinu preporucenog sponzora s ' . $public_signal_30d . ' u 30 dana. Dodatna tjedna provjera ti je ' . $public_signal_7d . ' / ' . $weekly_check_target . ' u 7 dana.';
-        } elseif($analysis_unlocked || $public_featured_ready) {
+                ? 'Your 4CC activity is confirmed in FLP360 this month or last month. With PRO your card can appear among the Recommended sponsors, and the invitation to the 4CC WhatsApp group is waiting on your Today page.'
+                : 'Tvoja 4CC aktivnost potvrđena je u FLP360 u ovom ili prošlom mjesecu. Uz PRO tvoja kartica može biti među Preporučenim sponzorima, a poziv u 4CC WhatsApp grupu čeka te na stranici Danas.';
+        } elseif($public_featured_ready) {
             $blocks[] = $language === 'en'
-                ? 'Right now you are on the 15+ / 30d public FCC level with ' . $public_signal_30d . '. That keeps you eligible for Featured Apps, and the next sponsor target is ' . $top_target . ' / 30d. Your current 7-day check is ' . $public_signal_7d . ' / ' . $weekly_check_target . '.'
-                : 'Trenutno si na 15+ / 30d javnoj FCC razini s ' . $public_signal_30d . '. To te drzi spremnim za popis Istaknutih aplikacija, a sljedeci sponsor cilj je ' . $top_target . ' / 30d. Tvoja trenutačna 7-dnevna provjera je ' . $public_signal_7d . ' / ' . $weekly_check_target . '.';
+                ? 'You have at least 1 personal CC this month or last month, so with PRO your card can appear among the Featured apps. The next level is 4CC activity, which opens the Recommended sponsors and the 4CC WhatsApp group.'
+                : 'Imaš najmanje 1 osobni CC u ovom ili prošlom mjesecu, pa uz PRO tvoja kartica može biti među Istaknutim aplikacijama. Sljedeća razina je 4CC aktivnost, koja otvara Preporučene sponzore i 4CC WhatsApp grupu.';
+        } else {
+            $blocks[] = $language === 'en'
+                ? 'Public FCC lists follow your CC points from FLP360: 1 personal CC for the Featured apps and 4CC activity for the Recommended sponsors and the 4CC group, this month or last month. Clicks stay your personal statistics.'
+                : 'Javni FCC popisi prate tvoje CC bodove iz FLP360: 1 osobni CC za Istaknute aplikacije i 4CC aktivnost za Preporučene sponzore i 4CC grupu, u ovom ili prošlom mjesecu. Klikovi ostaju tvoja osobna statistika.';
         }
+        /* /Custom code: FC-2026-10-11 */
 
         $blocks[] = $language === 'en'
-            ? 'If you want, I can take you straight to the best page for the next unlock step.'
-            : 'Ako želiš, mogu te odmah odvesti na najbolju stranicu za sljedeći unlock korak.';
+            ? 'If you want, I can take you to your CC points or to the rules of the public lists.'
+            : 'Ako želiš, mogu te odvesti na tvoje CC bodove ili na pravila javnih popisa.';
     }
 
     if($is_sponsor_visibility_request || ($is_pro_status_request && ($analysis_unlocked || $top_performer))) {
@@ -29178,7 +29132,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     } elseif($is_pro && !$analysis_unlocked && !$starter_cycle_available) {
         $blocks[] = $language === 'en'
             ? implode("\n", [
-                'Fast path to 15+:',
+                'Fast path to your next CC level:',
                 '- keep the Forever sales link active and visible on the app',
                 '- record a story with one clear CTA today',
                 '- use one logged-in product blog referral link for a real recommendation today',
@@ -29186,7 +29140,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 '- sharpen the main app headline and first CTA',
             ])
             : implode("\n", [
-                'Najbrži put do 15+:',
+                'Najbrži put do sljedeće CC razine:',
                 '- drži Forever prodajni link aktivnim i vidljivim na aplikaciji',
                 '- snimi story s jednim jasnim CTA-om još danas',
                 '- iskoristi jedan prijavljeni referral link s bloga proizvoda za stvarnu preporuku još danas',
@@ -29199,35 +29153,31 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
                 'Use the intro VIP cycle in this order:',
                 '- run the initial app review now',
                 '- then send the first weekly check-in',
-                '- after that I will coach you toward 15+ with much sharper recommendations',
+                '- after that I will coach you toward 1 personal CC and 4CC activity',
             ])
             : implode("\n", [
                 'Iskoristi početni VIP ciklus ovim redom:',
                 '- sada pokreni početnu analizu aplikacije',
                 '- zatim pošalji prvi tjedni check-in',
-                '- nakon toga te vodim prema 15+ s puno preciznijim preporukama',
+                '- nakon toga te vodim prema 1 osobnom CC i 4CC aktivnosti',
             ]);
     } elseif(!$is_pro && ($is_content_request || $is_review_request || $is_pro_status_request || $is_product_referral_request)) {
         $blocks[] = $language === 'en'
-            ? 'If you want deeper app analysis, weekly AI plans, and VIP Coach with personal support for the FCC tools available in your plan, activate PRO or at least the free trial.'
-            : 'Ako želiš dublju AI analizu aplikacije, tjedne AI planove i VIP Coach s osobnom podrškom za FCC alate dostupne u tvojem paketu, aktiviraj PRO ili barem besplatni trial.';
+            ? 'If you want VIP Coach with personal support, your team overview, video invitations and a place on the public FCC lists when your CC level allows it, activate PRO or at least the free trial.'
+            : 'Ako želiš VIP Coach s osobnom podrškom, pregled svojeg tima, video pozivnice i mjesto na javnim FCC popisima kad to dopusti tvoja CC razina, aktiviraj PRO ili barem besplatni trial.';
     }
 
+    /* Custom code: FC-2026-10-11: Visibility focus follows FLP360 CC. */
     if($public_top_performer) {
         $blocks[] = $language === 'en'
-            ? 'Your sponsor focus now is to protect the 50+ / 30d level as your main public FCC asset, keep the homepage recommended sponsor visibility strong, and keep the 7-day rhythm healthy as a weekly check.'
-            : 'Tvoj sponsor fokus sada je zadržati 50+ / 30d razinu kao glavni javni FCC kapital, čuvati vidljivost preporučenog sponzora na naslovnici i držati 7-dnevni ritam zdravim kao tjednu provjeru.';
-    } elseif($is_pro && ($analysis_unlocked || $public_featured_ready) && !$public_top_performer) {
+            ? 'Your focus now is to keep 4CC activity confirmed every month: that keeps you among the Recommended sponsors and in the 4CC WhatsApp group.'
+            : 'Tvoj fokus sada je svaki mjesec zadržati potvrđenu 4CC aktivnost: tako ostaješ među Preporučenim sponzorima i u 4CC WhatsApp grupi.';
+    } elseif($is_pro && $public_featured_ready) {
         $blocks[] = $language === 'en'
-            ? 'Stay above 15+ / 30d to remain on Featured Apps, but build toward ' . $top_target . '+ / 30d as the main public sponsor target. That is the simplest way for FCC to promote you as an active sponsor, strengthen your brand, and give Google and AI systems a clearer public signal. The 7-day check matters as weekly rhythm, not as the main sponsor threshold.'
-            : 'Ostani iznad 15+ / 30d kako bi ostao na popisu Istaknutih aplikacija, ali gradi prema ' . $top_target . '+ / 30d kao glavnom javnom sponsor cilju. To je najjednostavniji način da te FCC promovira kao aktivnog sponzora, ojača tvoj brand i da Googleu i AI sustavima jasniji javni signal. 7-dnevna provjera važna je kao tjedni ritam, ali nije glavni sponsor prag.';
+            ? 'With at least 1 personal CC you stay on the Featured apps. Build toward 4CC activity as the next level: it opens the Recommended sponsors and the 4CC WhatsApp group.'
+            : 'S najmanje 1 osobnim CC ostaješ među Istaknutim aplikacijama. Gradi prema 4CC aktivnosti kao sljedećoj razini: ona otvara Preporučene sponzore i 4CC WhatsApp grupu.';
     }
-
-    if(!$public_top_performer && ($analysis_unlocked || $public_featured_ready) && !$weekly_check_passed) {
-        $blocks[] = $language === 'en'
-            ? 'Your weekly rhythm check is still missing ' . $public_missing_to_weekly_check . ' to reach ' . $weekly_check_target . ' in 7 days. That does not block Featured Apps, but it is a good weekly confirmation signal.'
-            : 'Za tjednu provjeru ritma nedostaje ti jos ' . $public_missing_to_weekly_check . ' do ' . $weekly_check_target . ' u 7 dana. To ne blokira popis Istaknutih aplikacija, ali je dobar tjedni signal potvrde.';
-    }
+    /* /Custom code: FC-2026-10-11 */
 
     if($is_portfolio_request && $portfolio_health_label !== '') {
         $blocks[] = $language === 'en'

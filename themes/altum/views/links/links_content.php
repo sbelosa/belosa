@@ -137,7 +137,7 @@ $fcc_featured_profile_signal_now = (int) ($fcc_main_featured_builder['growth_sig
 $fcc_featured_profile_signal_target = (int) ($fcc_main_featured_builder['qualified_target'] ?? ($fcc_main_signal_snapshot['qualified_target'] ?? 15));
 $fcc_featured_profile_missing = (int) ($fcc_main_featured_builder['missing_to_unlock'] ?? max(0, $fcc_featured_profile_signal_target - $fcc_featured_profile_signal_now));
 $fcc_featured_profile_ai_title = l('links.biolink_workspace.featured_profile.ai_title');
-$fcc_featured_profile_ai_text = l('links.biolink_workspace.featured_profile.ai_text');
+$fcc_featured_profile_ai_text = fcc_t('Kad imaš aktivni PRO i najmanje 1 osobni CC u ovom ili prošlom mjesecu, otključava se vođena forma iz koje FCC AI sastavlja jasan javni profil tvoje glavne kartice.') /* Custom code: FC-2026-10-11 */;
 $fcc_featured_profile_locked_text = l('links.biolink_workspace.featured_profile.locked_text');
 $fcc_featured_profile_unlock_progress = l('links.biolink_workspace.featured_profile.unlock_progress');
 $fcc_featured_profile_unlock_missing = l('links.biolink_workspace.featured_profile.unlock_missing');
@@ -205,7 +205,7 @@ if($fcc_links_type === 'biolink') {
         [
             'selector' => '#fcc_apps_tour_step_public_showcase',
             'title' => l('links.biolink_workspace.tour.public_showcase_title'),
-            'text' => l('links.biolink_workspace.tour.public_showcase_text')
+            'text' => fcc_t('Ovdje uređuješ javni prikaz glavne kartice. Uz aktivni PRO i najmanje 1 osobni CC u ovom ili prošlom mjesecu kartica može biti na popisu Istaknutih aplikacija.') /* Custom code: FC-2026-10-11 */
         ],
         [
             'selector' => '#fcc_apps_tour_step_extra_apps',

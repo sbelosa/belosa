@@ -101,7 +101,7 @@ function fcc_ccv_group_state(int $user_id, ?DateTimeImmutable $now = null): arra
         'eligible' => $visibility['sponsor'],
         'url' => fcc_ccv_group_url(),
         'member' => $valid_member,
-        'should_leave' => $joined && !$valid_member,
+        'should_leave' => $joined && !$valid_member && !$visibility['sponsor'],
         'joined_at' => $joined ? (string) $event['created_at'] : null,
         'show_invitation' => $visibility['sponsor'] && !$valid_member && fcc_ccv_group_url() !== '',
     ];
@@ -141,7 +141,8 @@ function fcc_ccv_group_admin_rows(): array {
         if(!empty($joined[$uid])) {
             $state = fcc_ccv_group_state($uid);
             if($state['should_leave']) $rows['remove'][] = ['user_id' => $uid, 'name' => (string) $user['name']];
-            else $rows['members']++;
+            elseif($state['member']) $rows['members']++;
+            else $rows['invited'][] = ['user_id' => $uid, 'name' => (string) $user['name']];
         } elseif($qualified_now) {
             $rows['invited'][] = ['user_id' => $uid, 'name' => (string) $user['name']];
         }

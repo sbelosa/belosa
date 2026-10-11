@@ -118,6 +118,7 @@ function fcc_partner_program(int $uid): array {
  $read_request=($_SERVER['REQUEST_METHOD']??'')==='GET';
  if($read_request&&isset($programs[$uid]))return $programs[$uid];
  $state=forever_business_get_vip_program_state($uid);
+ if(function_exists('fcc_journey_starter_access'))$state=fcc_journey_starter_access($uid,$state); /* Custom code: FC-2026-10-11: first week open before enrolment */
  $dashboard=forever_business_get_dashboard($uid,false,'','');
  $member=null; foreach($dashboard['members']??[] as $m) if(($m['fbo_id']??'')===($state['fbo_id']??'')) { $member=$m; break; }
  $j90=function_exists('fcc_j90_state')?fcc_j90_state($uid,$state):null;

@@ -219,7 +219,9 @@ class Partner extends Controller {
   }
   if($section==='notifications') {
    $before=max(1,(int)($_GET['before']??PHP_INT_MAX));
-   $data['inbox']=fcc_partner_rows('SELECT * FROM fcc_partner_notifications WHERE user_id=? AND id<? AND (category<>\'admin\' OR ?=1) ORDER BY id DESC LIMIT 40',[$uid,$before,\Altum\Authentication::is_admin()?1:0]);
+   /* Custom code: FC-2026-10-11: Redacted team notices (no body, already expired) are kept for audit but not listed. */
+   $data['inbox']=fcc_partner_rows('SELECT * FROM fcc_partner_notifications WHERE user_id=? AND id<? AND (category<>\'admin\' OR ?=1) AND NOT (category=\'team\' AND body=\'\' AND expires_at IS NOT NULL AND expires_at<=UTC_TIMESTAMP()) ORDER BY id DESC LIMIT 40',[$uid,$before,\Altum\Authentication::is_admin()?1:0]);
+   /* /Custom code: FC-2026-10-11 */
    $data['inbox']=array_values(array_filter($data['inbox'],fn($n)=>fcc_cc_notification_allowed($uid,$n)));
    $data['notification_preferences']=fcc_partner_notification_preferences($uid);
   }
@@ -294,6 +296,15 @@ class Partner extends Controller {
   }
 
   if($action==='team_group_dismiss'){fcc_journey_team_group_dismiss($uid,$input);return 'partner';}
+  /* Custom code: FC-2026-10-11: 4CC WhatsApp group membership and its administration. */
+  if($action==='cc4_group_joined'){fcc_ccv_group_confirm($uid,$input);return 'partner';}
+  if(in_array($action,['cc4_group_settings','cc4_group_removed'],true)) {
+   if(!\Altum\Authentication::is_admin()||$section!=='admin') throw new \InvalidArgumentException(fcc_t('Ova radnja dostupna je administratoru.'));
+   if($action==='cc4_group_settings') fcc_ccv_group_save_url((string)($input['cc4_group_url']??''));
+   else fcc_ccv_group_mark_removed($uid,(int)($input['member_id']??0),$input);
+   return 'partner/admin#cc4-group';
+  }
+  /* /Custom code: FC-2026-10-11 */
   if($action==='team_group_joined'){fcc_journey_team_group_confirm($uid,$input);return fcc_jp_is_cycle(fcc_j90_cycle($uid))?'partner?view=step':'partner?view=pilot';}
   if(in_array($action,['card_delete_prepare','card_delete','card_delete_cancel'],true)) {
    if($section!=='cards') throw new \InvalidArgumentException(fcc_t('Uklanjanje kartica dostupno je u rubrici Moje kartice.'));

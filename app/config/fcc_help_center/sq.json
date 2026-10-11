@@ -849,6 +849,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Listat publike, pikët CC dhe grupi 4CC",
+      "summary": "Si të hysh në Aplikacionet e veçuara, Sponsorët e rekomanduar dhe në grupin 4CC në WhatsApp.",
+      "keywords": [
+        "aplikacione të veçuara",
+        "sponsorë të rekomanduar",
+        "4CC",
+        "pikë CC",
+        "rregulla",
+        "grup WhatsApp"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Të gjitha rregullat në një vend",
+          "paragraphs": [
+            "Listat publike të FCC ndjekin pikët e tua CC nga sistemi Forever FLP360. Klikimet në kartën tënde dhe në artikuj mbeten statistikë personale dhe nuk janë kusht për asgjë.",
+            "Aplikacionet e veçuara: paketë PRO aktive, shfaqje publike e miratuar e kartës kryesore dhe të paktën 1 CC personal këtë muaj kalendarik ose muajin e kaluar.",
+            "Sponsorët e rekomanduar dhe grupi 4CC në WhatsApp: paketë PRO aktive dhe aktivitet 4CC i konfirmuar në FLP360 këtë muaj kalendarik ose muajin e kaluar. Për Sponsorët e rekomanduar nevojitet edhe një lidhje shitjeje Forever aktive në kartë."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Si funksionon",
+          "steps": [
+            "Pikët CC merren nga FLP360 dy herë në ditë.",
+            "Sapo kushti shfaqet në të dhëna, karta jote hyn në listën përkatëse.",
+            "Kushti vlen për muajin kalendarik aktual ose atë të kaluar, kështu askush nuk del nga lista ditën e parë të muajit.",
+            "Me aktivitet 4CC të konfirmuar dhe PRO, në faqen Sot shfaqet një ftesë në grupin 4CC. Pasi të bashkohesh, zgjidh Jam tashmë anëtar.",
+            "Nëse nuk ke 4CC as këtë muaj as muajin e kaluar, administratori të heq nga grupi dhe ftesa shfaqet përsëri sapo ta plotësosh kushtin."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A publikohen pikët e mia CC?",
+              "answer": "Jo. Shumat e CC nuk shfaqen kurrë publikisht. Përdoren vetëm si kusht për listat."
+            },
+            {
+              "question": "A llogariten ende klikimet 15+ dhe 50+?",
+              "answer": "Jo. Klikimet i sheh ende te Rezultatet FCC si statistikë personale, por ato nuk zhbllokojnë më asnjë përfitim."
+            }
+          ]
+        }
+      ]
     }
   }
 }

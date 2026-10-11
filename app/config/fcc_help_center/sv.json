@@ -850,6 +850,54 @@
           ]
         }
       ]
+    },
+    "visibility": {
+      "title": "Offentliga listor, CC-poäng och 4CC-gruppen",
+      "summary": "Så kommer du med bland Utvalda appar, Rekommenderade sponsorer och i 4CC-gruppen på WhatsApp.",
+      "keywords": [
+        "utvalda appar",
+        "rekommenderade sponsorer",
+        "4CC",
+        "CC-poäng",
+        "regler",
+        "WhatsApp-grupp"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Alla regler på ett ställe",
+          "paragraphs": [
+            "De offentliga FCC-listorna följer dina CC-poäng från Forever FLP360-systemet. Klick på ditt kort och i artiklar förblir din personliga statistik och är inget villkor för något.",
+            "Utvalda appar: aktivt PRO-paket, godkänd offentlig visning av ditt huvudkort och minst 1 personlig CC denna eller förra kalendermånaden.",
+            "Rekommenderade sponsorer och 4CC-gruppen på WhatsApp: aktivt PRO-paket och 4CC-aktivitet bekräftad i FLP360 denna eller förra kalendermånaden. Rekommenderade sponsorer behöver också en aktiv Forever-säljlänk på kortet."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Så fungerar det",
+          "steps": [
+            "CC-poäng hämtas från FLP360 två gånger om dagen.",
+            "Så snart villkoret syns i datan kommer ditt kort med på rätt lista.",
+            "Villkoret gäller innevarande eller föregående kalendermånad, så ingen faller bort från listan den första dagen i månaden.",
+            "Med bekräftad 4CC-aktivitet och PRO visas en inbjudan till 4CC-gruppen på sidan Idag. När du har gått med väljer du Jag är redan medlem.",
+            "Om du varken har 4CC denna eller förra månaden tar administratören bort dig från gruppen, och inbjudan visas igen så snart du uppfyller villkoret."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Vanliga frågor",
+          "questions": [
+            {
+              "question": "Publiceras mina CC-poäng?",
+              "answer": "Nej. CC-värden visas aldrig offentligt. De används bara som villkor för listorna."
+            },
+            {
+              "question": "Räknas 15+ och 50+ klick fortfarande?",
+              "answer": "Nej. Du ser fortfarande dina klick i FCC-resultat som personlig statistik, men de låser inte längre upp några förmåner."
+            }
+          ]
+        }
+      ]
     }
   }
 }
