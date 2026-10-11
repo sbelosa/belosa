@@ -57211,4 +57211,10 @@ Guidance ne ocenjuje sopstveni odgovor, na primer „Ova poruka se drži bezbedn
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Moj put ima 90 koraka. Završeni koraci, beleške i pripremljene poruke ostaju sačuvani i kada napraviš pauzu.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Za početak',
+    'Kreni od ovih {count} proizvoda' => 'Počni od ovih {count} proizvoda',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Ove proizvode saradnici FCC-a najčešće dele sa kupcima. Kada ih upoznaš, lakše ćeš razumeti i ostalu ponudu.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Prvi put ovde? Počni od 10 najčešće deljenih proizvoda',
+    /* /Custom code: FC-2026-10-11 */
 ];

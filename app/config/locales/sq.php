@@ -57852,4 +57852,10 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Rruga ime ka 90 hapa. Hapat e përfunduar, shënimet dhe mesazhet e përgatitura mbeten të ruajtura edhe kur bën pushim.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Për fillim',
+    'Kreni od ovih {count} proizvoda' => 'Fillo me këto {count} produkte',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Këto janë produktet që bashkëpunëtorët e FCC i ndajnë më shpesh me klientët. Kur t\'i njohësh, do ta kuptosh më lehtë pjesën tjetër të ofertës.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Herën e parë këtu? Fillo me 10 produktet më të ndara',
+    /* /Custom code: FC-2026-10-11 */
 ];

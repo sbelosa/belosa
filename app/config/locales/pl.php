@@ -65135,4 +65135,10 @@ Potrzebujesz pomocy z połączeniem?',
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Moja ścieżka ma 90 kroków. Ukończone kroki, notatki i przygotowane wiadomości pozostają zapisane, nawet gdy zrobisz przerwę.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Na początek',
+    'Kreni od ovih {count} proizvoda' => 'Zacznij od tych {count} produktów',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'To produkty, które współpracownicy FCC najczęściej udostępniają klientom. Gdy je poznasz, łatwiej zrozumiesz resztę oferty.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Jesteś tu pierwszy raz? Zacznij od 10 najczęściej udostępnianych produktów',
+    /* /Custom code: FC-2026-10-11 */
 ];

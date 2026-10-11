@@ -65162,4 +65162,10 @@ Ai nevoie de ajutor pentru conectare?',
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Drumul meu are 90 de pași. Pașii finalizați, notițele și mesajele pregătite rămân salvate chiar dacă iei o pauză.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Pentru început',
+    'Kreni od ovih {count} proizvoda' => 'Începe cu aceste {count} produse',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Acestea sunt produsele pe care colaboratorii FCC le distribuie cel mai des clienților. Când le cunoști, vei înțelege mai ușor restul ofertei.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Prima dată aici? Începe cu cele 10 produse cel mai des distribuite',
+    /* /Custom code: FC-2026-10-11 */
 ];

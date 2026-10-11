@@ -65106,4 +65106,10 @@ Behöver du hjälp med att ansluta?',
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Min väg har 90 steg. Avklarade steg, anteckningar och förberedda meddelanden sparas även när du tar en paus.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Till att börja med',
+    'Kreni od ovih {count} proizvoda' => 'Börja med dessa {count} produkter',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Det här är de produkter som FCC-medarbetare oftast delar med kunder. När du känner till dem blir resten av sortimentet lättare att förstå.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Första gången här? Börja med de 10 mest delade produkterna',
+    /* /Custom code: FC-2026-10-11 */
 ];

@@ -129,4 +129,10 @@ return [
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Moja pot ima 90 korakov. Opravljeni koraki, zapiski in pripravljena sporočila ostanejo shranjeni, tudi ko si vzameš premor.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Za začetek',
+    'Kreni od ovih {count} proizvoda' => 'Začni s temi {count} izdelki',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Te izdelke sodelavci FCC najpogosteje delijo s kupci. Ko jih spoznaš, boš lažje razumel/a tudi preostalo ponudbo.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Prvič tukaj? Začni z 10 najpogosteje deljenimi izdelki',
+    /* /Custom code: FC-2026-10-11 */
 ];

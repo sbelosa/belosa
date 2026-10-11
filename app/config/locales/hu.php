@@ -64929,4 +64929,10 @@ Segíthetek a csatlakozásban?',
     /* Custom code: FC-2026-10-11: Simplified workspace copy. */
     'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Az utam 90 lépésből áll. A teljesített lépések, jegyzetek és előkészített üzenetek akkor is megmaradnak, ha szünetet tartasz.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Za početak' => 'Kezdésnek',
+    'Kreni od ovih {count} proizvoda' => 'Kezdd ezzel a(z) {count} termékkel',
+    'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Ezeket a termékeket osztják meg az FCC munkatársai a leggyakrabban a vásárlókkal. Ha ezeket megismered, a többi kínálatot is könnyebben megérted.',
+    'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Először jársz itt? Kezdd a 10 leggyakrabban megosztott termékkel',
+    /* /Custom code: FC-2026-10-11 */
 ];
