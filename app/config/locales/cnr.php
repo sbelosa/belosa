@@ -57930,4 +57930,10 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'Moja vidljivost i klikovi' => 'Moja vidljivost i klikovi',
     'Moja vidljivost i klikovi →' => 'Moja vidljivost i klikovi →',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => '4CC WhatsApp grupa: otvorena svim saradnicima sa 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, nezavisno od paketa.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => '4CC grupa se otvara uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Sa potvrđenom 4CC aktivnošću pridruži se grupi saradnika sa 4CC na WhatsAppu.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Sa 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobijaš poziv u 4CC WhatsApp grupu. Uz aktivan PRO dobijaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.',
+    /* /Custom code: FC-2026-10-11 */
 ];

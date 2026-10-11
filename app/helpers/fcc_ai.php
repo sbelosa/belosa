@@ -3769,8 +3769,8 @@ function fcc_ai_get_internal_coach_page_priority_instruction(array $page, string
 
     if($route === 'recommended-sponsors') {
         return $language === 'en'
-            ? 'Page priority: explain that Recommended sponsors are PRO members with 4CC activity confirmed in FLP360 this month or last month, a valid sales link and an approved public card; the same level opens the 4CC WhatsApp group.'
-            : 'Prioritet stranice: objasni da su Preporučeni sponzori PRO suradnici s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu, valjanom prodajnom poveznicom i odobrenom javnom karticom; ista razina otvara 4CC WhatsApp grupu.';
+            ? 'Page priority: explain that Recommended sponsors are PRO members with 4CC activity confirmed in FLP360 this month or last month, a valid sales link and an approved public card; 4CC activity alone opens the 4CC WhatsApp group.'
+            : 'Prioritet stranice: objasni da su Preporučeni sponzori PRO suradnici s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu, valjanom prodajnom poveznicom i odobrenom javnom karticom; sama 4CC aktivnost otvara 4CC WhatsApp grupu.';
     }
     /* /Custom code: FC-2026-10-11 */
 
@@ -3844,7 +3844,7 @@ function fcc_ai_get_internal_coach_suggestions(array $context, string $message, 
         'recommended_sponsors' => [
             'title' => $language === 'en' ? 'Recommended sponsors' : 'Preporučeni sponzori',
             'url' => url('recommended-sponsors'),
-            'description' => $language === 'en' ? 'Recommended sponsors and the 4CC group: PRO with 4CC activity this month or last month.' : 'Preporučeni sponzori i 4CC grupa: PRO i 4CC aktivnost u ovom ili prošlom mjesecu.', /* Custom code: FC-2026-10-11 */
+            'description' => $language === 'en' ? 'Recommended sponsors: PRO with 4CC activity this month or last month. The 4CC group is open to everyone with 4CC.' : 'Preporučeni sponzori: PRO i 4CC aktivnost u ovom ili prošlom mjesecu. 4CC grupa otvorena je svima s 4CC.', /* Custom code: FC-2026-10-11 */
         ],
         'education' => [
             'title' => $language === 'en' ? 'FCC education' : 'FCC edukacija',
@@ -5249,10 +5249,10 @@ function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan =
         $lines = [
             'Public FCC lists follow your CC points from FLP360, not clicks.',
             'Featured apps: active PRO, an approved public main card and at least 1 personal CC this calendar month or last month.',
-            'Recommended sponsors and the 4CC WhatsApp group: active PRO and 4CC activity confirmed in FLP360 this month or last month.',
+            'Recommended sponsors: active PRO and 4CC activity confirmed in FLP360 this month or last month. The 4CC WhatsApp group is open to everyone with that 4CC activity, with or without PRO.',
         ];
         $lines[] = $cc_level === '4cc'
-            ? ($is_pro ? 'You meet the 4CC level now, so you can appear among the Recommended sponsors and your 4CC group invitation is on the Today page.' : 'You meet the 4CC level; with PRO you would appear among the Recommended sponsors.')
+            ? ($is_pro ? 'You meet the 4CC level now, so you can appear among the Recommended sponsors and your 4CC group invitation is on the Today page.' : 'You meet the 4CC level, so your 4CC group invitation is on the Today page; with PRO you would also appear among the Recommended sponsors.')
             : ($cc_level === 'featured'
                 ? ($is_pro ? 'You meet the 1 CC level now, so your card can appear among the Featured apps. The next level is 4CC activity.' : 'You meet the 1 CC level; with PRO your card would appear among the Featured apps.')
                 : 'Your next step is your first personal CC this month; it opens the Featured apps together with PRO.');
@@ -5262,10 +5262,10 @@ function fcc_ai_get_internal_coach_sponsor_visibility_explainer(array $ai_plan =
     $lines = [
         'Javni FCC popisi prate tvoje CC bodove iz FLP360, a ne klikove.',
         'Istaknute aplikacije: aktivni PRO, odobrena javna glavna kartica i najmanje 1 osobni CC u ovom ili prošlom kalendarskom mjesecu.',
-        'Preporučeni sponzori i 4CC WhatsApp grupa: aktivni PRO i 4CC aktivnost potvrđena u FLP360 u ovom ili prošlom mjesecu.',
+        'Preporučeni sponzori: aktivni PRO i 4CC aktivnost potvrđena u FLP360 u ovom ili prošlom mjesecu. 4CC WhatsApp grupa otvorena je svima s tom 4CC aktivnošću, neovisno o paketu.',
     ];
     $lines[] = $cc_level === '4cc'
-        ? ($is_pro ? 'Sada ispunjavaš 4CC razinu, pa možeš biti među Preporučenim sponzorima, a poziv u 4CC grupu je na stranici Danas.' : 'Ispunjavaš 4CC razinu; uz PRO bio/la bi među Preporučenim sponzorima.')
+        ? ($is_pro ? 'Sada ispunjavaš 4CC razinu, pa možeš biti među Preporučenim sponzorima, a poziv u 4CC grupu je na stranici Danas.' : 'Ispunjavaš 4CC razinu, pa je poziv u 4CC grupu na stranici Danas; uz PRO bio/la bi i među Preporučenim sponzorima.')
         : ($cc_level === 'featured'
             ? ($is_pro ? 'Sada ispunjavaš razinu od 1 CC, pa tvoja kartica može biti među Istaknutim aplikacijama. Sljedeća razina je 4CC aktivnost.' : 'Ispunjavaš razinu od 1 CC; uz PRO tvoja kartica bila bi među Istaknutim aplikacijama.')
             : 'Tvoj sljedeći korak je prvi osobni CC u ovom mjesecu; uz PRO on otvara Istaknute aplikacije.');
@@ -28102,7 +28102,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Availability rule: use availability_summary whenever you coach around app reviews or weekly plans. If something is available now, say it clearly. If it is locked, mention the exact next unlock time when provided and redirect the collaborator toward the best thing to do until then.',
         'Product referral rule: when relevant, explain the logged-in share/copy helper on Forever product blog articles. Tell the collaborator to use that helper instead of copying the raw URL. Beginner can use it for stories and direct recommendations. PRO can additionally use the FCC product recommendation block, and those outbound Forever clicks appear in FCC Results as personal statistics.',
         /* Custom code: FC-2026-10-11: Current visibility rules override older context. */
-        'Visibility rule (current, overrides any older context): public clicks no longer unlock anything and are only personal statistics. Featured apps need active PRO, an approved public main card and at least 1 personal CC in the current or previous calendar month. Recommended sponsors and the 4CC WhatsApp group need active PRO and 4CC activity confirmed in FLP360 in the current or previous calendar month; the group invitation appears on the Today page. CC points sync from FLP360 twice a day. The AI app review and the weekly AI plan are retired; never offer them. Never mention 15+ or 50+ click thresholds, 7-day rhythm checks or click targets. Use access_summary.cc_level (none, featured, 4cc) and point to Moji CC bodovi or the public rules on the Featured apps page.',
+        'Visibility rule (current, overrides any older context): public clicks no longer unlock anything and are only personal statistics. Featured apps need active PRO, an approved public main card and at least 1 personal CC in the current or previous calendar month. Recommended sponsors need active PRO and 4CC activity confirmed in FLP360 in the current or previous calendar month. The 4CC WhatsApp group is open to every collaborator with that confirmed 4CC activity, with or without PRO; the invitation appears on the Today page. CC points sync from FLP360 twice a day. The AI app review and the weekly AI plan are retired; never offer them. Never mention 15+ or 50+ click thresholds, 7-day rhythm checks or click targets. Use access_summary.cc_level (none, featured, 4cc) and point to Moji CC bodovi or the public rules on the Featured apps page.',
         /* /Custom code: FC-2026-10-11 */
         $page_priority_instruction,
         'Stay within FCC coaching and platform support. Do not act like the public product advisor, do not diagnose, and do not give medical treatment claims. Help the collaborator write a neutral message for the same contact and locate verified product information for clinician review when relevant; do not redirect to another contact or another AI merely because a health condition was mentioned.',

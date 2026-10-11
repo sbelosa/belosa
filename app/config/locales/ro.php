@@ -65210,4 +65210,10 @@ Ai nevoie de ajutor pentru conectare?',
     'Moja vidljivost i klikovi' => 'Vizibilitatea și clicurile mele',
     'Moja vidljivost i klikovi →' => 'Vizibilitatea și clicurile mele →',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => 'Grupul WhatsApp 4CC: deschis tuturor colaboratorilor cu activitate 4CC confirmată în FLP360 în luna calendaristică curentă sau în cea trecută, indiferent de pachet.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => 'Grupul 4CC se deschide cu activitate 4CC confirmată luna aceasta sau luna trecută.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Cu activitate 4CC confirmată, alătură-te grupului WhatsApp al colaboratorilor cu 4CC.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Cu activitate 4CC confirmată în FLP360 luna aceasta sau luna trecută primești o invitație în grupul WhatsApp 4CC. Cu PRO activ primești și o pagină publică de sponsor și un loc printre Sponsorii recomandați.',
+    /* /Custom code: FC-2026-10-11 */
 ];

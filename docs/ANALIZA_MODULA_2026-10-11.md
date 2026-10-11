@@ -109,6 +109,6 @@ Korisnik je 11. listopada 2026. potvrdio sljedeće odluke, a sve su provedene lo
 1. Istaknute aplikacije: PRO i 1 osobni CC u tekućem ili prošlom kalendarskom mjesecu.
 2. Preporučeni sponzori: PRO i 4CC u tekućem ili prošlom mjesecu.
 3. Pravila su javno navedena, a postoji i članak u Uputama za FCC.
-4. AI analiza aplikacije i tjedni plan su ukinuti. Umjesto njih PRO s 4CC dobiva poziv u 4CC WhatsApp grupu i gumb Već sam član. Gubitkom kvalifikacije suradnik dolazi na administratorski popis za uklanjanje, a poziv se ponovno prikazuje čim opet ostvari uvjet.
+4. AI analiza aplikacije i tjedni plan su ukinuti. Poziv u 4CC WhatsApp grupu i gumb Već sam član dobiva svaki suradnik s 4CC aktivnošću, neovisno o paketu; PRO je uvjet samo za javni prikaz. Gubitkom kvalifikacije suradnik dolazi na administratorski popis za uklanjanje, a poziv se ponovno prikazuje čim opet ostvari uvjet.
 5. Podsjetnici za događaje stižu samo uz potvrđen dolazak.
 6. Prvih 7 koraka Mojeg puta otvoreno je i bez upisa.

@@ -57901,4 +57901,10 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'Moja vidljivost i klikovi' => 'Dukshmëria dhe klikimet e mia',
     'Moja vidljivost i klikovi →' => 'Dukshmëria dhe klikimet e mia →',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => 'Grupi 4CC në WhatsApp: i hapur për çdo bashkëpunëtor me aktivitet 4CC të konfirmuar në FLP360 këtë muaj kalendarik ose muajin e kaluar, pavarësisht paketës.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => 'Grupi 4CC hapet me aktivitet 4CC të konfirmuar këtë muaj ose muajin e kaluar.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Me aktivitet 4CC të konfirmuar, bashkohu me grupin e bashkëpunëtorëve me 4CC në WhatsApp.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Me aktivitet 4CC të konfirmuar në FLP360 këtë muaj ose muajin e kaluar merr ftesë në grupin 4CC në WhatsApp. Me PRO aktiv merr edhe një faqe publike sponsori dhe një vend te Sponsorët e rekomanduar.',
+    /* /Custom code: FC-2026-10-11 */
 ];

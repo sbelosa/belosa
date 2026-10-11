@@ -96,4 +96,12 @@ return [
     'Upiši poveznicu za pozivnicu u WhatsApp grupu, na primjer https://chat.whatsapp.com/...' => 'Enter the WhatsApp group invitation link, for example https://chat.whatsapp.com/...',
     'Suradnik je i dalje kvalificiran ili nije označen kao član grupe.' => 'The collaborator still qualifies or is not marked as a group member.',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => '4CC WhatsApp group: open to every collaborator with 4CC activity confirmed in FLP360 this calendar month or last month, regardless of the plan.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => 'The 4CC group opens with confirmed 4CC activity this month or last month.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'With confirmed 4CC activity, join the WhatsApp group of collaborators with 4CC.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'With 4CC activity confirmed in FLP360 this month or last month you get an invitation to the 4CC WhatsApp group. With active PRO you also get a public sponsor page and a place among the Recommended sponsors.',
+    'Poziv vide svi suradnici s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu, neovisno o paketu. Članstvo potvrđuju sami. Tko izgubi kvalifikaciju, pojavljuje se na popisu za uklanjanje, a poziv mu se ponovno prikazuje kad opet ostvari uvjet.' => 'Every collaborator with 4CC activity confirmed in FLP360 this month or last month sees the invitation, regardless of the plan. They confirm membership themselves. Anyone who loses the qualification appears on the removal list, and the invitation shows again once they meet the condition.',
+    'Prazno polje isključuje poziv.' => 'An empty field switches the invitation off.',
+    /* /Custom code: FC-2026-10-11 */
 ];

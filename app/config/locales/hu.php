@@ -64977,4 +64977,10 @@ Segíthetek a csatlakozásban?',
     'Moja vidljivost i klikovi' => 'Láthatóságom és kattintásaim',
     'Moja vidljivost i klikovi →' => 'Láthatóságom és kattintásaim →',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => '4CC WhatsApp-csoport: minden munkatárs előtt nyitva áll, akinek ebben vagy az előző naptári hónapban az FLP360-ban megerősített 4CC aktivitása van, csomagtól függetlenül.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => 'A 4CC csoport ebben vagy az előző hónapban megerősített 4CC aktivitással nyílik meg.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Megerősített 4CC aktivitással csatlakozz a 4CC-s munkatársak WhatsApp-csoportjához.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Az FLP360-ban ebben vagy az előző hónapban megerősített 4CC aktivitással meghívót kapsz a 4CC WhatsApp-csoportba. Aktív PRO mellett nyilvános szponzori oldalt és helyet is kapsz az Ajánlott szponzorok között.',
+    /* /Custom code: FC-2026-10-11 */
 ];

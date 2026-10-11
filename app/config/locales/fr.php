@@ -57848,4 +57848,10 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'Moja vidljivost i klikovi' => 'Ma visibilité et mes clics',
     'Moja vidljivost i klikovi →' => 'Ma visibilité et mes clics →',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => 'Groupe WhatsApp 4CC : ouvert à tous les collaborateurs ayant une activité 4CC confirmée dans FLP360 ce mois civil ou le mois précédent, quelle que soit leur formule.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => 'Le groupe 4CC s\'ouvre avec une activité 4CC confirmée ce mois-ci ou le mois précédent.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Avec une activité 4CC confirmée, rejoins le groupe WhatsApp des collaborateurs 4CC.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Avec une activité 4CC confirmée dans FLP360 ce mois-ci ou le mois précédent, tu reçois une invitation au groupe WhatsApp 4CC. Avec PRO actif, tu obtiens aussi une page publique de sponsor et une place parmi les Sponsors recommandés.',
+    /* /Custom code: FC-2026-10-11 */
 ];

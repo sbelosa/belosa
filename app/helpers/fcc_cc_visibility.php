@@ -2,11 +2,13 @@
 /* Custom code: FC-2026-10-11: Public visibility and the 4CC WhatsApp group follow FLP360 CC, not public clicks.
  * One rule source: a collaborator qualifies when the current or the previous calendar month
  * (Europe/Zagreb) meets the level. Featured apps need PRO and at least 1 personal CC,
- * recommended sponsors and the 4CC group need PRO and FLP360-confirmed 4CC activity.
+ * recommended sponsors need PRO and FLP360-confirmed 4CC activity. The 4CC WhatsApp group is
+ * open to every active collaborator with confirmed 4CC activity, with or without PRO.
  * CC amounts are eligibility data only and are never published. */
 defined('ALTUMCODE') || die();
 
 const FCC_CCV_FEATURED_PERSONAL_CC = 1.0;
+const FCC_CCV_GROUP_DEFAULT_URL = 'https://chat.whatsapp.com/I7mg5bVIQwjJCu0WjnyJSz?mode=gi_t';
 
 /** Current and previous business month starts, newest first. */
 function fcc_ccv_months(?DateTimeImmutable $now = null): array {
@@ -61,7 +63,8 @@ function fcc_ccv_user_state(int $user_id, ?DateTimeImmutable $now = null): array
 /* 4CC WhatsApp group. Membership is the member's own statement and stays valid only while
  * the member qualifies without interruption. A gap shows the invitation again. */
 function fcc_ccv_group_url(): string {
-    $url = trim((string) fcc_partner_notification_config('cc4_group_url', ''));
+    /* An administrator may replace the link; an explicitly saved empty value switches the invitation off. */
+    $url = trim((string) fcc_partner_notification_config('cc4_group_url', FCC_CCV_GROUP_DEFAULT_URL));
     return preg_match('#^https://chat\.whatsapp\.com/[A-Za-z0-9]+(?:\?[A-Za-z0-9=&_-]*)?$#D', $url) ? $url : '';
 }
 
@@ -96,21 +99,22 @@ function fcc_ccv_group_state(int $user_id, ?DateTimeImmutable $now = null): arra
     $visibility = fcc_ccv_user_state($user_id, $now);
     $event = fcc_ccv_group_last_event($user_id);
     $joined = $event && $event['kind'] === 'cc4_group_joined';
-    $valid_member = $joined && $visibility['sponsor'] && fcc_ccv_group_continuous($visibility['forever_id'], (string) $event['created_at'], $now);
+    $eligible = $visibility['cc_level'] === '4cc';
+    $valid_member = $joined && $eligible && fcc_ccv_group_continuous($visibility['forever_id'], (string) $event['created_at'], $now);
     return [
-        'eligible' => $visibility['sponsor'],
+        'eligible' => $eligible,
         'url' => fcc_ccv_group_url(),
         'member' => $valid_member,
-        'should_leave' => $joined && !$valid_member && !$visibility['sponsor'],
+        'should_leave' => $joined && !$valid_member && !$eligible,
         'joined_at' => $joined ? (string) $event['created_at'] : null,
-        'show_invitation' => $visibility['sponsor'] && !$valid_member && fcc_ccv_group_url() !== '',
+        'show_invitation' => $eligible && !$valid_member && fcc_ccv_group_url() !== '',
     ];
 }
 
 function fcc_ccv_group_confirm(int $user_id, array $in): void {
     $key = (string) ($in['request_key'] ?? '');
     if(!preg_match('/^[a-f0-9]{32}$/D', $key)) throw new InvalidArgumentException(fcc_t('Osvježi obrazac i pokušaj ponovno.'));
-    if(!fcc_ccv_group_state($user_id)['eligible']) throw new InvalidArgumentException(fcc_t('4CC grupa otvara se uz aktivni PRO i potvrđenu 4CC aktivnost.'));
+    if(!fcc_ccv_group_state($user_id)['eligible']) throw new InvalidArgumentException(fcc_t('4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.'));
     fcc_jp_event($user_id, 0, 'cc4_group_joined', 'Suradnik je potvrdio članstvo u 4CC WhatsApp grupi.', $key, get_date());
 }
 
@@ -137,7 +141,7 @@ function fcc_ccv_group_admin_rows(): array {
     foreach($users as $user) {
         $uid = (int) $user['user_id'];
         $level = fcc_ccv_level_from_cc($cc[$ids[$uid]] ?? null);
-        $qualified_now = $level === '4cc' && fcc_pro_has_access($uid);
+        $qualified_now = $level === '4cc';
         if(!empty($joined[$uid])) {
             $state = fcc_ccv_group_state($uid);
             if($state['should_leave']) $rows['remove'][] = ['user_id' => $uid, 'name' => (string) $user['name']];
@@ -154,6 +158,7 @@ function fcc_ccv_rules_points(): array {
     return [
         fcc_t('Istaknute aplikacije: aktivan PRO paket, odobren javni prikaz glavne kartice i najmanje 1 osobni CC u ovom ili prošlom kalendarskom mjesecu.'),
         fcc_t('Preporučeni sponzori: aktivan PRO paket, odobren javni prikaz, aktivna Forever prodajna poveznica na kartici i 4CC aktivnost potvrđena u FLP360 u ovom ili prošlom kalendarskom mjesecu.'),
+        fcc_t('4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.'),
         fcc_t('CC bodovi preuzimaju se iz Forever FLP360 sustava dva puta dnevno. Suradnik ulazi na popis čim se uvjet pojavi u podacima, a izlazi tek kada ga ne ispunjava ni u tekućem ni u prošlom mjesecu.'),
         fcc_t('Iznosi CC bodova se ne objavljuju. Klikovi na kartici i u člancima služe samo kao statistika vlasniku kartice.'),
     ];

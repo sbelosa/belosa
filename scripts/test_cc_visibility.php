@@ -59,7 +59,8 @@ $GLOBALS['fixture_metrics'][] = ['fbo_id' => '444444444444', 'period_month' => '
 $assert(!fcc_ccv_group_continuous('444444444444', '2026-10-05 10:00:00', $zagreb('2027-01-20 12:00')), 'A gap stays a gap after requalifying, so the invitation shows again.');
 $assert(!fcc_ccv_group_continuous('', '2026-10-05 10:00:00', $zagreb('2026-10-20 12:00')), 'No Forever ID is never a continuous member.');
 
-/* Group link validation */
+/* Group link: default team link, replaceable by the administrator, empty switches it off */
+$assert(fcc_ccv_group_url() === FCC_CCV_GROUP_DEFAULT_URL, 'The team 4CC group link is the default.');
 fcc_ccv_group_save_url('https://chat.whatsapp.com/AbC123xyz?mode=ac_t');
 $assert(fcc_ccv_group_url() === 'https://chat.whatsapp.com/AbC123xyz?mode=ac_t', 'A WhatsApp invitation link is stored.');
 foreach(['http://chat.whatsapp.com/AbC', 'https://example.com/AbC', 'https://chat.whatsapp.com/AbC"><script>'] as $bad) {
@@ -67,7 +68,7 @@ foreach(['http://chat.whatsapp.com/AbC', 'https://example.com/AbC', 'https://cha
 }
 fcc_ccv_group_save_url('');
 $assert(fcc_ccv_group_url() === '', 'An empty link hides the invitation.');
-$assert(count(fcc_ccv_rules_points()) === 4, 'Public rules list has four points.');
+$assert(count(fcc_ccv_rules_points()) === 5, 'Public rules list has five points.');
 
 if($failures) { fwrite(STDERR, "CC visibility failures:\n- " . implode("\n- ", $failures) . "\n"); exit(1); }
 echo 'CC visibility checks passed (' . 20 . ' checks).' . PHP_EOL;

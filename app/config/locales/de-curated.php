@@ -86,4 +86,10 @@ return [
     'Moja vidljivost i klikovi' => 'Meine Sichtbarkeit und Klicks',
     'Moja vidljivost i klikovi →' => 'Meine Sichtbarkeit und Klicks →',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    '4CC WhatsApp grupa: otvorena svim suradnicima s 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom kalendarskom mjesecu, neovisno o paketu.' => '4CC-WhatsApp-Gruppe: offen für alle Partner mit in FLP360 bestätigter 4CC-Aktivität in diesem oder im letzten Kalendermonat, unabhängig vom Paket.',
+    '4CC grupa otvara se uz potvrđenu 4CC aktivnost u ovom ili prošlom mjesecu.' => 'Die 4CC-Gruppe öffnet sich mit bestätigter 4CC-Aktivität in diesem oder im letzten Monat.',
+    'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Mit bestätigter 4CC-Aktivität trittst du der WhatsApp-Gruppe der Partner mit 4CC bei.',
+    'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Mit in FLP360 bestätigter 4CC-Aktivität in diesem oder im letzten Monat erhältst du eine Einladung in die 4CC-WhatsApp-Gruppe. Mit aktivem PRO bekommst du zusätzlich eine öffentliche Sponsorenseite und einen Platz bei den Empfohlenen Sponsoren.',
+    /* /Custom code: FC-2026-10-11 */
 ];
