@@ -57805,4 +57805,8 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Ce sont les produits que les collaborateurs FCC partagent le plus souvent avec leurs clients. Une fois que tu les connais, le reste de la gamme devient plus simple.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Première visite ? Commence par les 10 produits les plus partagés',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Rencontres et événements',
+    'Paket i postavke' => 'Formule et réglages',
+    /* /Custom code: FC-2026-10-11 */
 ];

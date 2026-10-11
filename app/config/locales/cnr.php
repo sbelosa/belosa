@@ -57887,4 +57887,8 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Ove proizvode saradnici FCC-a najčešće dijele sa kupcima. Kada ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Prvi put ovđe? Počni od 10 najčešće dijeljenih proizvoda',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Susreti i događaji',
+    'Paket i postavke' => 'Paket i podešavanja',
+    /* /Custom code: FC-2026-10-11 */
 ];

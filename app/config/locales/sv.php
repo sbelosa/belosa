@@ -65112,4 +65112,8 @@ Behöver du hjälp med att ansluta?',
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Det här är de produkter som FCC-medarbetare oftast delar med kunder. När du känner till dem blir resten av sortimentet lättare att förstå.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Första gången här? Börja med de 10 mest delade produkterna',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Möten och evenemang',
+    'Paket i postavke' => 'Paket och inställningar',
+    /* /Custom code: FC-2026-10-11 */
 ];

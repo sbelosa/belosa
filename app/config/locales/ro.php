@@ -65168,4 +65168,8 @@ Ai nevoie de ajutor pentru conectare?',
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Acestea sunt produsele pe care colaboratorii FCC le distribuie cel mai des clienților. Când le cunoști, vei înțelege mai ușor restul ofertei.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Prima dată aici? Începe cu cele 10 produse cel mai des distribuite',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Întâlniri și evenimente',
+    'Paket i postavke' => 'Pachet și setări',
+    /* /Custom code: FC-2026-10-11 */
 ];

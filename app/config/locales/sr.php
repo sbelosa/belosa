@@ -57217,4 +57217,8 @@ Guidance ne ocenjuje sopstveni odgovor, na primer „Ova poruka se drži bezbedn
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Ove proizvode saradnici FCC-a najčešće dele sa kupcima. Kada ih upoznaš, lakše ćeš razumeti i ostalu ponudu.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Prvi put ovde? Počni od 10 najčešće deljenih proizvoda',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Susreti i događaji',
+    'Paket i postavke' => 'Paket i podešavanja',
+    /* /Custom code: FC-2026-10-11 */
 ];

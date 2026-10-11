@@ -65141,4 +65141,8 @@ Potrzebujesz pomocy z połączeniem?',
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'To produkty, które współpracownicy FCC najczęściej udostępniają klientom. Gdy je poznasz, łatwiej zrozumiesz resztę oferty.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Jesteś tu pierwszy raz? Zacznij od 10 najczęściej udostępnianych produktów',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Spotkania i wydarzenia',
+    'Paket i postavke' => 'Pakiet i ustawienia',
+    /* /Custom code: FC-2026-10-11 */
 ];

@@ -64935,4 +64935,8 @@ Segíthetek a csatlakozásban?',
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Ezeket a termékeket osztják meg az FCC munkatársai a leggyakrabban a vásárlókkal. Ha ezeket megismered, a többi kínálatot is könnyebben megérted.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Először jársz itt? Kezdd a 10 leggyakrabban megosztott termékkel',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Találkozók és események',
+    'Paket i postavke' => 'Csomag és beállítások',
+    /* /Custom code: FC-2026-10-11 */
 ];

@@ -43,4 +43,8 @@ return [
     'Ove proizvode suradnici FCC-a najčešće dijele s kupcima. Kad ih upoznaš, lakše ćeš razumjeti i ostalu ponudu.' => 'Diese Produkte teilen FCC-Partner am häufigsten mit Kunden. Wenn du sie kennst, verstehst du auch das übrige Sortiment leichter.',
     'Prvi put ovdje? Kreni od 10 najčešće dijeljenih proizvoda' => 'Neu hier? Beginne mit den 10 am häufigsten geteilten Produkten',
     /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Susreti i događaji' => 'Treffen und Veranstaltungen',
+    'Paket i postavke' => 'Paket und Einstellungen',
+    /* /Custom code: FC-2026-10-11 */
 ];
