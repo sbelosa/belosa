@@ -52,3 +52,6 @@
 
 !scripts/test_forever_click_qualification.php
 !docs/forever-click-qualification-2026-09-22.md
+
+# Custom code: FC-2026-10-11: Living production status document
+!docs/STANJE_SUSTAVA.md
