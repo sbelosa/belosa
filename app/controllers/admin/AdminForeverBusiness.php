@@ -20,7 +20,7 @@ class AdminForeverBusiness extends Controller {
             @mkdir($directory, 0750, true);
         }
         if(!is_dir($directory) || !is_writable($directory)) {
-            throw new \RuntimeException('Mapa za privremeni import nije dostupna za pisanje.');
+            throw new \RuntimeException(fcc_t('Mapa za privremeni import nije dostupna za pisanje.'));
         }
         return $directory;
     }
@@ -39,18 +39,18 @@ class AdminForeverBusiness extends Controller {
         $report_period = forever_business_period_from_label($_POST['report_period'] ?? '') ?: date('Y-m-01');
 
         if(!$file || (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'] ?? '')) {
-            Alerts::add_error('Odaberi ispravnu CSV ili XLSX datoteku.');
+            Alerts::add_error(fcc_t('Odaberi ispravnu CSV ili XLSX datoteku.'));
             $this->redirect_back();
         }
         if((int) ($file['size'] ?? 0) <= 0 || (int) $file['size'] > 15 * 1024 * 1024) {
-            Alerts::add_error('Datoteka mora biti manja od 15 MB.');
+            Alerts::add_error(fcc_t('Datoteka mora biti manja od 15 MB.'));
             $this->redirect_back();
         }
 
         $original_name = mb_substr(basename((string) $file['name']), 0, 255);
         $extension = mb_strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
         if(!in_array($extension, ['csv', 'xlsx'], true)) {
-            Alerts::add_error('Automatski import podržava CSV i XLSX. PDF se prvo mora ručno provjeriti.');
+            Alerts::add_error(fcc_t('Automatski import podržava CSV i XLSX. PDF se prvo mora ručno provjeriti.'));
             $this->redirect_back();
         }
 
@@ -58,7 +58,7 @@ class AdminForeverBusiness extends Controller {
             $token = bin2hex(random_bytes(20));
             $path = $this->staging_directory() . $token . '.' . $extension;
             if(!move_uploaded_file($file['tmp_name'], $path)) {
-                throw new \RuntimeException('Datoteku nije moguće spremiti za pregled.');
+                throw new \RuntimeException(fcc_t('Datoteku nije moguće spremiti za pregled.'));
             }
 
             $report = forever_business_parse_report($path, $original_name, $root_fbo_id, $root_name, $report_period);
@@ -79,7 +79,7 @@ class AdminForeverBusiness extends Controller {
                 'warnings' => $report['warnings'],
                 'created_at' => time(),
             ];
-            Alerts::add_success('Izvještaj je provjeren. Pregledaj sažetak i potvrdi import.');
+            Alerts::add_success(fcc_t('Izvještaj je provjeren. Pregledaj sažetak i potvrdi import.'));
         } catch(\Throwable $exception) {
             Alerts::add_error($exception->getMessage());
         }
@@ -98,13 +98,13 @@ class AdminForeverBusiness extends Controller {
         $preview = $_SESSION['forever_business_preview'] ?? null;
         try {
             if(!$preview || !hash_equals((string) ($preview['token'] ?? ''), (string) ($_POST['preview_token'] ?? ''))) {
-                throw new \RuntimeException('Pregled je istekao. Ponovno odaberi izvještaj.');
+                throw new \RuntimeException(fcc_t('Pregled je istekao. Ponovno odaberi izvještaj.'));
             }
             if(time() - (int) ($preview['created_at'] ?? 0) > 3600 || !is_file($preview['path'] ?? '')) {
-                throw new \RuntimeException('Pregled je istekao. Ponovno odaberi izvještaj.');
+                throw new \RuntimeException(fcc_t('Pregled je istekao. Ponovno odaberi izvještaj.'));
             }
             if(!hash_equals((string) $preview['file_sha256'], (string) hash_file('sha256', $preview['path']))) {
-                throw new \RuntimeException('Datoteka se promijenila nakon pregleda. Import je zaustavljen.');
+                throw new \RuntimeException(fcc_t('Datoteka se promijenila nakon pregleda. Import je zaustavljen.'));
             }
 
             $report = forever_business_parse_report($preview['path'], $preview['original_name'], $preview['root_fbo_id'], $preview['root_name'], $preview['report_period'] ?? '');

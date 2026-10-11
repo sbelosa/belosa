@@ -1,0 +1,855 @@
+{
+  "locale": "hr",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Prvi koraci u FCC sustavu",
+      "summary": "Prijavi se, provjeri karticu i pronađi radnju od koje želiš početi.",
+      "keywords": [
+        "početak",
+        "prijava",
+        "jezik",
+        "instalacija"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Što ti je dostupno",
+          "paragraphs": [
+            "Isti FCC račun koristiš na računalu i mobitelu. Free i PRO imaju različite mogućnosti, a pristup programu Moj put potvrđuje se zasebno."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pripremi svoj radni prostor",
+          "steps": [
+            "Prijavi se svojim postojećim emailom i lozinkom. Ne kreiraj drugi račun radi instalacije aplikacije.",
+            "U gornjoj traci odaberi svoj jezik. Taj izbor ne mijenja zemlju Forever trgovine.",
+            "Otvori Moja kartica i provjeri osobni kontakt, Forever ID i javni pregled kartice.",
+            "Otvori Danas za svoj sljedeći korak ili Podijeli za proizvod, poslovnu prezentaciju i pozivnicu.",
+            "U Više pronađi Upute za FCC, instalaciju aplikacije, paket i podršku."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ako zapne",
+          "questions": [
+            {
+              "question": "Zašto ne vidim osobni dnevni zadatak?",
+              "answer": "Provjeri prikaz pristupa u Moj put i svojim bodovima. Nepotvrđeni podaci nisu dokaz da nešto nisi napravio. Podrška može provjeriti povezanost računa."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Danas i Moj put",
+      "summary": "Uči jednu stvar, primijeni je i točno zabilježi što si napravio.",
+      "keywords": [
+        "danas",
+        "moj put",
+        "zadatak",
+        "4 Core",
+        "napredak"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Jedan povezani program",
+          "paragraphs": [
+            "Moj put povezuje Regrutaciju, Zadržavanje, Produktivnost i Razvoj. Dostupni korak, vježba i kriterij završetka prikazani su uz tvoj zadatak. PRO dodaje osobnu pomoć Coacha."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prođi svoj korak",
+          "steps": [
+            "Otvori Danas i pročitaj cilj te prikazane radnje svojeg koraka.",
+            "Otvori povezani alat ili materijal. Po potrebi zatraži jednostavnije pojašnjenje.",
+            "Izvedi radnju koju osoba želi ili odaberi ponuđenu vježbu kada nemaš prikladnu situaciju.",
+            "Potvrdi samo stvarni ishod prema kriteriju koraka. Klik i nacrt nisu poslani razgovor.",
+            "U Moj napredak pregledaj zapise i u osvrtu napiši što ti je pomoglo ili gdje je zapelo."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Današnji korak traži razgovor s kupcem. Ako nemaš prikladnu osobu koja želi razgovor, napravi ponuđenu vježbu i tako je označi."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Česta nedoumica",
+          "questions": [
+            {
+              "question": "Računa li se vježba kao prodaja?",
+              "answer": "Ne. Vježba i stvarna primjena imaju različite oznake. Čitanje upute samo po sebi ne dovršava korak niti potvrđuje poslovni rezultat."
+            },
+            {
+              "question": "Daje li PRO automatski pristup programu Moj put?",
+              "answer": "Ne. Paket i odobreni upis u program zasebni su uvjeti. Otvori prikaz svojeg pristupa ili zatraži provjeru podrške."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Uredi i provjeri svoju karticu",
+      "summary": "Poveži kontakt, sadržaj i osobnu preporuku na kartici koju dijeliš.",
+      "keywords": [
+        "kartica",
+        "blok",
+        "uredi",
+        "društvene mreže"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Kartica koju vidi posjetitelj",
+          "paragraphs": [
+            "Moja kartica otvara tvoje kartice i uređivanje. Svaki blok uređuje se zasebno, dok Izgled mijenja opći prikaz. Broj kartica i dostupni blokovi ovise o paketu."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Uredi jedan dio pa provjeri",
+          "steps": [
+            "Otvori Moja kartica, odaberi svoju karticu i Uredi.",
+            "U Sadržaj otvori Uredi ili olovku uz blok koji želiš promijeniti.",
+            "Provjeri ime, opis, telefon i kanale. Ako polje već prikazuje domenu, upiši samo traženi dio adrese.",
+            "Za novi sadržaj odaberi Dodaj blok i pažljivo pročitaj opis njegove namjene.",
+            "Spremi izmjenu, otvori javni Pregled i isprobaj poveznicu prije dijeljenja."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktično pitanje",
+          "questions": [
+            {
+              "question": "Kako dodati kraći opis ispod imena?",
+              "answer": "Dodaj zaseban tekstualni blok i premjesti ga ispod naslovnog bloka. Veličina cijelog naslova i opis nisu ista postavka."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop i preporuka po zemljama",
+      "summary": "Tvoja preporuka povezuje posjetitelja s odgovarajućom Forever ponudom.",
+      "keywords": [
+        "shop",
+        "webshop",
+        "Forever ID",
+        "zemlja",
+        "Titan",
+        "BiH",
+        "Albanija"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Jedan glavni blok",
+          "paragraphs": [
+            "Glavni Forever shop blok koristi povezan Forever ID i postojeći sustav preporuke. Stari Titan blok može ostati na ranije izrađenoj kartici. Nemoj mijenjati ili izmišljati referalne parametre."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Provjeri preporuku",
+          "steps": [
+            "U Moja kartica otvori uređivanje svojeg Forever shop bloka.",
+            "Provjeri Forever ID povezan s računom. Ako nije točan, zatraži provjeru podrške.",
+            "Pročitaj opis bloka i razlikuj naručivanje proizvoda od početka poslovne suradnje.",
+            "Spremi promjenu i otvori javni Pregled kartice.",
+            "Na odredištu provjeri zemlju, dostupnu ponudu i prikaz preporuke prije narudžbe."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "Jezik i zemlja nisu isti izbor",
+          "paragraphs": [
+            "Sustav bira odredište prema dostupnoj detekciji zemlje i pravilima trgovine. Većina tržišta koristi Titan, a BiH i Albanija lokalne trgovine s drukčijom preporukom. VPN i putovanje mogu promijeniti detekciju. Ako zemlja nije očekivana, provjeri je prije naručivanja; promjena jezika ne mijenja tržište."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Posjetitelj čita karticu na hrvatskom, ali želi naručiti u Njemačkoj. Prije narudžbe provjerava njemačku ponudu i preporuku, bez mijenjanja jezika kartice."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Česta nedoumica",
+          "questions": [
+            {
+              "question": "Hoće li klik dokazati kupnju?",
+              "answer": "Ne. Klik prema trgovini i narudžba različiti su događaji. FCC ne potvrđuje kupnju samo zato što je otvorena poveznica."
+            },
+            {
+              "question": "Moram li ručno pripremiti link za svaku zemlju?",
+              "answer": "Glavni blok koristi postojeći sustav odredišta po zemljama. Provjeri povezan Forever ID i stvarno odredište. Za pogrešno tržište ili preporuku pošalji primjer podršci."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Preporuči proizvod ili članak",
+      "summary": "Pronađi prikladan sadržaj i podijeli ga sa svojom osobnom poveznicom.",
+      "keywords": [
+        "proizvod",
+        "članak",
+        "podijeli",
+        "preporuka",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Sadržaj kao početak razgovora",
+          "paragraphs": [
+            "Podijeli povezuje članak i tvoju preporuku. Proizvodi, dostupnost i službene upute mogu se razlikovati po zemljama. Članak ne zamjenjuje deklaraciju odabranog pakiranja."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pripremi korisnu preporuku",
+          "steps": [
+            "Otvori Podijeli i pronađi proizvod po točnom nazivu ili odaberi prikladan članak.",
+            "Pročitaj sadržaj i provjeri odgovara li stvarnom pitanju osobe.",
+            "Pripremi svoju poveznicu i prilagodi tekst. Ne izmišljaj osobno iskustvo ni učinak proizvoda.",
+            "Kopiraj sadržaj ili otvori WhatsApp pa osobno pošalji poruku.",
+            "Dogovori sljedeće javljanje u Kontaktima ako osoba želi nastavak."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Prije naručivanja",
+          "questions": [
+            {
+              "question": "Što ako proizvod nije dostupan u zemlji kupca?",
+              "answer": "Provjeri službenu lokalnu ponudu. Ne mijenjaj automatski proizvod niti pretpostavljaj da drugo pakiranje ima isti sastav ili upute."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Podijeli poslovnu prezentaciju",
+      "summary": "Predstavi mogućnosti suradnje i prati dobrovoljne upite preko svojeg računa.",
+      "keywords": [
+        "poslovanje",
+        "marketing plan",
+        "suradnja",
+        "početni paket",
+        "prezentacija"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Osobna poveznica za razgovor",
+          "paragraphs": [
+            "Poslovna prezentacija je odvojena od webinara. Dostupni prikaz i priprema osobne prezentacije ovise o pristupu računa i paketu. Odlazak na početni paket nije potvrda registracije."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pripremi i prati razgovor",
+          "steps": [
+            "U Podijeli otvori Marketing plan ili dostupnu Poslovnu prezentaciju.",
+            "Pročitaj vlastiti pregled i provjeri osobnu preporuku i kontakt.",
+            "Prilagodi poziv interesu osobe, bez obećanja zarade ili rezultata.",
+            "Osobno pošalji pripremljenu poveznicu i dogovori razgovor kada osoba želi.",
+            "Dobrovoljni upit potraži u svojim Kontaktima i zabilježi sljedeći dogovor."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Značenje rezultata",
+          "questions": [
+            {
+              "question": "Je li klik na početni paket nova suradnja?",
+              "answer": "Ne. Kupnja i registracija dovršavaju se na službenom Forever odredištu. U FCC evidenciji razlikuj klik, kontaktni upit i osobno potvrđeni ishod."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Pozovi gosta i prati prijavu",
+      "summary": "Odaberi termin, pošalji svoju pozivnicu i nakon webinara provjeri stvarni ishod.",
+      "keywords": [
+        "webinar",
+        "vebinar",
+        "pozivnica",
+        "Zoom",
+        "gost",
+        "prijava"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Tvoja pozivnica, tvoji kontakti",
+          "paragraphs": [
+            "Free i PRO mogu koristiti standardnu pozivnicu za dostupan webinar. PRO dodaje osobni uvod i video. Gost se prijavljuje preko tvoje poveznice bez FCC računa."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Od poziva do dogovora",
+          "steps": [
+            "Otvori Podijeli, Poziv na webinar i Odaberi termin.",
+            "Provjeri datum, vrijeme i zonu odabranog događaja.",
+            "Prilagodi poruku pa osobno pošalji svoju pozivnicu.",
+            "Prijave pregledaj u Prijave mojih gostiju i Kontaktima.",
+            "Provjeri gostovo dopuštenje javljanja i nakon termina zabilježi ishod."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Prijava nije dokaz prisustva",
+          "paragraphs": [
+            "Nepoznato znači da prisustvo još nije provjereno. Ne označava da gost nije došao. Nakon razgovora odaberi stvarno prisustvo ili izostanak. Podsjetnici gostu ovise o odabiru i potvrđenom emailu; prijava ne daje automatsko dopuštenje za sve buduće poruke."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Poziv za novi termin",
+          "paragraphs": [
+            "Ako gost želi drugi termin, pripremi novi poziv u pregledu gostiju ili izboru termina. Gost potvrđuje novu prijavu. Postojeći kontakt koristi se samo kada se identitet podudara; djelomično podudaranje treba provjeriti. Ponavljanje događaja ne prijavljuje gosta automatski na buduće datume."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Marko se prijavio, ali još ne znaš je li sudjelovao. Ostavi Nepoznato, provjeri s njim uz dopuštenje i tek zatim označi stvarni ishod."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Česta nedoumica",
+          "questions": [
+            {
+              "question": "Znači li otvoren WhatsApp da je poziv poslan?",
+              "answer": "Ne. Poruku šalješ osobno u WhatsApp aplikaciji. U FCC potvrdi slanje samo nakon što si ga stvarno napravio."
+            },
+            {
+              "question": "Treba li gost kreirati FCC račun?",
+              "answer": "Ne. Gost otvara tvoju prijavnu stranicu i potvrđuje odabrani termin. Njegova prijava ostaje povezana s tobom kao pozivateljem."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Kreiraj osobni ili timski webinar",
+      "summary": "Odredi temu, termin, jezik i publiku koja može koristiti svoje pozivnice.",
+      "keywords": [
+        "webinar",
+        "organizator",
+        "tim",
+        "ponavljanje",
+        "Zoom",
+        "jezik"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Organiziranje uz PRO",
+          "paragraphs": [
+            "Za kreiranje i uređivanje vlastitog webinara potreban je PRO. Zoom ili drugu sobu pripremaš u odgovarajućem servisu i u FCC unosiš potpunu HTTPS pristupnu poveznicu."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pripremi svoj događaj",
+          "steps": [
+            "Otvori Podijeli, Poziv na webinar, Moji webinari i obrazac za novi webinar.",
+            "Upiši naziv i što će gosti saznati. Odaberi tko može pozivati goste.",
+            "Odaberi jezik pozivnice i obavijesti, datum, početak, trajanje i vremensku zonu.",
+            "Unesi svoju pristupnu poveznicu te odaberi jedan termin ili tjedno ponavljanje.",
+            "Spremi webinar i pregledaj pripremljenu pozivnicu prije korištenja."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Tko vidi timski webinar",
+          "paragraphs": [
+            "Moj cijeli FCC tim obuhvaća organizatora i potvrđene suradnike u njegovoj donjoj liniji, uključujući dublje grane. Sponzori iznad organizatora i drugi timovi nisu automatski publika. Administratorski nadzor ne znači članstvo u publici. Svaki pozivatelj zadržava svoje privatne kontakte, organizator vidi ukupan broj prijava."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Ponavljanje, izmjena i otkazivanje",
+          "paragraphs": [
+            "Tjedno ponavljanje čuva odabrani lokalni sat i tijekom promjene ljetnog vremena. Uređivanje bira Samo ovaj termin ili Ovaj i budući termini. Publika postojeće serije ostaje ista. Otkazivanje čuva kontakte i povijest, a za otkazane termine prestaju prijave i podsjetnici za dolazak."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Za slovenski nedjeljni susret u 20:00 odaberi Slovenščina, Europe/Ljubljana i željenu publiku. Upiši svoju Zoom sobu te provjeri prvi datum i ponavljanje."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Jezik događaja",
+          "questions": [
+            {
+              "question": "Mijenja li slovenska pozivnica jezik mojeg računa?",
+              "answer": "Ne. Jezik događaja određuje pozivnicu i njegove obavijesti. Jezik računa i izbor tržišta ostaju odvojeni."
+            },
+            {
+              "question": "Mogu li Free suradnici pozivati na moj timski webinar?",
+              "answer": "Da, ako su dio potvrđene publike, mogu koristiti standardnu osobnu pozivnicu. Kreiranje webinara i dodatni osobni video prate PRO pristup."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Kontakti i dogovorena javljanja",
+      "summary": "Zabilježi interes, dopuštenje kontakta i sljedeći dogovor bez gubitka povijesti.",
+      "keywords": [
+        "kontakti",
+        "imenik",
+        "javljanje",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Tvoj privatni pregled",
+          "paragraphs": [
+            "Kontakti čuvaju tvoj osobni rad s osobama. Webinar i dobrovoljni poslovni upit mogu povezati prijavu s kontaktom. Poštuj oznaku da osoba ne želi daljnje javljanje."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Uredi i dogovori nastavak",
+          "steps": [
+            "Otvori Kontakti i potraži postojeću osobu prije ručnog dodavanja novog zapisa.",
+            "Otvori kontakt te provjeri ime, telefon, email i dopuštenje javljanja.",
+            "Zabilježi stvarni prodajni ili poslovni interes i dogovoreni datum nastavka.",
+            "Spremi izmjene i otvori WhatsApp samo kada osoba želi razgovor.",
+            "Za imenik uređaja odaberi Spremi kontakt i osobno potvrdi uvoz preuzete datoteke."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Gost iz webinara već postoji u Kontaktima. Pronađi postojeći zapis i dopuni dogovoreni datum umjesto ručnog otvaranja drugog kontakta."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktično pitanje",
+          "questions": [
+            {
+              "question": "Sprema li Spremi kontakt sve automatski u Google?",
+              "answer": "Ne. Gumb priprema datoteku kontakta iz upisanih polja. Na telefonu potvrdi spremanje, a na računalu datoteku možeš osobno uvesti u Google kontakte."
+            },
+            {
+              "question": "Zašto prijava traži provjeru djelomičnog podudaranja?",
+              "answer": "Dio podataka može odgovarati ranijem kontaktu, a dio se razlikovati. Provjeri identitet prije spajanja; sama sličnost imena nije dovoljna."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Osobno javljanje suradniku",
+      "summary": "Pripremi poruku, potvrdi stvarno slanje i dogovori provjeru razgovora.",
+      "keywords": [
+        "moj tim",
+        "poruka",
+        "nacrt",
+        "slanje",
+        "podrška"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Podrška članu tima uz PRO",
+          "paragraphs": [
+            "Moj tim i timske poruke prate PRO pristup. Otvori suradnika kojem smiješ ponuditi podršku. Coach koristi dostupni napredak i CC podatke, bez tuđih privatnih CRM bilježaka."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Od nacrta do javljanja",
+          "steps": [
+            "U Moj tim otvori profil suradnika i Podrška i osobno javljanje.",
+            "Odaberi razlog javljanja i prilagodi Tvoja poruka. Po potrebi odaberi Pripremi s Coachom.",
+            "Spremi nacrt, Kopiraj poruku ili Otvori WhatsApp.",
+            "Pošalji poruku osobno pa potvrdi slanje u FCC sustavu.",
+            "Odaberi datum u Kada želiš provjeriti kako je prošlo i kasnije zabilježi stvarni dogovor."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "Slanje potvrđuješ osobno",
+          "paragraphs": [
+            "Otvaranje WhatsAppa i kopiranje stvaraju pripremu, ne dokaz slanja. Ako nisi poslao poruku, odaberi odgovarajuću potvrdu ili ostavi nacrt. Pogrešnu potvrdu slanja možeš ispraviti u zapisu. Uklanjanje zapisa ne briše poruku u WhatsAppu. Nacrti i uklonjeni zapisi ne stvaraju podsjetnik za razgovor."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Otvorio si WhatsApp, ali odustao prije slanja. Ostavljaš nacrt ili potvrđuješ da nije poslano. U evidenciji tada nema stvarnog poslanog razgovora."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Nema potvrđenog broja",
+          "questions": [
+            {
+              "question": "Zašto ne mogu otvoriti WhatsApp?",
+              "answer": "Suradnik treba imati potvrđen poslovni broj. Tekst možeš kopirati i poslati svojim postojećim kanalom, a slanje potom osobno potvrditi."
+            },
+            {
+              "question": "Stvara li spremljen nacrt podsjetnik za razgovor?",
+              "answer": "Ne. Podsjetnik prati status poruke. Nacrti i uklonjeni zapisi ne stvaraju podsjetnik za razgovor. Datum provjere poveži sa stvarnim javljanjem."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Kako tražiti pomoć Coacha",
+      "summary": "Opiši konkretnu situaciju i dobij pojašnjenje ili nacrt koji osobno provjeravaš.",
+      "keywords": [
+        "coach",
+        "AI",
+        "pitanje",
+        "poruka",
+        "uputa"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Osobna pomoć uz postojeći pristup",
+          "paragraphs": [
+            "PRO Coach pomaže uz zadatak, poruke i vlastiti rad. Dobiva dopušteni kontekst računa, ali ne vidi automatski tvoj zaslon niti potvrđuje slanje, kupnju ili registraciju."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Postavi korisno pitanje",
+          "steps": [
+            "Otvori Coach ili pomoć Coacha uz svoj zadatak ili alat.",
+            "Napiši što želiš napraviti, u kojem dijelu aplikacije i što ti nije jasno.",
+            "Za nacrt poruke opiši odnos i stvarnu fazu razgovora, bez nepotrebnih osobnih ili zdravstvenih podataka.",
+            "Pročitaj odgovor i provjeri činjenice i odredište prije korištenja.",
+            "Prilagodi nacrt pa osobno pošalji poruku. Coach ne šalje umjesto tebe."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Poveznice na provjerene upute",
+          "paragraphs": [
+            "Coach može ponuditi relevantnu uputu iz centra i njezin konkretan odjeljak. Uputa se otvara na jeziku računa i ne dodjeljuje dodatna prava alata. Ako pojašnjenje nije dovoljno, napiši što još nije jasno ili pošalji pitanje podršci."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Napiši: Želim pozvati gosta za novi termin, gdje da to napravim? Coach može objasniti korak i ponuditi točan odjeljak upute, bez imena gosta."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Jezik odgovora",
+          "questions": [
+            {
+              "question": "Mogu li promijeniti samo Coach jezik?",
+              "answer": "Možeš izričito zatražiti željeni jezik odgovora. To ne mijenja zemlju Forever ponude. Provjeri jezik gotove poruke za svojeg primatelja."
+            },
+            {
+              "question": "Mogu li čitati upute bez PRO Coacha?",
+              "answer": "Da. Centar je dostupan prijavljenim Free i PRO suradnicima. Osobni AI odgovor prati postojeći pristup Coachu."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Obavijesti i podsjetnici",
+      "summary": "Odaberi teme, dnevni podsjetnik i uređaj na kojem želiš primati obavijesti.",
+      "keywords": [
+        "push",
+        "obavijesti",
+        "podsjetnik",
+        "zvuk",
+        "uređaj"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Sustav i uređaj imaju svoje postavke",
+          "paragraphs": [
+            "Inbox i push nisu isti prikaz. Za push treba dopuštenje uređaja. Dnevni zadatak i dogovorena javljanja mogu biti objedinjeni, dok događaji i račun imaju zasebno vrijeme obavijesti."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Provjeri dostavu",
+          "steps": [
+            "Otvori Obavijesti i pročitaj naslov, opis i vrijeme poruke.",
+            "Otvori Obavijesti na uređaju i moje postavke te odaberi Uključi na ovom uređaju.",
+            "Dopusti obavijesti u pregledniku ili uređaju i spremi odabrane kategorije.",
+            "U Moj tempo odaberi vrijeme svojeg dnevnog podsjetnika.",
+            "Po želji uključi zvuk i pošalji sebi probnu obavijest kada je taj gumb dostupan."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Zvuk i prikaz",
+          "questions": [
+            {
+              "question": "Hoće li zvuk biti jednak na svakom uređaju?",
+              "answer": "Ne. Preglednik, operacijski sustav i tihi način određuju završni zvuk i izgled. FCC postavka ne može nadjačati zabranu ili utišavanje uređaja."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Razumij rezultate i CC bodove",
+      "summary": "Razlikuj klikove, zabilježene aktivnosti i dostupne Forever bodove.",
+      "keywords": [
+        "rezultati",
+        "klikovi",
+        "CC",
+        "bodovi",
+        "napredak"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Različiti pokazatelji",
+          "paragraphs": [
+            "FCC Rezultati prikazuju kvalificirane odlaske prema trgovini. Moj napredak prikazuje prijavljene korake. CC dolaze iz dostupnog uvoza Forever podataka i predstavljaju zbir za razdoblje."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pročitaj pokazatelj u njegovu kontekstu",
+          "steps": [
+            "Otvori FCC Rezultati i pročitaj razdoblje te pravila brojanja klikova.",
+            "U Moj napredak odvojeno pregledaj stvarnu primjenu i vježbe.",
+            "U Moj Forever i CC bodovi provjeri razdoblje i potpunost dostupnih podataka.",
+            "Za kvalifikaciju ili službeni poslovni cilj provjeri važeća pravila svojeg tržišta sa sponzorom."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Česta pogrešna pretpostavka",
+          "questions": [
+            {
+              "question": "Dokazuju li CC tko je kupio određeni proizvod?",
+              "answer": "Ne. Zbirni CC nisu dokaz pojedine kupnje. Nepotpun ili nedostajući uvoz također nije potvrđena nula."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free i PRO, naplata i računi",
+      "summary": "Provjeri pristup paketu i stanje pretplate prije promjene načina plaćanja.",
+      "keywords": [
+        "paket",
+        "Free",
+        "PRO",
+        "Stripe",
+        "pretplata",
+        "račun"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Paket vrijedi za isti račun",
+          "paragraphs": [
+            "Free i PRO imaju različite pogodnosti, prikazane u aktualnoj usporedbi paketa. PRO nije potvrda upisa u Moj put. Aktivacija naplate prati potvrdu Stripe sustava."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Provjeri svoj paket",
+          "steps": [
+            "U Više otvori Free i PRO paket ili Moj paket.",
+            "Pročitaj dostupne pogodnosti, status pretplate i razdoblje pristupa.",
+            "Za aktivaciju provjeri sažetak odabranog plaćanja prije nastavka na Stripe.",
+            "U Uplate i računi pregledaj stvarne zapise plaćanja.",
+            "Za karticu ili otkazivanje koristi ponuđene postavke pretplate i pročitaj potvrđeni završetak razdoblja."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ako naplata traži pažnju",
+          "questions": [
+            {
+              "question": "Što ako je naplata zapela ili nije potvrđena?",
+              "answer": "Provjeri postojeći račun i poruku u svojem paketu. Koristi ponuđenu obnovu ili podršku. Nemoj zaključiti da je novac naplaćen samo iz trajanja paketa niti ponavljati nove narudžbe naslijepo."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Preuzmi i prilagodi timsku prezentaciju",
+      "summary": "Koristi objavljenu verziju, promijeni uvod o predavaču i provjeri vlastiti nastup.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "prezentacija",
+        "slajdovi",
+        "preuzimanje"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Zajednička osnova za predstavljanje",
+          "paragraphs": [
+            "Prezentacije u centru dostupne su prijavljenim suradnicima. Koristi datoteku i jezik koji su stvarno ponuđeni. Datum izdanja pomaže razlikovati aktualnu prezentaciju od stare kopije."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pripremi svoju izvedbu",
+          "steps": [
+            "U rubrici Više otvori Upute za FCC pa temu Preuzmi i prilagodi timsku prezentaciju.",
+            "U odjeljku za preuzimanje odaberi jezik i Preuzmi PPT. Za ZIP paket svih prijevoda odaberi Preuzmi sve jezike.",
+            "Otvori PPT u PowerPointu ili kompatibilnoj aplikaciji.",
+            "Promijeni predviđeni uvod o predavaču i svoju fotografiju.",
+            "Prođi bilješke i provjeri cijeli prikaz prije webinara."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Što prilagoditi",
+          "paragraphs": [
+            "Osobni uvod treba sadržavati samo provjerljive podatke i vlastito stvarno iskustvo. Zadrži zajedničku strukturu i ne dodaj obećanja zarade, liječenja ili tuđe privatne podatke. Primjere prikazuj na oglednim podacima."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "Jezik i verzija datoteke",
+          "paragraphs": [
+            "Ovdje su PPT datoteke na svim dostupnim jezicima i ZIP paket svih prijevoda. Provjeri oznaku jezika i izdanja prije preuzimanja. Slike FCC sučelja mogu zadržati izvorni jezik, dok su tekst i bilješke prevedeni. Povremeno provjeri postoji li novije izdanje."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Primjer iz prakse",
+          "paragraphs": [
+            "Preuzmeš aktualni PPT, promijeniš svoj uvod i fotografiju te uvježbaš jedan primjer dijeljenja. U demonstraciji koristiš ogledni kontakt, a ne privatne podatke kupca."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktično pitanje",
+          "questions": [
+            {
+              "question": "Mogu li prezentaciju samostalno kombinirati?",
+              "answer": "Prilagodi predviđeni uvod i redoslijed za svoj nastup, uz točne činjenice i jasnu namjenu. Prije prikazivanja provjeri slajdove, bilješke i dostupnost opisanih FCC mogućnosti."
+            },
+            {
+              "question": "Što ako dostupna PPT slika prikazuje drugi jezik?",
+              "answer": "Slike sučelja mogu zadržati izvorni jezik. Prati prevedene bilješke i upute te stvarne nazive gumba na svojem FCC prikazu. Prije nastupa provjeri dostupnu datoteku."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Napredni FCC alati",
+      "summary": "Otvori dodatni alat kada imaš konkretnu potrebu i provjeri pravo pristupa.",
+      "keywords": [
+        "QR",
+        "domene",
+        "statistika",
+        "Funnel studio",
+        "napredni alati"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Dodatna podrška tvojem radu",
+          "paragraphs": [
+            "U Više nalaze se dodatne poveznice, QR kodovi, statistika i napredni alati. Svaki alat provjerava prava paketa. Za početak koristi svoju karticu, kontakte i jednu jasnu radnju."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Odaberi alat prema cilju",
+          "steps": [
+            "Otvori Više i pregledaj opis dostupnih alata.",
+            "Odredi želiš li dijeliti karticu, pratiti posjete ili pripremiti poseban sadržaj.",
+            "Otvori odabrani alat i provjeri njegove upute i pristup paketa.",
+            "Isprobaj rezultat u pregledu prije javnog korištenja."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ako mogućnost nije dostupna",
+          "questions": [
+            {
+              "question": "Treba li mi svaki napredni alat za početak?",
+              "answer": "Ne. Prvo pripremi karticu i dogovoreni razgovor. Dodatni alat odaberi kada olakšava stvarnu radnju, a pristup provjeri u aktualnom paketu."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Pošalji pitanje podršci",
+      "summary": "Opiši problem i nastavi isti razgovor dok ne dobiješ korisno rješenje.",
+      "keywords": [
+        "podrška",
+        "pomoć",
+        "problem",
+        "zahtjev",
+        "greška"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Pitanje koje pratiš na jednom mjestu",
+          "paragraphs": [
+            "Pomoć i podrška služi za tehnički problem, prijedlog ili temu webinara. Coach može objasniti postupak, ali ne šalje zahtjev umjesto tebe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pripremi jasan zahtjev",
+          "steps": [
+            "Otvori Pomoć i podrška pa Nova poruka podršci.",
+            "Upiši kratak naslov i odaberi kategoriju pitanja.",
+            "Napiši u kojem dijelu aplikacije radiš, što si napravio i što se dogodilo.",
+            "Po potrebi dodaj sliku zaslona bez lozinke, podataka kartice ili tuđih privatnih podataka.",
+            "Pošalji pitanje i kasnije otvori isti razgovor za odgovor ili dodatno pojašnjenje."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Dok čekaš odgovor",
+          "questions": [
+            {
+              "question": "Trebam li za isti problem slati više zahtjeva?",
+              "answer": "Nastavi postojeći razgovor i dodaj novu informaciju. Navedi uređaj i točnu poruku pogreške. Tako podrška vidi cijeli tijek na jednom mjestu."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

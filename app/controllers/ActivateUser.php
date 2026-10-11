@@ -44,9 +44,14 @@ class ActivateUser extends Controller {
                     throw_404();
                 }
 
-                /* Activate the account and reset the email_activation_code */
+                /* A legacy email link must not grant FCC access before admin approval. */
+                if((int) $user->status !== 1) {
+                    Alerts::add_error(l((int) $user->status === 0 ? 'login.error_message.pending_admin_approval' : 'login.error_message.user_not_active'));
+                    redirect('login');
+                }
+
+                /* Confirm an already approved account and reset the email_activation_code */
                 db()->where('user_id', $user->user_id)->update('users', [
-                    'status' => 1,
                     'email_activation_code' => null,
                     'total_logins' => db()->inc()
                 ]);

@@ -3,7 +3,7 @@
 <div>
     <?php if(!in_array(settings()->license->type, ['Extended License', 'extended'])): ?>
         <div class="alert alert-primary" role="alert">
-            You need to own the Extended License in order to activate the affiliate plugin system.
+            <?= htmlspecialchars(fcc_t('You need to own the Extended License in order to activate the affiliate plugin system.'), ENT_QUOTES, 'UTF-8') ?>
         </div>
     <?php endif ?>
 

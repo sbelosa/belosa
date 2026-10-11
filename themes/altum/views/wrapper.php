@@ -1,7 +1,13 @@
-<?php defined('ALTUMCODE') || die() ?>
+<?php defined('ALTUMCODE') || die();
+require_once APP_PATH . 'helpers/fcc_mobile_navigation.php';
+fcc_mobile_nav_assets();
+// Public system pages share the new light palette without changing saved card themes.
+\Altum\ThemeStyle::$workspace_light = true;
+?>
 <!DOCTYPE html>
-<html lang="<?= \Altum\Language::$code ?>" dir="<?= l('direction') ?>">
+<html lang="<?= fcc_language_tag() ?>" dir="<?= l('direction') ?>">
     <head>
+    <?php fcc_i18n_assets(); ?>
         <title><?= \Altum\Title::get() ?></title>
         <base href="<?= SITE_URL; ?>">
         <meta charset="UTF-8">
@@ -22,16 +28,16 @@
         <?php endif ?>
 
         <?php if(\Altum\Meta::$description): ?>
-            <meta name="description" content="<?= \Altum\Meta::$description ?>" />
+            <meta name="description" content="<?= htmlspecialchars((string) \Altum\Meta::$description, ENT_QUOTES, 'UTF-8') ?>" />
         <?php endif ?>
         <?php if(\Altum\Meta::$keywords): ?>
-            <meta name="keywords" content="<?= \Altum\Meta::$keywords ?>" />
+            <meta name="keywords" content="<?= htmlspecialchars((string) \Altum\Meta::$keywords, ENT_QUOTES, 'UTF-8') ?>" />
         <?php endif ?>
 
         <?php \Altum\Meta::output() ?>
 
         <?php if(\Altum\Meta::$canonical): ?>
-            <link rel="canonical" href="<?= \Altum\Meta::$canonical ?>" />
+            <link rel="canonical" href="<?= htmlspecialchars((string) \Altum\Meta::$canonical, ENT_QUOTES, 'UTF-8') ?>" />
         <?php endif ?>
 
         <?php if(\Altum\Meta::$robots): ?>
@@ -42,9 +48,7 @@
             <link rel="alternate" href="<?= SITE_URL . \Altum\Router::$original_request ?>" hreflang="x-default" />
             <?php if(count(\Altum\Language::$active_languages) > 1): ?>
                 <?php foreach(\Altum\Language::$active_languages as $language_name => $language_code): ?>
-                    <?php if(settings()->main->default_language != $language_name): ?>
-                        <link rel="alternate" href="<?= SITE_URL . $language_code . '/' . \Altum\Router::$original_request ?>" hreflang="<?= $language_code ?>" />
-                    <?php endif ?>
+                    <link rel="alternate" href="<?= htmlspecialchars(SITE_URL . (settings()->main->default_language === $language_name ? '' : $language_code . '/') . \Altum\Router::$original_request, ENT_QUOTES, 'UTF-8') ?>" hreflang="<?= fcc_language_tag($language_code) ?>" />
                 <?php endforeach ?>
             <?php endif ?>
         <?php endif ?>
@@ -95,6 +99,7 @@
         <?php if(!empty(settings()->custom->head_css)): ?>
             <style><?= settings()->custom->head_css ?></style>
         <?php endif ?>
+<?php if(in_array(\Altum\Router::$controller_key, ['blog','page','pages'], true)): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-library.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-library.css') ?>"><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner-library.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner-library.js') ?>"></script><?php endif ?>
     </head>
 
     <?php
@@ -102,7 +107,7 @@
     $fcc_is_blog_route = preg_match('/^(?:[a-z]{2}\/)?blog(?:\/|$)/i', \Altum\Router::$original_request) === 1;
     /* /Custom code: FC-2026-02-26 */
     ?>
-    <body class="index <?= l('direction') == 'rtl' ? 'rtl' : null ?> <?= \Altum\ThemeStyle::get() == 'dark' ? 'cc--darkmode' : null ?> <?= $fcc_is_blog_route ? 'fcc-blog-route' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
+    <body data-fcc-public-design="20261001" class="fcc-public-mode <?= in_array(\Altum\Router::$controller_key, ['page','pages'], true) ? 'fcc-guides-mode' : '' ?> <?= in_array(\Altum\Router::$controller_key, ['blog','page','pages'], true) ? 'fcc-library-mode' : '' ?> index <?= l('direction') == 'rtl' ? 'rtl' : null ?>  <?= $fcc_is_blog_route ? 'fcc-blog-route' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
         <?php if(!empty(settings()->custom->body_content)): ?>
             <?= settings()->custom->body_content ?>
         <?php endif ?>
@@ -118,20 +123,19 @@
         <?php if(\Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled && settings()->pwa->display_install_bar) require \Altum\Plugin::get('pwa')->path . 'views/partials/pwa.php' ?>
         <?php if(\Altum\Plugin::is_active('push-notifications') && settings()->push_notifications->is_enabled) require \Altum\Plugin::get('push-notifications')->path . 'views/partials/push_notifications_js.php' ?>
 
-        <div class="container pt-4">
-            <?= $this->views['menu'] ?>
-        </div>
+        <?= $this->views['menu'] ?>
+        <?php fcc_mobile_nav_render($this->user ?? null, 'public'); ?>
 
         <?php require THEME_PATH . 'views/partials/ads_header.php' ?>
 
-        <main class="altum-animate altum-animate-fill-none altum-animate-fade-in">
+        <main id="fcc-public-main" class="altum-animate altum-animate-fill-none altum-animate-fade-in">
             <?= $this->views['content'] ?>
         </main>
 
         <?php require THEME_PATH . 'views/partials/ads_footer.php' ?>
 
-        <div class="container d-print-none">
-            <footer class="footer app-footer">
+        <div class="fcw-container d-print-none">
+            <footer class="fcw-footer">
                 <?= $this->views['footer'] ?>
             </footer>
         </div>
@@ -149,10 +153,10 @@
         <?php endforeach ?>
 
         <?php /* Custom code: FC-2026-04-10: internal FCC Coach popup on site pages */ ?>
-        <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user)): ?>
+        <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user) && \Altum\Router::$controller_key !== 'blog'): ?>
             <?php $fcc_internal_coach_ui = fcc_ai_get_internal_coach_ui_payload($this->user, \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'); ?>
             <?php $fcc_internal_coach_ui_copy = []; ?>
-            <?php foreach(['hr', 'en', 'sl', 'bg'] as $fcc_internal_coach_ui_language): ?>
+            <?php foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es'] as $fcc_internal_coach_ui_language): ?>
                 <?php $fcc_internal_coach_ui_copy[$fcc_internal_coach_ui_language] = fcc_ai_get_internal_coach_ui_payload($this->user, $fcc_internal_coach_ui_language); ?>
             <?php endforeach ?>
             <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
@@ -161,12 +165,12 @@
                     'scope' => 'internal_coach',
                     'owner_name' => (string) ($this->user->name ?? ''),
                     'language_code' => \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr',
-                    'source_context' => 'FCC Coach site popup',
+                    'source_context' => fcc_t('FCC Coach site popup'),
                     'hide_without_context' => false,
                     'dom_id' => 'fcc-coach-chat-extreme-site',
-                    'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? 'FCC Coach'),
-                    'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? 'FCC Coach'),
-                    'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? 'FCC Coach'),
+                    'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? fcc_t('FCC Coach')),
+                    'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? fcc_t('FCC Coach')),
+                    'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? fcc_t('FCC Coach')),
                     'coach_badge' => (string) ($fcc_internal_coach_ui['coach_badge'] ?? ''),
                     'coach_notice' => (string) ($fcc_internal_coach_ui['coach_notice'] ?? ''),
                     'coach_mode_key' => (string) ($fcc_internal_coach_ui['coach_mode_key'] ?? ''),

@@ -1,7 +1,8 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php
-if(defined('FCC_GOOGLE_ANALYTICS_RENDERED')) {
+if(getenv('FCC_LOCAL') === '1' || defined('FCC_GOOGLE_ANALYTICS_RENDERED') || is_logged_in()
+    || !in_array(\Altum\Router::$controller_key, ['index', 'blog', 'blog-offer', 'page', 'pages', 'featured-apps', 'recommended-sponsors'], true)) {
     return;
 }
 
@@ -12,7 +13,6 @@ $fcc_google_analytics_cookie_consent_enabled = !empty(settings()->cookie_consent
 ?>
 
 <!-- Custom code: FC-2026-05-10: FCC Google Analytics 4 tracking -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($fcc_google_analytics_id) ?>"></script>
 <script>
 (function() {
     'use strict';
@@ -23,28 +23,35 @@ $fcc_google_analytics_cookie_consent_enabled = !empty(settings()->cookie_consent
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
 
-    if(consentManaged) {
-        window.gtag('consent', 'default', {
+    window['ga-disable-' + measurementId] = true;
+    window.gtag('consent', 'default', {
             ad_storage: 'denied',
             ad_user_data: 'denied',
             ad_personalization: 'denied',
-            analytics_storage: 'denied',
-            wait_for_update: 500
-        });
-    }
+            analytics_storage: 'denied'
+    });
 
-    let pageViewTracked = !consentManaged;
-
-    window.gtag('js', new Date());
-    window.gtag('config', measurementId, {
-        send_page_view: !consentManaged
+    let pageViewTracked = false;
+    let analyticsAllowed = false;
+    let analyticsLoaded = false;
+    const safePage = window.location.origin + window.location.pathname;
+    window.fccProductAnalyticsAllowed = () => analyticsAllowed;
+    window.addEventListener('fcc:product-event', event => {
+        if(!analyticsAllowed || !event.detail) return;
+        const d=event.detail;
+        const names=['fcc_product_view','fcc_product_order','fcc_product_alternative','fcc_product_whatsapp','fcc_product_phone','fcc_product_related','fcc_product_share','fcc_product_market','fcc_product_question','fcc_product_contact','fcc_product_list_select'];
+        if(!names.includes(d.event)) return;
+        const safe={page_location:safePage};
+        for(const key of ['product_id','market','language','placement','target_product','selected_market','question']) {
+            if(typeof d[key]==='string' && /^[a-z0-9_-]{1,100}$/.test(d[key])) safe[key]=d[key];
+        }
+        window.gtag('event',d.event,safe);
     });
 
     const updateAnalyticsConsent = granted => {
-        if(!consentManaged || typeof window.gtag !== 'function') {
-            return;
-        }
-
+        granted = consentManaged && granted === true;
+        analyticsAllowed = granted;
+        window['ga-disable-' + measurementId] = !granted;
         window.gtag('consent', 'update', {
             analytics_storage: granted ? 'granted' : 'denied',
             ad_storage: 'denied',
@@ -52,11 +59,40 @@ $fcc_google_analytics_cookie_consent_enabled = !empty(settings()->cookie_consent
             ad_personalization: 'denied'
         });
 
+        if(granted && !analyticsLoaded) {
+            analyticsLoaded = true;
+            window.gtag('js', new Date());
+            window.gtag('config', measurementId, {
+                send_page_view: false,
+                page_location: safePage,
+                page_referrer: '',
+                allow_google_signals: false,
+                allow_ad_personalization_signals: false,
+                cookie_expires: 15552000
+            });
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(measurementId);
+            document.head.appendChild(script);
+        }
+        if(!granted) {
+            // Expire first party GA cookies after withdrawal. Tracking is disabled above.
+            const names = document.cookie.split(';').map(value => value.trim().split('=')[0]).filter(name => /^_ga(?:_|$)/.test(name));
+            const hostname = window.location.hostname || '';
+            const parts = hostname.split('.');
+            const domains = ['', hostname, '.' + hostname];
+            for(let i = 1; i < parts.length - 1; i++) domains.push('.' + parts.slice(i).join('.'));
+            for(const name of names) for(const domain of domains) {
+                document.cookie = name + '=; Max-Age=0; path=/' + (domain ? '; domain=' + domain : '') + '; SameSite=Lax';
+            }
+        }
+        if(granted) window.dispatchEvent(new Event('fcc:analytics-ready'));
+
         if(granted && !pageViewTracked) {
             window.gtag('event', 'page_view', {
                 page_title: document.title,
-                page_location: window.location.href,
-                page_path: window.location.pathname + window.location.search
+                page_location: safePage,
+                page_path: window.location.pathname
             });
 
             pageViewTracked = true;
@@ -90,22 +126,17 @@ $fcc_google_analytics_cookie_consent_enabled = !empty(settings()->cookie_consent
             return;
         }
 
-        const isAnchor = target.matches('a[href]');
-        const linkUrl = isAnchor ? target.href : '';
-        const linkText = (target.innerText || target.getAttribute('aria-label') || target.title || '')
-            .trim()
-            .replace(/\s+/g, ' ')
-            .slice(0, 120);
-        const className = typeof target.className === 'string' ? target.className.slice(0, 120) : '';
-
+        // Product events are explicit and omit all customer content.
+        if(!analyticsAllowed || target.closest('[data-fl-library]')) return;
+        let linkUrl='';
+        if(target.matches('a[href]')) {
+            try { const u=new URL(target.href); linkUrl=['https:','http:'].includes(u.protocol)?u.origin:u.protocol; } catch {}
+        }
         window.gtag('event', 'fcc_click', {
             event_category: 'engagement',
-            event_label: linkText || linkUrl || target.id || target.name || 'click',
+            event_label: target.tagName.toLowerCase(),
             link_url: linkUrl,
-            link_text: linkText,
-            link_id: target.id || '',
-            link_classes: className,
-            page_location: window.location.href
+            page_location: safePage
         });
     }, { capture: true });
 })();

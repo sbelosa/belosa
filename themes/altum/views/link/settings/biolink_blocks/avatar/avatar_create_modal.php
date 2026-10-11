@@ -30,10 +30,10 @@
                     <div class="form-group">
                         <label for="avatar_size"><i class="fas fa-fw fa-expand fa-sm text-muted mr-1"></i> <?= l('biolink_avatar.size') ?></label>
                         <select id="avatar_size" name="size" class="custom-select" data-is-not-custom-select>
-                            <option value="75">75x75px</option>
-                            <option value="100">100x100px</option>
-                            <option value="125">125x125px</option>
-                            <option value="150">150x150px</option>
+                            <option value="75"><?= htmlspecialchars('75x75px', ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="100"><?= htmlspecialchars('100x100px', ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="125"><?= htmlspecialchars('125x125px', ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="150"><?= htmlspecialchars('150x150px', ENT_QUOTES, 'UTF-8') ?></option>
                         </select>
                     </div>
 

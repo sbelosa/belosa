@@ -1,0 +1,163 @@
+{
+  "version": "2026-09-28.1",
+  "source": {
+    "label": "Forever Hrvatska: Poslovna politika",
+    "url": "https://cdn.foreverliving.com/content/MarketingConfigurableContent/HRV/Poslovna%20politika/FINAL%20Poslovna%2015.06..2025.%20mjesec.pdf",
+    "effective_date": "2025-06-15",
+    "checked_at": "2026-09-28",
+    "market": "HR",
+    "scope": "Sažetak hrvatske politike. Prije plana provjeri važeću verziju, svoje tržište i sve uvjete sa sponzorom ili managerom.",
+    "scope_en": "Croatian policy summary. Before making a plan, confirm the current version, your market and all conditions with your sponsor or manager."
+  },
+  "lessons": [
+    {
+      "id": "1169350547",
+      "key": "welcome",
+      "title": "Upoznaj Forever i svoj FCC",
+      "title_en": "Meet Forever and your FCC",
+      "duration": "3:57",
+      "description": "Upoznaj osnovnu ideju Forever poslovanja i čemu ti služi FCC. Kreni od vlastitog iskustva, korisnih informacija i razgovora s ljudima kojima možeš pomoći.",
+      "description_en": "Meet the basics of Forever and see how FCC supports your work. Start with your own experience, useful information and conversations with people you can help.",
+      "takeaways": [
+        "Otvori svoju karticu i provjeri kontakt i poveznicu prema Forever trgovini.",
+        "Pronađi svoj dnevni korak. Ondje učiš jednu stvar i odmah je primjenjuješ."
+      ],
+      "takeaways_en": [
+        "Open your card and check your contact details and Forever shop link.",
+        "Find your daily step. Learn one thing and put it into practice."
+      ],
+      "practice": "Pošalji sponzoru svoju karticu i dogovorite prvi kratki razgovor o početku.",
+      "practice_en": "Share your card with your sponsor and arrange a short conversation about getting started.",
+      "page": 2,
+      "section": "Uvod i profesionalno postupanje"
+    },
+    {
+      "id": "1169350555",
+      "key": "positions",
+      "title": "Kako nastaju zarada i napredovanje",
+      "title_en": "How earnings and advancement work",
+      "duration": "3:55",
+      "description": "Pogledaj objašnjenje raspodjele novca i poveži ga sa svojim radom s kupcima i suradnicima. Razlikuj prodajnu cijenu, osobni popust, ostvarenu poziciju i uvjete za bonus.",
+      "description_en": "Watch the explanation of how money is distributed and connect it with customer and team activity. Distinguish retail price, personal discount, rank and bonus requirements.",
+      "takeaways": [
+        "Pozicije: Assistant Supervisor, Supervisor, Assistant Manager i Manager.",
+        "Uvjeti i obračun bonusa opisani su u odjeljcima 4, 5 i 6 pravilnika."
+      ],
+      "takeaways_en": [
+        "Ranks: Assistant Supervisor, Supervisor, Assistant Manager and Manager.",
+        "Sections 4, 5 and 6 of the policy explain rank and bonus requirements."
+      ],
+      "practice": "Sa sponzorom odaberi sljedeću poziciju i provjeri koje vrste CC i koje razdoblje ulaze u nju.",
+      "practice_en": "Choose your next rank with your sponsor and check which CC types and period count.",
+      "page": 11,
+      "section": "Marketing plan, pozicije i bonusi"
+    },
+    {
+      "id": "1169356104",
+      "key": "activity",
+      "title": "Mjesečna aktivnost i 4 CC",
+      "title_en": "Monthly activity and 4 CC",
+      "duration": "5:41",
+      "description": "Saznaj što znači aktivnost u Foreveru i kako pratiš bodove. Izgradi ritam preporuka, podrške kupcima i dogovorenih javljanja koji možeš održavati iz mjeseca u mjesec.",
+      "description_en": "Understand Forever activity and how to follow your CC. Build a repeatable rhythm of recommendations, customer support and agreed follow ups.",
+      "takeaways": [
+        "Aktivnost: najmanje 4 CC u kalendarskom mjesecu, uključujući najmanje 1 osobni CC, prema hrvatskoj politici.",
+        "Različite vrste bodova imaju različitu ulogu."
+      ],
+      "takeaways_en": [
+        "Activity: at least 4 CC in a calendar month, including at least 1 personal CC, under the Croatian policy.",
+        "Different CC types serve different purposes."
+      ],
+      "practice": "Otvori svoje Forever bodove. Sa sponzorom provjeri razdoblje i sastav bodova te dogovorite iduća javljanja kupcima.",
+      "practice_en": "Open your Forever CC. Check the period and CC categories with your sponsor, then agree your next customer follow ups.",
+      "page": 4,
+      "section": "Definicije i aktivnost"
+    },
+    {
+      "id": "1171473948",
+      "key": "auto",
+      "title": "Auto program: Forever2Drive",
+      "title_en": "Car programme: Forever2Drive",
+      "duration": "2:57",
+      "description": "Auto program može biti cilj oko kojeg gradiš plan razvoja posla. Video objašnjava osnovnu ideju, a sa sponzorom ili prvim managerom provjeravaš svoju polaznu točku i plan po mjesecima.",
+      "description_en": "The car programme can become a goal for your business development. Watch the overview, then review your starting point and monthly plan with your sponsor or first upline manager.",
+      "takeaways": [
+        "Za aktivne priznate managere. Kvalifikacija traje tri uzastopna mjeseca.",
+        "Maksimalne mjesečne isplate traju do 36 mjeseci uz uvjete održavanja."
+      ],
+      "takeaways_en": [
+        "For active recognised managers. Qualification covers three consecutive months.",
+        "Maximum monthly payments run for up to 36 months, subject to maintenance conditions."
+      ],
+      "levels": [
+        [
+          "1.",
+          50,
+          100,
+          150,
+          "400 €"
+        ],
+        [
+          "2.",
+          75,
+          150,
+          225,
+          "600 €"
+        ],
+        [
+          "3.",
+          100,
+          200,
+          300,
+          "800 €"
+        ]
+      ],
+      "practice": "Dogovori 20 minuta sa sponzorom ili prvim managerom. Prođite tvoju poziciju, mjesečne CC, kupce i tim te odaberite početak kvalifikacije i prvi tjedni korak.",
+      "practice_en": "Arrange 20 minutes with your sponsor or first upline manager. Review your rank, monthly CC, customers and team, then choose a qualification start and a first weekly action.",
+      "page": 32,
+      "section": "Odjeljak 10: Forever2Drive"
+    },
+    {
+      "id": "1171473940",
+      "key": "eagle",
+      "title": "Eagle Manager: razvijaj ljude i tim",
+      "title_en": "Eagle Manager: develop people and your team",
+      "duration": "3:34",
+      "description": "Upoznaj program koji povezuje kontinuitet rada i razvoj novih voditelja. Razmisli kome u svom timu možeš pomoći da samostalnije radi s kupcima i gradi vlastite suradnike.",
+      "description_en": "Explore a programme connecting consistent activity with developing new leaders. Consider who in your team you can help work independently with customers and collaborators.",
+      "takeaways": [
+        "Razdoblje: svibanj do travnja. Osnova: 720 ukupnih CC, 100 novih CC i tri nove supervizorske linije.",
+        "Vrijede dodatni uvjeti aktivnosti, voditeljskog bonusa i razine managera."
+      ],
+      "takeaways_en": [
+        "Period: May to April. Baseline: 720 total CC, 100 new CC and three new supervisor lines.",
+        "Activity, leadership bonus and manager level conditions also apply."
+      ],
+      "practice": "Sa sponzorom pregledaj stvarne potrebe članova tima. Dogovorite kome ćeš pomoći u prvom razgovoru s kupcem i kada ćete pratiti napredak.",
+      "practice_en": "Review your team members’ actual needs with your sponsor. Agree who you will support in a first customer conversation and when you will review progress.",
+      "page": 21,
+      "section": "Odjeljak 8.04: Eagle Manager"
+    },
+    {
+      "id": "1171473947",
+      "key": "chairman",
+      "title": "Chairman’s Bonus: dugoročan razvoj",
+      "title_en": "Chairman’s Bonus: long term development",
+      "duration": "3:25",
+      "description": "Upoznaj napredni poticajni program i zašto je za njega važna stabilna baza kupaca i razvoj samostalnih managera. Individualni plan napravi s iskusnom osobom iz svoje sponzorske linije.",
+      "description_en": "Explore an advanced incentive and the importance of a stable customer base and independent managers. Make an individual plan with an experienced person in your sponsor line.",
+      "takeaways": [
+        "Prva razina: 700 osobnih i nemanagerskih CC, uključujući 150 novih CC.",
+        "Traže se i kvalificirani manager u strukturi te ostali uvjeti iz odjeljka 11."
+      ],
+      "takeaways_en": [
+        "First level: 700 personal and nonmanager CC, including 150 new CC.",
+        "A qualifying downline manager and the other section 11 conditions also apply."
+      ],
+      "practice": "S prvim managerom odaberi koje podatke trebate provjeriti, razdoblje cilja i jednu konkretnu podršku svom timu ovaj tjedan.",
+      "practice_en": "With your first upline manager, identify the data to review, the goal period and one specific way to support your team this week.",
+      "page": 34,
+      "section": "Odjeljak 11: Chairman’s Bonus"
+    }
+  ]
+}

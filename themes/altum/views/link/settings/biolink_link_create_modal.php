@@ -3,148 +3,148 @@
 <?php
 $fcc_is_hr = \Altum\Language::$code === 'hr';
 $fcc_picker_copy = $fcc_is_hr ? [
-    'subheader' => 'Biraj blokove po tome što želiš postići u aplikaciji, a ne po tehničkom tipu.',
-    'search_placeholder' => 'Pretraži po nazivu, namjeni ili cilju aplikacije',
-    'group_filter' => 'Grupa bloka',
-    'group_filter_all' => 'Sve grupe',
-    'goal_filter' => 'Cilj aplikacije',
-    'goal_filter_all' => 'Svi ciljevi',
-    'empty' => 'Nema blokova za ovaj filter. Promijeni pretragu ili odaberi drugu grupu/cilj.',
-    'reset_filters' => 'Resetiraj filtere',
-    'section_kicker' => 'Kurirana skupina blokova',
+    'subheader' => fcc_t('Biraj blokove po tome što želiš postići u aplikaciji, a ne po tehničkom tipu.'),
+    'search_placeholder' => fcc_t('Pretraži po nazivu, namjeni ili cilju aplikacije'),
+    'group_filter' => fcc_t('Grupa bloka'),
+    'group_filter_all' => fcc_t('Sve grupe'),
+    'goal_filter' => fcc_t('Cilj aplikacije'),
+    'goal_filter_all' => fcc_t('Svi ciljevi'),
+    'empty' => fcc_t('Nema blokova za ovaj filter. Promijeni pretragu ili odaberi drugu grupu/cilj.'),
+    'reset_filters' => fcc_t('Resetiraj filtere'),
+    'section_kicker' => fcc_t('Kurirana skupina blokova'),
     'block_count' => 'blokova',
     'groups' => [
-        'start' => ['title' => 'Početak aplikacije', 'subtitle' => 'Blokovi za prvi dojam, uvod, navigaciju i jasan početak stranice.'],
-        'contacts' => ['title' => 'Kontakti i leadovi', 'subtitle' => 'Blokovi za prikupljanje kontakata, upita i direktnu komunikaciju.'],
-        'sales' => ['title' => 'Prodaja i preporuke', 'subtitle' => 'Blokovi za preporuku proizvoda, CTA-ove, naplatu i funnel korake.'],
-        'business' => ['title' => 'Business', 'subtitle' => 'Blokovi za usluge, termine, lokaciju, povjerenje i poslovni kontekst.'],
-        'forever' => ['title' => 'Forever Card Club', 'subtitle' => 'FCC specifični blokovi za proizvode, referral, chatbot i app switch flow.'],
-        'content' => ['title' => 'Sadržaj i priča', 'subtitle' => 'Blokovi za tekst, slike, medije, raspored, FAQ i bogatiji storytelling.'],
+        'start' => ['title' => fcc_t('Početak aplikacije'), 'subtitle' => fcc_t('Blokovi za prvi dojam, uvod, navigaciju i jasan početak stranice.')],
+        'contacts' => ['title' => fcc_t('Kontakti i leadovi'), 'subtitle' => fcc_t('Blokovi za prikupljanje kontakata, upita i direktnu komunikaciju.')],
+        'sales' => ['title' => fcc_t('Prodaja i preporuke'), 'subtitle' => fcc_t('Blokovi za preporuku proizvoda, CTA-ove, naplatu i funnel korake.')],
+        'business' => ['title' => 'Business', 'subtitle' => fcc_t('Blokovi za usluge, termine, lokaciju, povjerenje i poslovni kontekst.')],
+        'forever' => ['title' => fcc_t('Forever Card Club'), 'subtitle' => fcc_t('FCC specifični blokovi za proizvode, referral, chatbot i app switch flow.')],
+        'content' => ['title' => fcc_t('Sadržaj i priča'), 'subtitle' => fcc_t('Blokovi za tekst, slike, medije, raspored, FAQ i bogatiji storytelling.')],
     ],
     'goals' => [
-        'intro' => 'Uvod i pregled',
-        'lead_capture' => 'Prikupljanje leadova',
-        'product_recommendation' => 'Preporuka proizvoda',
-        'booking' => 'Naručivanje i termini',
-        'trust' => 'Povjerenje i informacije',
-        'navigation' => 'Navigacija i pomoć',
-        'content' => 'Sadržaj i edukacija',
+        'intro' => fcc_t('Uvod i pregled'),
+        'lead_capture' => fcc_t('Prikupljanje leadova'),
+        'product_recommendation' => fcc_t('Preporuka proizvoda'),
+        'booking' => fcc_t('Naručivanje i termini'),
+        'trust' => fcc_t('Povjerenje i informacije'),
+        'navigation' => fcc_t('Navigacija i pomoć'),
+        'content' => fcc_t('Sadržaj i edukacija'),
     ],
     'purposes' => [
         'default_start' => 'za uvod i prvi dojam',
         'default_contacts' => 'za prikupljanje kontakata',
         'default_sales' => 'za preporuku i konverziju',
         'default_business' => 'za predstavljanje business ponude',
-        'default_forever' => 'za Forever Card Club flow',
-        'default_content' => 'za sadržaj i objašnjenje',
-        'lead_funnel' => 'za prijave i vođeni follow-up',
+        'default_forever' => fcc_t('za Forever Card Club flow'),
+        'default_content' => fcc_t('za sadržaj i objašnjenje'),
+        'lead_funnel' => fcc_t('za prijave i vođeni follow-up'),
         'link_forever_product' => 'za preporuku proizvoda',
-        'link_forever_shop' => 'za službenu FCC registraciju ili prijavu',
+        'link_forever_shop' => fcc_t('za službenu FCC registraciju ili prijavu'),
         'link_forever_webshop_reg' => 'za web shop registraciju s referralom',
         'link_discount' => 'za webshop preporuku',
         'contact_collector' => 'za upite i kontakt obrasce',
         'email_collector' => 'za prikupljanje email leadova',
         'phone_collector' => 'za prikupljanje telefona',
-        'custom_html_whatsapp' => 'za direktni WhatsApp kontakt',
+        'custom_html_whatsapp' => fcc_t('za direktni WhatsApp kontakt'),
         'service' => 'za predstavljanje usluge',
         'appointment_calendar' => 'za rezervaciju termina',
         'map' => 'za lokaciju i dolazak',
         'review' => 'za socijalni dokaz',
-        'faq' => 'za česta pitanja',
-        'link_app_switcher' => 'za prebacivanje između aplikacija',
+        'faq' => fcc_t('za česta pitanja'),
+        'link_app_switcher' => fcc_t('za prebacivanje između aplikacija'),
         'link_back' => 'za povratak na prethodni korak',
         'link' => 'za glavni gumb ili usmjeravanje',
-        'featured_link' => 'za istaknuti glavni CTA',
+        'featured_link' => fcc_t('za istaknuti glavni CTA'),
         'big_link' => 'za veliki akcijski gumb',
         'external_item' => 'za izdvojenu ponudu ili akciju',
-        'heading' => 'za naslov i jasan početak',
-        'paragraph' => 'za kratko objašnjenje',
+        'heading' => fcc_t('za naslov i jasan početak'),
+        'paragraph' => fcc_t('za kratko objašnjenje'),
         'image' => 'za vizualni fokus',
-        'video' => 'za video objašnjenje i povjerenje',
-        'modal_text' => 'za dodatno objašnjenje u popupu',
+        'video' => fcc_t('za video objašnjenje i povjerenje'),
+        'modal_text' => fcc_t('za dodatno objašnjenje u popupu'),
         'markdown' => 'za formatirani tekst i strukturu',
-        'custom_html' => 'za napredni prilagođeni sadržaj',
-        'image_grid' => 'za prikaz više slika odjednom',
-        'image_slider' => 'za galeriju, priču ili rezultate',
+        'custom_html' => fcc_t('za napredni prilagođeni sadržaj'),
+        'image_grid' => fcc_t('za prikaz više slika odjednom'),
+        'image_slider' => fcc_t('za galeriju, priču ili rezultate'),
         'image_comparison' => 'za usporedbu prije i poslije',
-        'divider' => 'za jasan razmak između cjelina',
-        'list' => 'za benefite i kratke točke',
-        'alert' => 'za važnu obavijest ili upozorenje',
-        'audio' => 'za audio poruku ili objašnjenje',
+        'divider' => fcc_t('za jasan razmak između cjelina'),
+        'list' => fcc_t('za benefite i kratke točke'),
+        'alert' => fcc_t('za važnu obavijest ili upozorenje'),
+        'audio' => fcc_t('za audio poruku ili objašnjenje'),
         'file' => 'za preuzimanje datoteke',
-        'pdf_document' => 'za PDF vodič ili dokument',
+        'pdf_document' => fcc_t('za PDF vodič ili dokument'),
         'powerpoint_presentation' => 'za prezentaciju ili plan',
-        'excel_spreadsheet' => 'za tablicu, cjenik ili kalkulaciju',
-        'rss_feed' => 'za automatski sadržaj i novosti',
-        'anchor' => 'za skok na točan dio stranice',
-        'countdown' => 'za rok, hitnost i akciju',
+        'excel_spreadsheet' => fcc_t('za tablicu, cjenik ili kalkulaciju'),
+        'rss_feed' => fcc_t('za automatski sadržaj i novosti'),
+        'anchor' => fcc_t('za skok na točan dio stranice'),
+        'countdown' => fcc_t('za rok, hitnost i akciju'),
         'vcard' => 'za digitalnu posjetnicu',
         'share' => 'za dijeljenje aplikacije',
         'donation' => 'za uplatu ili donaciju',
         'weather' => 'za lokalni kontekst i informaciju',
-        'counter' => 'za brojke, rezultate i dokaz',
+        'counter' => fcc_t('za brojke, rezultate i dokaz'),
         'code' => 'za embed ili napredni kodni dodatak',
-        'iframe' => 'za ugradnju vanjskog sadržaja',
-        'youtube_feed' => 'za kolekciju video sadržaja',
-        'link_homescreen_android' => 'za spremanje aplikacije na početni zaslon',
-        'link_homescreen_ios' => 'za spremanje aplikacije na početni zaslon',
-        'loading' => 'za vođeni prijelaz ili uvodnu animaciju',
-        'socials' => 'za društvene kanale',
+        'iframe' => fcc_t('za ugradnju vanjskog sadržaja'),
+        'youtube_feed' => fcc_t('za kolekciju video sadržaja'),
+        'link_homescreen_android' => fcc_t('za spremanje aplikacije na početni zaslon'),
+        'link_homescreen_ios' => fcc_t('za spremanje aplikacije na početni zaslon'),
+        'loading' => fcc_t('za vođeni prijelaz ili uvodnu animaciju'),
+        'socials' => fcc_t('za društvene kanale'),
         'business_hours' => 'za radno vrijeme',
         'product' => 'za isticanje ponude',
-        'paypal' => 'za naplatu i plaćanje',
+        'paypal' => fcc_t('za naplatu i plaćanje'),
         'cta' => 'za jasan poziv na akciju',
         'coupon' => 'za promo ponudu',
-        'custom_html_chatbot' => 'za AI preporuku Forever proizvoda',
-        'custom_html_chatbot_pets' => 'za AI savjetnik za ljubimce',
-        'default_embed' => 'za ugradnju vanjskog sadržaja',
-        'default_media' => 'za vizualnu ili video priču',
+        'custom_html_chatbot' => fcc_t('za AI preporuku Forever proizvoda'),
+        'custom_html_chatbot_pets' => fcc_t('za AI savjetnik za ljubimce'),
+        'default_embed' => fcc_t('za ugradnju vanjskog sadržaja'),
+        'default_media' => fcc_t('za vizualnu ili video priču'),
         'default_download' => 'za dokumente i preuzimanje',
     ],
 ] : [
-    'subheader' => 'Choose blocks by what the app should achieve, not by technical category.',
-    'search_placeholder' => 'Search by block name, purpose, or app goal',
-    'group_filter' => 'Block group',
-    'group_filter_all' => 'All groups',
-    'goal_filter' => 'App goal',
+    'subheader' => fcc_t('Choose blocks by what the app should achieve, not by technical category.'),
+    'search_placeholder' => fcc_t('Search by block name, purpose, or app goal'),
+    'group_filter' => fcc_t('Block group'),
+    'group_filter_all' => fcc_t('All groups'),
+    'goal_filter' => fcc_t('App goal'),
     'goal_filter_all' => 'All goals',
-    'empty' => 'No blocks match this filter. Adjust the search or pick a different group/goal.',
-    'reset_filters' => 'Reset filters',
-    'section_kicker' => 'Curated block group',
+    'empty' => fcc_t('No blocks match this filter. Adjust the search or pick a different group/goal.'),
+    'reset_filters' => fcc_t('Reset filters'),
+    'section_kicker' => fcc_t('Curated block group'),
     'block_count' => 'blocks',
     'groups' => [
-        'start' => ['title' => 'App start', 'subtitle' => 'Blocks for first impression, intro, navigation, and a clean opening section.'],
-        'contacts' => ['title' => 'Contacts and leads', 'subtitle' => 'Blocks for collecting contact details, inquiries, and direct conversations.'],
-        'sales' => ['title' => 'Sales and recommendations', 'subtitle' => 'Blocks for product recommendations, CTAs, payments, and funnel steps.'],
-        'business' => ['title' => 'Business', 'subtitle' => 'Blocks for services, appointments, location, trust, and business context.'],
-        'forever' => ['title' => 'Forever Card Club', 'subtitle' => 'FCC-specific blocks for products, referrals, chatbot support, and app switching.'],
-        'content' => ['title' => 'Content and story', 'subtitle' => 'Blocks for text, images, media, scheduling, FAQ, and richer storytelling.'],
+        'start' => ['title' => fcc_t('App start'), 'subtitle' => fcc_t('Blocks for first impression, intro, navigation, and a clean opening section.')],
+        'contacts' => ['title' => fcc_t('Contacts and leads'), 'subtitle' => fcc_t('Blocks for collecting contact details, inquiries, and direct conversations.')],
+        'sales' => ['title' => 'Sales and recommendations', 'subtitle' => fcc_t('Blocks for product recommendations, CTAs, payments, and funnel steps.')],
+        'business' => ['title' => 'Business', 'subtitle' => fcc_t('Blocks for services, appointments, location, trust, and business context.')],
+        'forever' => ['title' => fcc_t('Forever Card Club'), 'subtitle' => fcc_t('FCC-specific blocks for products, referrals, chatbot support, and app switching.')],
+        'content' => ['title' => fcc_t('Content and story'), 'subtitle' => fcc_t('Blocks for text, images, media, scheduling, FAQ, and richer storytelling.')],
     ],
     'goals' => [
-        'intro' => 'Intro and overview',
-        'lead_capture' => 'Lead capture',
+        'intro' => fcc_t('Intro and overview'),
+        'lead_capture' => fcc_t('Lead capture'),
         'product_recommendation' => 'Product recommendation',
-        'booking' => 'Ordering and appointments',
-        'trust' => 'Trust and information',
-        'navigation' => 'Navigation and support',
-        'content' => 'Content and education',
+        'booking' => fcc_t('Ordering and appointments'),
+        'trust' => fcc_t('Trust and information'),
+        'navigation' => fcc_t('Navigation and support'),
+        'content' => fcc_t('Content and education'),
     ],
     'purposes' => [
         'default_start' => 'for intros and first impression',
         'default_contacts' => 'for collecting contacts',
         'default_sales' => 'for recommendation and conversion',
         'default_business' => 'for presenting a business offer',
-        'default_forever' => 'for the Forever Card Club flow',
+        'default_forever' => fcc_t('for the Forever Card Club flow'),
         'default_content' => 'for content and explanation',
         'lead_funnel' => 'for registrations and guided follow-up',
         'link_forever_product' => 'for recommending products',
-        'link_forever_shop' => 'for official FCC registration or sign-up',
+        'link_forever_shop' => fcc_t('for official FCC registration or sign-up'),
         'link_forever_webshop_reg' => 'for web shop registration with referral',
         'link_discount' => 'for webshop referrals',
         'contact_collector' => 'for inquiries and contact forms',
         'email_collector' => 'for collecting email leads',
         'phone_collector' => 'for collecting phone leads',
-        'custom_html_whatsapp' => 'for direct WhatsApp contact',
+        'custom_html_whatsapp' => fcc_t('for direct WhatsApp contact'),
         'service' => 'for presenting services',
         'appointment_calendar' => 'for booking appointments',
         'map' => 'for location and directions',
@@ -153,7 +153,7 @@ $fcc_picker_copy = $fcc_is_hr ? [
         'link_app_switcher' => 'for switching between apps',
         'link_back' => 'for returning to the previous step',
         'link' => 'for a primary button or routing action',
-        'featured_link' => 'for the main highlighted CTA',
+        'featured_link' => fcc_t('for the main highlighted CTA'),
         'big_link' => 'for a large action button',
         'external_item' => 'for a featured external offer or action',
         'heading' => 'for a strong headline',
@@ -164,24 +164,24 @@ $fcc_picker_copy = $fcc_is_hr ? [
         'markdown' => 'for formatted text and structure',
         'custom_html' => 'for advanced custom content',
         'image_grid' => 'for showing multiple images at once',
-        'image_slider' => 'for a gallery, story, or results showcase',
+        'image_slider' => fcc_t('for a gallery, story, or results showcase'),
         'image_comparison' => 'for before-and-after comparisons',
         'divider' => 'for clean visual separation',
         'list' => 'for benefit points and quick highlights',
         'alert' => 'for important notices or warnings',
         'audio' => 'for audio guidance or explanation',
         'file' => 'for downloadable files',
-        'pdf_document' => 'for PDF guides or documents',
+        'pdf_document' => fcc_t('for PDF guides or documents'),
         'powerpoint_presentation' => 'for decks and presentations',
-        'excel_spreadsheet' => 'for price lists, tables, or calculations',
+        'excel_spreadsheet' => fcc_t('for price lists, tables, or calculations'),
         'rss_feed' => 'for automated updates and fresh content',
         'anchor' => 'for jumping to an exact section',
-        'countdown' => 'for urgency, deadlines, and action',
+        'countdown' => fcc_t('for urgency, deadlines, and action'),
         'vcard' => 'for a digital business card',
         'share' => 'for sharing the app',
         'donation' => 'for payments or donations',
         'weather' => 'for local context and information',
-        'counter' => 'for numbers, proof, and momentum',
+        'counter' => fcc_t('for numbers, proof, and momentum'),
         'code' => 'for embeds or advanced code snippets',
         'iframe' => 'for embedded external experiences',
         'youtube_feed' => 'for a collection of videos',
@@ -194,13 +194,35 @@ $fcc_picker_copy = $fcc_is_hr ? [
         'paypal' => 'for payments and checkout',
         'cta' => 'for a clear call to action',
         'coupon' => 'for promo offers',
-        'custom_html_chatbot' => 'for AI-guided Forever recommendations',
-        'custom_html_chatbot_pets' => 'for the pets AI assistant',
+        'custom_html_chatbot' => fcc_t('for AI-guided Forever recommendations'),
+        'custom_html_chatbot_pets' => fcc_t('for the pets AI assistant'),
         'default_embed' => 'for embedded external content',
         'default_media' => 'for a visual or video story',
         'default_download' => 'for documents and downloads',
     ],
 ];
+
+if(fcc_partner_enabled() && $fcc_is_hr) {
+    $fcc_picker_copy['subheader'] = fcc_t('Dodaj sadržaj ili gumb koji želiš na svojoj kartici.');
+    $fcc_picker_copy['search_placeholder'] = fcc_t('Pronađi blok, npr. slika ili WhatsApp');
+    $fcc_picker_copy['groups']['contacts']['title'] = fcc_t('Kontakti i upiti');
+    $fcc_picker_copy['groups']['business']['title'] = 'Poslovanje';
+    $fcc_picker_copy['groups']['forever']['subtitle'] = fcc_t('Proizvodi, trgovina i osobna preporuka.');
+    $fcc_picker_copy['groups']['sales']['subtitle'] = fcc_t('Gumbi i obrasci za tvoju ponudu.');
+    $fcc_picker_copy['groups']['content']['subtitle'] = fcc_t('Tekst, fotografije, video i dokumenti.');
+    $fcc_picker_copy['goals']['lead_capture'] = fcc_t('Prikupljanje upita');
+    $fcc_picker_copy['purposes'] = array_replace($fcc_picker_copy['purposes'], [
+        'heading'=>fcc_t('Napiši svoje ime ili naslov cjeline.'), 'paragraph'=>fcc_t('Predstavi se ili ukratko objasni ponudu.'),
+        'image'=>fcc_t('Dodaj fotografiju ili sliku proizvoda.'), 'link'=>fcc_t('Dodaj gumb koji otvara tvoju poveznicu.'),
+        'link_forever_webshop_reg'=>fcc_t('Otvori Forever trgovinu s tvojom preporukom.'),
+        'custom_html_whatsapp'=>fcc_t('Omogući posjetitelju da ti pošalje poruku.'),
+        'contact_collector'=>fcc_t('Prikupi kontakt osobe koja želi više informacija.'),
+        'youtube'=>fcc_t('Prikaži svoj YouTube video na kartici.'),
+        'lead_funnel'=>fcc_t('Prikupi prijave i ponudi sljedeći korak.'), 'email_collector'=>fcc_t('Prikupi adrese zainteresiranih posjetitelja.'),
+        'default_sales'=>fcc_t('Predstavi ponudu i olakšaj sljedeći korak.'), 'default_business'=>fcc_t('Predstavi svoj posao ili uslugu.'),
+        'default_forever'=>fcc_t('Poveži karticu s Forever ponudom.'), 'review'=>fcc_t('Prikaži stvarne recenzije svojih kupaca.'),
+    ]);
+}
 
 $fcc_group_meta = [
     'start' => ['icon' => 'fas fa-flag-checkered', 'background' => 'linear-gradient(135deg, rgba(15, 23, 42, .96), rgba(20, 36, 72, .92))', 'soft_background' => 'rgba(59, 130, 246, .16)', 'color' => '#8ec5ff', 'dark_background' => '#10203f'],
@@ -375,12 +397,12 @@ $fcc_get_locked_tooltip_attributes = static function(string $tooltip_title): str
 };
 $fcc_block_picker_coach_notice = $fcc_is_hr
     ? [
-        'title' => 'Coach je privremeno zatvoren',
-        'text' => 'Otvoreni VIP coach zatvoren je dok biraš blokove. Kad zatvoriš ovaj prozor, možeš ga odmah ponovno otvoriti i nastaviti razgovor.',
+        'title' => fcc_t('Coach je privremeno zatvoren'),
+        'text' => fcc_t('Otvoreni VIP coach zatvoren je dok biraš blokove. Kad zatvoriš ovaj prozor, možeš ga odmah ponovno otvoriti i nastaviti razgovor.'),
     ]
     : [
-        'title' => 'Coach is temporarily closed',
-        'text' => 'An open VIP coach is closed while you pick blocks. As soon as you close this window, you can open it again and continue the conversation.',
+        'title' => fcc_t('Coach is temporarily closed'),
+        'text' => fcc_t('An open VIP coach is closed while you pick blocks. As soon as you close this window, you can open it again and continue the conversation.'),
     ];
 ?>
 
@@ -869,7 +891,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                 </div>
 
                 <div id="fcc_biolink_block_picker_intro" class="biolink-create-intro mb-3 fcc-biolink-tour-target">
-                    <h6 class="mb-2"><?= $fcc_is_hr ? 'Dodaj blok po stvarnoj primjeni' : 'Add a block by real use case' ?></h6>
+                    <h6 class="mb-2"><?= $fcc_is_hr ? fcc_t('Dodaj blok po stvarnoj primjeni') : fcc_t('Add a block by real use case') ?></h6>
                     <p class="small text-muted mb-0"><?= $fcc_picker_copy['subheader'] ?></p>
                 </div>
 
@@ -883,6 +905,12 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     </div>
                 </div>
 
+                <?php if(fcc_partner_enabled()): ?>
+                <div class="fp-block-picker-modes" role="group" aria-label="<?= htmlspecialchars(fcc_t('Izbor blokova'), ENT_QUOTES, 'UTF-8') ?>">
+                    <button type="button" data-block-mode="basic" aria-pressed="true"><?= htmlspecialchars(fcc_t('Osnovni blokovi'), ENT_QUOTES, 'UTF-8') ?></button>
+                    <button type="button" data-block-mode="all" aria-pressed="false"><?= htmlspecialchars(fcc_t('Svi blokovi'), ENT_QUOTES, 'UTF-8') ?></button>
+                </div>
+                <?php endif ?>
                 <div class="biolink-create-filters">
                     <form action="" method="get" role="form" id="fcc_biolink_block_picker_search_form" class="biolink-create-search mb-0 fcc-biolink-tour-target">
                         <div id="fcc_biolink_block_picker_search_wrap" class="form-group mb-0 fcc-biolink-tour-target">
@@ -890,6 +918,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                         </div>
                     </form>
 
+                    <?php if(fcc_partner_enabled()): ?><details class="fp-block-picker-filters"><summary><?= htmlspecialchars(fcc_t('Filtriraj po namjeni'), ENT_QUOTES, 'UTF-8') ?></summary><div><?php endif ?>
                     <div id="fcc_biolink_block_picker_group_filter_wrap" class="form-group mb-0 fcc-biolink-tour-target">
                         <label for="fcc_biolink_block_group_filter" class="small text-uppercase font-weight-bold text-muted mb-2"><?= $fcc_picker_copy['group_filter'] ?></label>
                         <select id="fcc_biolink_block_group_filter" class="custom-select" data-is-not-custom-select>
@@ -909,10 +938,11 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                             <?php endforeach ?>
                         </select>
                     </div>
+                    <?php if(fcc_partner_enabled()): ?></div></details><?php endif ?>
                 </div>
 
                 <?php foreach(require APP_PATH . 'includes/enabled_biolink_blocks.php' as $key => $value): ?>
-                    <?php if(in_array($key, ['link_forever_living_bih', 'link_forever_living_alb_kosovo'], true)) continue ?>
+                    <?php if(in_array($key, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo'], true)) continue ?>
 
                     <?php
                     $is_block_enabled_for_plan = (bool) ($fcc_enabled_biolink_blocks->{$key} ?? false);
@@ -928,6 +958,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                         $is_block_enabled_for_plan = true;
                     }
 
+                    if(in_array($key,['link_forever_shop','link_forever_webshop_reg'],true))$is_block_enabled_for_plan=true;
                     $block_card_attributes = $is_block_enabled_for_plan ? null : get_plan_feature_disabled_info();
                     $block_button_attributes = 'data-dismiss="modal" data-toggle="modal" data-target="#create_biolink_' . $key . '"';
                     $block_subtitle = l('biolink_' . $key . '.subheader');
@@ -955,7 +986,10 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     $group_search_titles = array_values(array_filter(array_map(static function($group_key) use ($fcc_picker_copy) {
                         return $fcc_picker_copy['groups'][$group_key]['title'] ?? null;
                     }, $assigned_group_keys)));
+                    $block_display_title = fcc_partner_enabled() && $fcc_is_hr ? (['link'=>fcc_t('Gumb s poveznicom'),'paragraph'=>'Tekst','link_forever_webshop_reg'=>fcc_t('Forever trgovina'),'youtube'=>fcc_t('YouTube video')][$key] ?? l('link.biolink.blocks.' . $key)) : l('link.biolink.blocks.' . $key);
+                    if(in_array($key,['link_forever_shop','link_forever_webshop_reg'],true)) { $block_display_title=fcc_forever_copy($key==='link_forever_shop'?'business':'shop'); $block_subtitle=fcc_forever_copy($key==='link_forever_shop'?'business_help':'shop_help'); }
                     $search_text = mb_strtolower(trim(implode(' ', array_filter([
+                        $block_display_title,
                         l('link.biolink.blocks.' . $key),
                         $fcc_get_purpose($key, $primary_group_key),
                         implode(' ', $goal_labels),
@@ -967,12 +1001,13 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                         <?php
                         $group_meta = $fcc_group_meta[$group_key] ?? $primary_group_meta;
                         $block_visual_accent = $fcc_get_visual_accent($data->biolink_blocks[$key]['color'] ?? null, $group_meta['color']);
-                        $purpose_text = $fcc_get_purpose($key, $group_key);
+                        $purpose_text = in_array($key,['link_forever_shop','link_forever_webshop_reg'],true)?fcc_forever_copy($key==='link_forever_shop'?'business_help':'shop_help'):$fcc_get_purpose($key, $group_key);
                         ob_start();
                         ?>
                         <div
                             class="col-12 col-lg-6 p-3"
                             data-block-card
+
                             data-block-group="<?= $group_key ?>"
                             data-block-goals="<?= htmlspecialchars(implode(',', $goal_keys), ENT_QUOTES) ?>"
                             data-block-search="<?= htmlspecialchars($search_text, ENT_QUOTES) ?>"
@@ -1011,7 +1046,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                                 </span>
 
                                 <span class="biolink-create-block-meta">
-                                    <span class="biolink-create-block-title"><?= l('link.biolink.blocks.' . $key) ?></span>
+                                    <span class="biolink-create-block-title"><?= $block_display_title ?></span>
                                     <span class="biolink-create-block-purpose"><?= $purpose_text ?></span>
                                     <?php if($goal_labels): ?>
                                         <span class="biolink-create-block-goals">
@@ -1037,6 +1072,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     <?php endforeach ?>
                 <?php endforeach ?>
 
+                <div class="fp-block-library">
                 <?php foreach($fcc_picker_copy['groups'] as $group_key => $group_copy): ?>
                     <?php if(empty($fcc_grouped_blocks[$group_key])) continue ?>
                     <?php $group_meta = $fcc_group_meta[$group_key] ?>
@@ -1064,6 +1100,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     </div>
                 <?php endforeach ?>
 
+                </div>
                 <div id="fcc_biolink_block_picker_empty" class="biolink-create-empty d-none">
                     <div><?= $fcc_picker_copy['empty'] ?></div>
                     <div class="biolink-create-empty-reset">
@@ -1090,6 +1127,9 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
         const groupFilter = modal.querySelector('#fcc_biolink_block_group_filter');
         const goalFilter = modal.querySelector('#fcc_biolink_block_goal_filter');
         const cards = Array.from(modal.querySelectorAll('[data-block-card]'));
+        const modeButtons = Array.from(modal.querySelectorAll('[data-block-mode]'));
+        let pickerMode = 'basic';
+        const basicBlocks = new Set(['heading','paragraph','image','link','link_forever_webshop_reg','link_forever_shop','custom_html_whatsapp','contact_collector','youtube']);
         const sections = Array.from(modal.querySelectorAll('[data-purpose-section]'));
         const emptyState = modal.querySelector('#fcc_biolink_block_picker_empty');
         const resetFiltersButton = modal.querySelector('[data-reset-filters]');
@@ -1122,6 +1162,8 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
             const groupValue = normalize(groupFilter.value);
             const goalValue = normalize(goalFilter.value);
 
+            modal.classList.toggle('fp-block-picker-compact', !!modeButtons.length && (pickerMode === 'basic' || !!searchValue) && !groupValue && !goalValue);
+            const shownBlocks = new Set();
             cards.forEach(card => {
                 const blockSearch = normalize(card.getAttribute('data-block-search'));
                 const blockGroup = normalize(card.getAttribute('data-block-group'));
@@ -1130,7 +1172,10 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                 const matchesSearch = !searchValue || blockSearch.includes(searchValue);
                 const matchesGroup = !groupValue || blockGroup === groupValue;
                 const matchesGoal = !goalValue || blockGoals.includes(goalValue);
-                const isVisible = matchesSearch && matchesGroup && matchesGoal;
+                const id = card.getAttribute('data-block-id');
+                const matchesMode = !modeButtons.length || pickerMode === 'all' || searchValue || groupValue || goalValue || basicBlocks.has(id);
+                const isVisible = matchesSearch && matchesGroup && matchesGoal && matchesMode && (!modeButtons.length || !shownBlocks.has(id));
+                if(isVisible) shownBlocks.add(id);
 
                 card.classList.toggle('d-none', !isVisible);
             });
@@ -1161,8 +1206,15 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
             searchInput.addEventListener(eventKey, applyFilters);
         });
 
+        modeButtons.forEach(button => button.addEventListener('click', () => {
+            pickerMode = button.dataset.blockMode;
+            resetFilters();
+            modeButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+            applyFilters();
+        }));
         groupFilter.addEventListener('change', applyFilters);
         goalFilter.addEventListener('change', applyFilters);
+        window.addEventListener('fcc-preview-mode', applyFilters);
 
         if(resetFiltersButton) {
             resetFiltersButton.addEventListener('click', () => {

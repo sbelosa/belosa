@@ -2365,6 +2365,14 @@ REGEX;
         $scope = $this->get_param_string('scope', 'overview');
 
         switch($scope) {
+            case 'los_report':
+                require_once APP_PATH.'helpers/fcc_los.php';
+                try {
+                    $filters=fcc_los_query_filters($this->get_param_string('question'),$_GET);
+                    $this->respond_success($scope,fcc_los_report_payload(fcc_los_dataset($filters,'reports')),['schema_version'=>1]);
+                } catch(\InvalidArgumentException $e) {$this->respond_error('invalid_range',$e->getMessage(),422);}
+                break;
+
             case 'health':
                 $this->respond_success($scope, $this->get_health_payload());
                 break;

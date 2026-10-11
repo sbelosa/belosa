@@ -30,6 +30,20 @@ function fc_normalize_site_url($url): string {
     return rtrim($url, '/') . '/';
 }
 
+/** The default recipient always belongs to the card owner, never the inviter. */
+function fc_get_user_default_whatsapp_phone($user): string {
+    $preferences = $user->preferences ?? null;
+    if(is_string($preferences)) $preferences = json_decode($preferences, true);
+    if(is_object($preferences)) $preferences = (array) $preferences;
+    $meta = is_array($preferences) ? ($preferences['meta'] ?? []) : [];
+    if(is_object($meta)) $meta = (array) $meta;
+    $value = is_array($meta) ? ($meta['phone'] ?? '') : '';
+    if(!is_scalar($value)) return '';
+    $phone = preg_replace('/\D+/', '', (string) $value);
+    if(str_starts_with($phone, '00')) $phone = substr($phone, 2);
+    return preg_match('/^[1-9][0-9]{7,14}$/', $phone) ? $phone : '';
+}
+
 function fc_site_url_points_to_localhost($url): bool {
     $normalized_url = fc_normalize_site_url($url);
 
@@ -53,6 +67,11 @@ function fc_get_site_url(): string {
         $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (int) ($_SERVER['SERVER_PORT'] ?? 80) === 443;
         $scheme = $is_https ? 'https://' : 'http://';
         return $resolved_site_url = $scheme . rtrim((string) $_SERVER['HTTP_HOST'], '/') . '/';
+    }
+
+    // Local background jobs must use the same test links as the local web app.
+    if(PHP_SAPI === 'cli' && getenv('FCC_LOCAL') === '1' && defined('SITE_URL') && fc_site_url_points_to_localhost(SITE_URL)) {
+        return $resolved_site_url = fc_normalize_site_url(SITE_URL);
     }
 
     $candidates = [

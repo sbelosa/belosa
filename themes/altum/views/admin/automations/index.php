@@ -20,9 +20,9 @@
 <div class="row mb-4">
     <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= l('admin_automations.hub_card_emails') ?></div><div class="h3 mb-0"><?= nr($data->hub['totals']['broadcasts']) ?></div></div></div></div>
     <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= l('admin_automations.hub_card_automations') ?></div><div class="h3 mb-0"><?= nr($data->hub['totals']['automations']) ?></div></div></div></div>
-    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Poslano</div><div class="h3 mb-0"><?= nr($summary['sent']) ?></div></div></div></div>
-    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Isporučeno</div><div class="h3 mb-0"><?= nr($summary['delivered']) ?></div></div></div></div>
-    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1">Otvoreno</div><div class="h3 mb-0"><?= nr($summary['opened']) ?></div></div></div></div>
+    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= htmlspecialchars(fcc_t('Poslano'), ENT_QUOTES, 'UTF-8') ?></div><div class="h3 mb-0"><?= nr($summary['sent']) ?></div></div></div></div>
+    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= htmlspecialchars(fcc_t('Isporučeno'), ENT_QUOTES, 'UTF-8') ?></div><div class="h3 mb-0"><?= nr($summary['delivered']) ?></div></div></div></div>
+    <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= htmlspecialchars(fcc_t('Otvoreno'), ENT_QUOTES, 'UTF-8') ?></div><div class="h3 mb-0"><?= nr($summary['opened']) ?></div></div></div></div>
     <div class="col-6 col-xl-2 mb-3"><div class="card h-100"><div class="card-body"><div class="text-muted small text-uppercase mb-1"><?= l('admin_automations.hub_card_clicks') ?></div><div class="h3 mb-0"><?= nr($summary['clicked']) ?></div></div></div></div>
 </div>
 
@@ -160,7 +160,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title"><?= sprintf(l('admin_automations.hub_unsubscribed_modal_title'), e($broadcast->name)) ?></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="<?= htmlspecialchars(fcc_t('Close'), ENT_QUOTES, 'UTF-8') ?>">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -204,7 +204,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title"><?= sprintf(l('admin_automations.hub_unsubscribed_modal_title'), e($automation->name)) ?></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="<?= htmlspecialchars(fcc_t('Close'), ENT_QUOTES, 'UTF-8') ?>">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>

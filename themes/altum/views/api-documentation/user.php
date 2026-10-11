@@ -2,7 +2,7 @@
 
 <div class="container">
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('api-documentation') ?>"><?= l('api_documentation.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
@@ -30,7 +30,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-success mr-3">GET</span> <span class="text-muted"><?= SITE_URL ?>api/user</span>
+                                <span class="badge badge-success mr-3"><?= htmlspecialchars(fcc_t('GET'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/user', ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -39,9 +39,9 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request GET \<br />
-                                --url '<?= SITE_URL ?>api/user' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
+                                <?= htmlspecialchars(fcc_t('curl --request GET \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars(fcc_t('api/user\' \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
                             </div>
                         </div>
                     </div>

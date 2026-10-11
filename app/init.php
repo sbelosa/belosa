@@ -53,6 +53,9 @@ require_once APP_PATH . 'includes/product.php';
 /* Config file */
 require_once ROOT_PATH . 'config.php';
 
+/* Host-local Partner configuration never replaces identity, payment or email settings. */
+require_once APP_PATH . 'includes/partner_environment.php';
+
 /* Custom code: FC-2026-04-01: bootstrap fallback for LOS privacy hashing on partial deploys */
 if(!defined('LOS_PRIVACY_HASH_SALT')) {
     $los_privacy_seed_parts = [
@@ -153,6 +156,7 @@ session_set_cookie_params([
     'lifetime' => null,
     'path' => COOKIE_PATH,
     'samesite' => 'Lax',
+    'httponly' => true,
     'secure' => str_starts_with(SITE_URL, 'https://'),
 ]);
 
@@ -195,6 +199,39 @@ require_once APP_PATH . 'core/NotFoundException.php';
 /* Load some helpers */
 require_once APP_PATH . 'helpers/Link.php';
 require_once APP_PATH . 'helpers/core.php';
+require_once APP_PATH . 'helpers/fcc_i18n.php';
+require_once APP_PATH . 'helpers/fcc_partner.php';
+require_once APP_PATH . 'helpers/fcc_fast_images.php';
+require_once APP_PATH . 'helpers/fcc_pro.php';
+require_once APP_PATH . 'helpers/fcc_forever_routing.php';
+require_once APP_PATH . 'helpers/fcc_factory_shop.php';
+require_once APP_PATH . 'helpers/fcc_library_pilot.php';
+require_once APP_PATH . 'helpers/fcc_partner_journey.php';
+require_once APP_PATH . 'helpers/fcc_journey90.php';
+require_once APP_PATH . 'helpers/fcc_journey_pilot.php';
+require_once APP_PATH . 'helpers/fcc_help_center.php';
+require_once APP_PATH . 'helpers/fcc_help_coach.php';
+require_once APP_PATH . 'helpers/fcc_coach_mentor.php';
+require_once APP_PATH . 'helpers/fcc_partner_notifications.php';
+require_once APP_PATH . 'helpers/fcc_team.php';
+require_once APP_PATH . 'helpers/fcc_team_notifications.php';
+require_once APP_PATH . 'helpers/fcc_team_work.php';
+require_once APP_PATH . 'helpers/fcc_legal.php';
+require_once APP_PATH . 'helpers/fcc_partner_webinars.php';
+require_once APP_PATH . 'helpers/fcc_webinar_events.php';
+require_once APP_PATH . 'helpers/fcc_webinar_personal.php';
+require_once APP_PATH . 'helpers/fcc_webinar_standard.php';
+require_once APP_PATH . 'helpers/fcc_webinar_event_pages.php';
+require_once APP_PATH . 'helpers/fcc_webinar_lifecycle.php';
+require_once APP_PATH . 'helpers/fcc_webinar_lifecycle_pages.php';
+require_once APP_PATH . 'helpers/fcc_business_presentations.php';
+require_once APP_PATH . 'helpers/fcc_business_market.php';
+require_once APP_PATH . 'helpers/fcc_business_mail.php';
+require_once APP_PATH . 'helpers/fcc_business_growth.php';
+require_once APP_PATH . 'helpers/fcc_business_flow.php';
+require_once APP_PATH . 'helpers/fcc_business_landing.php';
+require_once APP_PATH . 'helpers/fcc_business_landing_locale.php';
+require_once APP_PATH . 'helpers/fcc_business_landing_coach.php';
 require_once APP_PATH . 'helpers/sessions.php';
 require_once APP_PATH . 'helpers/sessions.php';
 require_once APP_PATH . 'helpers/others.php';
@@ -215,3 +252,5 @@ require_once APP_PATH . 'helpers/66uptime.php';
 
 /* Autoload for vendor */
 require_once ROOT_PATH . 'vendor/autoload.php';
+
+require_once APP_PATH . 'helpers/fcc_public_profile.php';

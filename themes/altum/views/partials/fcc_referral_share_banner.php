@@ -6,10 +6,10 @@
 
 <?php
 $fcc_share_id = $data->id ?? ('fcc-share-' . md5($data->share_url));
-$fcc_share_text = $data->text ?? 'Prijavljeni ste! Podijelite ovu stranicu s vašom preporukom.';
+$fcc_share_text = $data->text ?? fcc_t('Prijavljeni ste! Podijelite ovu stranicu s vašom preporukom.');
 $fcc_share_learn_more = $data->learn_more ?? l('blog.share_referral.learn_more');
 $fcc_share_popup_title = $data->popup_title ?? l('blog.share_referral.modal_title');
-$fcc_share_popup_text = $data->popup_text ?? 'Kada podijelite ovaj clanak putem ove forme, vas link za preporuku automatski se dodaje. Ako netko preko tog linka naruci proizvode ili posjeti Forever Card Club, prikazat ce se vasi kontakt podaci, a sustav Forever Living Products Web Shopa automatski ce zabiljeziti vasu preporuku.';
+$fcc_share_popup_text = $data->popup_text ?? fcc_t('Kada podijelite ovaj clanak putem ove forme, vas link za preporuku automatski se dodaje. Ako netko preko tog linka naruci proizvode ili posjeti Forever Card Club, prikazat ce se vasi kontakt podaci, a sustav Forever Living Products Web Shopa automatski ce zabiljeziti vasu preporuku.');
 $fcc_share_spacing_class = !empty($data->flush_top) ? 'fcc-referral-share-banner--flush-top' : null;
 ?>
 
@@ -17,7 +17,7 @@ $fcc_share_spacing_class = !empty($data->flush_top) ? 'fcc-referral-share-banner
     <div class="fcc-referral-share-banner__inner">
         <div class="fcc-referral-share-banner__content">
             <div class="fcc-referral-share-banner__note">
-                <span class="fcc-referral-share-banner__pill">FCC</span>
+                <span class="fcc-referral-share-banner__pill"><?= htmlspecialchars(fcc_t('FCC'), ENT_QUOTES, 'UTF-8') ?></span>
                 <span class="fcc-referral-share-banner__text"><?= $fcc_share_text ?></span>
             </div>
 

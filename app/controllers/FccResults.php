@@ -104,6 +104,16 @@ class FccResults extends Controller {
 
         \Altum\Authentication::guard();
 
+        $profile_error='';
+        if($_SERVER['REQUEST_METHOD']==='POST') {
+            try {
+                if(!\Altum\Csrf::check())throw new \InvalidArgumentException(fcc_t('Osvježi stranicu i pokušaj ponovno.'));
+                fcc_public_profile_save((int)$this->user->user_id,$_POST);
+                redirect('fcc-results?saved=1#public-profile');
+            }catch(\InvalidArgumentException $e){$profile_error=$e->getMessage();}
+        }
+        fcc_public_profile_enqueue((int)$this->user->user_id);
+        $profile_input=fcc_public_profile_input((int)$this->user->user_id);
         $allowed_periods = [
             '7d' => 7,
             '30d' => 30,
@@ -167,7 +177,7 @@ class FccResults extends Controller {
                     'funnel_shop_clicks' => 0,
                     'total' => 0,
                 ];
-                $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0) + (int) ($funnel_public_signal['total'] ?? 0);
+                $qualified_clicks = (int) ($leaderboard_row->qualified_clicks ?? 0);
                 $app_clicks = (int) ($leaderboard_row->app_clicks ?? 0);
                 $blog_clicks = (int) ($leaderboard_row->blog_clicks ?? 0);
 
@@ -191,7 +201,7 @@ class FccResults extends Controller {
                     'funnel_shop_clicks' => 0,
                     'total' => 0,
                 ];
-                $previous_qualified_clicks = (int) ($previous_clicks_map[$user_id] ?? 0) + (int) ($previous_funnel_public_signal['total'] ?? 0);
+                $previous_qualified_clicks = (int) ($previous_clicks_map[$user_id] ?? 0);
                 $trend_percent = $this->get_trend_percent($qualified_clicks, $previous_qualified_clicks);
 
                 $leaderboard[] = [
@@ -260,7 +270,7 @@ class FccResults extends Controller {
                 'funnel_shop_clicks' => 0,
                 'total' => 0,
             ];
-            $current_user_qualified_clicks += (int) ($current_user_funnel_public_signal['total'] ?? 0);
+
             $current_user_app_clicks = (int) ($current_user_totals->app_clicks ?? 0);
             $current_user_blog_clicks = (int) ($current_user_totals->blog_clicks ?? 0);
             $current_user_contact_breakdown = $contact_breakdown_map[$this->user->user_id] ?? [
@@ -274,7 +284,7 @@ class FccResults extends Controller {
             $current_user_biolink_visits = (int) ($current_user_totals->biolink_visits ?? 0);
             $current_user_biolink_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['biolink_visitors'] ?? 0);
             $current_user_qualified_visitors = (int) ($visitor_conversion_map[$this->user->user_id]['qualified_visitors'] ?? 0);
-            $current_user_previous_qualified_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0) + (int) ($current_user_previous_funnel_public_signal['total'] ?? 0);
+            $current_user_previous_qualified_clicks = (int) ($previous_clicks_map[$this->user->user_id] ?? 0);
 
             $periods[$period_key] = [
                 'days' => $period_days,
@@ -335,6 +345,10 @@ class FccResults extends Controller {
         $ai_stage = $ai_signal_30d >= $ai_vip_threshold ? 'vip' : ($ai_signal_30d >= $ai_active_threshold ? 'active' : 'starter');
 
         $data = [
+            'profile_error'=>$profile_error,
+            'public_profile'=>$profile_input,
+            'profile_job'=>$profile_input&&fcc_public_profile_ready()?fcc_partner_one('SELECT status,attempts FROM fcc_public_profile_jobs WHERE user_id=? AND link_id=?',[(int)$this->user->user_id,(int)$profile_input['main']->link_id]):null,
+
             'click_activity' => fc_get_forever_click_activity((int) $this->user->user_id),
             'selected_period' => $selected_period,
             'periods' => $periods,

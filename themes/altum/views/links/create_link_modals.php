@@ -311,7 +311,8 @@
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 
 <?php if(settings()->links->shortener_is_enabled): ?>
-    <div class="modal fade fcc-short-link-create-modal" id="create_link" role="dialog" aria-hidden="true">
+    <?php require THEME_PATH . 'views/links/short_link_copy.php'; ?>
+    <div class="modal fade fcc-short-link-create-modal fp-short-link-create" id="create_link" role="dialog" aria-labelledby="fp_short_link_create_title" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
 
@@ -322,11 +323,11 @@
                                 <i class="fas fa-fw fa-sm fa-link"></i>
                             </div>
                             <div>
-                                <h5 class="modal-title"><?= l('create_link_modal.header') ?></h5>
-                                <p><?= l('create_link_modal.subheader') ?></p>
+                                <h5 class="modal-title" id="fp_short_link_create_title"><?= $fcc_short_h('new') ?></h5>
+                                <p><?= $fcc_short_h('intro') ?></p>
                             </div>
                         </div>
-                        <button type="button" class="close" data-dismiss="modal" title="<?= l('global.close') ?>">
+                        <button type="button" class="close" data-dismiss="modal" title="<?= $fcc_short_h('close') ?>" aria-label="<?= $fcc_short_h('close') ?>">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -339,21 +340,22 @@
                         <div class="notification-container"></div>
 
                         <div class="fcc-short-link-create-note">
-                            <strong><?= l('create_link_modal.guide_title') ?></strong>
-                            <span><?= l('create_link_modal.guide_text') ?></span>
+                            <strong><?= $fcc_short_h('guide_title') ?></strong>
+                            <ol><li><?= $fcc_short_h('paste') ?></li><li><?= $fcc_short_h('name') ?></li><li><?= $fcc_short_h('share') ?></li></ol>
                         </div>
 
                         <div class="form-group">
-                            <label for="link_location_url"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('create_link_modal.input.location_url') ?></label>
-                            <input id="link_location_url" type="url" class="form-control" name="location_url" maxlength="2048" required="required" placeholder="<?= l('global.url_placeholder') ?>" />
+                            <label for="link_location_url"><i class="fas fa-fw fa-link fa-sm text-muted mr-1"></i> <?= $fcc_short_h('destination') ?></label>
+                            <input id="link_location_url" type="url" class="form-control" name="location_url" maxlength="2048" required="required" placeholder="<?= l('global.url_placeholder') ?>" aria-describedby="fp_short_link_destination_help" />
+                            <small class="form-text text-muted" id="fp_short_link_destination_help"><?= $fcc_short_h('destination_help') ?></small>
                         </div>
 
                         <div class="form-group">
-                            <label for="link_url"><i class="fas fa-fw fa-bolt fa-sm text-muted mr-1"></i> <?= l('create_link_modal.input.url') ?></label>
+                            <label for="link_url"><i class="fas fa-fw fa-bolt fa-sm text-muted mr-1"></i> <?= $fcc_short_h('alias') ?></label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <?php if (!empty($data->domains)): ?>
-                                        <select name="domain_id" class="appearance-none custom-select form-control input-group-text">
+                                        <select name="domain_id" class="appearance-none custom-select form-control input-group-text" aria-label="<?= l('domains.domain_id') ?>">
                                             <?php if(settings()->links->main_domain_is_enabled || \Altum\Authentication::is_admin()): ?>
                                                 <option value=" "><?= remove_url_protocol_from_url(SITE_URL) ?></option>
                                             <?php endif ?>
@@ -374,23 +376,21 @@
                                         maxlength="<?= $this->user->plan_settings->url_maximum_characters ?? 64 ?>"
                                         onchange="update_this_value(this, get_slug)"
                                         onkeyup="update_this_value(this, get_slug)"
-                                        placeholder="<?= $this->user->plan_settings->custom_url ? l('global.url_slug_placeholder') : l('create_link_modal.input.url_placeholder') ?>"
+                                        placeholder="<?= $this->user->plan_settings->custom_url ? $fcc_short_h('alias_placeholder') : l('create_link_modal.input.url_placeholder') ?>"
+                                        aria-describedby="fp_short_link_alias_help"
                                     <?= !$this->user->plan_settings->custom_url ? 'readonly="readonly"' : null ?>
                                     <?= $this->user->plan_settings->custom_url ? null : get_plan_feature_disabled_info() ?>
                                 />
                             </div>
-                            <small class="form-text text-muted"><?= l('create_link_modal.input.url_help') ?></small>
+                            <small class="form-text text-muted" id="fp_short_link_alias_help"><?= $this->user->plan_settings->custom_url ? $fcc_short_h('alias_help') : $fcc_short_h('alias_auto') ?></small>
                         </div>
 
-                        <p class="small text-muted"><i class="fas fa-fw fa-sm fa-circle-info mr-1"></i> <?= l('link.create_info') ?></p>
-
                         <div class="fcc-short-link-create-hint">
-                            <strong><?= l('create_link_modal.after_create_title') ?></strong>
-                            <div><?= l('create_link_modal.after_create_text') ?></div>
+                            <?= $fcc_short_h('after') ?>
                         </div>
 
                         <div class="text-center mt-4">
-                            <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= l('create_link_modal.input.submit') ?></button>
+                            <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= $fcc_short_h('save') ?></button>
                         </div>
                     </form>
                 </div>
@@ -412,7 +412,7 @@
                                 <i class="fas fa-fw fa-sm fa-hashtag"></i>
                             </div>
                             <div>
-                                <h5 class="modal-title"><?= l('biolink_modal.header') ?></h5>
+                                <h5 class="modal-title"><?= fcc_partner_enabled() ? fcc_t('Nova FCC kartica') : l('biolink_modal.header') ?></h5>
                                 <p><?= l('biolink_modal.subheader') ?></p>
                             </div>
                         </div>
@@ -471,7 +471,7 @@
                         <p class="small text-muted"><i class="fas fa-fw fa-sm fa-circle-info mr-1"></i> <?= l('biolink_modal.info') ?></p>
 
                         <div class="text-center mt-4">
-                            <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= l('biolink_modal.input.submit') ?></button>
+                            <button type="submit" name="submit" class="btn btn-block btn-primary" data-is-ajax><?= fcc_partner_enabled() ? fcc_t('Izradi karticu') : l('biolink_modal.input.submit') ?></button>
                         </div>
                     </form>
                 </div>

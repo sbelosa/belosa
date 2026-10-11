@@ -1,6 +1,6 @@
 <?php defined('ALTUMCODE') || die() ?>
 <!DOCTYPE html>
-<html lang="<?= \Altum\Language::$code ?>" dir="<?= l('direction') ?>">
+<html lang="<?= fcc_language_tag() ?>" dir="<?= l('direction') ?>">
 <head>
     <title><?= \Altum\Title::get() ?></title>
     <base href="<?= SITE_URL; ?>">
@@ -24,9 +24,7 @@
     <link rel="alternate" href="<?= SITE_URL . \Altum\Router::$original_request ?>" hreflang="x-default" />
     <?php if(count(\Altum\Language::$active_languages) > 1): ?>
         <?php foreach(\Altum\Language::$active_languages as $language_name => $language_code): ?>
-            <?php if(settings()->main->default_language != $language_name): ?>
-                <link rel="alternate" href="<?= SITE_URL . $language_code . '/' . \Altum\Router::$original_request ?>" hreflang="<?= $language_code ?>" />
-            <?php endif ?>
+                <link rel="alternate" href="<?= htmlspecialchars(SITE_URL . (settings()->main->default_language === $language_name ? '' : $language_code . '/') . \Altum\Router::$original_request, ENT_QUOTES, 'UTF-8') ?>" hreflang="<?= fcc_language_tag($language_code) ?>" />
         <?php endforeach ?>
     <?php endif ?>
 

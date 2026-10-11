@@ -17,8 +17,8 @@
         <div class="form-group">
             <label for="mode"><?= l('admin_settings.payment.mode') ?></label>
             <select id="mode" name="mode" class="custom-select">
-                <option value="secure" <?= settings()->payu->mode == 'secure' ? 'selected="selected"' : null ?>>secure</option>
-                <option value="sandbox" <?= settings()->payu->mode == 'sandbox' ? 'selected="selected"' : null ?>>sandbox</option>
+                <option value="secure" <?= settings()->payu->mode == 'secure' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('secure'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="sandbox" <?= settings()->payu->mode == 'sandbox' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('sandbox'), ENT_QUOTES, 'UTF-8') ?></option>
             </select>
         </div>
 

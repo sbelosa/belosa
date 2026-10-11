@@ -259,7 +259,7 @@ class Pay extends Controller {
         $was_synced = (new User())->sync_local_plan_from_stripe_subscription($this->user, $subscription);
 
         if($was_synced) {
-            $refreshed_user = (new User())->get($this->user->user_id);
+            $refreshed_user = (new User())->get_user_by_user_id($this->user->user_id);
             if($refreshed_user) {
                 $this->user = $refreshed_user;
                 \Altum\Authentication::$user = $refreshed_user;

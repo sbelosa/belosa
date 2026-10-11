@@ -1,0 +1,7 @@
+<?php defined('ALTUMCODE') || die(); ?>
+<section class="fp-panel fv-registrations"><span class="fp-eyebrow"><?= htmlspecialchars(fcc_t('PRIJAVE'), ENT_QUOTES, 'UTF-8') ?></span><h2><?= $data->registrations?fcc_t('Novi razgovori na jednom mjestu.'):fcc_t('Prijave će se pojaviti ovdje.') ?></h2>
+<?php if(!$data->registrations): ?><p class="fp-muted"><?= htmlspecialchars(fcc_t('Kad netko ispuni obrazac, vidjet ćeš kontakt, njegov termin i pozivnicu preko koje je stigao.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>
+<?php foreach($data->registrations as $r): ?>
+<div class="fv-registration"><span class="fp-contact-initial"><?= $h(mb_substr($r['name'],0,1)) ?></span><div><strong><?= $h($r['name']) ?></strong><small><?= htmlspecialchars(fcc_t('Pozivnica'), ENT_QUOTES, 'UTF-8') ?> <?= (int)$r['attempt_id'] ?> · <?= $r['is_demo']?fcc_t('Probna prijava'):fcc_t('Zaprimljena prijava') ?></small><small><?= $h(fcc_webinar_label_time($r)) ?></small><small><?= $r['status']==='cancelled'?fcc_t('Prijava je otkazana'):($r['email_verified_at']?fcc_t('Email adresa potvrđena'):fcc_t('Email adresa još nije potvrđena')) ?><?= $r['needs_review']?fcc_t(' · Provjeri podudaranje kontakta'):'' ?></small></div><?php if($r['contact_id']): ?><a class="fp-button fp-button-outline" href="<?= url('partner/contacts?id='.(int)$r['contact_id']) ?>"><?= htmlspecialchars(fcc_t('Otvori kontakt'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?></div>
+<?php endforeach ?>
+</section>

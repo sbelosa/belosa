@@ -1,0 +1,39 @@
+/* Checkout shares the signed-in workspace palette. Radio IDs and payment hooks remain intact. */
+.fcc-pay-page{max-width:1180px;padding:0 0 24px;color:var(--fp-ink,#143d35)}
+.fcc-pay-page .custom-breadcrumbs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.fcc-pay-page .custom-breadcrumbs :is(a,li,i){color:#496b5c}
+.fcc-pay-hero{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:32px}
+.fcc-pay-hero__content{min-width:0}.fcc-pay-eyebrow{font-size:11px;font-weight:650;letter-spacing:.14em;color:#526f62;margin-bottom:12px}
+.fcc-pay-title{font-size:clamp(26px,3vw,36px);line-height:1.2;letter-spacing:-.04em;color:#143d35;margin-bottom:12px}
+.fcc-pay-subtitle{color:#526f62;line-height:1.6;margin:0;max-width:620px}
+.fcc-pay-hero>.fp-button{flex-shrink:0}
+.fcc-pay-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,1fr);gap:28px;margin:0;align-items:start}
+.fcc-pay-layout>.fcc-pay-main-column,.fcc-pay-layout>.fcc-pay-sidebar-column{padding:0;max-width:100%;width:100%;min-width:0;margin:0!important}
+.fcc-pay-page :is(h2,.h5,.h6,.text-muted){color:#526f62!important}.fcc-pay-page h2{font-size:16px;font-weight:650;line-height:1.5;color:#143d35!important}
+.fcc-pay-main-column>.mb-5,.fcc-pay-main-column>.d-flex{margin-bottom:24px!important}
+.fcc-pay-main-column>div:not([class*=flex]){padding:24px;background:#ffffffd9;border:1px solid #dbe6df;border-radius:20px}
+.fcc-pay-page .card{background:#fff;border:1px solid #cfdfd4;border-radius:14px;box-shadow:none;color:#143d35;overflow:hidden}
+.fcc-pay-page .card-body{padding:20px;color:#143d35}.fcc-pay-page .card-title{font-size:14px;color:#143d35!important;line-height:1.5}
+.fcc-pay-page .custom-radio-box{cursor:pointer}.fcc-pay-page .custom-radio-box .card{transition:background .15s,border-color .15s;min-height:64px}
+.fcc-pay-page .custom-radio-box .card-body{position:relative;padding:18px 18px 18px 46px;gap:8px}
+.fcc-pay-page .custom-radio-box .card-body:before{content:'';position:absolute;left:17px;top:calc(50% - 8px);width:16px;height:16px;border:1.5px solid #78988a;border-radius:50%;background:#fff;box-sizing:border-box}
+.fcc-pay-page .custom-radio-box input:checked+.card{background:#edf6ef;border:1.5px solid #458669;box-shadow:0 0 0 1px #45866922;color:#143d35}
+.fcc-pay-page .custom-radio-box input:checked+.card .card-body:before{background:#246d52;border-color:#246d52;box-shadow:inset 0 0 0 3px #fff}
+.fcc-pay-page .custom-radio-box input:focus-visible+.card{outline:3px solid #58a78a;outline-offset:3px}
+.fcc-pay-page .custom-radio-box input:disabled+.card{opacity:.55}
+.fcc-pay-page .custom-radio-box-main-text{font-size:20px;font-weight:700;color:#174e3a!important}
+.fcc-pay-page .badge-primary{background:#e3f1e5;color:#215b42;border:1px solid #c9e2d0}
+.fcc-pay-sidebar-column>.sticky{position:sticky;top:90px;background:#fff;border:1px solid #dbe6df;border-radius:20px;padding:24px;box-shadow:0 8px 24px #163d3006}
+.fcc-pay-sidebar-column>.sticky>.card{border:0;border-radius:0}.fcc-pay-sidebar-column>.sticky>.card>.card-body{padding:0}
+.fcc-pay-sidebar-column .card-body>.d-flex,.fcc-pay-sidebar-column .card-body>div>.d-flex{gap:16px;font-size:14px;line-height:1.5}
+.fcc-pay-sidebar-column .card-body>.d-flex>*,.fcc-pay-sidebar-column .card-body>div>.d-flex>*{min-width:0;overflow-wrap:anywhere}
+.fcc-pay-sidebar-column .card-footer{border-top:1px solid #dbe6df;background:#f1f6f2!important;padding:20px 14px;border-radius:12px;margin-top:16px}
+.fcc-pay-sidebar-column .card-footer .text-muted{color:#143d35!important}.fcc-pay-sidebar-column #summary_total{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.fcc-pay-page #code_button{min-height:44px;color:#28634b;border-color:#b9d0c3;border-radius:10px}
+.fcc-pay-submit>.col-12{padding:0}.fcc-pay-submit .btn{font-size:15px;font-weight:650;min-height:50px}
+.fcc-pay-submit small{display:block;font-size:12px;line-height:1.7;color:#526f62}.fcc-pay-submit a{color:#1b654c;text-decoration:underline;text-underline-offset:3px}
+.fcc-pay-features{margin-top:24px;padding-top:16px;border-top:1px solid #dbe6df}
+.fcc-pay-features summary{font-size:14px;font-weight:650;color:#1b5742;cursor:pointer;padding:10px 0;min-height:44px}
+.fcc-pay-features>div{margin-top:12px;font-size:13px;color:#526f62}.fcc-pay-features svg{flex-shrink:0}
+@media(max-width:1000px){.fcc-pay-layout{grid-template-columns:minmax(0,1fr);gap:24px}.fcc-pay-sidebar-column>.sticky{position:static}}
+@media(max-width:600px){.fcc-pay-hero{display:block;margin-bottom:24px}.fcc-pay-hero>.fp-button{margin-top:16px}.fcc-pay-main-column>div:not([class*=flex]),.fcc-pay-sidebar-column>.sticky{padding:18px}.fcc-pay-page .custom-radio-box .card-body{padding:16px 12px 16px 40px}.fcc-pay-page .custom-radio-box .card-body:before{left:13px}.fcc-pay-page .custom-radio-box-main-text{font-size:18px}.fcc-pay-page .card-body .d-flex{flex-wrap:wrap}.fcc-pay-page .custom-breadcrumbs{font-size:12px}}

@@ -10,7 +10,7 @@
     <?php endif ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li>
                     <a href="<?= url('teams-system') ?>"><?= l('teams_system.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>

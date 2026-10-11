@@ -111,6 +111,7 @@ class Domains extends Controller {
 
                     foreach($_POST['selected'] as $domain_id) {
                         if($domain = db()->where('domain_id', $domain_id)->where('user_id', $this->user->user_id)->getOne('domains', ['domain_id'])) {
+                            if(fc_domain_has_nfc_link((int) $domain_id)) { Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked')); continue; }
                             (new Domain())->delete($domain_id);
                         }
                     }
@@ -160,6 +161,10 @@ class Domains extends Controller {
 
         if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
 
+            if(fc_domain_has_nfc_link((int) $domain->domain_id)) {
+                Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked'));
+                redirect('domains');
+            }
             (new Domain())->delete($domain->domain_id);
 
             /* Set a nice success message */

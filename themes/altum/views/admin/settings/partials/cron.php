@@ -3,7 +3,7 @@
 <div class="form-group">
     <label for="cron"><?= l('admin_settings.cron.cron') ?></label>
     <div class="input-group">
-        <input id="cron" name="cron" type="text" class="form-control" value="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron?key=' . settings()->cron->key ?>" readonly="readonly" />
+        <input id="cron" name="cron" type="text" class="form-control" value="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron?key=' . settings()->cron->key ?>" readonly="readonly" />
         <div class="input-group-append">
             <button
                     type="button"
@@ -13,7 +13,7 @@
                     aria-label="<?= l('global.clipboard_copy') ?>"
                     data-copy="<?= l('global.clipboard_copy') ?>"
                     data-copied="<?= l('global.clipboard_copied') ?>"
-                    data-clipboard-text="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron?key=' . settings()->cron->key ?>"
+                    data-clipboard-text="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron?key=' . settings()->cron->key ?>"
             >
                 <i class="fas fa-fw fa-sm fa-copy"></i>
             </button>
@@ -57,7 +57,7 @@
 <div class="form-group">
     <label for="cron_email_reports"><?= l('admin_settings.cron.email_reports') ?></label>
     <div class="input-group">
-        <input id="cron_email_reports" name="cron_email_reports" type="text" class="form-control" value="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron/email_reports?key=' . settings()->cron->key ?>" readonly="readonly" />
+        <input id="cron_email_reports" name="cron_email_reports" type="text" class="form-control" value="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron/email_reports?key=' . settings()->cron->key ?>" readonly="readonly" />
         <div class="input-group-append">
             <button
                     type="button"
@@ -67,7 +67,7 @@
                     aria-label="<?= l('global.clipboard_copy') ?>"
                     data-copy="<?= l('global.clipboard_copy') ?>"
                     data-copied="<?= l('global.clipboard_copied') ?>"
-                    data-clipboard-text="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron/email_reports?key=' . settings()->cron->key ?>"
+                    data-clipboard-text="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron/email_reports?key=' . settings()->cron->key ?>"
             >
                 <i class="fas fa-fw fa-sm fa-copy"></i>
             </button>
@@ -111,7 +111,7 @@
 <div class="form-group">
     <label for="cron_broadcasts"><?= l('admin_settings.cron.broadcasts') ?></label>
     <div class="input-group">
-        <input id="cron_broadcasts" name="cron_broadcasts" type="text" class="form-control" value="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron/broadcasts?key=' . settings()->cron->key ?>" readonly="readonly" />
+        <input id="cron_broadcasts" name="cron_broadcasts" type="text" class="form-control" value="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron/broadcasts?key=' . settings()->cron->key ?>" readonly="readonly" />
         <div class="input-group-append">
             <button
                     type="button"
@@ -121,7 +121,7 @@
                     aria-label="<?= l('global.clipboard_copy') ?>"
                     data-copy="<?= l('global.clipboard_copy') ?>"
                     data-copied="<?= l('global.clipboard_copied') ?>"
-                    data-clipboard-text="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron/broadcasts?key=' . settings()->cron->key ?>"
+                    data-clipboard-text="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron/broadcasts?key=' . settings()->cron->key ?>"
             >
                 <i class="fas fa-fw fa-sm fa-copy"></i>
             </button>
@@ -177,7 +177,7 @@
         <div class="form-group">
             <label for="cron_push_notifications"><?= l('admin_settings.cron.push_notifications') ?></label>
             <div class="input-group">
-                <input id="cron_push_notifications" name="cron_push_notifications" type="text" class="form-control" value="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron/push_notifications?key=' . settings()->cron->key ?>" readonly="readonly" />
+                <input id="cron_push_notifications" name="cron_push_notifications" type="text" class="form-control" value="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron/push_notifications?key=' . settings()->cron->key ?>" readonly="readonly" />
                 <div class="input-group-append">
                     <button
                             type="button"
@@ -187,7 +187,7 @@
                             aria-label="<?= l('global.clipboard_copy') ?>"
                             data-copy="<?= l('global.clipboard_copy') ?>"
                             data-copied="<?= l('global.clipboard_copied') ?>"
-                            data-clipboard-text="<?= '* * * * * wget --quiet -O /dev/null ' . SITE_URL . 'cron/push_notifications?key=' . settings()->cron->key ?>"
+                            data-clipboard-text="<?= fcc_t('* * * * * wget --quiet -O /dev/null ') . SITE_URL . 'cron/push_notifications?key=' . settings()->cron->key ?>"
                     >
                         <i class="fas fa-fw fa-sm fa-copy"></i>
                     </button>

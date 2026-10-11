@@ -20,58 +20,58 @@
 
     /* Custom code: FC-2026-02-27: FCC education premium labels */
     $fcc_is_hr_language = \Altum\Language::$code === 'hr';
-    $fcc_education_eyebrow = $fcc_is_hr_language ? 'Forever Edukacija' : 'Forever Education';
+    $fcc_education_eyebrow = $fcc_is_hr_language ? fcc_t('Forever Edukacija') : fcc_t('Forever Education');
     $fcc_education_brand_logo_url = ASSETS_FULL_URL . 'images/fcc-education-logo-wide.png';
 
     $fcc_sidebar_sections = $fcc_is_hr_language
         ? [
             [
-                'title' => 'Forever pozicije',
+                'title' => fcc_t('Forever pozicije'),
                 'items' => [
-                    'Assistant Supervisor – 2 CC – 35% rab.',
-                    'Supervisor – 10 CC (1 mj.) – 38% rab.',
-                    'Assistant Manager – 60 CC (2 mj.) – 43% rab.',
-                    'Manager – 120 CC (2 mj.) / 150 CC (4 mj.) – 48% rab.',
+                    fcc_t('Assistant Supervisor – 2 CC – 35% rab.'),
+                    fcc_t('Supervisor – 10 CC (1 mj.) – 38% rab.'),
+                    fcc_t('Assistant Manager – 60 CC (2 mj.) – 43% rab.'),
+                    fcc_t('Manager – 120 CC (2 mj.) / 150 CC (4 mj.) – 48% rab.'),
                 ],
             ],
             [
-                'title' => 'Službena Forever Living Products stranica',
+                'title' => fcc_t('Službena Forever Living Products stranica'),
                 'link' => [
                     'label' => 'foreverliving.com',
                     'url' => 'https://foreverliving.com',
                 ],
             ],
             [
-                'title' => 'Auto program (36 mjeseci)',
+                'title' => fcc_t('Auto program (36 mjeseci)'),
                 'items' => [
-                    '400 € mjesečno',
-                    '50 CC → 100 CC → 150 CC',
+                    fcc_t('400 € mjesečno'),
+                    fcc_t('50 CC → 100 CC → 150 CC'),
                     '',
-                    '600 € mjesečno',
-                    '75 CC → 150 CC → 225 CC',
+                    fcc_t('600 € mjesečno'),
+                    fcc_t('75 CC → 150 CC → 225 CC'),
                     '',
-                    '800 € mjesečno',
-                    '100 CC → 200 CC → 300 CC',
+                    fcc_t('800 € mjesečno'),
+                    fcc_t('100 CC → 200 CC → 300 CC'),
                 ],
             ],
             [
                 'title' => '',
                 'columns' => [
                     [
-                        'title' => 'Chairman’s Bonus',
+                        'title' => fcc_t('Chairman’s Bonus'),
                         'items' => [
-                            '700 non-manager CC',
+                            fcc_t('700 non-manager CC'),
                             '150 novoupisani',
-                            'Aktivan Auto program',
-                            'Manager s 600 CC ukupno',
+                            fcc_t('Aktivan Auto program'),
+                            fcc_t('Manager s 600 CC ukupno'),
                         ],
                     ],
                     [
-                        'title' => 'Eagle Manager',
+                        'title' => fcc_t('Eagle Manager'),
                         'items' => [
-                            '720 CC ukupno',
-                            '100 CC novoupisani',
-                            '3 Supervisora',
+                            fcc_t('720 CC ukupno'),
+                            fcc_t('100 CC novoupisani'),
+                            fcc_t('3 Supervisora'),
                         ],
                     ],
                 ],
@@ -79,52 +79,52 @@
         ]
         : [
             [
-                'title' => 'Forever positions',
+                'title' => fcc_t('Forever positions'),
                 'items' => [
-                    'Assistant Supervisor – 2 CC – 35% disc.',
-                    'Supervisor – 10 CC (1 month) – 38% disc.',
-                    'Assistant Manager – 60 CC (2 months) – 43% disc.',
-                    'Manager – 120 CC (2 months) / 150 CC (4 months) – 48% disc.',
+                    fcc_t('Assistant Supervisor – 2 CC – 35% disc.'),
+                    fcc_t('Supervisor – 10 CC (1 month) – 38% disc.'),
+                    fcc_t('Assistant Manager – 60 CC (2 months) – 43% disc.'),
+                    fcc_t('Manager – 120 CC (2 months) / 150 CC (4 months) – 48% disc.'),
                 ],
             ],
             [
-                'title' => 'Official Forever Living Products website',
+                'title' => fcc_t('Official Forever Living Products website'),
                 'link' => [
                     'label' => 'foreverliving.com',
                     'url' => 'https://foreverliving.com',
                 ],
             ],
             [
-                'title' => 'Auto program (36 months)',
+                'title' => fcc_t('Auto program (36 months)'),
                 'items' => [
-                    '€400 monthly',
-                    '50 CC → 100 CC → 150 CC',
+                    fcc_t('€400 monthly'),
+                    fcc_t('50 CC → 100 CC → 150 CC'),
                     '',
-                    '€600 monthly',
-                    '75 CC → 150 CC → 225 CC',
+                    fcc_t('€600 monthly'),
+                    fcc_t('75 CC → 150 CC → 225 CC'),
                     '',
-                    '€800 monthly',
-                    '100 CC → 200 CC → 300 CC',
+                    fcc_t('€800 monthly'),
+                    fcc_t('100 CC → 200 CC → 300 CC'),
                 ],
             ],
             [
                 'title' => '',
                 'columns' => [
                     [
-                        'title' => 'Chairman’s Bonus',
+                        'title' => fcc_t('Chairman’s Bonus'),
                         'items' => [
-                            '700 non-manager CC',
+                            fcc_t('700 non-manager CC'),
                             '150 newly enrolled',
-                            'Active Auto program',
-                            'Manager with 600 CC total',
+                            fcc_t('Active Auto program'),
+                            fcc_t('Manager with 600 CC total'),
                         ],
                     ],
                     [
-                        'title' => 'Eagle Manager',
+                        'title' => fcc_t('Eagle Manager'),
                         'items' => [
-                            '720 CC total',
+                            fcc_t('720 CC total'),
                             '100 newly enrolled',
-                            '3 Supervisors',
+                            fcc_t('3 Supervisors'),
                         ],
                     ],
                 ],
@@ -143,7 +143,7 @@
         </div>
 
         <div class="fcc-education-hero__brand">
-            <img src="<?= htmlspecialchars($fcc_education_brand_logo_url, ENT_QUOTES, 'UTF-8') ?>" alt="Forever Card Edukacija" class="fcc-education-hero__brand-logo" />
+            <img src="<?= htmlspecialchars($fcc_education_brand_logo_url, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Forever Card Edukacija'), ENT_QUOTES, 'UTF-8') ?>" class="fcc-education-hero__brand-logo" />
         </div>
     </section>
     <!-- /Custom code: FC-2026-02-27 -->
@@ -163,22 +163,27 @@
                                 <?php
                                 $current_video_title = trim($current_video->title);
                                 if(mb_strtolower($current_video_title) === 'video') {
-                                    $current_video_title = $fcc_is_hr_language ? 'Forever Card Club video edukacija' : 'Forever Card Club video education';
+                                    $current_video_title = $fcc_is_hr_language ? fcc_t('Forever Card Club video edukacija') : fcc_t('Forever Card Club video education');
                                 }
                                 ?>
-                                <div class="font-weight-bold mb-3 fcc-education-video-title\"><?= $current_video_title ?></div>
+                                <div class="font-weight-bold mb-3 fcc-education-video-title"><?= $current_video_title ?></div>
                             <?php endif ?>
                             <div class="embed-responsive embed-responsive-16by9 mb-3 fcc-education-player-wrap">
                                 <iframe
                                     class="embed-responsive-item"
                                     id="fcc-education-vimeo"
-                                    src="https://player.vimeo.com/video/<?= $current_video->vimeo_id ?>"
-                                    title="<?= $current_video->title ?? 'Vimeo video' ?>"
+                                    src="https://player.vimeo.com/video/<?= htmlspecialchars($current_video->vimeo_id, ENT_QUOTES, 'UTF-8') ?>?playsinline=1"
+                                    title="<?= htmlspecialchars($current_video_title ?? fcc_t('Vimeo video'), ENT_QUOTES, 'UTF-8') ?>"
                                     frameborder="0"
                                     allow="autoplay; fullscreen; picture-in-picture"
                                     allowfullscreen
                                 ></iframe>
                             </div>
+                            <details class="fcc-education-video-help">
+                                <summary><?= $fcc_is_hr_language ? fcc_t('Video se ne prikazuje?') : fcc_t('Video not showing?') ?></summary>
+                                <p class="mt-2 mb-2"><?= $fcc_is_hr_language ? fcc_t('Otvori ga u zasebnom playeru. Nakon gledanja vrati se ovdje i nastavi edukaciju.') : fcc_t('Open the separate player. After watching, return here to continue your education.') ?></p>
+                                <a class="btn btn-sm btn-outline-primary" href="https://player.vimeo.com/video/<?= htmlspecialchars($current_video->vimeo_id, ENT_QUOTES, 'UTF-8') ?>?playsinline=1" target="_blank" rel="noopener"><?= $fcc_is_hr_language ? fcc_t('Otvori video') : fcc_t('Open video') ?></a>
+                            </details>
                         <?php else: ?>
                             <div class="fcc-education-empty"><?= l('fcc_education.videos_html') ?></div>
                         <?php endif ?>
@@ -215,7 +220,7 @@
         <div class="col-12 col-lg-5">
             <div class="card fcc-education-card h-100">
                 <div class="card-body fcc-education-sidebar-body">
-                    <h2 class="h6 mb-2 fcc-education-sidebar-title">Važne informacije</h2>
+                    <h2 class="h6 mb-2 fcc-education-sidebar-title"><?= htmlspecialchars(fcc_t('Važne informacije'), ENT_QUOTES, 'UTF-8') ?></h2>
 
                     <div class="fcc-education-sidebar-content">
                         <?php foreach($fcc_sidebar_sections as $section): ?>

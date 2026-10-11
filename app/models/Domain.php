@@ -177,6 +177,8 @@ class Domain extends Model {
 
     public function delete($domain_id) {
 
+        if(fc_domain_has_nfc_link((int) $domain_id)) return false;
+
         /* Delete everything related to the domain that the user owns */
         $result = database()->query("SELECT `link_id` FROM `links` WHERE `domain_id` = {$domain_id} AND `type` = 'biolink'");
 
@@ -195,6 +197,8 @@ class Domain extends Model {
         /* Clear the cache */
         cache()->deleteItems(['domain?domain_id=' . $domain_id, 'domains?user_id=' . $domain->user_id, 'domains_total?user_id=' . $domain->user_id]);
         cache()->deleteItem('available_additional_domains');
+
+        return true;
 
     }
 }

@@ -18,7 +18,7 @@ let toggle_admin_sidebar = () => {
 };
 
 /* Toggler for the sidebar */
-document.querySelector('#admin_menu_toggler').addEventListener('click', event => {
+document.querySelector('#admin_menu_toggler')?.addEventListener('click', event => {
     event.preventDefault();
 
     toggle_admin_sidebar();

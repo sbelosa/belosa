@@ -54,6 +54,8 @@ class Meta {
         self::$description = l($language_key . '.meta_description', null, true);
         self::$keywords = l($language_key . '.meta_keywords', null, true);
 
+        self::set_social_description(self::$description);
+
         /* Set title */
         self::set_social_title(\Altum\Title::get());
 
@@ -100,6 +102,7 @@ class Meta {
 
     public static function set_canonical_url($value = null) {
         self::$canonical = $value ?? url(\Altum\Router::$original_request);
+        self::set_social_url(self::$canonical);
     }
 
     public static function set_robots($value) {
@@ -107,6 +110,7 @@ class Meta {
     }
 
     public static function output() {
+        self::$opengraph['og:locale'] = fcc_opengraph_locale();
         self::$opengraph['og:site_name'] = settings()->main->title;
         self::$opengraph['og:url'] = self::$opengraph['og:url'] ?: url(\Altum\Router::$original_request);
         self::$twitter['twitter:url'] = self::$twitter['twitter:url'] ?: url(\Altum\Router::$original_request);

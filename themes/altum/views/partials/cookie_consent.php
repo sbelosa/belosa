@@ -62,7 +62,7 @@
                     sections: [
                         {
                             title: <?= json_encode(l('global.cookie_consent.modal.header')) ?>,
-                            description: <?= json_encode(sprintf(l('global.cookie_consent.modal.subheader'), settings()->main->privacy_policy_url)) ?>
+                            description: <?= json_encode(sprintf(l('global.cookie_consent.modal.subheader'), fcc_legal_url('privacy'))) ?>
                         },
 
                         {

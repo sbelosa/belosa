@@ -1,0 +1,12 @@
+.fcc-chat-extreme .fcc-coach-share {margin-top:12px;padding:18px;background:#f5faf7;color:#173c33;border:1px solid #bad6cc;border-radius:20px;min-width:0;max-width:100%;box-shadow:0 8px 24px #001d1812}
+.fcc-chat-extreme .fcc-coach-share__label {display:block;font-family:inherit;font-weight:600;font-size:14px;line-height:1.5;color:#275a4b;margin:0}
+.fcc-chat-extreme .fcc-coach-share__text {display:block;box-sizing:border-box;width:100%;min-height:150px;max-height:380px;margin:10px 0 0;padding:14px;background:#fff;color:#173c33;border:1px solid #b9d2c9;border-radius:12px;font-family:inherit;font-weight:400;font-size:16px;line-height:1.6;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere}
+.fcc-chat-extreme .fcc-coach-share__text:focus {outline:2px solid #18846d;outline-offset:2px}
+.fcc-chat-extreme .fcc-coach-share__hint {font-size:13px;line-height:1.5;color:#527369;margin:10px 0 14px}
+.fcc-chat-extreme .fcc-coach-share__actions {display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fcc-chat-extreme .fcc-coach-share__whatsapp,.fcc-chat-extreme .fcc-coach-share__copy {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 15px;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;line-height:1.4}
+.fcc-chat-extreme .fcc-coach-share__whatsapp {background:linear-gradient(135deg,#1b795e,#124738);color:#fff;border:1px solid #286e59}
+.fcc-chat-extreme .fcc-coach-share__copy {background:#fff;color:#1c5947;border:1px solid #b9d2c9}
+.fcc-chat-extreme .fcc-coach-share__whatsapp[aria-disabled=true] {opacity:.5;cursor:default}
+.fcc-chat-extreme .fcc-coach-share__status {display:block;font-size:13px;color:#275a4b;min-height:0;margin-top:8px}
+@media(max-width:480px) {.fcc-chat-extreme .fcc-coach-share {padding:14px}.fcc-chat-extreme .fcc-coach-share__actions>* {flex:1 1 auto}}

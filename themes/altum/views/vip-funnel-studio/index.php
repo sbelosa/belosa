@@ -2606,18 +2606,19 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     <section class="vf-hero">
         <div>
-            <span class="vf-hero__eyebrow">Funnel 2.0 Block Builder</span>
-            <h1 class="vf-hero__title">VIP Funnel 2.0</h1>
-            <div class="vf-hero__copy">Prvi korak je sada odvojen kao prava landing stranica, a svaki sljedeći korak koristi isti builder za sadržaj, logiku, grananje i prikupljanje leadova.</div>
+            <span class="vf-hero__eyebrow"><?= htmlspecialchars(fcc_t('MOJ FUNNEL'), ENT_QUOTES, 'UTF-8') ?></span>
+            <h1 class="vf-hero__title"><?= htmlspecialchars(fcc_t('Uredi prezentaciju'), ENT_QUOTES, 'UTF-8') ?></h1>
+            <div class="vf-hero__copy"><?= htmlspecialchars(fcc_t('Tvoj sadržaj, povezan u jednostavnu priču.'), ENT_QUOTES, 'UTF-8') ?></div>
         </div>
 
         <div class="vf-hero__logo">
             <div class="vf-hero__logo-shell">
-                <img src="<?= $e($logo_url) ?>" alt="Forever Card Funnel" />
+                <img src="<?= $e($logo_url) ?>" alt="<?= htmlspecialchars(fcc_t('Forever Card Funnel'), ENT_QUOTES, 'UTF-8') ?>" />
             </div>
         </div>
     </section>
 
+    <?php if(!fcc_partner_enabled()): ?>
     <div class="vf-kpi-grid">
         <div class="vf-kpi">
             <div class="vf-kpi__label"><?= l('vip_funnel.analytics.top.views') ?></div>
@@ -2637,12 +2638,13 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         </div>
     </div>
 
+    <?php endif ?>
     <div class="vf-topbar">
         <div class="vf-tabs" id="vf_tabs"></div>
 
         <div class="vf-actions">
-            <a href="<?= $e($data->funnels_index_url ?? url('vip-funnel-studio')) ?>" class="vf-btn vf-btn--ghost">Svi funnel-i</a>
-            <a href="<?= $e($data->demo_access_url ?? url('vip-funnel-demo-access')) ?>" class="vf-btn vf-btn--ghost"><?= l('vip_funnel.analytics.demo_access_button') ?></a>
+            <a href="<?= $e($data->funnels_index_url ?? url('vip-funnel-studio')) ?>" class="vf-btn vf-btn--ghost"><?= htmlspecialchars(fcc_t('← Funneli'), ENT_QUOTES, 'UTF-8') ?></a>
+            <a href="<?= $e($data->demo_access_url ?? url('vip-funnel-demo-access')) ?>" class="vf-btn vf-btn--ghost"><?= fcc_partner_enabled() ? fcc_t('Demo pristup') : l('vip_funnel.analytics.demo_access_button') ?></a>
             <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1"><?= l('vip_funnel.analytics.save_button') ?></button>
         </div>
     </div>
@@ -2676,6 +2678,22 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const previewRoot = document.getElementById('vf_preview');
     const tabsRoot = document.getElementById('vf_tabs');
     const form = document.getElementById('vf-studio-form');
+    const partnerMode = document.body.classList.contains('fcc-partner-mode');
+    let partnerView = 'content';
+    let partnerEditorScreen = 'landing';
+    const refreshPartnerWorkspace = () => {
+        if(!partnerMode)return;
+        form.dataset.partnerFunnelView = partnerView;
+        form.dataset.partnerFunnelScreen = state.screen;
+        form.querySelectorAll('[data-fp-funnel-view]').forEach(button => button.setAttribute('aria-pressed', String(state.screen !== 'analytics' && button.dataset.fpFunnelView === partnerView)));
+    };
+    form.addEventListener('click', event => {
+        if(!partnerMode)return;
+        const viewButton = event.target.closest('[data-fp-funnel-view]');
+        if(viewButton){partnerView=viewButton.dataset.fpFunnelView;refreshPartnerWorkspace();return;}
+        if(event.target.closest('[data-vf-page-step],[data-vf-page-landing],[data-vf-add-step-type]')) partnerView='content';
+        if(event.target.closest('[data-vf-builder-panel],[data-fp-edit-block]') || (event.target.closest('[data-vf-block-card]') && !event.target.closest('button,summary,details'))) partnerView='tools';
+    }, true);
     const saveNotice = document.getElementById('vf_save_notice');
     const saveButtons = Array.from(form.querySelectorAll('[data-vf-save-button]'));
     /* Custom code: FC-2026-08-20: share the live VIP Funnel editor field selector */
@@ -2686,7 +2704,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const siteUrl = <?= json_encode(SITE_URL, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const publicFunnelUserId = <?= (int) $public_funnel_user_id ?>;
     const imageUploadMaxSizeMb = <?= json_encode((float) ($data->image_upload_max_size_mb ?? 3), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
-    const imageUploadAccept = <?= json_encode($data->image_upload_accept ?? '.jpg, .jpeg, .png, .svg, .gif, .webp, .avif', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+    const imageUploadAccept = <?= json_encode($data->image_upload_accept ?? fcc_t('.jpg, .jpeg, .png, .svg, .gif, .webp, .avif'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const seoImageUploadAccept = '.jpg, .jpeg, .png';
     const seoImageAllowedExtensions = ['jpg', 'jpeg', 'png'];
     const seoImageAllowedMimeTypes = ['image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png'];
@@ -2836,7 +2854,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     let vipFunnelImageGalleryEntries = Array.isArray(imageGalleryEntries) ? imageGalleryEntries.slice() : [];
 
     const defaultSurface = () => ({
-        name: 'Nova funnel stranica',
+        name: window.fccT('Nova funnel stranica'),
         background_color: '#0f172a',
         background_image_url: '',
         background_opacity: 100,
@@ -2857,7 +2875,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     const cloneVariantSurfaceSettings = (surface = {}) => ({
-        name: surface.name || 'Nova funnel stranica',
+        name: surface.name || window.fccT('Nova funnel stranica'),
         background_color: surface.background_color || '#0f172a',
         background_image_url: surface.background_image_url || '',
         background_opacity: clampOpacity(surface.background_opacity, 100),
@@ -2907,23 +2925,23 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         };
 
         const map = {
-            headline: {type, label: 'Hero naslov', badge: 'Funnel 2.0', title: 'Pokreni svoj prvi korak bez kaosa', text: 'Dodaj jasan naslov i kratki podnaslov.', alignment: 'left', buttons: [], options: []},
-            text: {type, label: 'Tekst', badge: '', title: '', text: 'Dodaj kratki tekst koji pojašnjava i vodi dalje.', alignment: 'left', buttons: [], options: []},
-            image: {type, label: 'Slika', badge: '', title: '', text: 'Vizual koji pojačava poruku.', media_url: '', alignment: 'center', buttons: [], options: []},
-            video: {type, label: 'Video', badge: '', title: '', text: 'Kratki video uvod ili objašnjenje.', media_url: '', alignment: 'center', buttons: [], options: []},
-            cta_group: {type, label: 'CTA gumbi', badge: '', title: '', text: 'Dodaj gumbe i odredi kamo vode.', alignment: 'center', require_capture: false, buttons: [{id: uid('btn'), label: 'Kreni dalje', value: 'kreni_dalje', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}], options: []},
-            survey: {type, label: 'Survey', badge: '', title: 'Što te sada najviše zanima?', text: 'Svaki odgovor može voditi na drugi korak.', alignment: 'left', auto_advance: true, require_capture: false, buttons: [], options: [{id: uid('opt'), label: 'Online posao', value: 'online_posao', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]},
-            radio_survey: {type, label: 'Pitanje upitnika', badge: '', title: 'Koji odgovor najbolje opisuje tvoj cilj?', text: 'Odaberi jedan odgovor. Završni submit može koristiti ovaj odabir za pravi sljedeći korak.', alignment: 'left', required: false, route_on_submit: true, buttons: [], options: [{id: uid('opt'), label: 'Regulacija tjelesne težine', value: 'regulacija_tjelesne_tezine', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]},
-            countdown: {type, label: 'Countdown', badge: '', title: 'Ponuda istječe uskoro', text: 'Pojačaj hitnost odbrojavanjem.', alignment: 'center', countdown_mode: 'fixed', countdown_style: 'cards', fixed_datetime: '', duration_minutes: 30, duration_days: 0, countdown_weekly_day: 4, countdown_weekly_time: '20:00', countdown_timezone: 'Europe/Zagreb', countdown_show_days: true, countdown_show_hours: true, countdown_show_minutes: true, countdown_show_seconds: true, countdown_number_size: 34, countdown_number_color: '', completion_text: 'Vrijeme je isteklo.', buttons: [], options: []},
-            name_field: {type, label: 'Ime', badge: '', title: 'Ime', text: '', placeholder: 'Upiši ime', required: false, alignment: 'left', buttons: [], options: []},
-            full_name_field: {type, label: 'Ime + prezime', badge: '', title: 'Ime i prezime', text: '', placeholder: 'Upiši ime i prezime', required: false, alignment: 'left', buttons: [], options: []},
-            email_field: {type, label: 'Email', badge: '', title: 'Email', text: '', placeholder: 'Upiši email', required: true, alignment: 'left', buttons: [], options: []},
-            phone_field: {type, label: 'Telefon', badge: '', title: 'Telefon', text: '', placeholder: 'Upiši broj telefona', required: false, alignment: 'left', buttons: [], options: []},
-            text_field: {type, label: 'Tekst polje', badge: '', title: 'Kratki odgovor', text: '', placeholder: 'Upiši odgovor', field_key: '', required: false, alignment: 'left', buttons: [], options: []},
-            checkbox_field: {type, label: 'Privola za kontakt', badge: '', title: 'Pristajem da me kontaktirate vezano uz moj odabrani smjer.', text: 'Ova privola se koristi samo za odgovor na upit kroz ovaj vodič.', field_key: 'contact_consent', required: true, alignment: 'left', buttons: [], options: []},
-            proof_card: {type, label: 'Proof / povjerenje', badge: 'Povjerenje', title: 'Zašto ovaj put djeluje sigurno', text: 'Dodaj proof, sigurnost, mentorstvo ili konkretan benefit.', alignment: 'left', buttons: [], options: []},
-            product_offer: {type, label: 'Preporuka proizvoda', badge: 'Preporuka', title: 'Idealna preporuka za tvoj cilj', text: 'Odaberi proizvod i poveži osobu ili na blog vodič ili direktno na službeni shop s referral logikom.', alignment: 'left', product_source_mode: 'manual', product_blog_post_id: 0, product_translation_key: '', product_language_mode: 'page', product_language_code: preferredProductLanguageCode || 'hr', product_fallback_language_code: 'hr', product_primary_mode: 'blog_guide', product_primary_cta_text: 'Pogledaj vodič proizvoda', product_secondary_enabled: true, product_secondary_mode: 'direct_shop', product_secondary_cta_text: 'Idi na službeni shop', product_mappings: [], buttons: [], options: []},
-            ai_product_advisor: {type, label: 'AI savjetnik za proizvode', badge: 'Personalizirana preporuka', title: 'Pronađi svoj najbolji Forever početak u par pitanja', text: 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.', alignment: 'left', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: 'Započni moju preporuku', ai_launcher_label: 'Moja preporuka', ai_intro_label: 'Tvoj osobni vodič', ai_input_placeholder: 'Napiši cilj ili pitanje...', buttons: [], options: []},
+            headline: {type, label: window.fccT('Hero naslov'), badge: 'Funnel 2.0', title: window.fccT('Pokreni svoj prvi korak bez kaosa'), text: window.fccT('Dodaj jasan naslov i kratki podnaslov.'), alignment: 'left', buttons: [], options: []},
+            text: {type, label: 'Tekst', badge: '', title: '', text: window.fccT('Dodaj kratki tekst koji pojašnjava i vodi dalje.'), alignment: 'left', buttons: [], options: []},
+            image: {type, label: 'Slika', badge: '', title: '', text: window.fccT('Vizual koji pojačava poruku.'), media_url: '', alignment: 'center', buttons: [], options: []},
+            video: {type, label: 'Video', badge: '', title: '', text: window.fccT('Kratki video uvod ili objašnjenje.'), media_url: '', alignment: 'center', buttons: [], options: []},
+            cta_group: {type, label: window.fccT('CTA gumbi'), badge: '', title: '', text: window.fccT('Dodaj gumbe i odredi kamo vode.'), alignment: 'center', require_capture: false, buttons: [{id: uid('btn'), label: window.fccT('Kreni dalje'), value: 'kreni_dalje', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}], options: []},
+            survey: {type, label: 'Survey', badge: '', title: window.fccT('Što te sada najviše zanima?'), text: window.fccT('Svaki odgovor može voditi na drugi korak.'), alignment: 'left', auto_advance: true, require_capture: false, buttons: [], options: [{id: uid('opt'), label: window.fccT('Online posao'), value: 'online_posao', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]},
+            radio_survey: {type, label: window.fccT('Pitanje upitnika'), badge: '', title: window.fccT('Koji odgovor najbolje opisuje tvoj cilj?'), text: window.fccT('Odaberi jedan odgovor. Završni submit može koristiti ovaj odabir za pravi sljedeći korak.'), alignment: 'left', required: false, route_on_submit: true, buttons: [], options: [{id: uid('opt'), label: window.fccT('Regulacija tjelesne težine'), value: 'regulacija_tjelesne_tezine', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]},
+            countdown: {type, label: 'Countdown', badge: '', title: window.fccT('Ponuda istječe uskoro'), text: window.fccT('Pojačaj hitnost odbrojavanjem.'), alignment: 'center', countdown_mode: 'fixed', countdown_style: 'cards', fixed_datetime: '', duration_minutes: 30, duration_days: 0, countdown_weekly_day: 4, countdown_weekly_time: '20:00', countdown_timezone: 'Europe/Zagreb', countdown_show_days: true, countdown_show_hours: true, countdown_show_minutes: true, countdown_show_seconds: true, countdown_number_size: 34, countdown_number_color: '', completion_text: window.fccT('Vrijeme je isteklo.'), buttons: [], options: []},
+            name_field: {type, label: 'Ime', badge: '', title: 'Ime', text: '', placeholder: window.fccT('Upiši ime'), required: false, alignment: 'left', buttons: [], options: []},
+            full_name_field: {type, label: window.fccT('Ime + prezime'), badge: '', title: window.fccT('Ime i prezime'), text: '', placeholder: window.fccT('Upiši ime i prezime'), required: false, alignment: 'left', buttons: [], options: []},
+            email_field: {type, label: 'Email', badge: '', title: 'Email', text: '', placeholder: window.fccT('Upiši email'), required: true, alignment: 'left', buttons: [], options: []},
+            phone_field: {type, label: 'Telefon', badge: '', title: 'Telefon', text: '', placeholder: window.fccT('Upiši broj telefona'), required: false, alignment: 'left', buttons: [], options: []},
+            text_field: {type, label: window.fccT('Tekst polje'), badge: '', title: window.fccT('Kratki odgovor'), text: '', placeholder: window.fccT('Upiši odgovor'), field_key: '', required: false, alignment: 'left', buttons: [], options: []},
+            checkbox_field: {type, label: window.fccT('Privola za kontakt'), badge: '', title: window.fccT('Pristajem da me kontaktirate vezano uz moj odabrani smjer.'), text: window.fccT('Ova privola se koristi samo za odgovor na upit kroz ovaj vodič.'), field_key: 'contact_consent', required: true, alignment: 'left', buttons: [], options: []},
+            proof_card: {type, label: window.fccT('Proof / povjerenje'), badge: 'Povjerenje', title: window.fccT('Zašto ovaj put djeluje sigurno'), text: window.fccT('Dodaj proof, sigurnost, mentorstvo ili konkretan benefit.'), alignment: 'left', buttons: [], options: []},
+            product_offer: {type, label: window.fccT('Preporuka proizvoda'), badge: 'Preporuka', title: window.fccT('Idealna preporuka za tvoj cilj'), text: window.fccT('Odaberi proizvod i poveži osobu ili na blog vodič ili direktno na službeni shop s referral logikom.'), alignment: 'left', product_source_mode: 'manual', product_blog_post_id: 0, product_translation_key: '', product_language_mode: 'page', product_language_code: preferredProductLanguageCode || 'hr', product_fallback_language_code: 'hr', product_primary_mode: 'blog_guide', product_primary_cta_text: window.fccT('Pogledaj vodič proizvoda'), product_secondary_enabled: true, product_secondary_mode: 'direct_shop', product_secondary_cta_text: window.fccT('Idi na službeni shop'), product_mappings: [], buttons: [], options: []},
+            ai_product_advisor: {type, label: window.fccT('AI savjetnik za proizvode'), badge: window.fccT('Personalizirana preporuka'), title: window.fccT('Pronađi svoj najbolji Forever početak u par pitanja'), text: window.fccT('Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.'), alignment: 'left', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: window.fccT('Započni moju preporuku'), ai_launcher_label: window.fccT('Moja preporuka'), ai_intro_label: window.fccT('Tvoj osobni vodič'), ai_input_placeholder: window.fccT('Napiši cilj ili pitanje...'), buttons: [], options: []},
             spacer: {type, label: 'Razmak', badge: '', title: '', text: '', spacing: 'lg', alignment: 'left', buttons: [], options: []}
         };
 
@@ -2938,7 +2956,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         activeActionId: '',
         activeVariant: 'a',
         builderPanel: 'sections',
-        previewDevice: 'desktop',
+        previewDevice: partnerMode && window.matchMedia('(max-width: 800px)').matches ? 'mobile' : 'desktop',
         analytics: analyticsSeed || {},
         drag: {
             type: '',
@@ -2989,100 +3007,100 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     const fccSectionTemplates = {
         fcc_hero_business: {
             category: 'Header',
-            label: 'FCC hero za online posao',
-            description: 'Jasan prvi ekran za suradnike koji žele voditi osobu prema demo prikazu ili mentor pozivu.',
+            label: window.fccT('FCC hero za online posao'),
+            description: window.fccT('Jasan prvi ekran za suradnike koji žele voditi osobu prema demo prikazu ili mentor pozivu.'),
             accent: '#67d8c9',
             blocks: [
-                {type: 'headline', label: 'Hero naslov', badge: 'Forever Card Funnel', title: 'Pokreni jednostavan online sustav koji vodi osobu korak po korak', text: 'FCC povezuje prvi interes, pametan survey, demo pristup i mentorstvo u jedan pregledan funnel.', alignment: 'left', layout_width: 'two_thirds', title_size: 48},
-                {type: 'proof_card', label: 'Mentor proof', badge: 'Mentorstvo', title: 'Bez tehničkog kaosa', text: 'Suradnik koristi gotove blokove, a svaki odgovor može automatski voditi na pravu sljedeću stranicu.', alignment: 'left', layout_width: 'third'},
-                {type: 'cta_group', label: 'Hero CTA', alignment: 'center', layout_width: 'full', buttons: [
-                    {label: 'Pogledaj demo sustava', value: 'demo_sustava', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
-                    {label: 'Želim mentorski poziv', value: 'mentorski_poziv', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false}
+                {type: 'headline', label: window.fccT('Hero naslov'), badge: 'Forever Card Funnel', title: window.fccT('Pokreni jednostavan online sustav koji vodi osobu korak po korak'), text: window.fccT('FCC povezuje prvi interes, pametan survey, demo pristup i mentorstvo u jedan pregledan funnel.'), alignment: 'left', layout_width: 'two_thirds', title_size: 48},
+                {type: 'proof_card', label: window.fccT('Mentor proof'), badge: 'Mentorstvo', title: window.fccT('Bez tehničkog kaosa'), text: window.fccT('Suradnik koristi gotove blokove, a svaki odgovor može automatski voditi na pravu sljedeću stranicu.'), alignment: 'left', layout_width: 'third'},
+                {type: 'cta_group', label: window.fccT('Hero CTA'), alignment: 'center', layout_width: 'full', buttons: [
+                    {label: window.fccT('Pogledaj demo sustava'), value: 'demo_sustava', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
+                    {label: window.fccT('Želim mentorski poziv'), value: 'mentorski_poziv', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false}
                 ]}
             ]
         },
         fcc_survey_router: {
-            category: 'Feature Sections',
-            label: 'Survey grananje po interesu',
-            description: 'Obavezni routing blok za business, proizvode, demo i follow-up scenarije.',
+            category: window.fccT('Feature Sections'),
+            label: window.fccT('Survey grananje po interesu'),
+            description: window.fccT('Obavezni routing blok za business, proizvode, demo i follow-up scenarije.'),
             accent: '#f4c34d',
             blocks: [
-                {type: 'headline', label: 'Uvod u odabir', badge: 'Pametno usmjeravanje', title: 'Što te trenutno najviše zanima?', text: 'Odaberi odgovor i funnel te vodi na stranicu koja najviše odgovara tvojoj situaciji.', alignment: 'center', layout_width: 'full', title_size: 34},
-                {type: 'survey', label: 'Glavni survey', title: 'Odaberi svoj smjer', text: 'Svaki odgovor možeš povezati s drugom funnel stranicom.', alignment: 'left', layout_width: 'full', auto_advance: true, options: [
-                    {label: 'Online posao i FCC sustav', value: 'business', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
-                    {label: 'Forever proizvodi i preporuka', value: 'products', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false},
-                    {label: 'Želim demo pristup', value: 'demo', action: 'goto_step', target_step_id: '', style: 'ghost', require_submit: false}
+                {type: 'headline', label: window.fccT('Uvod u odabir'), badge: window.fccT('Pametno usmjeravanje'), title: window.fccT('Što te trenutno najviše zanima?'), text: window.fccT('Odaberi odgovor i funnel te vodi na stranicu koja najviše odgovara tvojoj situaciji.'), alignment: 'center', layout_width: 'full', title_size: 34},
+                {type: 'survey', label: window.fccT('Glavni survey'), title: window.fccT('Odaberi svoj smjer'), text: window.fccT('Svaki odgovor možeš povezati s drugom funnel stranicom.'), alignment: 'left', layout_width: 'full', auto_advance: true, options: [
+                    {label: window.fccT('Online posao i FCC sustav'), value: 'business', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
+                    {label: window.fccT('Forever proizvodi i preporuka'), value: 'products', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false},
+                    {label: window.fccT('Želim demo pristup'), value: 'demo', action: 'goto_step', target_step_id: '', style: 'ghost', require_submit: false}
                 ]}
             ]
         },
         fcc_product_recommendation: {
-            category: 'Offer Sections',
-            label: 'Forever product preporuka',
-            description: 'Dinamičan proizvodni blok koji može koristiti prethodne survey odgovore i referral logiku.',
+            category: window.fccT('Offer Sections'),
+            label: window.fccT('Forever product preporuka'),
+            description: window.fccT('Dinamičan proizvodni blok koji može koristiti prethodne survey odgovore i referral logiku.'),
             accent: '#7ccf5b',
             blocks: [
-                {type: 'headline', label: 'Preporuka uvod', badge: 'Personalizirana preporuka', title: 'Najbliža Forever preporuka za tvoj cilj', text: 'Funnel može povezati odgovor osobe s proizvodnim vodičem ili direktnim shop korakom.', alignment: 'left', layout_width: 'half', title_size: 32},
-                {type: 'product_offer', label: 'Product offer', badge: 'Forever Living Products', title: 'Odaberi proizvod iz kataloga', text: 'Koristi blog vodič za edukaciju ili direktni shop klik kada je osoba spremna.', alignment: 'left', layout_width: 'half', product_source_mode: 'dynamic', product_primary_mode: 'blog_guide', product_secondary_enabled: true, product_secondary_mode: 'direct_shop'}
+                {type: 'headline', label: window.fccT('Preporuka uvod'), badge: window.fccT('Personalizirana preporuka'), title: window.fccT('Najbliža Forever preporuka za tvoj cilj'), text: window.fccT('Funnel može povezati odgovor osobe s proizvodnim vodičem ili direktnim shop korakom.'), alignment: 'left', layout_width: 'half', title_size: 32},
+                {type: 'product_offer', label: window.fccT('Product offer'), badge: window.fccT('Forever Living Products'), title: window.fccT('Odaberi proizvod iz kataloga'), text: window.fccT('Koristi blog vodič za edukaciju ili direktni shop klik kada je osoba spremna.'), alignment: 'left', layout_width: 'half', product_source_mode: 'dynamic', product_primary_mode: 'blog_guide', product_secondary_enabled: true, product_secondary_mode: 'direct_shop'}
             ]
         },
         fcc_ai_product_advisor: {
-            category: 'Offer Sections',
-            label: 'Pametna Forever preporuka',
-            description: 'Atraktivan blok koji osobi pomaže pronaći najlogičniji proizvodni smjer i otvoriti osobni nastavak.',
+            category: window.fccT('Offer Sections'),
+            label: window.fccT('Pametna Forever preporuka'),
+            description: window.fccT('Atraktivan blok koji osobi pomaže pronaći najlogičniji proizvodni smjer i otvoriti osobni nastavak.'),
             accent: '#67d8c9',
             blocks: [
-                {type: 'headline', label: 'AI uvod', badge: 'Pravi smjer', title: 'Nisi siguran/na od čega krenuti?', text: 'Dovoljno je opisati cilj, naviku ili pitanje. Funnel može osobu nježno usmjeriti prema preporuci bez pretrpanog kataloga.', alignment: 'left', layout_width: 'half', title_size: 34},
-                {type: 'ai_product_advisor', label: 'AI savjetnik', badge: 'Personalizirana preporuka', title: 'Pronađi svoj najbolji Forever početak u par pitanja', text: 'Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.', alignment: 'left', layout_width: 'half', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: 'Započni moju preporuku', ai_launcher_label: 'Moja preporuka', ai_intro_label: 'Tvoj osobni vodič', ai_input_placeholder: 'Napiši cilj ili pitanje...'}
+                {type: 'headline', label: window.fccT('AI uvod'), badge: window.fccT('Pravi smjer'), title: window.fccT('Nisi siguran/na od čega krenuti?'), text: window.fccT('Dovoljno je opisati cilj, naviku ili pitanje. Funnel može osobu nježno usmjeriti prema preporuci bez pretrpanog kataloga.'), alignment: 'left', layout_width: 'half', title_size: 34},
+                {type: 'ai_product_advisor', label: window.fccT('AI savjetnik'), badge: window.fccT('Personalizirana preporuka'), title: window.fccT('Pronađi svoj najbolji Forever početak u par pitanja'), text: window.fccT('Napiši što želiš postići, kako se sada osjećaš ili što te zanima. Pametni FCC savjetnik predložit će smjer koji ima najviše smisla za tebe.'), alignment: 'left', layout_width: 'half', ai_advisor_enabled: true, ai_lead_capture_enabled: true, ai_button_label: window.fccT('Započni moju preporuku'), ai_launcher_label: window.fccT('Moja preporuka'), ai_intro_label: window.fccT('Tvoj osobni vodič'), ai_input_placeholder: window.fccT('Napiši cilj ili pitanje...')}
             ]
         },
         fcc_demo_request: {
-            category: 'Form Sections',
-            label: 'Demo pristup forma',
-            description: 'Kratka forma za demo račun i follow-up bez suvišnih polja.',
+            category: window.fccT('Form Sections'),
+            label: window.fccT('Demo pristup forma'),
+            description: window.fccT('Kratka forma za demo račun i follow-up bez suvišnih polja.'),
             accent: '#8b5cf6',
             blocks: [
-                {type: 'headline', label: 'Demo headline', badge: 'Demo pristup', title: 'Želiš vidjeti kako FCC izgleda iznutra?', text: 'Ostavi podatke i mentor ti može otvoriti demo ili poslati sljedeći korak.', alignment: 'center', layout_width: 'full', title_size: 34},
-                {type: 'full_name_field', label: 'Ime i prezime', title: 'Ime i prezime', placeholder: 'Upiši ime i prezime', required: true, layout_width: 'half'},
-                {type: 'phone_field', label: 'WhatsApp', title: 'WhatsApp / telefon', placeholder: 'Upiši broj za brzi kontakt', required: true, layout_width: 'half'},
-                {type: 'email_field', label: 'Email', title: 'Email za demo pristup', placeholder: 'Upiši email', required: false, layout_width: 'half'},
-                {type: 'text_field', label: 'Fokus demo prikaza', title: 'Što želiš vidjeti u demu?', placeholder: 'npr. funnel, preporuke, kontakti, follow-up', field_key: 'demo_focus', required: false, layout_width: 'half'},
-                {type: 'cta_group', label: 'Demo submit', alignment: 'center', layout_width: 'full', buttons: [
-                    {label: 'Pošalji demo zahtjev', value: 'demo_request', action: 'submit_next', target_step_id: '', style: 'primary', require_submit: true}
+                {type: 'headline', label: window.fccT('Demo headline'), badge: window.fccT('Demo pristup'), title: window.fccT('Želiš vidjeti kako FCC izgleda iznutra?'), text: window.fccT('Ostavi podatke i mentor ti može otvoriti demo ili poslati sljedeći korak.'), alignment: 'center', layout_width: 'full', title_size: 34},
+                {type: 'full_name_field', label: window.fccT('Ime i prezime'), title: window.fccT('Ime i prezime'), placeholder: window.fccT('Upiši ime i prezime'), required: true, layout_width: 'half'},
+                {type: 'phone_field', label: 'WhatsApp', title: window.fccT('WhatsApp / telefon'), placeholder: window.fccT('Upiši broj za brzi kontakt'), required: true, layout_width: 'half'},
+                {type: 'email_field', label: 'Email', title: window.fccT('Email za demo pristup'), placeholder: window.fccT('Upiši email'), required: false, layout_width: 'half'},
+                {type: 'text_field', label: window.fccT('Fokus demo prikaza'), title: window.fccT('Što želiš vidjeti u demu?'), placeholder: window.fccT('npr. funnel, preporuke, kontakti, follow-up'), field_key: 'demo_focus', required: false, layout_width: 'half'},
+                {type: 'cta_group', label: window.fccT('Demo submit'), alignment: 'center', layout_width: 'full', buttons: [
+                    {label: window.fccT('Pošalji demo zahtjev'), value: 'demo_request', action: 'submit_next', target_step_id: '', style: 'primary', require_submit: true}
                 ]}
             ]
         },
         fcc_social_proof: {
             category: 'Testimonials',
-            label: 'Proof i rezultati suradnika',
-            description: 'Tri kratke kartice za povjerenje, rezultate i sigurnost sljedećeg koraka.',
+            label: window.fccT('Proof i rezultati suradnika'),
+            description: window.fccT('Tri kratke kartice za povjerenje, rezultate i sigurnost sljedećeg koraka.'),
             accent: '#38bdf8',
             blocks: [
-                {type: 'headline', label: 'Proof naslov', badge: 'Povjerenje', title: 'Ljudi lakše nastavljaju kada razumiju što ih čeka', text: 'Dodaj konkretne primjere: jasniji follow-up, brži kontakt, bolji pregled interesa.', alignment: 'center', layout_width: 'full', title_size: 32},
-                {type: 'proof_card', label: 'Proof 1', badge: 'Jasnoća', title: 'Manje ručnog objašnjavanja', text: 'Funnel sam skuplja interes i vodi osobu prema pravom koraku.', layout_width: 'third'},
-                {type: 'proof_card', label: 'Proof 2', badge: 'Kontakt', title: 'Brži follow-up', text: 'Suradnik vidi tko je spreman za demo, proizvod ili mentorski razgovor.', layout_width: 'third'},
-                {type: 'proof_card', label: 'Proof 3', badge: 'Sustav', title: 'Jedan uredan proces', text: 'Sve se prati po stranici, odgovoru i CTA-u.', layout_width: 'third'}
+                {type: 'headline', label: window.fccT('Proof naslov'), badge: 'Povjerenje', title: window.fccT('Ljudi lakše nastavljaju kada razumiju što ih čeka'), text: window.fccT('Dodaj konkretne primjere: jasniji follow-up, brži kontakt, bolji pregled interesa.'), alignment: 'center', layout_width: 'full', title_size: 32},
+                {type: 'proof_card', label: window.fccT('Proof 1'), badge: window.fccT('Jasnoća'), title: window.fccT('Manje ručnog objašnjavanja'), text: window.fccT('Funnel sam skuplja interes i vodi osobu prema pravom koraku.'), layout_width: 'third'},
+                {type: 'proof_card', label: window.fccT('Proof 2'), badge: 'Kontakt', title: window.fccT('Brži follow-up'), text: window.fccT('Suradnik vidi tko je spreman za demo, proizvod ili mentorski razgovor.'), layout_width: 'third'},
+                {type: 'proof_card', label: window.fccT('Proof 3'), badge: 'Sustav', title: window.fccT('Jedan uredan proces'), text: window.fccT('Sve se prati po stranici, odgovoru i CTA-u.'), layout_width: 'third'}
             ]
         },
         fcc_faq: {
-            category: 'FAQ Sections',
-            label: 'FAQ prije kontakta',
-            description: 'Jednostavna sekcija za najčešće prepreke prije demo ili kontakt koraka.',
+            category: window.fccT('FAQ Sections'),
+            label: window.fccT('FAQ prije kontakta'),
+            description: window.fccT('Jednostavna sekcija za najčešće prepreke prije demo ili kontakt koraka.'),
             accent: '#fb7185',
             blocks: [
-                {type: 'headline', label: 'FAQ naslov', badge: 'Česta pitanja', title: 'Prije nego nastaviš, ovo je dobro znati', text: 'Odgovori na kratke dvojbe bez previše teksta.', alignment: 'left', layout_width: 'full', title_size: 32},
-                {type: 'proof_card', label: 'FAQ vrijeme', title: 'Koliko vremena treba?', text: 'Dovoljno je krenuti s gotovim blokovima i povezati odgovore s pravim stranicama.', layout_width: 'half'},
-                {type: 'proof_card', label: 'FAQ proizvodi', title: 'Moram li odmah prodavati?', text: 'Ne. FCC prvo pomaže razumjeti interes osobe, a tek onda predlaže sljedeći korak.', layout_width: 'half'}
+                {type: 'headline', label: window.fccT('FAQ naslov'), badge: window.fccT('Česta pitanja'), title: window.fccT('Prije nego nastaviš, ovo je dobro znati'), text: window.fccT('Odgovori na kratke dvojbe bez previše teksta.'), alignment: 'left', layout_width: 'full', title_size: 32},
+                {type: 'proof_card', label: window.fccT('FAQ vrijeme'), title: window.fccT('Koliko vremena treba?'), text: window.fccT('Dovoljno je krenuti s gotovim blokovima i povezati odgovore s pravim stranicama.'), layout_width: 'half'},
+                {type: 'proof_card', label: window.fccT('FAQ proizvodi'), title: window.fccT('Moram li odmah prodavati?'), text: window.fccT('Ne. FCC prvo pomaže razumjeti interes osobe, a tek onda predlaže sljedeći korak.'), layout_width: 'half'}
             ]
         },
         fcc_final_cta: {
-            category: 'CTA Scroll Stoppers',
-            label: 'Završni CTA blok',
-            description: 'Kratak završni poziv za demo, mentor poziv ili WhatsApp follow-up.',
+            category: window.fccT('CTA Scroll Stoppers'),
+            label: window.fccT('Završni CTA blok'),
+            description: window.fccT('Kratak završni poziv za demo, mentor poziv ili WhatsApp follow-up.'),
             accent: '#f97316',
             blocks: [
-                {type: 'cta_group', label: 'Finalni CTA', badge: 'Sljedeći korak', title: 'Spreman/na si složiti svoj prvi funnel bez kompliciranja?', text: 'Odaberi demo ili razgovor i nastavljamo ciljano.', alignment: 'center', layout_width: 'full', buttons: [
-                    {label: 'Želim demo pristup', value: 'demo_request', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
-                    {label: 'Kontaktiraj mentora', value: 'mentor_contact', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false}
+                {type: 'cta_group', label: window.fccT('Finalni CTA'), badge: window.fccT('Sljedeći korak'), title: window.fccT('Spreman/na si složiti svoj prvi funnel bez kompliciranja?'), text: window.fccT('Odaberi demo ili razgovor i nastavljamo ciljano.'), alignment: 'center', layout_width: 'full', buttons: [
+                    {label: window.fccT('Želim demo pristup'), value: 'demo_request', action: 'goto_step', target_step_id: '', style: 'primary', require_submit: false},
+                    {label: window.fccT('Kontaktiraj mentora'), value: 'mentor_contact', action: 'goto_step', target_step_id: '', style: 'secondary', require_submit: false}
                 ]}
             ]
         }
@@ -3090,37 +3108,37 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     const fccElementGroups = [
         {label: 'Redovi', items: [
-            {type: 'row:1', title: '1 kolona', text: 'Puna širina'},
-            {type: 'row:2', title: '2 kolone', text: '1/2 + 1/2'},
-            {type: 'row:3', title: '3 kolone', text: '1/3 + 1/3 + 1/3'},
-            {type: 'row:4', title: '4 kolone', text: 'Četiri stupca'},
-            {type: 'row:5', title: '5 kolona', text: 'Pet kompaktnih stupaca'},
-            {type: 'row:6', title: '6 kolona', text: 'Šest kompaktnih stupaca'}
+            {type: 'row:1', title: window.fccT('1 kolona'), text: window.fccT('Puna širina')},
+            {type: 'row:2', title: window.fccT('2 kolone'), text: '1/2 + 1/2'},
+            {type: 'row:3', title: window.fccT('3 kolone'), text: '1/3 + 1/3 + 1/3'},
+            {type: 'row:4', title: window.fccT('4 kolone'), text: window.fccT('Četiri stupca')},
+            {type: 'row:5', title: window.fccT('5 kolona'), text: window.fccT('Pet kompaktnih stupaca')},
+            {type: 'row:6', title: window.fccT('6 kolona'), text: window.fccT('Šest kompaktnih stupaca')}
         ]},
-        {label: 'Sadržaj', items: [
-            {type: 'headline', title: 'Headline', text: 'Naslov, podnaslov i badge'},
-            {type: 'text', title: 'Paragraph', text: 'Kratki tekst ili opis'},
-            {type: 'proof_card', title: 'Proof kartica', text: 'Povjerenje, rezultat, FAQ'},
-            {type: 'cta_group', title: 'CTA gumbi', text: 'Gumbovi i routing'}
+        {label: window.fccT('Sadržaj'), items: [
+            {type: 'headline', title: 'Headline', text: window.fccT('Naslov, podnaslov i badge')},
+            {type: 'text', title: 'Paragraph', text: window.fccT('Kratki tekst ili opis')},
+            {type: 'proof_card', title: window.fccT('Proof kartica'), text: window.fccT('Povjerenje, rezultat, FAQ')},
+            {type: 'cta_group', title: window.fccT('CTA gumbi'), text: window.fccT('Gumbovi i routing')}
         ]},
         {label: 'Media', items: [
-            {type: 'image', title: 'Slika', text: 'Upload ili URL'},
-            {type: 'video', title: 'Video', text: 'YouTube, Vimeo ili file'}
+            {type: 'image', title: 'Slika', text: window.fccT('Upload ili URL')},
+            {type: 'video', title: 'Video', text: window.fccT('YouTube, Vimeo ili file')}
         ]},
-        {label: 'Forme i survey', items: [
-            {type: 'survey', title: 'Survey router', text: 'Klik odmah vodi dalje'},
-            {type: 'radio_survey', title: 'Radio pitanje', text: 'Pitanje prije submit gumba'},
-            {type: 'full_name_field', title: 'Ime + prezime', text: 'Lead capture'},
-            {type: 'phone_field', title: 'Telefon', text: 'WhatsApp / kontakt'},
-            {type: 'email_field', title: 'Email', text: 'Email lead'},
-            {type: 'text_field', title: 'Tekst polje', text: 'Kratki odgovor'},
-            {type: 'checkbox_field', title: 'Checkbox privole', text: 'Privola za kontakt'}
+        {label: window.fccT('Forme i survey'), items: [
+            {type: 'survey', title: window.fccT('Survey router'), text: window.fccT('Klik odmah vodi dalje')},
+            {type: 'radio_survey', title: window.fccT('Radio pitanje'), text: window.fccT('Pitanje prije submit gumba')},
+            {type: 'full_name_field', title: window.fccT('Ime + prezime'), text: window.fccT('Lead capture')},
+            {type: 'phone_field', title: 'Telefon', text: window.fccT('WhatsApp / kontakt')},
+            {type: 'email_field', title: 'Email', text: window.fccT('Email lead')},
+            {type: 'text_field', title: window.fccT('Tekst polje'), text: window.fccT('Kratki odgovor')},
+            {type: 'checkbox_field', title: window.fccT('Checkbox privole'), text: window.fccT('Privola za kontakt')}
         ]},
-        {label: 'FCC specifično', items: [
-            {type: 'product_offer', title: 'Forever preporuka', text: 'Blog vodič ili shop klik'},
-            {type: 'ai_product_advisor', title: 'Osobna preporuka', text: 'Forever smjer + kontakt'},
-            {type: 'countdown', title: 'Countdown', text: 'Hitnost za event/demo'},
-            {type: 'spacer', title: 'Razmak', text: 'Vizualni odmak'}
+        {label: window.fccT('FCC specifično'), items: [
+            {type: 'product_offer', title: window.fccT('Forever preporuka'), text: window.fccT('Blog vodič ili shop klik')},
+            {type: 'ai_product_advisor', title: window.fccT('Osobna preporuka'), text: window.fccT('Forever smjer + kontakt')},
+            {type: 'countdown', title: 'Countdown', text: window.fccT('Hitnost za event/demo')},
+            {type: 'spacer', title: 'Razmak', text: window.fccT('Vizualni odmak')}
         ]}
     ];
 
@@ -3183,7 +3201,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
     function getStepTitleById(stepId = '') {
         const step = flatSteps().find(item => item.id === stepId);
-        return step?.title || 'ovaj funnel korak';
+        return step?.title || window.fccT('ovaj funnel korak');
     }
 
     function confirmStepTrashDelete(stepId = '') {
@@ -3506,12 +3524,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const submitBlock = normalizeBlock(existingBlock || defaultBlockByType('cta_group'));
         submitBlock.id = submitBlock.id || uid('cta_group');
         submitBlock.system_role = 'auto_submit';
-        submitBlock.label = submitBlock.label || 'Submit forma';
-        submitBlock.title = submitBlock.title || 'Pošalji podatke';
-        submitBlock.text = submitBlock.text || 'Pošalji formu i prijeđi na sljedeći korak.';
+        submitBlock.label = submitBlock.label || window.fccT('Submit forma');
+        submitBlock.title = submitBlock.title || window.fccT('Pošalji podatke');
+        submitBlock.text = submitBlock.text || window.fccT('Pošalji formu i prijeđi na sljedeći korak.');
 
         const primaryButton = normalizeAction((submitBlock.buttons || [])[0] || {});
-        primaryButton.label = primaryButton.label || 'Pošalji podatke';
+        primaryButton.label = primaryButton.label || window.fccT('Pošalji podatke');
         primaryButton.value = primaryButton.value || 'posalji_podatke';
         primaryButton.style = primaryButton.style || 'primary';
         primaryButton.action = ['submit_next', 'submit_stay'].includes(primaryButton.action) ? primaryButton.action : 'submit_next';
@@ -3594,12 +3612,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const blocks = getEditableBlocks().slice();
         const submitBlock = buildSystemSubmitBlock({
             id: uid('cta_group'),
-            label: 'Submit forma',
-            title: 'Pošalji podatke',
-            text: 'Jedan klik za slanje forme i nastavak funnel puta.',
+            label: window.fccT('Submit forma'),
+            title: window.fccT('Pošalji podatke'),
+            text: window.fccT('Jedan klik za slanje forme i nastavak funnel puta.'),
             buttons: [{
                 id: uid('btn'),
-                label: 'Pošalji podatke',
+                label: window.fccT('Pošalji podatke'),
                 value: 'posalji_podatke',
                 style: 'primary',
                 action: 'submit_next',
@@ -3674,7 +3692,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         ensureActiveBlock();
     }
 
-    function normalizeSurface(surface, fallbackName = 'Nova funnel stranica') {
+    function normalizeSurface(surface, fallbackName = window.fccT('Nova funnel stranica')) {
         const normalized = Object.assign(defaultSurface(), surface || {});
         normalized.name = normalized.name || fallbackName;
         normalized.seo_image_url = normalized.seo_image_url || '';
@@ -3707,7 +3725,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function getBlockWidthLabel(widthKey = 'full') {
-        return pageBlockWidthOptions[widthKey] || pageBlockWidthOptions.full || 'Puna širina';
+        return pageBlockWidthOptions[widthKey] || pageBlockWidthOptions.full || window.fccT('Puna širina');
     }
 
     function normalizeAction(action) {
@@ -3897,10 +3915,10 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         const activeStep = getActiveStep();
         if(!activeStep) {
-            return normalizeSurface(defaultSurface(), 'Nova funnel stranica');
+            return normalizeSurface(defaultSurface(), window.fccT('Nova funnel stranica'));
         }
 
-        activeStep.page = normalizeSurface(activeStep.page, activeStep.title || 'Nova funnel stranica');
+        activeStep.page = normalizeSurface(activeStep.page, activeStep.title || window.fccT('Nova funnel stranica'));
         return activeStep.page;
     }
 
@@ -3941,7 +3959,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         const activeStep = getActiveStep();
         if(activeStep) {
-            activeStep.page = normalizeSurface(surface, activeStep.title || 'Nova funnel stranica');
+            activeStep.page = normalizeSurface(surface, activeStep.title || window.fccT('Nova funnel stranica'));
         }
     }
 
@@ -4006,12 +4024,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         })) {
             const submitBlock = buildSystemSubmitBlock({
                 id: uid('cta_group'),
-                label: 'Submit forma',
-                title: 'Pošalji podatke',
-                text: 'Pošalji formu i prijeđi na sljedeći korak.',
+                label: window.fccT('Submit forma'),
+                title: window.fccT('Pošalji podatke'),
+                text: window.fccT('Pošalji formu i prijeđi na sljedeći korak.'),
                 buttons: [{
                     id: uid('btn'),
-                    label: 'Pošalji podatke',
+                    label: window.fccT('Pošalji podatke'),
                     value: 'posalji_podatke',
                     style: 'primary',
                     action: 'submit_next',
@@ -4042,12 +4060,12 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         if(isCaptureField && !blocks.some(item => blockHasSubmitAction(item))) {
             blocks.splice(Math.min(safeIndex + 1, blocks.length), 0, buildSystemSubmitBlock({
                 id: uid('cta_group'),
-                label: 'Submit forma',
-                title: 'Pošalji podatke',
-                text: 'Pošalji formu i prijeđi na sljedeći korak.',
+                label: window.fccT('Submit forma'),
+                title: window.fccT('Pošalji podatke'),
+                text: window.fccT('Pošalji formu i prijeđi na sljedeći korak.'),
                 buttons: [{
                     id: uid('btn'),
-                    label: 'Pošalji podatke',
+                    label: window.fccT('Pošalji podatke'),
                     value: 'posalji_podatke',
                     style: 'primary',
                     action: 'submit_next',
@@ -4118,7 +4136,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             label: `Red ${count} kolona - stupac ${index + 1}`,
             badge: '',
             title: `Novi stupac ${index + 1}`,
-            text: 'Klikni ovaj blok i zamijeni tekst, sliku, CTA ili ga obriši.',
+            text: window.fccT('Klikni ovaj blok i zamijeni tekst, sliku, CTA ili ga obriši.'),
             alignment: 'left',
             layout_width: width
         }));
@@ -4185,7 +4203,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         block[key] = Array.isArray(block[key]) ? block[key] : [];
         const action = normalizeAction({
             id: uid(kind === 'survey' ? 'opt' : 'btn'),
-            label: kind === 'survey' ? 'Novi odgovor' : 'Novi gumb',
+            label: kind === 'survey' ? window.fccT('Novi odgovor') : window.fccT('Novi gumb'),
             value: kind === 'survey' ? 'novi_odgovor' : 'novi_gumb'
         });
         block[key].push(action);
@@ -4235,9 +4253,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             row_key: pathOptions[0]?.path_key || 'business',
             card_type: 'offer',
             title: `${phaseDef.title} korak`,
-            summary: 'Dodaj jasan cilj ovog koraka i što osoba ovdje treba doživjeti.',
+            summary: window.fccT('Dodaj jasan cilj ovog koraka i što osoba ovdje treba doživjeti.'),
             helper_text: '',
-            cta: 'Kreni dalje',
+            cta: window.fccT('Kreni dalje'),
             next: '',
             next_step_id: '',
             status_key: 'core',
@@ -4250,7 +4268,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             design_variant: 'card',
             preview_badge: phaseDef.title,
             preview_headline: `${phaseDef.title} korak`,
-            preview_body: 'Dodaj sadržaj ovog koraka.',
+            preview_body: window.fccT('Dodaj sadržaj ovog koraka.'),
             block_mode: 'message',
             background_color: '#152132',
             text_color: '#eef4ff',
@@ -4279,34 +4297,34 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         if(stepType === 'split') {
             activeStep.card_type = 'split_test';
-            activeStep.title = 'Split test stranica';
-            activeStep.summary = 'Testiraj dvije varijante sadržaja i prati koja bolje vodi dalje.';
-            activeStep.preview_badge = 'Split test';
+            activeStep.title = window.fccT('Split test stranica');
+            activeStep.summary = window.fccT('Testiraj dvije varijante sadržaja i prati koja bolje vodi dalje.');
+            activeStep.preview_badge = window.fccT('Split test');
             activeStep.page = normalizeSurface(activeStep.page || defaultSurface(), activeStep.title);
             activeStep.page.ab_enabled = true;
             activeStep.page.ab_distribution = 50;
             activeStep.page.blocks = [
-                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: 'Varijanta A', title: 'Naslov prve varijante', text: 'Složi prvu poruku i usporedi rezultat.', alignment: 'center'})),
+                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: window.fccT('Varijanta A'), title: window.fccT('Naslov prve varijante'), text: window.fccT('Složi prvu poruku i usporedi rezultat.'), alignment: 'center'})),
                 normalizeBlock(Object.assign(defaultBlockByType('cta_group'), {id: uid('cta_group'), buttons: [{id: uid('btn'), label: 'Nastavi', value: 'split_a', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]}))
             ];
             activeStep.page.variant_b_blocks = [
-                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: 'Varijanta B', title: 'Naslov druge varijante', text: 'Složi drugu poruku i pusti statistici da pokaže što radi bolje.', alignment: 'center'})),
+                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: window.fccT('Varijanta B'), title: window.fccT('Naslov druge varijante'), text: window.fccT('Složi drugu poruku i pusti statistici da pokaže što radi bolje.'), alignment: 'center'})),
                 normalizeBlock(Object.assign(defaultBlockByType('cta_group'), {id: uid('cta_group'), buttons: [{id: uid('btn'), label: 'Nastavi', value: 'split_b', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}]}))
             ];
         }
 
         if(stepType === 'conditional') {
             activeStep.card_type = 'conditional_split';
-            activeStep.title = 'Conditional split';
-            activeStep.summary = 'Pitaj jedno ključno pitanje i poveži svaki odgovor s drugim sljedećim korakom.';
-            activeStep.preview_badge = 'Uvjetno grananje';
+            activeStep.title = window.fccT('Conditional split');
+            activeStep.summary = window.fccT('Pitaj jedno ključno pitanje i poveži svaki odgovor s drugim sljedećim korakom.');
+            activeStep.preview_badge = window.fccT('Uvjetno grananje');
             activeStep.page = normalizeSurface(activeStep.page || defaultSurface(), activeStep.title);
             activeStep.page.blocks = [
-                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: 'Pametno grananje', title: 'Odaberi smjer koji najviše odgovara tvojoj situaciji', text: 'Svaki odgovor može voditi na poseban nastavak funnela.', alignment: 'center'})),
-                normalizeBlock(Object.assign(defaultBlockByType('survey'), {id: uid('survey'), title: 'Koji sljedeći korak želiš?', text: 'Poveži opcije s pravim stranicama u postavkama odgovora.', options: [
-                    {id: uid('opt'), label: 'Demo pristup', value: 'demo', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false},
-                    {id: uid('opt'), label: 'Proizvodna preporuka', value: 'products', style: 'secondary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false},
-                    {id: uid('opt'), label: 'Mentorski poziv', value: 'mentor', style: 'ghost', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}
+                normalizeBlock(Object.assign(defaultBlockByType('headline'), {id: uid('headline'), badge: window.fccT('Pametno grananje'), title: window.fccT('Odaberi smjer koji najviše odgovara tvojoj situaciji'), text: window.fccT('Svaki odgovor može voditi na poseban nastavak funnela.'), alignment: 'center'})),
+                normalizeBlock(Object.assign(defaultBlockByType('survey'), {id: uid('survey'), title: window.fccT('Koji sljedeći korak želiš?'), text: window.fccT('Poveži opcije s pravim stranicama u postavkama odgovora.'), options: [
+                    {id: uid('opt'), label: window.fccT('Demo pristup'), value: 'demo', style: 'primary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false},
+                    {id: uid('opt'), label: window.fccT('Proizvodna preporuka'), value: 'products', style: 'secondary', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false},
+                    {id: uid('opt'), label: window.fccT('Mentorski poziv'), value: 'mentor', style: 'ghost', action: 'goto_step', target_step_id: '', external_url: '', require_submit: false}
                 ]}))
             ];
         }
@@ -4496,7 +4514,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         (state.payload.board || []).forEach(phase => {
             (phase.steps || []).forEach(step => {
-                const surface = normalizeSurface(step.page || defaultSurface(), step.title || 'Nova funnel stranica');
+                const surface = normalizeSurface(step.page || defaultSurface(), step.title || window.fccT('Nova funnel stranica'));
                 inspectBlocks(surface.blocks || [], {page_role: 'step', step_id: step.id || '', variant_key: 'a'});
                 if(surface.ab_enabled && Array.isArray(surface.variant_b_blocks)) {
                     inspectBlocks(surface.variant_b_blocks || [], {page_role: 'step', step_id: step.id || '', variant_key: 'b'});
@@ -4572,7 +4590,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         saveButtons.forEach(button => {
             button.disabled = isSaving;
-            button.textContent = isSaving ? 'Spremam funnel...' : 'Spremi cijeli funnel';
+            button.textContent = isSaving ? window.fccT('Spremam funnel...') : window.fccT('Spremi cijeli funnel');
         });
     }
 
@@ -4664,7 +4682,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     state.validation.errors = result.details.validation_errors;
                     focusValidationError(result.details.validation_errors[0]);
                 }
-                const message = Array.isArray(result?.message) ? result.message.join(' ') : (result?.message || 'Spremanje trenutno nije uspjelo.');
+                const message = Array.isArray(result?.message) ? result.message.join(' ') : (result?.message || window.fccT('Spremanje trenutno nije uspjelo.'));
                 throw new Error(message);
             }
 
@@ -4677,14 +4695,14 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 || String(persisted.status) !== requestedPersistence.status
                 || String(persisted.visibility_mode) !== requestedPersistence.visibility_mode
             ) {
-                throw new Error('Sustav nije potvrdio spremljene postavke odabranog funnel-a. Osvježi stranicu i pokušaj ponovno.');
+                throw new Error(window.fccT('Sustav nije potvrdio spremljene postavke odabranog funnel-a. Osvježi stranicu i pokušaj ponovno.'));
             }
             /* /Custom code: FC-2026-08-20 */
 
             const message = Array.isArray(result.message) ? result.message.join(' ') : result.message;
-            setSaveNotice(message || 'Promjene su spremljene.', 'success');
+            setSaveNotice(message || window.fccT('Promjene su spremljene.'), 'success');
         } catch(error) {
-            setSaveNotice(error.message || 'Spremanje trenutno nije uspjelo. Osvježi stranicu i pokušaj ponovno.', 'error');
+            setSaveNotice(error.message || window.fccT('Spremanje trenutno nije uspjelo. Osvježi stranicu i pokušaj ponovno.'), 'error');
         } finally {
             state.save.inFlight = false;
             setSaveButtonState(false);
@@ -4771,7 +4789,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         }
 
         if(isSeoImageUpload && !isSupportedSeoImageFile(file)) {
-            setSaveNotice('SEO fotografija za dijeljenje mora biti JPG ili PNG datoteka.', 'error');
+            setSaveNotice(window.fccT('SEO fotografija za dijeljenje mora biti JPG ili PNG datoteka.'), 'error');
             fileInput.value = '';
             return;
         }
@@ -4833,8 +4851,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function renderTabs() {
-        const editorTarget = state.activeStepId ? 'step' : 'landing';
+        if(partnerMode && ['landing','step'].includes(state.screen)) partnerEditorScreen=state.screen;
+        const editorTarget = partnerMode ? partnerEditorScreen : (state.activeStepId ? 'step' : 'landing');
         const editorIsActive = state.screen === 'landing' || state.screen === 'step';
+
+        if(partnerMode){
+            const labels={content:window.fccT('Sadržaj'),steps:'Koraci',tools:window.fccT('Dodaj / uredi'),preview:'Pregled'};
+            tabsRoot.innerHTML=Object.entries(labels).map(([key,label])=>`<button type="button" class="vf-tab ${state.screen!=='analytics'&&partnerView===key?'is-active':''}" data-fp-funnel-view="${key}" data-vf-screen="${escapeHtml(editorTarget)}" aria-pressed="${state.screen!=='analytics'&&partnerView===key}">${label}</button>`).join('')+`<button type="button" class="vf-tab ${state.screen==='analytics'?'is-active':''}" data-vf-screen="analytics" aria-pressed="${state.screen==='analytics'}">Rezultati</button>`;
+            return;
+        }
 
         tabsRoot.innerHTML = `
             <button type="button" class="vf-tab ${editorIsActive ? 'is-active' : ''}" data-vf-screen="${escapeHtml(editorTarget)}">
@@ -4883,9 +4908,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             <div class="vf-flow-start">
                                 <div class="vf-chip-row">
                                     <span class="vf-chip vf-chip--accent">Start of funnel</span>
-                                    <span class="vf-chip">${escapeHtml(landing.name || 'Landing stranica')}</span>
+                                    <span class="vf-chip">${escapeHtml(landing.name || window.fccT('Landing stranica'))}</span>
                                 </div>
-                                <div class="vf-step-card__title">${escapeHtml((state.payload.funnel || {}).name || 'VIP Funnel')}</div>
+                                <div class="vf-step-card__title">${escapeHtml((state.payload.funnel || {}).name || window.fccT('VIP Funnel'))}</div>
                                 <div class="vf-step-card__text">Landing stranica ostaje početna točka. Survey i CTA blokovi ispod mogu voditi na bilo koju stranicu u nastavku.</div>
                                 <div class="vf-card-actions">
                                     <button type="button" data-vf-screen="landing">Uredi landing</button>
@@ -4947,8 +4972,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
                 </div>
                 <div class="vf-card__body">
-                    <div class="vf-note">${studioMessages.landingNote}</div>
+                    ${!partnerMode ? `<div class="vf-note">${studioMessages.landingNote}</div>` : ''}
                     ${renderSurfaceBuilderV2(surface, 'landing')}
+                    ${partnerMode ? `<details class="fp-disclosure fp-funnel-publish-help"><summary>Kako povezati funnel s karticom?</summary><div class="vf-note">${studioMessages.landingNote}</div></details>` : ''}
                 </div>
             </div>
         `;
@@ -4959,6 +4985,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const defaults = state.payload.defaults || {};
 
         return `
+            ${partnerMode ? '<details class="fp-disclosure fp-funnel-settings"><summary>Naziv, poveznica i objava</summary>' : ''}
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
@@ -4983,15 +5010,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <div class="vf-field">
                             <label>Status</label>
                             <select data-vf-funnel-field="status">
-                                ${['draft', 'testing', 'active'].map(status => `<option value="${status}" ${String(funnel.status || 'draft') === status ? 'selected' : ''}>${status}</option>`).join('')}
+                                ${['draft', 'testing', 'active'].map(status => `<option value="${status}" ${String(funnel.status || 'draft') === status ? 'selected' : ''}>${({draft:'Nacrt',testing:'Testiranje',active:'Aktivan'})[status]}</option>`).join('')}
                             </select>
                         </div>
                         <div class="vf-field">
                             <label>Vidljivost</label>
                             <select data-vf-funnel-field="visibility_mode">
                                 ${[
-                                    ['testing_locked', 'Test / zaključano'],
-                                    ['pro_live', 'PRO live'],
+                                    ['testing_locked', window.fccT('Test / zaključano')],
+                                    ['pro_live', window.fccT('PRO live')],
                                     ['private', 'Privatno']
                                 ].map(([key, label]) => `<option value="${key}" ${String(funnel.visibility_mode || 'testing_locked') === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
                             </select>
@@ -5004,6 +5031,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </label>
                 </div>
             </div>
+            ${partnerMode ? '</details>' : ''}
         `;
     }
 
@@ -5370,7 +5398,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <span class="vf-chip">${escapeHtml((pathOptions.find(item => item.path_key === step.path_key)?.title) || step.path_key || 'Put')}</span>
                 </div>
                 <div class="vf-step-card__title">${escapeHtml(step.title || 'Korak')}</div>
-                <div class="vf-step-card__text">${escapeHtml(step.summary || 'Dodaj kratak opis i jasan cilj ovog koraka.')}</div>
+                <div class="vf-step-card__text">${escapeHtml(step.summary || window.fccT('Dodaj kratak opis i jasan cilj ovog koraka.'))}</div>
                 <div class="vf-card-actions">
                     <button type="button" data-vf-step-up="${escapeHtml(step.id)}">Gore</button>
                     <button type="button" data-vf-step-down="${escapeHtml(step.id)}">Dolje</button>
@@ -5427,34 +5455,34 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     function renderPageRail() {
         const steps = flatSteps();
         const activeUrl = getActivePagePublicUrl();
-        const activeUrlLabel = state.screen === 'step' && state.activeStepId ? 'URL aktivnog koraka' : 'URL glavne stranice';
+        const activeUrlLabel = state.screen === 'step' && state.activeStepId ? window.fccT('URL aktivnog koraka') : window.fccT('URL glavne stranice');
 
         return `
             <div class="vf-card" style="box-shadow:none;">
                 <div class="vf-card__head">
                     <div>
-                        <h3 class="vf-card__title">Funnel steps</h3>
+                        <h3 class="vf-card__title">Koraci funnela</h3>
                         <div class="vf-card__sub">Klikni, dodaj ili povuci korake u novi redoslijed.</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
                     <div class="vf-page-rail-url">
                         <div class="vf-page-rail-url__label">${escapeHtml(activeUrlLabel)}</div>
-                        <div class="vf-page-rail-url__value">${activeUrl ? escapeHtml(activeUrl) : 'URL će se prikazati nakon spremanja funnel-a.'}</div>
+                        <div class="vf-page-rail-url__value">${activeUrl ? escapeHtml(activeUrl) : window.fccT('URL će se prikazati nakon spremanja funnel-a.')}</div>
                     </div>
 
                     <div class="vf-page-rail-actions">
                         <button type="button" class="vf-page-rail-action ${state.screen === 'analytics' ? 'is-active' : ''}" data-vf-screen="analytics">Analitika</button>
-                        <button type="button" class="vf-page-rail-action" data-vf-add-step-type="page">+ Page</button>
+                        <button type="button" class="vf-page-rail-action" data-vf-add-step-type="page">+ Stranica</button>
                         <button type="button" class="vf-page-rail-action" data-vf-add-step-type="split">Split test</button>
-                        <button type="button" class="vf-page-rail-action vf-page-rail-action--wide" data-vf-add-step-type="conditional">+ Conditional split</button>
+                        <button type="button" class="vf-page-rail-action vf-page-rail-action--wide" data-vf-add-step-type="conditional">+ Grananje</button>
                     </div>
 
                     <div class="vf-page-rail-list" style="margin-bottom:.55rem;">
                         <button type="button" class="vf-page-rail-item ${state.screen === 'landing' ? 'is-active' : ''}" data-vf-page-landing="1">
                             <span class="vf-page-rail-item__copy">
                                 <span class="vf-page-rail-item__title">${escapeHtml(analyticsMessages.landingTab)}</span>
-                                <span class="vf-page-rail-item__sub">${escapeHtml((state.payload.landing_page || {}).name || 'Start stranica')}</span>
+                                <span class="vf-page-rail-item__sub">${escapeHtml((state.payload.landing_page || {}).name || window.fccT('Start stranica'))}</span>
                             </span>
                         </button>
                     </div>
@@ -5499,15 +5527,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-builder-toolbar">
                 <div>
                     <div class="vf-builder-toolbar__title">${escapeHtml(pageTitle)}</div>
-                    <div class="vf-builder-toolbar__sub">Canvas koristi postojeći FCC engine: blokovi, survey routing, product offer i lead capture ostaju kompatibilni.</div>
+                    <div class="vf-builder-toolbar__sub">Odaberi blok za uređivanje sadržaja i izgleda.</div>
                 </div>
                 <div class="vf-actions">
                     <div class="vf-segmented" aria-label="Preview uređaj">
                         <button type="button" class="${state.previewDevice === 'desktop' ? 'is-active' : ''}" data-vf-preview-device="desktop">Desktop</button>
-                        <button type="button" class="${state.previewDevice === 'mobile' ? 'is-active' : ''}" data-vf-preview-device="mobile">Mobile</button>
+                        <button type="button" class="${state.previewDevice === 'mobile' ? 'is-active' : ''}" data-vf-preview-device="mobile">Mobitel</button>
                     </div>
-                    <button type="button" class="vf-btn vf-btn--ghost" data-vf-undo="1" ${canUndoHistory() ? '' : 'disabled'}>Undo</button>
-                    <button type="button" class="vf-btn vf-btn--ghost" data-vf-redo="1" ${canRedoHistory() ? '' : 'disabled'}>Redo</button>
+                    <button type="button" class="vf-btn vf-btn--ghost" data-vf-undo="1" ${canUndoHistory() ? '' : 'disabled'}>Poništi</button>
+                    <button type="button" class="vf-btn vf-btn--ghost" data-vf-redo="1" ${canRedoHistory() ? '' : 'disabled'}>Vrati</button>
                     <button type="button" class="vf-btn vf-btn--primary" data-vf-save-button="1">Spremi</button>
                 </div>
             </div>
@@ -5520,7 +5548,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <div class="vf-card__head">
                             <div>
                                 <h3 class="vf-card__title">Struktura stranice</h3>
-                                <div class="vf-card__sub">Povuci blokove gore/dolje ili ubaci sekciju iz desnog panela.</div>
+                                <div class="vf-card__sub">Uredi blok ili dodaj novi kroz karticu Dodaj / uredi.</div>
                             </div>
                         </div>
                         <div class="vf-card__body">
@@ -5550,16 +5578,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-card" style="box-shadow:none;">
                 <div class="vf-card__head">
                     <div>
-                        <h3 class="vf-card__title">${activePanel === 'sections' ? 'Add Section' : activePanel === 'elements' ? 'My Elements' : 'Settings'}</h3>
-                        <div class="vf-card__sub">${activePanel === 'sections' ? 'Gotovi FCC blokovi za ubacivanje.' : activePanel === 'elements' ? 'Elementi koje možeš dodati u aktivnu stranicu.' : 'Uredi odabrani dio stranice.'}</div>
+                        <h3 class="vf-card__title">${activePanel === 'sections' ? window.fccT('Dodaj sekciju') : activePanel === 'elements' ? window.fccT('Dodaj element') : window.fccT('Uredi odabrani blok')}</h3>
+                        <div class="vf-card__sub">${activePanel === 'sections' ? window.fccT('Gotovi FCC blokovi za ubacivanje.') : activePanel === 'elements' ? window.fccT('Elementi koje možeš dodati u aktivnu stranicu.') : window.fccT('Uredi odabrani dio stranice.')}</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
                     <div class="vf-builder-panel-tabs">
-                        <button type="button" class="${activePanel === 'sections' ? 'is-active' : ''}" data-vf-builder-panel="sections">Sections</button>
-                        <button type="button" class="${activePanel === 'elements' ? 'is-active' : ''}" data-vf-builder-panel="elements">Elements</button>
+                        <button type="button" class="${activePanel === 'sections' ? 'is-active' : ''}" data-vf-builder-panel="sections">Sekcije</button>
+                        <button type="button" class="${activePanel === 'elements' ? 'is-active' : ''}" data-vf-builder-panel="elements">Elementi</button>
                     </div>
-                    <button type="button" class="vf-builder-panel-settings ${activePanel === 'settings' ? 'is-active' : ''}" data-vf-builder-panel="settings">Settings</button>
+                    <button type="button" class="vf-builder-panel-settings ${activePanel === 'settings' ? 'is-active' : ''}" data-vf-builder-panel="settings">Postavke</button>
                     ${activePanel === 'sections' ? renderSectionLibrary() : ''}
                     ${activePanel === 'elements' ? renderElementLibrary() : ''}
                     ${activePanel === 'settings' ? renderSettingsPanel(surface, scope) : ''}
@@ -5596,7 +5624,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         ${items.map(([key, template]) => `
                             <div class="vf-template-mini" role="button" tabindex="0" draggable="true" data-vf-section-template="${escapeHtml(key)}">
                                 <span class="vf-template-mini__preview" style="--vf-accent:${escapeHtml(template.accent || '#67d8c9')};background:linear-gradient(135deg, ${hexToRgba(template.accent || '#67d8c9', .34)}, transparent 48%),linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.035));"></span>
-                                <span class="vf-template-mini__title">${escapeHtml(template.label || 'FCC sekcija')}</span>
+                                <span class="vf-template-mini__title">${escapeHtml(template.label || window.fccT('FCC sekcija'))}</span>
                                 <span class="vf-template-mini__text">${escapeHtml(template.description || '')}</span>
                                 <span class="vf-card-actions" style="margin-top:.1rem;"><button type="button" data-vf-section-template-add="${escapeHtml(key)}">Dodaj</button></span>
                             </div>
@@ -5684,6 +5712,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
         return `
             <div class="vf-stack">
+                ${partnerMode && activeBlock ? renderBlockEditor(activeBlock) : ''}
                 ${(hasCaptureFields || hasDeferredSurvey) && !hasSubmitAction ? `
                     <div class="vf-note">
                         ${escapeHtml(hasDeferredSurvey && !hasCaptureFields ? studioMessages.surfaceSubmitNoteSurvey : studioMessages.surfaceSubmitNoteForm)}
@@ -5692,6 +5721,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         </div>
                     </div>
                 ` : ''}
+                ${partnerMode ? '<details class="fp-disclosure"><summary>Izgled stranice i slika za dijeljenje</summary><div class="vf-stack">' : ''}
                 ${surfaceNameEditor}
                 <div class="vf-seo-card">
                     <div class="vf-seo-card__head">
@@ -5792,8 +5822,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <button type="button" class="vf-btn ${state.activeVariant === 'b' ? 'vf-btn--primary' : ''}" data-vf-variant="b">${escapeHtml(studioMessages.surfaceEditVariantB)}</button>
                     </div>
                 ` : ''}
-                <div class="vf-section-label">Selected element</div>
-                ${activeBlock ? renderBlockEditor(activeBlock) : `<div class="vf-empty">${escapeHtml(studioMessages.surfaceEditorEmpty)}</div>`}
+                ${partnerMode ? '</div></details>' : ''}
+                ${!partnerMode ? `<div class="vf-section-label">Odabrani element</div>${activeBlock ? renderBlockEditor(activeBlock) : `<div class="vf-empty">${escapeHtml(studioMessages.surfaceEditorEmpty)}</div>`}` : ''}
             </div>
         `;
     }
@@ -5907,7 +5937,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             <div class="vf-template-grid">
                                 ${Object.entries(pageTemplates).map(([key, template]) => `
                                     <button type="button" class="vf-template-card" data-vf-template="${escapeHtml(key)}">
-                                        <div class="vf-template-card__title">${escapeHtml(template.label || 'Predložak')}</div>
+                                        <div class="vf-template-card__title">${escapeHtml(template.label || window.fccT('Predložak'))}</div>
                                         <div class="vf-template-card__text">${escapeHtml(template.description || '')}</div>
                                     </button>
                                 `).join('')}
@@ -5942,6 +5972,18 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             ['fifth', '1/5'],
             ['sixth', '1/6']
         ];
+
+        if(partnerMode) return `
+            <div class="vf-block-card fp-funnel-block ${block.id === state.activeBlockId ? 'is-active' : ''}" data-vf-block-card="${escapeHtml(block.id)}" data-vf-block-id="${escapeHtml(block.id)}" data-vf-block-span="${escapeHtml(block.layout_width || 'full')}" draggable="true">
+                <div class="vf-chip-row"><span class="vf-chip">${escapeHtml(pageBlockTypes[block.type] || block.type)}</span>${block.required ? '<span class="vf-chip">Obavezno</span>' : ''}${isSystemSubmitBlock(block) ? `<span class="vf-chip">${escapeHtml(studioMessages.blockAutoSubmit)}</span>` : ''}</div>
+                <div class="vf-block-card__title">${escapeHtml(block.title || block.label || 'Blok')}</div>
+                <div class="vf-block-card__text">${escapeHtml(block.text || block.placeholder || studioMessages.blockNoDesc)}</div>
+                <div class="fp-block-actions"><button type="button" class="vf-btn" data-fp-edit-block>Uredi blok →</button><details class="fp-block-options"><summary>Raspored i radnje</summary>
+                    <div class="vf-block-card__meta">${quickWidthOptions.map(([key,label])=>`<button type="button" aria-label="Širina bloka ${escapeHtml(label)}" class="vf-block-card__width-btn ${String(block.layout_width || 'full') === key ? 'is-active' : ''}" data-vf-block-width="${escapeHtml(block.id)}|${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}</div>
+                    <div class="vf-card-actions"><button type="button" data-vf-block-duplicate="${escapeHtml(block.id)}">Dupliciraj</button><button type="button" data-vf-block-up="${escapeHtml(block.id)}">Gore</button><button type="button" data-vf-block-down="${escapeHtml(block.id)}">Dolje</button><button type="button" data-vf-block-delete="${escapeHtml(block.id)}">Obriši</button></div>
+                </details></div>
+            </div>
+        `;
 
         return `
             <div class="vf-block-card ${block.id === state.activeBlockId ? 'is-active' : ''}" data-vf-block-card="${escapeHtml(block.id)}" data-vf-block-id="${escapeHtml(block.id)}" data-vf-block-span="${escapeHtml(block.layout_width || 'full')}" draggable="true">
@@ -5998,7 +6040,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                     </div>
                                     <div class="vf-media-gallery__meta">
                                         <div class="vf-media-gallery__label">${escapeHtml(fileName)}</div>
-                                        <div class="vf-media-gallery__state">${isActive ? 'Trenutno odabrana' : 'Klikni za odabir'}</div>
+                                        <div class="vf-media-gallery__state">${isActive ? window.fccT('Trenutno odabrana') : window.fccT('Klikni za odabir')}</div>
                                     </div>
                                 </button>
                             `;
@@ -6029,15 +6071,15 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     }
 
     function getProductTargetModeLabel(mode = '') {
-        return productTargetModeOptions[mode] || 'Vodi na blog vodič';
+        return productTargetModeOptions[mode] || window.fccT('Vodi na blog vodič');
     }
 
     function getProductLanguageModeLabel(mode = '') {
-        return productLanguageModeOptions[mode] || 'Prati jezik stranice';
+        return productLanguageModeOptions[mode] || window.fccT('Prati jezik stranice');
     }
 
     function getProductSourceModeLabel(mode = '') {
-        return productSourceModeOptions[mode] || 'Koristi zadani proizvod';
+        return productSourceModeOptions[mode] || window.fccT('Koristi zadani proizvod');
     }
 
     function normalizeProductMappings(mappings = []) {
@@ -6142,9 +6184,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             fallbackLanguageCode: block.product_fallback_language_code || 'hr',
             primaryMode: block.product_primary_mode || 'blog_guide',
             secondaryMode: block.product_secondary_mode || 'direct_shop',
-            primaryCtaText: block.product_primary_cta_text || 'Pogledaj vodič proizvoda',
+            primaryCtaText: block.product_primary_cta_text || window.fccT('Pogledaj vodič proizvoda'),
             secondaryEnabled: block.product_secondary_enabled !== false,
-            secondaryCtaText: block.product_secondary_cta_text || 'Idi na službeni shop'
+            secondaryCtaText: block.product_secondary_cta_text || window.fccT('Idi na službeni shop')
         };
     }
 
@@ -6164,16 +6206,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const countdownMode = ['fixed', 'evergreen', 'weekly'].includes(block.countdown_mode) ? block.countdown_mode : 'fixed';
         const actionItems = getBlockActionItems(block);
         const selectedProduct = getProductCatalogEntry(block);
-        const blockNameLabel = isRadioSurvey ? 'Interni naziv pitanja' : 'Naziv bloka';
-        const badgeLabel = isRadioSurvey ? 'Oznaka pitanja' : 'Badge / oznaka';
-        const titleLabel = isRadioSurvey ? 'Pitanje' : 'Naslov bloka';
-        const textLabel = isRadioSurvey ? 'Pojašnjenje pitanja' : 'Tekst / opis';
+        const blockNameLabel = isRadioSurvey ? window.fccT('Interni naziv pitanja') : window.fccT('Naziv bloka');
+        const badgeLabel = isRadioSurvey ? window.fccT('Oznaka pitanja') : window.fccT('Badge / oznaka');
+        const titleLabel = isRadioSurvey ? 'Pitanje' : window.fccT('Naslov bloka');
+        const textLabel = isRadioSurvey ? window.fccT('Pojašnjenje pitanja') : window.fccT('Tekst / opis');
         const blockBackgroundOpacity = clampOpacity(block.background_opacity, 100);
         const actionsSectionLabel = isButtons
-            ? 'Gumbi i grananje'
+            ? window.fccT('Gumbi i grananje')
             : (isRadioSurvey
-                ? (radioRoutingEnabled ? 'Odgovori ovog pitanja i routing nakon submita' : 'Odgovori ovog pitanja')
-                : 'Opcije i grananje');
+                ? (radioRoutingEnabled ? window.fccT('Odgovori ovog pitanja i routing nakon submita') : window.fccT('Odgovori ovog pitanja'))
+                : window.fccT('Opcije i grananje'));
 
         return `
             <div class="vf-stack">
@@ -6210,7 +6252,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
 
                 ${isMedia ? `
                     <div class="vf-field">
-                        <label>${block.type === 'image' ? 'URL slike' : 'YouTube, Vimeo ili URL videa'}</label>
+                        <label>${block.type === 'image' ? window.fccT('URL slike') : window.fccT('YouTube, Vimeo ili URL videa')}</label>
                         <input type="text" data-vf-block-field="media_url" value="${escapeHtml(block.media_url || '')}" />
                         ${block.type === 'video' ? `<div class="vf-field__hint">Zalijepi YouTube, Vimeo ili direktni video link i odmah će se prikazati embed u pregledu.</div>` : ''}
                     </div>
@@ -6243,9 +6285,9 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
 
                     <div class="vf-field">
-                        <label>${String(block.product_source_mode || 'manual') === 'dynamic' ? 'Zadani / fallback proizvod' : 'Proizvod iz blog kataloga'}</label>
+                        <label>${String(block.product_source_mode || 'manual') === 'dynamic' ? window.fccT('Zadani / fallback proizvod') : window.fccT('Proizvod iz blog kataloga')}</label>
                         <select data-vf-block-field="product_translation_key" data-vf-product-selector>
-                            <option value="">${String(block.product_source_mode || 'manual') === 'dynamic' ? 'Odaberi fallback proizvod' : 'Odaberi proizvod'}</option>
+                            <option value="">${String(block.product_source_mode || 'manual') === 'dynamic' ? window.fccT('Odaberi fallback proizvod') : window.fccT('Odaberi proizvod')}</option>
                             ${(productCatalog || []).map(item => `
                                 <option
                                     value="${escapeHtml(item.translation_key || '')}"
@@ -6254,16 +6296,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                 >${escapeHtml(item.title || 'Proizvod')}${item.available_languages_label ? ` [${escapeHtml(item.available_languages_label)}]` : ''}</option>
                             `).join('')}
                         </select>
-                        <div class="vf-field__hint">${String(block.product_source_mode || 'manual') === 'dynamic' ? 'Ako nijedno mapiranje ne pogodi odgovor osobe, blok će koristiti ovaj zadani proizvod.' : 'Odaberi proizvod koji je već postavljen na blogu. Funnel će tada koristiti isti referral i webshop mehanizam koji već radi na blog člancima.'}</div>
+                        <div class="vf-field__hint">${String(block.product_source_mode || 'manual') === 'dynamic' ? window.fccT('Ako nijedno mapiranje ne pogodi odgovor osobe, blok će koristiti ovaj zadani proizvod.') : window.fccT('Odaberi proizvod koji je već postavljen na blogu. Funnel će tada koristiti isti referral i webshop mehanizam koji već radi na blog člancima.')}</div>
                     </div>
 
                     ${selectedProduct ? `
                         <div class="vf-note">
-                            <strong>${String(block.product_source_mode || 'manual') === 'dynamic' ? 'Fallback proizvod' : 'Odabrani proizvod'}:</strong> ${escapeHtml(selectedProduct.title || 'Proizvod')}<br>
+                            <strong>${String(block.product_source_mode || 'manual') === 'dynamic' ? window.fccT('Fallback proizvod') : window.fccT('Odabrani proizvod')}:</strong> ${escapeHtml(selectedProduct.title || 'Proizvod')}<br>
                             <span class="vf-field__hint">Dostupni jezici: ${escapeHtml(selectedProduct.available_languages_label || 'HR / EN')}</span>
                         </div>
                     ` : `
-                        <div class="vf-note">${String(block.product_source_mode || 'manual') === 'dynamic' ? 'Odaberi fallback proizvod ili složi mapiranja ispod. Tako blok može pokazati različit proizvod ovisno o odgovoru osobe.' : 'Kad odabereš proizvod, ovdje ćeš odmah vidjeti koji su jezici dostupni i kako će blok voditi na blog vodič ili direktno na službeni shop.'}</div>
+                        <div class="vf-note">${String(block.product_source_mode || 'manual') === 'dynamic' ? window.fccT('Odaberi fallback proizvod ili složi mapiranja ispod. Tako blok može pokazati različit proizvod ovisno o odgovoru osobe.') : window.fccT('Kad odabereš proizvod, ovdje ćeš odmah vidjeti koji su jezici dostupni i kako će blok voditi na blog vodič ili direktno na službeni shop.')}</div>
                     `}
 
                     <div class="vf-two">
@@ -6295,7 +6337,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                 const hasMappedTagOption = availableTags.some(option => option.value === String(mapping.match_value || '').trim());
                                 const mappingTagOptions = hasMappedTagOption || !String(mapping.match_value || '').trim()
                                     ? availableTags
-                                    : [{value: String(mapping.match_value || '').trim(), sourceLabel: 'Ručno spremljeni tag'}, ...availableTags];
+                                    : [{value: String(mapping.match_value || '').trim(), sourceLabel: window.fccT('Ručno spremljeni tag')}, ...availableTags];
                                 return `
                                     <div class="vf-action-card is-open">
                                         <div class="vf-action-card__body" style="padding-top:.9rem;">
@@ -6303,7 +6345,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                                 <div class="vf-field">
                                                     <label>Tag odgovora iz funnela</label>
                                                     <select data-vf-product-mapping-field="${escapeHtml(mapping.id)}|match_value">
-                                                        <option value="">${availableTags.length ? 'Odaberi tag iz ovog funnela' : 'Još nema dostupnih tagova'}</option>
+                                                        <option value="">${availableTags.length ? window.fccT('Odaberi tag iz ovog funnela') : window.fccT('Još nema dostupnih tagova')}</option>
                                                         ${mappingTagOptions.map(option => `
                                                             <option value="${escapeHtml(option.value)}" ${String(mapping.match_value || '') === String(option.value || '') ? 'selected' : ''}>
                                                                 ${escapeHtml(option.value)}${option.sourceLabel ? ` — ${escapeHtml(option.sourceLabel)}` : ''}
@@ -6343,7 +6385,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         </div>
                         <div class="vf-field">
                             <label>Tekst glavnog CTA-a</label>
-                            <input type="text" data-vf-block-field="product_primary_cta_text" value="${escapeHtml(block.product_primary_cta_text || 'Pogledaj vodič proizvoda')}" />
+                            <input type="text" data-vf-block-field="product_primary_cta_text" value="${escapeHtml(block.product_primary_cta_text || window.fccT('Pogledaj vodič proizvoda'))}" />
                         </div>
                     </div>
 
@@ -6359,7 +6401,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             </div>
                             <div class="vf-field">
                                 <label>Tekst sekundarnog CTA-a</label>
-                                <input type="text" data-vf-block-field="product_secondary_cta_text" value="${escapeHtml(block.product_secondary_cta_text || 'Idi na službeni shop')}" />
+                                <input type="text" data-vf-block-field="product_secondary_cta_text" value="${escapeHtml(block.product_secondary_cta_text || window.fccT('Idi na službeni shop'))}" />
                             </div>
                         </div>
                     ` : ''}
@@ -6377,21 +6419,21 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <div class="vf-two">
                         <div class="vf-field">
                             <label>Tekst gumba u bloku</label>
-                            <input type="text" data-vf-block-field="ai_button_label" value="${escapeHtml(block.ai_button_label || 'Započni moju preporuku')}" />
+                            <input type="text" data-vf-block-field="ai_button_label" value="${escapeHtml(block.ai_button_label || window.fccT('Započni moju preporuku'))}" />
                         </div>
                         <div class="vf-field">
                             <label>Label plutajućeg launchera</label>
-                            <input type="text" data-vf-block-field="ai_launcher_label" value="${escapeHtml(block.ai_launcher_label || 'Moja preporuka')}" />
+                            <input type="text" data-vf-block-field="ai_launcher_label" value="${escapeHtml(block.ai_launcher_label || window.fccT('Moja preporuka'))}" />
                         </div>
                     </div>
                     <div class="vf-two">
                         <div class="vf-field">
                             <label>Naslov u chatu</label>
-                            <input type="text" data-vf-block-field="ai_intro_label" value="${escapeHtml(block.ai_intro_label || 'Tvoj osobni vodič')}" />
+                            <input type="text" data-vf-block-field="ai_intro_label" value="${escapeHtml(block.ai_intro_label || window.fccT('Tvoj osobni vodič'))}" />
                         </div>
                         <div class="vf-field">
                             <label>Placeholder pitanja</label>
-                            <input type="text" data-vf-block-field="ai_input_placeholder" value="${escapeHtml(block.ai_input_placeholder || 'Napiši cilj ili pitanje...')}" />
+                            <input type="text" data-vf-block-field="ai_input_placeholder" value="${escapeHtml(block.ai_input_placeholder || window.fccT('Napiši cilj ili pitanje...'))}" />
                         </div>
                     </div>
                 ` : ''}
@@ -6468,7 +6510,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 ` : ''}
 
                 ${isRadioSurvey ? `
-                    <div class="vf-note">${radioRoutingEnabled ? 'Ovo pitanje ne vodi dalje odmah po kliku. Osoba prvo odabere odgovor, a završni submit CTA koristi taj odabir za routing samo ako CTA nema svoj ručno zadani korak ili URL.' : 'Na ovom pitanju je routing isključen. Odgovor se samo sprema, a završni submit ga trenutno neće koristiti za usmjeravanje.'}</div>
+                    <div class="vf-note">${radioRoutingEnabled ? window.fccT('Ovo pitanje ne vodi dalje odmah po kliku. Osoba prvo odabere odgovor, a završni submit CTA koristi taj odabir za routing samo ako CTA nema svoj ručno zadani korak ili URL.') : window.fccT('Na ovom pitanju je routing isključen. Odgovor se samo sprema, a završni submit ga trenutno neće koristiti za usmjeravanje.')}</div>
                 ` : ''}
 
                 ${isCountdown ? `
@@ -6569,6 +6611,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     </div>
                 ` : ''}
 
+                ${partnerMode ? '<details class="fp-disclosure"><summary>Font, boje i izgled bloka</summary><div class="vf-stack">' : ''}
                 ${!isSpacer ? `
                     <div class="vf-section-label">Uređenje teksta</div>
                     <div class="vf-two">
@@ -6699,15 +6742,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                     <label>Naglasak bloka</label>
                     <input type="color" data-vf-block-field="accent_color" value="${escapeHtml(block.accent_color || '#67d8c9')}" />
                 </div>
+                ${partnerMode ? '</div></details>' : ''}
             </div>
         `;
     }
 
     function renderActionCard(action, block) {
         const styleLabels = {
-            primary: 'Primarni stil',
-            secondary: 'Sekundarni stil',
-            ghost: 'Prozirni stil'
+            primary: window.fccT('Primarni stil'),
+            secondary: window.fccT('Sekundarni stil'),
+            ghost: window.fccT('Prozirni stil')
         };
         const blockType = block.type;
         const isSurvey = blockType === 'survey';
@@ -6717,16 +6761,16 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const isExternal = action.action === 'external_url';
         const isSubmitAction = ['submit_next', 'submit_stay'].includes(action.action) || action.require_submit;
         const targetStep = radioRoutingEnabled ? flatSteps().find(step => step.id === action.target_step_id) : null;
-        const targetStepLabel = !radioRoutingEnabled ? 'Bez routinga' : (targetStep ? (targetStep.title || targetStep.id) : (isExternal ? 'Vanjski URL' : 'Automatski izbor'));
-        const actionLabel = !radioRoutingEnabled ? 'Sprema odgovor' : (pageActionOptions[action.action] || 'Idi dalje');
-        const title = action.label || (isOptionBlockType(blockType) ? 'Novi odgovor' : 'Novi gumb');
+        const targetStepLabel = !radioRoutingEnabled ? window.fccT('Bez routinga') : (targetStep ? (targetStep.title || targetStep.id) : (isExternal ? window.fccT('Vanjski URL') : window.fccT('Automatski izbor')));
+        const actionLabel = !radioRoutingEnabled ? window.fccT('Sprema odgovor') : (pageActionOptions[action.action] || window.fccT('Idi dalje'));
+        const title = action.label || (isOptionBlockType(blockType) ? window.fccT('Novi odgovor') : window.fccT('Novi gumb'));
         const subtitle = isSystemSubmit
-            ? 'Sistemski gumb koji služi samo za slanje podataka iz forme.'
+            ? window.fccT('Sistemski gumb koji služi samo za slanje podataka iz forme.')
             : isRadioSurvey
-            ? (radioRoutingEnabled ? 'Odgovor se sprema unutar ovog pitanja, a završni submit ga može koristiti za routing.' : 'Odgovor se trenutno samo sprema kao dio ovog pitanja.')
+            ? (radioRoutingEnabled ? window.fccT('Odgovor se sprema unutar ovog pitanja, a završni submit ga može koristiti za routing.') : window.fccT('Odgovor se trenutno samo sprema kao dio ovog pitanja.'))
             : isSurvey
-            ? 'Odgovor osobe i pravilo kamo se funnel nastavlja.'
-            : 'Gumb koji vodi na sljedeći korak ili šalje podatke.';
+            ? window.fccT('Odgovor osobe i pravilo kamo se funnel nastavlja.')
+            : window.fccT('Gumb koji vodi na sljedeći korak ili šalje podatke.');
         const isExpanded = state.activeActionId === action.id;
         const validationErrors = getActionValidationErrorsForCurrentView(action, block);
         const externalUrlError = validationErrors.find(error => error.field === 'external_url');
@@ -6738,7 +6782,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                 <button type="button" class="vf-action-card__toggle" data-vf-action-card="${escapeHtml(action.id)}" aria-expanded="${isExpanded ? 'true' : 'false'}">
                     <div class="vf-action-card__header">
                         <div>
-                            <div class="vf-action-card__eyebrow">${isRadioSurvey ? 'Odgovor upitnika' : (isSurvey ? 'Survey opcija' : 'CTA gumb')}</div>
+                            <div class="vf-action-card__eyebrow">${isRadioSurvey ? window.fccT('Odgovor upitnika') : (isSurvey ? window.fccT('Survey opcija') : window.fccT('CTA gumb'))}</div>
                             <div class="vf-action-card__title">${escapeHtml(title)}</div>
                             <div class="vf-action-card__sub">${escapeHtml(subtitle)}</div>
                         </div>
@@ -6757,18 +6801,18 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             <div class="vf-action-card__section-head">
                                 <div>
                                     <div class="vf-action-card__section-kicker">Glavne postavke</div>
-                                    <div class="vf-action-card__section-text">${isRadioSurvey ? (radioRoutingEnabled ? 'Uredi odgovor i odredi kamo završni submit vodi ako osoba odabere baš ovu opciju. Odgovori su namjerno vizualno ujednačeni jer ovo nije CTA nego pitanje.' : 'Uredi odgovor ovog pitanja. Routing je trenutno ugašen pa se ovaj odgovor samo sprema. Odgovori su namjerno vizualno ujednačeni jer ovo nije CTA nego pitanje.') : 'Uredi tekst, stil i odredi što se događa nakon klika na ovu opciju.'}</div>
+                                    <div class="vf-action-card__section-text">${isRadioSurvey ? (radioRoutingEnabled ? window.fccT('Uredi odgovor i odredi kamo završni submit vodi ako osoba odabere baš ovu opciju. Odgovori su namjerno vizualno ujednačeni jer ovo nije CTA nego pitanje.') : window.fccT('Uredi odgovor ovog pitanja. Routing je trenutno ugašen pa se ovaj odgovor samo sprema. Odgovori su namjerno vizualno ujednačeni jer ovo nije CTA nego pitanje.')) : window.fccT('Uredi tekst, stil i odredi što se događa nakon klika na ovu opciju.')}</div>
                                 </div>
                             </div>
 
                             <div class="vf-action-card__main-grid">
                                 <div class="vf-field is-full">
-                                    <label>${isOptionBlockType(blockType) ? 'Tekst odgovora' : 'Tekst gumba'}</label>
+                                    <label>${isOptionBlockType(blockType) ? window.fccT('Tekst odgovora') : window.fccT('Tekst gumba')}</label>
                                     <input type="text" data-vf-action-field="${escapeHtml(action.id)}|label" value="${escapeHtml(action.label || '')}" />
                                 </div>
                                 ${(isOptionBlockType(blockType) || blockType === 'cta_group') ? `
                                     <div class="vf-field is-full">
-                                        <label>${isRadioSurvey ? 'Kratko pojašnjenje odgovora' : (isSurvey ? 'Kratko pojašnjenje opcije' : 'Manji tekst ispod gumba')}</label>
+                                        <label>${isRadioSurvey ? window.fccT('Kratko pojašnjenje odgovora') : (isSurvey ? window.fccT('Kratko pojašnjenje opcije') : window.fccT('Manji tekst ispod gumba'))}</label>
                                         <input type="text" data-vf-action-field="${escapeHtml(action.id)}|hint" value="${escapeHtml(action.hint || '')}" />
                                     </div>
                                 ` : ''}
@@ -6809,7 +6853,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <details class="vf-action-card__advanced" ${(isSubmitAction || action.value || action.event_key || action.sticky || (radioRoutingEnabled && action.external_url) || (radioRoutingEnabled && isExternal)) ? 'open' : ''}>
                             <summary>
                                 <span>Napredne postavke</span>
-                                <span class="vf-field__hint">${isRadioSurvey ? (radioRoutingEnabled ? 'Tagovi, dodatni link i završni routing' : 'Tag odgovora i dodatne vrijednosti') : 'Tagovi, dodatni link i obavezni submit'}</span>
+                                <span class="vf-field__hint">${isRadioSurvey ? (radioRoutingEnabled ? window.fccT('Tagovi, dodatni link i završni routing') : window.fccT('Tag odgovora i dodatne vrijednosti')) : window.fccT('Tagovi, dodatni link i obavezni submit')}</span>
                             </summary>
                             <div class="vf-action-card__advanced-grid">
                                 <div class="vf-two">
@@ -6917,8 +6961,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
             <div class="vf-card">
                 <div class="vf-card__head">
                     <div>
-                        <h2 class="vf-card__title">Live pregled stranice</h2>
-                        <div class="vf-card__sub">Sve što mijenjaš lijevo odmah se preslikava na preview desno.</div>
+                        <h2 class="vf-card__title">${partnerMode ? window.fccT('Pregled stranice') : window.fccT('Live pregled stranice')}</h2>
+                        <div class="vf-card__sub">${partnerMode ? window.fccT('Ovako izgleda sadržaj odabranog koraka. Za izmjene se vrati na Sadržaj.') : window.fccT('Sve što mijenjaš lijevo odmah se preslikava na preview desno.')}</div>
                     </div>
                 </div>
                 <div class="vf-card__body">
@@ -7031,7 +7075,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <label class="vf-preview-radio-item" style="border-color:${hexToRgba(accentColor, 0.22)};background:${hexToRgba(accentColor, 0.08)};">
                             <span class="vf-preview-radio-dot" style="border-radius:.22rem;border-color:${hexToRgba(accentColor, 0.42)};"></span>
                             <span class="vf-preview-radio-copy">
-                                <span class="vf-preview-radio-label" style="font-size:${fieldSize}px;font-weight:${Math.max(600, fieldWeight)};font-family:${fontFamily};color:${fieldTextColor};">${escapeHtml(block.title || 'Privola za kontakt')}</span>
+                                <span class="vf-preview-radio-label" style="font-size:${fieldSize}px;font-weight:${Math.max(600, fieldWeight)};font-family:${fontFamily};color:${fieldTextColor};">${escapeHtml(block.title || window.fccT('Privola za kontakt'))}</span>
                                 ${block.text ? `<span class="vf-preview-radio-hint">${escapeHtml(block.text)}</span>` : ''}
                             </span>
                         </label>
@@ -7074,7 +7118,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         </div>
                         <div class="vf-preview-countdown__expired">
                             <div class="vf-preview-countdown__expired-kicker">Expired stanje</div>
-                            <div class="vf-preview-countdown__expired-text">${escapeHtml(block.completion_text || 'Vrijeme je isteklo.')}</div>
+                            <div class="vf-preview-countdown__expired-text">${escapeHtml(block.completion_text || window.fccT('Vrijeme je isteklo.'))}</div>
                         </div>
                     </div>
                 </div>
@@ -7110,7 +7154,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                                     ${productData.sourceMode === 'dynamic' && productData.previewMapping ? `
                                         <div class="vf-field__hint" style="margin-bottom:.5rem;">Preview mapiranja: ako osoba odabere <strong>${escapeHtml(productData.previewMapping.match_value || '')}</strong>, blok prikazuje ovaj proizvod.</div>
                                     ` : ''}
-                                    <div class="vf-preview-product-card__title" style="font-family:${fontFamily};color:${titleColor};">${escapeHtml(product.title || 'Odabrani proizvod')}</div>
+                                    <div class="vf-preview-product-card__title" style="font-family:${fontFamily};color:${titleColor};">${escapeHtml(product.title || window.fccT('Odabrani proizvod'))}</div>
                                     ${product.description ? `<div class="vf-preview-product-card__text" style="font-family:${fontFamily};color:${bodyColor};">${escapeHtml(product.description)}</div>` : ''}
                                     <div class="vf-preview-buttons" style="margin-top:.9rem;">
                                         <span class="vf-preview-btn is-primary" style="${primaryStyle}">${escapeHtml(productData.primaryCtaText)}</span>
@@ -7142,17 +7186,17 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                         <div class="vf-preview-ai-card__head">
                             <div class="vf-preview-ai-card__mark">AI</div>
                             <div class="vf-preview-ai-card__copy">
-                                <div class="vf-preview-ai-card__title" style="font-family:${fontFamily};color:${titleColor};">${escapeHtml(block.ai_intro_label || 'Tvoj osobni vodič')}</div>
-                                <div class="vf-preview-ai-card__text">${advisorEnabled ? 'Osoba kroz nekoliko prirodnih pitanja dolazi do jasnije preporuke.' : 'AI savjetnik je trenutno isključen za ovaj blok.'}</div>
+                                <div class="vf-preview-ai-card__title" style="font-family:${fontFamily};color:${titleColor};">${escapeHtml(block.ai_intro_label || window.fccT('Tvoj osobni vodič'))}</div>
+                                <div class="vf-preview-ai-card__text">${advisorEnabled ? window.fccT('Osoba kroz nekoliko prirodnih pitanja dolazi do jasnije preporuke.') : window.fccT('AI savjetnik je trenutno isključen za ovaj blok.')}</div>
                             </div>
                         </div>
                         <div class="vf-chip-row">
-                            <span class="vf-chip vf-chip--accent">${advisorEnabled ? 'Pametna preporuka' : 'Savjetnik isključen'}</span>
-                            <span class="vf-chip vf-chip--soft">${leadEnabled ? 'Moguć osobni nastavak' : 'Bez kontakt forme'}</span>
+                            <span class="vf-chip vf-chip--accent">${advisorEnabled ? window.fccT('Pametna preporuka') : window.fccT('Savjetnik isključen')}</span>
+                            <span class="vf-chip vf-chip--soft">${leadEnabled ? window.fccT('Moguć osobni nastavak') : window.fccT('Bez kontakt forme')}</span>
                             <span class="vf-chip vf-chip--soft">Prilagođeno Forever cilju</span>
                         </div>
                         <div class="vf-preview-buttons" style="margin-top:0;">
-                            <span class="vf-preview-btn is-primary" style="${buttonStyle}">${escapeHtml(block.ai_button_label || 'Započni moju preporuku')}</span>
+                            <span class="vf-preview-btn is-primary" style="${buttonStyle}">${escapeHtml(block.ai_button_label || window.fccT('Započni moju preporuku'))}</span>
                         </div>
                     </div>
                 </div>
@@ -7162,7 +7206,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         if(block.type === 'image' || block.type === 'video') {
             const mediaPreview = (() => {
                 if(!block.media_url) {
-                    return `<div>${block.type === 'image' ? 'Ovdje ide slika' : 'Ovdje ide video'}</div>`;
+                    return `<div>${block.type === 'image' ? window.fccT('Ovdje ide slika') : window.fccT('Ovdje ide video')}</div>`;
                 }
 
                 if(block.type === 'image') {
@@ -7226,7 +7270,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
                             <span class="vf-preview-radio-dot" style="border-color:${hexToRgba(accentColor, 0.42)};"></span>
                             <span class="vf-preview-radio-copy">
                                 <span class="vf-preview-radio-label" style="font-size:${textSize}px;font-weight:${Math.max(700, textWeight)};font-family:${fontFamily};color:${bodyColor};">${escapeHtml(item.label || 'Odgovor')}</span>
-                            <span class="vf-preview-radio-hint">${escapeHtml(item.hint || 'Ovaj odgovor pomaže da dobiješ jasniji sljedeći korak.')}</span>
+                            <span class="vf-preview-radio-hint">${escapeHtml(item.hint || window.fccT('Ovaj odgovor pomaže da dobiješ jasniji sljedeći korak.'))}</span>
                         </span>
                     </label>
                 `).join('')}
@@ -7313,6 +7357,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         renderWorkspace();
         renderPreview();
         syncPayloadInput();
+        refreshPartnerWorkspace();
     }
 
     tabsRoot.addEventListener('click', event => {
@@ -7331,7 +7376,8 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
         const tab = event.target.closest('[data-vf-screen]');
         if(!tab) return;
         state.screen = tab.getAttribute('data-vf-screen');
-        if(state.screen === 'landing') {
+        // Switching Partner workspaces must preserve the selected A/B variant.
+        if(state.screen === 'landing' && (!partnerMode || !tab.hasAttribute('data-fp-funnel-view'))) {
             state.activeVariant = 'a';
         }
         ensureActiveBlock();
@@ -7408,6 +7454,7 @@ $analytics = is_array($studio['analytics'] ?? null) ? $studio['analytics'] : [
     });
 
     workspaceRoot.addEventListener('click', event => {
+        if(event.target.closest('summary')) return;
         const undoButton = event.target.closest('[data-vf-undo]');
         if(undoButton) {
             event.preventDefault();

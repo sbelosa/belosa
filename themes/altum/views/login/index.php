@@ -2,200 +2,7 @@
 
 <?= \Altum\Alerts::output_alerts() ?>
 
-<?php ob_start() ?>
-<style>
-    .login-shell {
-        color: #e6f3f1;
-    }
 
-    .login-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: .5rem;
-        padding: .35rem .7rem;
-        border-radius: 999px;
-        background: rgba(46, 211, 198, .12);
-        border: 1px solid rgba(46, 211, 198, .16);
-        color: #85efe4;
-        font-size: .72rem;
-        font-weight: 800;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-        margin-bottom: .7rem;
-    }
-
-    .login-title {
-        margin: 0;
-        font-size: clamp(1.7rem, 3.2vw, 2.2rem);
-        line-height: 1.02;
-        letter-spacing: -.03em;
-        color: #f7fbfb;
-        font-weight: 800;
-    }
-
-    .login-subtitle {
-        display: inline-block;
-        margin-left: .45rem;
-        color: #72e5d9;
-        font-size: .82rem;
-        font-weight: 700;
-        vertical-align: middle;
-    }
-
-    .login-note-card {
-        margin-top: .9rem;
-        margin-bottom: 1.05rem;
-        padding: .82rem .92rem;
-        border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(19, 41, 43, .92), rgba(17, 34, 38, .92));
-        border: 1px solid rgba(84, 224, 208, .16);
-        color: #ddfbf7;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-        font-size: .88rem;
-        line-height: 1.5;
-    }
-
-    .login-card {
-        padding: .9rem;
-        border-radius: 1rem;
-        background: rgba(255,255,255,.02);
-        border: 1px solid rgba(255,255,255,.06);
-    }
-
-    .login-section-title {
-        margin-bottom: .75rem;
-        color: #f5fbfa;
-        font-size: .72rem;
-        font-weight: 800;
-        letter-spacing: .1em;
-        text-transform: uppercase;
-    }
-
-    .login-shell label,
-    .login-shell .custom-control-label {
-        color: #c6d8d7;
-        font-weight: 700;
-        font-size: .82rem;
-        margin-bottom: .45rem;
-    }
-
-    .login-shell .form-control {
-        min-height: 3rem;
-        border-radius: .9rem;
-        border: 1px solid rgba(255,255,255,.08);
-        background: rgba(255,255,255,.03);
-        color: #f7fbfb;
-        box-shadow: none;
-    }
-
-    .login-shell .form-control::placeholder {
-        color: rgba(207, 226, 224, .44);
-    }
-
-    .login-shell .form-control:focus {
-        border-color: rgba(81, 229, 212, .5);
-        box-shadow: 0 0 0 .2rem rgba(81, 229, 212, .12);
-        background: rgba(255,255,255,.05);
-    }
-
-    .login-shell .text-muted,
-    .login-shell .form-text {
-        color: rgba(198, 216, 215, .72) !important;
-        font-size: .76rem;
-        line-height: 1.45;
-    }
-
-    .login-links-row {
-        display: flex;
-        flex-direction: column;
-        gap: .7rem;
-        margin-top: .15rem;
-    }
-
-    .login-links-row a {
-        color: #87f0e6;
-    }
-
-    .login-submit-wrap {
-        margin-top: .95rem;
-    }
-
-    .login-submit-btn {
-        min-height: 3.15rem;
-        border: 0;
-        border-radius: .95rem;
-        font-size: .95rem;
-        font-weight: 800;
-        letter-spacing: .01em;
-        color: #062624;
-        background: linear-gradient(135deg, #6fffd2 0%, #42d4bf 52%, #2bb6dd 100%);
-        box-shadow: 0 1rem 2rem rgba(52, 213, 198, .18);
-    }
-
-    .login-submit-btn:hover,
-    .login-submit-btn:focus {
-        color: #041d1b;
-        transform: translateY(-1px);
-        box-shadow: 0 1.2rem 2.2rem rgba(52, 213, 198, .22);
-    }
-
-    .login-auth-divider {
-        position: relative;
-        margin: 1.15rem 0 .85rem;
-        text-align: center;
-    }
-
-    .login-auth-divider::before {
-        content: '';
-        position: absolute;
-        inset: 50% 0 auto;
-        border-top: 1px solid rgba(255,255,255,.08);
-    }
-
-    .login-auth-divider span {
-        position: relative;
-        z-index: 1;
-        display: inline-block;
-        padding: 0 .75rem;
-        background: #0e141d;
-        color: rgba(198, 216, 215, .72);
-        font-size: .74rem;
-        font-weight: 700;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    .login-social-btn {
-        border-radius: .85rem;
-        border: 1px solid rgba(255,255,255,.07);
-        background: rgba(255,255,255,.03);
-        color: #eef7f6;
-        font-weight: 700;
-    }
-
-    .login-social-btn:hover,
-    .login-social-btn:focus {
-        background: rgba(255,255,255,.06);
-        color: #fff;
-    }
-
-    .login-footer-link {
-        color: rgba(228, 242, 241, .78);
-    }
-
-    .login-footer-link a {
-        color: #87f0e6;
-    }
-
-    @media (min-width: 768px) {
-        .login-links-row {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-        }
-    }
-</style>
-<?php \Altum\Event::add_content(ob_get_clean(), 'head', 'fcc_login_premium_styles') ?>
 
 <?php
 //ALTUMCODE:DEMO if(DEMO) {
@@ -211,7 +18,7 @@
 ?>
 
 <div class="login-shell">
-    <div class="login-eyebrow">Forever Card Club</div>
+    <div class="login-eyebrow"><?= htmlspecialchars(fcc_t('Forever Card Club'), ENT_QUOTES, 'UTF-8') ?></div>
 
     <h1 class="login-title">
         <?= l('login.hero_title') ?>
@@ -219,7 +26,7 @@
     </h1>
 
     <div class="login-note-card">
-        Prijavite se u svoj Forever Card Club račun
+        <?= htmlspecialchars(fcc_t('Prijavite se u svoj Forever Card Club račun'), ENT_QUOTES, 'UTF-8') ?>
     </div>
 
     <form action="" method="post" class="mt-4" role="form">
@@ -229,7 +36,7 @@
             <input id="rememberme" type="hidden" name="rememberme" value="<?= $data->values['rememberme'] ? '1' : null ?>">
 
             <div class="login-card">
-                <div class="login-section-title">Potvrda prijave</div>
+                <div class="login-section-title"><?= htmlspecialchars(fcc_t('Potvrda prijave'), ENT_QUOTES, 'UTF-8') ?></div>
 
                 <div class="form-group mb-0">
                     <label for="twofa_token"><?= l('login.twofa_token') ?></label>
@@ -243,8 +50,6 @@
             </div>
         <?php else: ?>
             <div class="login-card">
-                <div class="login-section-title">Prijava</div>
-
                 <div class="form-group">
                     <label for="email"><?= l('global.email') ?></label>
                     <input id="email" type="text" name="email" class="form-control <?= \Altum\Alerts::has_field_errors('email') ? 'is-invalid' : null ?>" value="<?= $data->values['email'] ?>" required="required" autofocus="autofocus" />
@@ -284,7 +89,7 @@
         <?php endif ?>
 
         <?php if(settings()->facebook->is_enabled || settings()->google->is_enabled || settings()->twitter->is_enabled || settings()->discord->is_enabled || settings()->linkedin->is_enabled || settings()->microsoft->is_enabled): ?>
-            <div class="login-auth-divider"><span>ili nastavi s</span></div>
+            <div class="login-auth-divider"><span><?= htmlspecialchars(fcc_t('ili nastavi s'), ENT_QUOTES, 'UTF-8') ?></span></div>
 
             <div>
                 <?php if(settings()->facebook->is_enabled): ?>
@@ -341,7 +146,7 @@
 
     <?php if(settings()->users->register_is_enabled): ?>
         <div class="mt-5 text-center login-footer-link">
-            <?= sprintf(l('login.register'), '<a href="' . url('register' . $data->redirect_append) . '" class="font-weight-bold">' . l('login.register_help') . '</a>') ?></a>
+            <?= sprintf(l('login.register'), '<a href="' . url('register' . $data->redirect_append) . '" class="font-weight-bold">' . l('login.register_help') . '</a>') ?>
         </div>
     <?php endif ?>
 </div>

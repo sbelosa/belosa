@@ -69,7 +69,7 @@
                     <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= l('admin_broadcast_view.rate_delivery') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['delivery_rate'] ?>%</div></div></div>
                     <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= l('admin_broadcast_view.rate_open') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['open_rate'] ?>%</div></div></div>
                     <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= l('admin_broadcast_view.rate_click') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['click_rate'] ?>%</div></div></div>
-                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1">CTOR</div><div class="h4 mb-0"><?= $data->analytics['rates']['click_to_open_rate'] ?>%</div></div></div>
+                    <div class="col-md-3 col-6 mb-3"><div class="bg-gray-100 rounded p-3 h-100"><div class="small text-uppercase text-muted mb-1"><?= htmlspecialchars(fcc_t('CTOR'), ENT_QUOTES, 'UTF-8') ?></div><div class="h4 mb-0"><?= $data->analytics['rates']['click_to_open_rate'] ?>%</div></div></div>
                 </div>
             </div>
         </div>

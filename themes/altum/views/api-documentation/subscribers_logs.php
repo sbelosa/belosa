@@ -2,7 +2,7 @@
 
 <div class="container">
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('api-documentation') ?>"><?= l('api_documentation.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
@@ -30,7 +30,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-success mr-3">GET</span> <span class="text-muted"><?= SITE_URL ?>api/subscribers-logs/</span>
+                                <span class="badge badge-success mr-3"><?= htmlspecialchars(fcc_t('GET'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/subscribers-logs/', ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -39,9 +39,9 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request GET \<br />
-                                --url '<?= SITE_URL ?>api/subscribers-logs/' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
+                                <?= htmlspecialchars(fcc_t('curl --request GET \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars(fcc_t('api/subscribers-logs/\' \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
                             </div>
                         </div>
                     </div>
@@ -57,7 +57,7 @@
                             </thead>
                             <tbody>
                             <tr>
-                                <td>search_by</td>
+                                <td><?= htmlspecialchars(fcc_t('search_by'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-signature mr-1"></i> <?= l('api_documentation.string') ?></span>
@@ -65,7 +65,7 @@
                                 <td><?= sprintf(l('api_documentation.allowed_values'), '<code>' . implode('</code> , <code>',  ['ip']) . '</code>') ?></td>
                             </tr>
                             <tr>
-                                <td>search</td>
+                                <td><?= htmlspecialchars(fcc_t('search'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-signature mr-1"></i> <?= l('api_documentation.string') ?></span>
@@ -73,7 +73,7 @@
                                 <td></td>
                             </tr>
                             <tr>
-                                <td>page</td>
+                                <td><?= htmlspecialchars(fcc_t('page'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -81,7 +81,7 @@
                                 <td><?= l('api_documentation.filters.page') ?></td>
                             </tr>
                             <tr>
-                                <td>results_per_page</td>
+                                <td><?= htmlspecialchars(fcc_t('results_per_page'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -89,7 +89,7 @@
                                 <td><?= sprintf(l('api_documentation.filters.results_per_page'), '<code>' . implode('</code> , <code>', [10, 25, 50, 100, 250, 500, 1000]) . '</code>', 25) ?></td>
                             </tr>
                             <tr>
-                                <td>website_id</td>
+                                <td><?= htmlspecialchars(fcc_t('website_id'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -98,7 +98,7 @@
                             </tr>
 
                             <tr>
-                                <td>campaign_id</td>
+                                <td><?= htmlspecialchars(fcc_t('campaign_id'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -107,7 +107,7 @@
                             </tr>
 
                             <tr>
-                                <td>subscriber_id</td>
+                                <td><?= htmlspecialchars(fcc_t('subscriber_id'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -116,7 +116,7 @@
                             </tr>
 
                             <tr>
-                                <td>flow_id</td>
+                                <td><?= htmlspecialchars(fcc_t('flow_id'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -125,7 +125,7 @@
                             </tr>
 
                             <tr>
-                                <td>type</td>
+                                <td><?= htmlspecialchars(fcc_t('type'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>

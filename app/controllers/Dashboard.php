@@ -139,6 +139,15 @@ class Dashboard extends Controller {
     /* /Custom code: FC-2026-03-07 */
 
     public function index() {
+        if(fcc_partner_enabled()) {
+            \Altum\Authentication::guard();
+            if(isset($_GET['classic'])) {
+                $query=$_GET;unset($query['classic'],$query['altum']);$query['view']='statistics';
+                redirect('dashboard?'.http_build_query($query));
+            }
+            if(($_GET['view']??'')!=='statistics') redirect('partner');
+            \Altum\Title::set(fcc_t('Detaljna statistika'));
+        }
 
         \Altum\Authentication::guard();
 
@@ -206,7 +215,7 @@ class Dashboard extends Controller {
 
         if(!$links_result) {
             error_log('Dashboard links query failed: ' . database()->error);
-            Alerts::add_error('Database update required. Run /update to apply schema changes.');
+            Alerts::add_error(fcc_t('Database update required. Run /update to apply schema changes.'));
         } else {
             while($row = $links_result->fetch_object()) {
                 $row->full_url = $row->domain_id && isset($domains[$row->domain_id]) ? $domains[$row->domain_id]->scheme . $domains[$row->domain_id]->host . '/' . ($domains[$row->domain_id]->link_id == $row->link_id ? null : $row->url) : SITE_URL . $row->url;
@@ -256,11 +265,12 @@ class Dashboard extends Controller {
         $data = [
             'has_links' => count($links),
             /* Custom code: FC-2026-02-24: FCC core education notice */
-            'needs_fcc_education' => $needs_fcc_education,
+            'needs_fcc_education' => !fcc_partner_enabled() && $needs_fcc_education,
+            'partner_statistics' => fcc_partner_enabled(),
             /* /Custom code: FC-2026-02-24 */
             /* Custom code: FC-2026-04-06: dashboard onboarding should auto-open only once per user */
             'dashboard_onboarding_seen' => $dashboard_onboarding_seen,
-            'should_auto_open_dashboard_onboarding' => !$dashboard_onboarding_seen,
+            'should_auto_open_dashboard_onboarding' => !fcc_partner_enabled() && !$dashboard_onboarding_seen,
             /* /Custom code: FC-2026-04-06 */
             /* Custom code: FC-2026-08-14: verified self-only 4 CC dashboard notice */
             'forever_activity_notice' => $forever_activity_notice,

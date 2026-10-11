@@ -5,17 +5,17 @@
 $fcc_is_hr_language = \Altum\Language::$code === 'hr';
 $fcc_pages_category_eyebrow = $fcc_is_hr_language ? 'Kategorija' : 'Category';
 $fcc_pages_category_subtitle_fallback = $fcc_is_hr_language
-    ? 'Pregled svih članaka i smjernica u ovoj kategoriji.'
+    ? fcc_t('Pregled svih članaka i smjernica u ovoj kategoriji.')
     : 'Browse all articles and guidelines in this category.';
-$fcc_pages_category_total_pages_label = $fcc_is_hr_language ? 'Članaka' : 'Articles';
-$fcc_pages_category_total_views_label = $fcc_is_hr_language ? 'Ukupno pregleda' : 'Total views';
-$fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
+$fcc_pages_category_total_pages_label = $fcc_is_hr_language ? fcc_t('Članaka') : 'Articles';
+$fcc_pages_category_total_views_label = $fcc_is_hr_language ? fcc_t('Ukupno pregleda') : fcc_t('Total views');
+$fcc_pages_category_cta = $fcc_is_hr_language ? fcc_t('Saznaj više') : 'Learn more';
 /* /Custom code: FC-2026-03-02 */
 ?>
 
 <div class="container">
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('pages') ?>"><?= l('pages.index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
@@ -57,11 +57,11 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
             <?php if(!empty($data->foreverclub_semantics)): ?>
                 <div class="fcc-pages-overview__top">
                     <div>
-                        <div class="fcc-pages-cluster__eyebrow"><?= $fcc_is_hr_language ? 'FCC pregled' : 'FCC overview' ?></div>
+                        <div class="fcc-pages-cluster__eyebrow"><?= $fcc_is_hr_language ? fcc_t('FCC pregled') : fcc_t('FCC overview') ?></div>
                         <h2><?= $data->foreverclub_semantics['heading'] ?></h2>
                         <p><?= $data->foreverclub_semantics['summary'] ?></p>
                     </div>
-                    <a href="<?= $data->pages_category_url ?>#fcc-cluster-guides" class="fcc-pages-overview__cta"><?= $fcc_is_hr_language ? 'Odmah na vodiče' : 'Jump to guides' ?></a>
+                    <a href="<?= $data->pages_category_url ?>#fcc-cluster-guides" class="fcc-pages-overview__cta"><?= $fcc_is_hr_language ? fcc_t('Odmah na vodiče') : fcc_t('Jump to guides') ?></a>
                 </div>
 
                 <?php if(!empty($data->foreverclub_semantics['solves'])): ?>
@@ -76,7 +76,7 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
             <div class="fcc-pages-overview__details">
                 <?php if(!empty($data->foreverclub_semantics['facts'])): ?>
                     <details class="fcc-pages-overview__detail">
-                        <summary><?= $fcc_is_hr_language ? 'Ključne činjenice' : 'Key facts' ?></summary>
+                        <summary><?= $fcc_is_hr_language ? fcc_t('Ključne činjenice') : fcc_t('Key facts') ?></summary>
                         <ul>
                             <?php foreach($data->foreverclub_semantics['facts'] as $fact): ?>
                                 <li><?= $fact ?></li>
@@ -123,23 +123,23 @@ $fcc_pages_category_cta = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
         <section class="fcc-pages-cluster" id="fcc-cluster-guides">
             <div class="fcc-pages-cluster__head">
                 <div>
-                    <div class="fcc-pages-cluster__eyebrow"><?= $fcc_is_hr_language ? 'Po problemima' : 'Problem-first' ?></div>
-                    <h2><?= $fcc_is_hr_language ? 'Vodiči za konkretne Forever poslovne situacije' : 'Guides for specific Forever business situations' ?></h2>
-                    <p><?= $fcc_is_hr_language ? 'Ove stranice ciljaju stvarna pitanja koja partneri i AI sustavi najčešće traže: alati, online izgradnja poslovanja, kontakti, AI preporuke i usporedbe s generičkim alatima.' : 'These pages target the practical questions that partners and AI systems most often look for: tools, online business building, leads, AI guidance, and comparisons with generic platforms.' ?></p>
+                    <div class="fcc-pages-cluster__eyebrow"><?= $fcc_is_hr_language ? fcc_t('Po problemima') : 'Problem-first' ?></div>
+                    <h2><?= $fcc_is_hr_language ? fcc_t('Vodiči za konkretne Forever poslovne situacije') : fcc_t('Guides for specific Forever business situations') ?></h2>
+                    <p><?= $fcc_is_hr_language ? fcc_t('Ove stranice ciljaju stvarna pitanja koja partneri i AI sustavi najčešće traže: alati, online izgradnja poslovanja, kontakti, AI preporuke i usporedbe s generičkim alatima.') : fcc_t('These pages target the practical questions that partners and AI systems most often look for: tools, online business building, leads, AI guidance, and comparisons with generic platforms.') ?></p>
                 </div>
-                <a href="<?= url('page/how-it-works') ?>" class="fcc-pages-cluster__cta"><?= $fcc_is_hr_language ? 'Kako sustav radi' : 'How the system works' ?></a>
+                <a href="<?= url('page/how-it-works') ?>" class="fcc-pages-cluster__cta"><?= $fcc_is_hr_language ? fcc_t('Kako sustav radi') : fcc_t('How the system works') ?></a>
             </div>
 
             <div class="fcc-pages-cluster__grid">
                 <?php foreach($data->foreverclub_landing_pages as $row): ?>
                     <?php $row_url = $row->type == 'internal' ? fc_get_internal_page_url($row->url, $row->language) : $row->url; ?>
                     <a href="<?= $row_url ?>" class="fcc-pages-cluster__card">
-                        <span class="fcc-pages-cluster__label"><?= $fcc_is_hr_language ? 'Landing vodič' : 'Landing guide' ?></span>
+                        <span class="fcc-pages-cluster__label"><?= $fcc_is_hr_language ? fcc_t('Landing vodič') : fcc_t('Landing guide') ?></span>
                         <h3><?= $row->title ?></h3>
                         <?php if(!empty($row->description)): ?>
                             <p><?= $row->description ?></p>
                         <?php endif ?>
-                        <span class="fcc-pages-cluster__link"><?= $fcc_is_hr_language ? 'Otvori vodič' : 'Open guide' ?></span>
+                        <span class="fcc-pages-cluster__link"><?= $fcc_is_hr_language ? fcc_t('Otvori vodič') : fcc_t('Open guide') ?></span>
                     </a>
                 <?php endforeach ?>
             </div>

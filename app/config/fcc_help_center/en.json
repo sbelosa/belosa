@@ -1,0 +1,854 @@
+{
+  "locale": "en",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Your first steps in FCC",
+      "summary": "Sign in, check your card and choose a useful first action.",
+      "keywords": [
+        "getting started",
+        "login",
+        "language",
+        "install"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "What is available",
+          "paragraphs": [
+            "Use the same FCC account on your computer and phone. Free and PRO offer different features. Access to My journey is confirmed separately."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prepare your workspace",
+          "steps": [
+            "Sign in with your existing email and password. Installing the app does not require another account.",
+            "Choose your language in the top bar. This does not change the Forever shop market.",
+            "Open My card and check your contact details, Forever ID and public card preview.",
+            "Open Today for your next step, or Share for a product, business presentation or invitation.",
+            "Find FCC guides, app installation, your plan and support in More."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "If you need help",
+          "questions": [
+            {
+              "question": "Why is there no personal daily task?",
+              "answer": "Check access in My journey and your points. Unconfirmed data does not prove you have not completed an action. Support can check your account connection."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Today and My journey",
+      "summary": "Learn one thing, apply it and record exactly what you did.",
+      "keywords": [
+        "today",
+        "my journey",
+        "task",
+        "4 Core",
+        "progress"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "One connected programme",
+          "paragraphs": [
+            "My journey connects Recruitment, Retention, Productivity and Development. Your task shows the available step, practice and completion criteria. PRO adds personal Coach assistance."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Work through your step",
+          "steps": [
+            "Open Today and read your step's goal and displayed actions.",
+            "Open the linked tool or material. Ask for a simpler explanation if needed.",
+            "Complete the action the person wants, or choose the offered practice when no suitable situation is available.",
+            "Confirm only the actual outcome required by the step. A click or draft is not a sent conversation.",
+            "Review your records in My progress and note what helped or where you got stuck."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "Today’s step asks for a customer conversation. If no suitable person wants one, complete the offered practice and record it as practice."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A common question",
+          "questions": [
+            {
+              "question": "Does practice count as a sale?",
+              "answer": "No. Practice and real application have different labels. Reading a guide alone does not complete a step or confirm a business result."
+            },
+            {
+              "question": "Does PRO automatically grant access to My journey?",
+              "answer": "No. Your plan and confirmed programme enrolment are separate conditions. Check your access view or ask support to review it."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Edit and check your card",
+      "summary": "Connect contact details, content and personal recommendations on the card you share.",
+      "keywords": [
+        "card",
+        "block",
+        "edit",
+        "social networks"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "The card your visitor sees",
+          "paragraphs": [
+            "My card opens your cards and their editor. Edit each block separately; Appearance controls the overall design. Card limits and available blocks depend on your plan."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Edit one part, then check it",
+          "steps": [
+            "Open My card, choose your card and select Edit.",
+            "In Content, use Edit or the pencil beside the block you want to change.",
+            "Check your name, description, phone and channels. If a field already shows the domain, enter only the requested part.",
+            "Select Add block for new content and read the block's purpose carefully.",
+            "Save, open the public Overview and test the link before sharing."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A practical question",
+          "questions": [
+            {
+              "question": "How do I add a short description below my name?",
+              "answer": "Add a separate text block and move it below the heading block. The heading size and description are different settings."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop and country referrals",
+      "summary": "Your recommendation connects visitors with the relevant Forever offer.",
+      "keywords": [
+        "shop",
+        "webshop",
+        "Forever ID",
+        "country",
+        "Titan",
+        "Bosnia",
+        "Albania"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "One main block",
+          "paragraphs": [
+            "The main Forever shop block uses your linked Forever ID and the existing referral system. An older card may retain its Titan block. Do not change or invent referral parameters."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Check your referral",
+          "steps": [
+            "In My card, open the editor for your Forever shop block.",
+            "Check the Forever ID linked to your account. Ask support to check it if it is incorrect.",
+            "Read the block description and distinguish ordering products from starting a business relationship.",
+            "Save and open the public card Overview.",
+            "At the destination, check the country, available offer and referral display before ordering."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "Language and country are separate",
+          "paragraphs": [
+            "The system selects a destination using available country detection and shop rules. Most markets use Titan, while Bosnia and Herzegovina and Albania use local shops with different referrals. A VPN or travel can affect detection. Check an unexpected country before ordering; changing the language does not change the market."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "A visitor reads the card in Croatian but wants to order in Germany. Before ordering, they check the German offer and referral without changing the card language."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A common question",
+          "questions": [
+            {
+              "question": "Does a click prove a purchase?",
+              "answer": "No. A shop click and an order are different events. FCC does not confirm a purchase simply because a link was opened."
+            },
+            {
+              "question": "Must I prepare a separate link for every country?",
+              "answer": "The main block uses the existing country destination system. Check your linked Forever ID and actual destination. Send an example to support if the market or referral is wrong."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Recommend a product or article",
+      "summary": "Find useful content and share it with your personal link.",
+      "keywords": [
+        "product",
+        "article",
+        "share",
+        "recommendation",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Content that starts a conversation",
+          "paragraphs": [
+            "Share connects an article with your referral. Products, availability and official directions may differ by country. An article does not replace the chosen pack's label."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prepare a useful recommendation",
+          "steps": [
+            "Open Share and search by the exact product name or choose a relevant article.",
+            "Read the content and check that it answers the person's actual question.",
+            "Prepare your link and adapt the message. Do not invent personal experience or product effects.",
+            "Copy the content or open WhatsApp, then send the message yourself.",
+            "Arrange the next contact in Contacts if the person wants to continue."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Before ordering",
+          "questions": [
+            {
+              "question": "What if the product is unavailable in the customer's country?",
+              "answer": "Check the official local offer. Do not automatically substitute a product or assume another pack has the same formula or directions."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Share a business presentation",
+      "summary": "Introduce the opportunity and follow voluntary enquiries through your account.",
+      "keywords": [
+        "business",
+        "marketing plan",
+        "opportunity",
+        "starter pack",
+        "presentation"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A personal conversation link",
+          "paragraphs": [
+            "The business presentation is separate from webinars. Its available view and personal preparation depend on account access and plan. Opening a starter pack is not confirmed registration."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prepare and follow the conversation",
+          "steps": [
+            "In Share, open Marketing plan or the available Business presentation.",
+            "Read your preview and check your referral and contact details.",
+            "Adapt the invitation to the person's interest without promising earnings or results.",
+            "Send the prepared link yourself and arrange a conversation if the person wants one.",
+            "Find a voluntary enquiry in your Contacts and record the next agreement."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Understanding results",
+          "questions": [
+            {
+              "question": "Is a starter pack click a new business relationship?",
+              "answer": "No. Purchases and registration are completed at the official Forever destination. Distinguish a click, contact enquiry and personally confirmed outcome in FCC."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Invite a guest and follow registration",
+      "summary": "Choose a date, send your invitation and check the real outcome after the webinar.",
+      "keywords": [
+        "webinar",
+        "invitation",
+        "Zoom",
+        "guest",
+        "registration"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Your invitation, your contacts",
+          "paragraphs": [
+            "Free and PRO can use standard invitations for an available webinar. PRO adds personal introductions and video. Guests register through your link without an FCC account."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "From invitation to agreement",
+          "steps": [
+            "Open Share, Webinar invitation and Choose an event.",
+            "Check the selected event's date, time and timezone.",
+            "Adapt the message and send your own invitation yourself.",
+            "Review registrations in My guest registrations and Contacts.",
+            "Check permission to contact the guest and record the outcome after the event."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Registration does not prove attendance",
+          "paragraphs": [
+            "Unknown means attendance has not been checked. It does not mean the guest missed the event. After checking, record actual attendance or absence. Guest reminders depend on their choice and verified email; registration does not grant automatic permission for every future message."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Inviting someone to a new date",
+          "paragraphs": [
+            "If the guest wants another date, prepare a new invitation in the guest view or event selection. The guest confirms a new registration. An existing contact is reused only when identity matches; partial matches need review. A recurring event does not automatically register guests for future dates."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "Marko registered, but you have not checked attendance. Leave Unknown, ask him with permission and only then record the actual outcome."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A common question",
+          "questions": [
+            {
+              "question": "Does opening WhatsApp mean the invitation was sent?",
+              "answer": "No. You send it personally in WhatsApp. Confirm sending in FCC only after you have actually done so."
+            },
+            {
+              "question": "Does the guest need an FCC account?",
+              "answer": "No. They open your registration page and confirm the chosen date. Their registration remains linked to you as the inviter."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Create a personal or team webinar",
+      "summary": "Set the topic, date, language and audience who can use their own invitations.",
+      "keywords": [
+        "webinar",
+        "organiser",
+        "team",
+        "recurrence",
+        "Zoom",
+        "language"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Organising with PRO",
+          "paragraphs": [
+            "Creating and editing your own webinar requires PRO. Create your Zoom or other room in that service, then enter its complete HTTPS access link in FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prepare your event",
+          "steps": [
+            "Open Share, Webinar invitation, My webinars and the new webinar form.",
+            "Enter a title and what guests will learn. Choose who can invite guests.",
+            "Select the invitation and notification language, date, start time, duration and timezone.",
+            "Enter your access link and choose a single date or weekly recurrence.",
+            "Save the webinar and preview the invitation before using it."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Who sees a team webinar",
+          "paragraphs": [
+            "My entire FCC team includes the organiser and confirmed collaborators in their downline, including deeper branches. Upline sponsors and other teams are not automatically part of the audience. Administrative oversight does not imply audience membership. Each inviter keeps their private contacts; the organiser sees a total registration count."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Recurring events, changes and cancellation",
+          "paragraphs": [
+            "Weekly recurrence keeps the chosen local time through daylight saving changes. Editing offers Only this date or This and future dates. An existing series keeps its audience. Cancellation preserves contacts and history, while registrations and attendance reminders stop for cancelled dates."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "For a Sunday event in Slovenian at 20:00, choose Slovenščina, Europe/Ljubljana and your audience. Enter your Zoom room and check the first date and recurrence."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Event language",
+          "questions": [
+            {
+              "question": "Does a Slovenian invitation change my account language?",
+              "answer": "No. The event language controls its invitation and notifications. Account language and market selection remain separate."
+            },
+            {
+              "question": "Can Free members invite guests to my team webinar?",
+              "answer": "Yes. If they belong to its confirmed audience, they can use a standard personal invitation. Creating webinars and adding personal video follow PRO access."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Contacts and agreed follow ups",
+      "summary": "Record interest, contact permission and the next agreement while preserving history.",
+      "keywords": [
+        "contacts",
+        "address book",
+        "follow up",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Your private view",
+          "paragraphs": [
+            "Contacts keeps your personal work with people. Webinar registrations and voluntary business enquiries may connect with a contact. Respect a person's request not to be contacted again."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Update and arrange the next contact",
+          "steps": [
+            "Open Contacts and search for the person before manually adding another record.",
+            "Open the contact and check their name, phone, email and contact permission.",
+            "Record actual product or business interest and an agreed follow up date.",
+            "Save changes and open WhatsApp only if the person wants the conversation.",
+            "Choose Save contact for your device address book and personally confirm import of the downloaded file."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "A webinar guest already exists in Contacts. Find that record and update the agreed date instead of manually creating another contact."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A practical question",
+          "questions": [
+            {
+              "question": "Does Save contact automatically save everything to Google?",
+              "answer": "No. The button prepares a contact file from the entered fields. Confirm saving on your phone, or personally import the file into Google Contacts on a computer."
+            },
+            {
+              "question": "Why does a registration need partial match review?",
+              "answer": "Some details may match an earlier contact while others differ. Check identity before merging; a similar name alone is not sufficient."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Personally contact a team member",
+      "summary": "Prepare a message, confirm actual sending and arrange a conversation check.",
+      "keywords": [
+        "my team",
+        "message",
+        "draft",
+        "sent",
+        "support"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Team support with PRO",
+          "paragraphs": [
+            "My team and team messages follow PRO access. Open a collaborator you are authorised to support. Coach uses available progress and CC data without another person's private CRM notes."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "From draft to conversation",
+          "steps": [
+            "In My team, open the collaborator’s profile and Support and personal outreach.",
+            "Choose a reason and adapt Your message. Select Prepare with Coach if useful.",
+            "Save draft, Copy message or Open WhatsApp.",
+            "Send it yourself, then confirm sending in FCC.",
+            "Choose a date in When do you want to check how it went and later record the actual agreement."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "You personally confirm sending",
+          "paragraphs": [
+            "Opening WhatsApp or copying prepares a message; it does not prove sending. If you have not sent it, choose the relevant confirmation or leave a draft. You can correct an incorrect sent confirmation in the record. Removing a record does not delete a WhatsApp message. Drafts and removed records do not create conversation reminders."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "You opened WhatsApp but stopped before sending. Leave a draft or confirm that it was not sent. The record then contains no actual sent conversation."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "No confirmed number",
+          "questions": [
+            {
+              "question": "Why can I not open WhatsApp?",
+              "answer": "The collaborator needs a confirmed business phone number. Copy the text and use your existing channel, then personally confirm sending."
+            },
+            {
+              "question": "Does saving a draft create a conversation reminder?",
+              "answer": "No. Reminders follow message status. Drafts and removed records do not create conversation reminders. Link your check date to actual contact."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "How to ask Coach for help",
+      "summary": "Describe a specific situation and receive an explanation or draft you review yourself.",
+      "keywords": [
+        "coach",
+        "AI",
+        "question",
+        "message",
+        "guide"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Personal help with existing access",
+          "paragraphs": [
+            "PRO Coach helps with tasks, messages and your own work. It receives permitted account context, but does not automatically see your screen or confirm sending, purchases or registration."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Ask a useful question",
+          "steps": [
+            "Open Coach or the Coach help beside your task or tool.",
+            "Say what you want to do, which part of the app you are using and what is unclear.",
+            "For a message draft, describe the relationship and real conversation stage without unnecessary personal or health details.",
+            "Read the reply and check facts and destinations before using it.",
+            "Adapt the draft and send the message yourself. Coach does not send it for you."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Links to verified guides",
+          "paragraphs": [
+            "Coach can suggest a relevant guide and its specific section. The guide opens in your account language and does not grant additional tool permissions. If it is not enough, explain what remains unclear or contact support."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "Ask: I want to invite a guest to a new date; where do I do that? Coach can explain and link the exact guide section without the guest’s name."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Reply language",
+          "questions": [
+            {
+              "question": "Can I change only the Coach language?",
+              "answer": "You can explicitly request a reply language. This does not change the Forever market. Check the finished message's language for your recipient."
+            },
+            {
+              "question": "Can I read guides without PRO Coach?",
+              "answer": "Yes. The centre is available to signed in Free and PRO members. Personal AI replies follow existing Coach access."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Notifications and reminders",
+      "summary": "Choose topics, your daily reminder and the device where notifications should arrive.",
+      "keywords": [
+        "push",
+        "notification",
+        "reminder",
+        "sound",
+        "device"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "System and device settings",
+          "paragraphs": [
+            "Your inbox and push are different views. Push requires device permission. Daily tasks and agreed follow ups can be combined, while events and account notices have separate timing."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Check delivery",
+          "steps": [
+            "Open Notifications and read each notice's title, description and time.",
+            "Open Device notifications and my settings, then select Enable on this device.",
+            "Allow notifications in your browser or device and save your chosen categories.",
+            "In My pace, choose your daily reminder time.",
+            "Optionally enable sound and send yourself a test notification when that button is available."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Sound and appearance",
+          "questions": [
+            {
+              "question": "Will every device use the same sound?",
+              "answer": "No. The browser, operating system and silent mode control the final sound and appearance. FCC settings cannot override blocked or muted device notifications."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Understand results and CC points",
+      "summary": "Distinguish clicks, recorded activities and available Forever points.",
+      "keywords": [
+        "results",
+        "clicks",
+        "CC",
+        "points",
+        "progress"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Different measures",
+          "paragraphs": [
+            "FCC Results shows qualifying visits to the shop. My progress shows reported steps. CC comes from available Forever data imports and represents totals for a period."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Read each measure in context",
+          "steps": [
+            "Open FCC Results and read the period and click counting rules.",
+            "In My progress, review actual application and practice separately.",
+            "In My Forever and CC points, check the period and completeness of available data.",
+            "For qualification or an official business goal, check your market's current rules with your sponsor."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A common mistaken assumption",
+          "questions": [
+            {
+              "question": "Does CC prove who purchased a specific product?",
+              "answer": "No. Aggregate CC does not prove individual purchases. An incomplete or missing import is not confirmed zero activity either."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free and PRO, billing and invoices",
+      "summary": "Check plan access and subscription status before changing payment settings.",
+      "keywords": [
+        "plan",
+        "Free",
+        "PRO",
+        "Stripe",
+        "subscription",
+        "invoice"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Your plan belongs to the same account",
+          "paragraphs": [
+            "Free and PRO benefits appear in the current plan comparison. PRO does not confirm enrolment in My journey. Payment activation follows confirmation from Stripe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Check your plan",
+          "steps": [
+            "In More, open Free and PRO packages or My plan.",
+            "Read the benefits, subscription status and access period.",
+            "For activation, check the payment summary before proceeding to Stripe.",
+            "Review actual payment records in Payments and invoices.",
+            "Use the offered subscription settings for your card or cancellation and read the confirmed period end."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "When billing needs attention",
+          "questions": [
+            {
+              "question": "What if payment is stuck or unconfirmed?",
+              "answer": "Check the existing invoice and message in your plan. Use the offered recovery or support. Do not infer payment from the plan duration or repeatedly create new orders without checking."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Download and adapt the team presentation",
+      "summary": "Use a published version, personalise the speaker introduction and rehearse your delivery.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "presentation",
+        "slides",
+        "download"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A shared presentation foundation",
+          "paragraphs": [
+            "Presentations in the centre are available to signed in collaborators. Use the file and language actually offered. The edition date helps distinguish a current presentation from an old copy."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prepare your delivery",
+          "steps": [
+            "In More, open FCC guides and the topic Download and adapt the team presentation.",
+            "In the downloads section, select a language and Download PPT. Choose Download all languages for a ZIP of every translation.",
+            "Open the PPT in PowerPoint or a compatible app.",
+            "Change the designated speaker introduction and your photo.",
+            "Review the notes and check the entire presentation before your webinar."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "What to personalise",
+          "paragraphs": [
+            "Your introduction should contain verified details and your own real experience. Keep the shared structure and do not add earnings or medical promises, or other people's private data. Demonstrate examples using sample data."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "File language and version",
+          "paragraphs": [
+            "This section offers PPT files in all available languages and a ZIP of all translations. Check the language and edition before downloading. FCC interface screenshots may keep their source language while text and notes are translated. Check periodically for a newer edition."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "A practical example",
+          "paragraphs": [
+            "Download the current PPT, change your introduction and photo, then rehearse a sharing example. Use a sample contact rather than a customer’s private details."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A practical question",
+          "questions": [
+            {
+              "question": "Can I combine the presentation myself?",
+              "answer": "Adapt the designated introduction and sequence for your delivery while keeping accurate facts and a clear purpose. Check slides, notes and the availability of described FCC features before presenting."
+            },
+            {
+              "question": "What if a PPT screenshot shows another language?",
+              "answer": "Interface images may retain their source language. Follow translated notes and guides and actual button labels in your FCC view. Check the available file before presenting."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Advanced FCC tools",
+      "summary": "Open an extra tool when you have a specific need and check access.",
+      "keywords": [
+        "QR",
+        "domains",
+        "statistics",
+        "Funnel studio",
+        "advanced tools"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Extra support for your work",
+          "paragraphs": [
+            "More includes additional links, QR codes, statistics and advanced tools. Each tool checks plan permissions. Begin with your card, contacts and one clear action."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Choose a tool for your goal",
+          "steps": [
+            "Open More and read the available tool descriptions.",
+            "Decide whether you want to share a card, track visits or prepare specific content.",
+            "Open the chosen tool and check its instructions and plan access.",
+            "Test the result in preview before public use."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "If a feature is unavailable",
+          "questions": [
+            {
+              "question": "Do I need every advanced tool to get started?",
+              "answer": "No. First prepare your card and an agreed conversation. Choose an extra tool when it helps with a real action, and check access in your current plan."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Send a question to support",
+      "summary": "Describe the issue and continue the same conversation until you receive useful help.",
+      "keywords": [
+        "support",
+        "help",
+        "issue",
+        "ticket",
+        "error"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Follow your question in one place",
+          "paragraphs": [
+            "Help and support handles technical issues, suggestions and webinar topics. Coach can explain the process but does not submit a request for you."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Prepare a clear request",
+          "steps": [
+            "Open Help and support, then New message to support.",
+            "Enter a short subject and select the question category.",
+            "Describe where you are working, what you did and what happened.",
+            "If useful, attach a screenshot without passwords, card details or another person's private data.",
+            "Send your question and return to the same conversation for replies or additional details."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "While waiting for a reply",
+          "questions": [
+            {
+              "question": "Should I send several requests about the same issue?",
+              "answer": "Continue the existing conversation and add new information. Include your device and the exact error message so support can follow the whole situation in one place."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

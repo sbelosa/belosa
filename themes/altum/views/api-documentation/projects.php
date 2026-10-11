@@ -2,7 +2,7 @@
 
 <div class="container">
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('api-documentation') ?>"><?= l('api_documentation.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
@@ -30,7 +30,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-success mr-3">GET</span> <span class="text-muted"><?= SITE_URL ?>api/projects/</span>
+                                <span class="badge badge-success mr-3"><?= htmlspecialchars(fcc_t('GET'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -39,9 +39,9 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request GET \<br />
-                                --url '<?= SITE_URL ?>api/projects/' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
+                                <?= htmlspecialchars(fcc_t('curl --request GET \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars(fcc_t('api/projects/\' \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
                             </div>
                         </div>
                     </div>
@@ -57,7 +57,7 @@
                             </thead>
                             <tbody>
                             <tr>
-                                <td>page</td>
+                                <td><?= htmlspecialchars(fcc_t('page'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -65,7 +65,7 @@
                                 <td><?= l('api_documentation.filters.page') ?></td>
                             </tr>
                             <tr>
-                                <td>results_per_page</td>
+                                <td><?= htmlspecialchars(fcc_t('results_per_page'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-hashtag mr-1"></i> <?= l('api_documentation.int') ?></span>
@@ -126,7 +126,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-success mr-3">GET</span> <span class="text-muted"><?= SITE_URL ?>api/projects/</span><span class="text-primary">{project_id}</span>
+                                <span class="badge badge-success mr-3"><?= htmlspecialchars(fcc_t('GET'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?></span><span class="text-primary"><?= htmlspecialchars(fcc_t('{project_id}'), ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -135,9 +135,9 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request GET \<br />
-                                --url '<?= SITE_URL ?>api/projects/<span class="text-primary">{project_id}</span>' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
+                                <?= htmlspecialchars(fcc_t('curl --request GET \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?><span class="text-primary"><?= htmlspecialchars(fcc_t('{project_id}'), ENT_QUOTES, 'UTF-8') ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \
                             </div>
                         </div>
                     </div>
@@ -177,7 +177,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-info mr-3">POST</span> <span class="text-muted"><?= SITE_URL ?>api/projects</span>
+                                <span class="badge badge-info mr-3"><?= htmlspecialchars(fcc_t('POST'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/projects', ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                             </thead>
                             <tbody>
                             <tr>
-                                <td>name</td>
+                                <td><?= htmlspecialchars(fcc_t('name'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-danger"><i class="fas fa-fw fa-sm fa-asterisk mr-1"></i> <?= l('api_documentation.required') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-signature mr-1"></i> <?= l('api_documentation.string') ?></span>
@@ -201,7 +201,7 @@
                                 <td>-</td>
                             </tr>
                             <tr>
-                                <td>color</td>
+                                <td><?= htmlspecialchars(fcc_t('color'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-signature mr-1"></i> <?= l('api_documentation.string') ?></span>
@@ -216,12 +216,12 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request POST \<br />
-                                --url '<?= SITE_URL ?>api/projects' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \<br />
-                                --header 'Content-Type: multipart/form-data' \<br />
-                                --form 'name=<span class="text-primary">Production</span>' \<br />
-                                --form 'color=<span class="text-primary">#ffffff</span>' \<br />
+                                <?= htmlspecialchars(fcc_t('curl --request POST \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars(fcc_t('api/projects\' \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--header \'Content-Type: multipart/form-data\' \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--form \'name='), ENT_QUOTES, 'UTF-8') ?><span class="text-primary"><?= htmlspecialchars(fcc_t('Production'), ENT_QUOTES, 'UTF-8') ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--form \'color='), ENT_QUOTES, 'UTF-8') ?><span class="text-primary"><?= htmlspecialchars(fcc_t('#ffffff'), ENT_QUOTES, 'UTF-8') ?></span>' \<br />
                             </div>
                         </div>
                     </div>
@@ -258,7 +258,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-info mr-3">POST</span> <span class="text-muted"><?= SITE_URL ?>api/projects/</span><span class="text-primary">{project_id}</span>
+                                <span class="badge badge-info mr-3"><?= htmlspecialchars(fcc_t('POST'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?></span><span class="text-primary"><?= htmlspecialchars(fcc_t('{project_id}'), ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -274,7 +274,7 @@
                             </thead>
                             <tbody>
                             <tr>
-                                <td>name</td>
+                                <td><?= htmlspecialchars(fcc_t('name'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-signature mr-1"></i> <?= l('api_documentation.string') ?></span>
@@ -282,7 +282,7 @@
                                 <td>-</td>
                             </tr>
                             <tr>
-                                <td>color</td>
+                                <td><?= htmlspecialchars(fcc_t('color'), ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>
                                     <span class="badge badge-info"><i class="fas fa-fw fa-sm fa-circle-notch mr-1"></i> <?= l('api_documentation.optional') ?></span>
                                     <span class="badge badge-secondary"><i class="fas fa-fw fa-sm fa-signature mr-1"></i> <?= l('api_documentation.string') ?></span>
@@ -297,12 +297,12 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request POST \<br />
-                                --url '<?= SITE_URL ?>api/projects/<span class="text-primary">{project_id}</span>' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \<br />
-                                --header 'Content-Type: multipart/form-data' \<br />
-                                --form 'name=<span class="text-primary">Production</span>' \<br />
-                                --form 'color=<span class="text-primary">#000000</span>' \<br />
+                                <?= htmlspecialchars(fcc_t('curl --request POST \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?><span class="text-primary"><?= htmlspecialchars(fcc_t('{project_id}'), ENT_QUOTES, 'UTF-8') ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--header \'Content-Type: multipart/form-data\' \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--form \'name='), ENT_QUOTES, 'UTF-8') ?><span class="text-primary"><?= htmlspecialchars(fcc_t('Production'), ENT_QUOTES, 'UTF-8') ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--form \'color='), ENT_QUOTES, 'UTF-8') ?><span class="text-primary">#000000</span>' \<br />
                             </div>
                         </div>
                     </div>
@@ -339,7 +339,7 @@
                         <label><?= l('api_documentation.endpoint') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                <span class="badge badge-danger mr-3">DELETE</span> <span class="text-muted"><?= SITE_URL ?>api/projects/</span><span class="text-primary">{project_id}</span>
+                                <span class="badge badge-danger mr-3"><?= htmlspecialchars(fcc_t('DELETE'), ENT_QUOTES, 'UTF-8') ?></span> <span class="text-muted"><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?></span><span class="text-primary"><?= htmlspecialchars(fcc_t('{project_id}'), ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
                         </div>
                     </div>
@@ -348,9 +348,9 @@
                         <label><?= l('api_documentation.example') ?></label>
                         <div class="card bg-gray-100 border-0">
                             <div class="card-body">
-                                curl --request DELETE \<br />
-                                --url '<?= SITE_URL ?>api/projects/<span class="text-primary">{project_id}</span>' \<br />
-                                --header 'Authorization: Bearer <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('curl --request DELETE \\'), ENT_QUOTES, 'UTF-8') ?><br />
+                                <?= htmlspecialchars(fcc_t('--url \''), ENT_QUOTES, 'UTF-8') ?><?= SITE_URL ?><?= htmlspecialchars('api/projects/', ENT_QUOTES, 'UTF-8') ?><span class="text-primary"><?= htmlspecialchars(fcc_t('{project_id}'), ENT_QUOTES, 'UTF-8') ?></span>' \<br />
+                                <?= htmlspecialchars(fcc_t('--header \'Authorization: Bearer'), ENT_QUOTES, 'UTF-8') ?> <span class="text-primary" <?= is_logged_in() ? 'data-toggle="tooltip" title="' . l('api_documentation.api_key') . '"' : null ?>><?= is_logged_in() ? $this->user->api_key : '{api_key}' ?></span>' \<br />
                             </div>
                         </div>
                     </div>

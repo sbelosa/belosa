@@ -1,0 +1,1741 @@
+{
+  "schema_version": "fcc-vital5-package-v1",
+  "reviewed_at": "2026-10-05T09:24:33.427030+00:00",
+  "product_key": "vital5",
+  "canonical_name": "Vital5",
+  "aliases": [
+    "Vital5",
+    "Vital 5",
+    "Forever Vital5",
+    "Forever Vital 5",
+    "Vitel5",
+    "Vitel 5"
+  ],
+  "article_slug": "vital5",
+  "recommendation_scope": "package_information",
+  "component_article_slugs": [
+    "forever-aloe-vera-gel",
+    "aloe-berry-nectar",
+    "forever-aloe-peaches",
+    "forever-freedom",
+    "forever-daily",
+    "forever-active-pro-b",
+    "forever-arctic-sea",
+    "forever-argi",
+    "forever-aloeturm"
+  ],
+  "copy": {
+    "hr": {
+      "intro": "Vital5 objedinjuje pet vrsta Forever proizvoda u praktičan paket za organiziranu dnevnu rutinu.",
+      "contains": "Odabrana tržišna varijanta sadrži: %s.",
+      "generic_contents": "Uobičajeni sastav čine aloe napitak, Forever Daily, Forever Active Pro-B, Forever Arctic Sea i Forever ARGI+, a pojedina tržišta imaju zamjensku varijantu.",
+      "market_note": "Aloe varijanta, broj boca i ostali sadržaj ovise o zemlji i aktualnoj ponudi. Svaki proizvod koristi se prema svojoj deklaraciji.",
+      "article_cta": "U članku o Vital5 paketu možeš pogledati detalje i otvoriti narudžbu za svoju zemlju."
+    },
+    "en": {
+      "intro": "Vital5 brings five types of Forever products together in a convenient pack for an organised daily routine.",
+      "contains": "The selected market variant includes: %s.",
+      "generic_contents": "The usual contents are an aloe drink, Forever Daily, Forever Active Pro-B, Forever Arctic Sea and Forever ARGI+, while some markets offer a replacement variant.",
+      "market_note": "The aloe variant, bottle count and other contents depend on the country and current offer. Follow each product’s own label for use.",
+      "article_cta": "The Vital5 pack article lets you explore the details and open the order page for your country."
+    },
+    "sl": {
+      "intro": "Vital5 združuje pet vrst izdelkov Forever v priročen paket za organizirano vsakodnevno rutino.",
+      "contains": "Izbrana tržna različica vsebuje: %s.",
+      "generic_contents": "Običajno vsebino sestavljajo napitek z alojo, Forever Daily, Forever Active Pro-B, Forever Arctic Sea in Forever ARGI+, nekateri trgi pa ponujajo nadomestno različico.",
+      "market_note": "Različica z alojo, število steklenic in preostala vsebina so odvisni od države in aktualne ponudbe. Vsak izdelek uporabljaj po njegovi etiketi.",
+      "article_cta": "V članku o paketu Vital5 si lahko ogledaš podrobnosti in odpreš naročilo za svojo državo."
+    },
+    "de": {
+      "intro": "Vital5 vereint fünf Arten von Forever Produkten in einem praktischen Paket für eine organisierte tägliche Routine.",
+      "contains": "Die gewählte Marktvariante enthält: %s.",
+      "generic_contents": "Der übliche Inhalt umfasst ein Aloe Getränk, Forever Daily, Forever Active Pro-B, Forever Arctic Sea und Forever ARGI+. Einige Märkte bieten eine Ersatzvariante an.",
+      "market_note": "Aloe Variante, Flaschenanzahl und weitere Inhalte hängen vom Land und dem aktuellen Angebot ab. Befolge bei jedem Produkt dessen eigenes Etikett.",
+      "article_cta": "Im Artikel zum Vital5 Paket kannst du die Details ansehen und die Bestellung für dein Land öffnen."
+    },
+    "sr": {
+      "intro": "Vital5 objedinjuje pet vrsta Forever proizvoda u praktičan paket za organizovanu dnevnu rutinu.",
+      "contains": "Izabrana tržišna varijanta sadrži: %s.",
+      "generic_contents": "Uobičajeni sadržaj čine aloe napitak, Forever Daily, Forever Active Pro-B, Forever Arctic Sea i Forever ARGI+, a pojedina tržišta imaju zamensku varijantu.",
+      "market_note": "Aloe varijanta, broj boca i ostali sadržaj zavise od zemlje i aktuelne ponude. Svaki proizvod koristi se prema svojoj deklaraciji.",
+      "article_cta": "U članku o Vital5 paketu možeš da pogledaš detalje i otvoriš porudžbinu za svoju zemlju."
+    },
+    "cnr": {
+      "intro": "Vital5 objedinjuje pet vrsta Forever proizvoda u praktičan paket za organizovanu dnevnu rutinu.",
+      "contains": "Odabrana tržišna varijanta sadrži: %s.",
+      "generic_contents": "Uobičajeni sadržaj čine aloe napitak, Forever Daily, Forever Active Pro-B, Forever Arctic Sea i Forever ARGI+, a pojedina tržišta imaju zamjensku varijantu.",
+      "market_note": "Aloe varijanta, broj boca i ostali sadržaj zavise od zemlje i aktuelne ponude. Svaki proizvod koristi se prema svojoj deklaraciji.",
+      "article_cta": "U članku o Vital5 paketu možeš da pogledaš detalje i otvoriš narudžbu za svoju zemlju."
+    },
+    "es": {
+      "intro": "Vital5 reúne cinco tipos de productos Forever en un pack práctico para una rutina diaria organizada.",
+      "contains": "La variante del mercado elegido incluye: %s.",
+      "generic_contents": "El contenido habitual es una bebida de aloe, Forever Daily, Forever Active Pro-B, Forever Arctic Sea y Forever ARGI+. Algunos mercados ofrecen una variante con sustituciones.",
+      "market_note": "La variante de aloe, el número de botellas y el resto del contenido dependen del país y de la oferta actual. Sigue la etiqueta de cada producto para su uso.",
+      "article_cta": "En el artículo del pack Vital5 puedes consultar los detalles y abrir la página de pedido para tu país."
+    },
+    "sq": {
+      "intro": "Vital5 bashkon pesë lloje produktesh Forever në një paketë praktike për një rutinë ditore të organizuar.",
+      "contains": "Varianti i tregut të zgjedhur përmban: %s.",
+      "generic_contents": "Përmbajtja e zakonshme është një pije me aloe, Forever Daily, Forever Active Pro-B, Forever Arctic Sea dhe Forever ARGI+, ndërsa disa tregje ofrojnë një variant me zëvendësime.",
+      "market_note": "Varianti me aloe, numri i shisheve dhe përmbajtja tjetër varen nga vendi dhe oferta aktuale. Çdo produkt përdoret sipas etiketës së tij.",
+      "article_cta": "Në artikullin për paketën Vital5 mund të shohësh hollësitë dhe të hapësh faqen e porosisë për vendin tënd."
+    },
+    "fr": {
+      "intro": "Vital5 réunit cinq types de produits Forever dans un pack pratique pour une routine quotidienne organisée.",
+      "contains": "La variante du marché choisi contient : %s.",
+      "generic_contents": "Le contenu habituel comprend une boisson à l’aloe, Forever Daily, Forever Active Pro-B, Forever Arctic Sea et Forever ARGI+. Certains marchés proposent une variante avec remplacement.",
+      "market_note": "La variante à l’aloe, le nombre de bouteilles et les autres produits dépendent du pays et de l’offre actuelle. Suis l’étiquette propre à chaque produit pour son utilisation.",
+      "article_cta": "L’article sur le pack Vital5 te permet de consulter les détails et d’ouvrir la commande pour ton pays."
+    },
+    "sv": {
+      "intro": "Vital5 samlar fem typer av produkter från Forever i ett praktiskt paket för en organiserad daglig rutin.",
+      "contains": "Den valda marknadsvarianten innehåller: %s.",
+      "generic_contents": "Vanligtvis innehåller paketet en aloedryck, Forever Daily, Forever Active Pro-B, Forever Arctic Sea och Forever ARGI+, men på vissa marknader erbjuds en variant med ersättningsprodukter.",
+      "market_note": "Aloevarianten, antalet flaskor och övrigt innehåll beror på landet och det aktuella utbudet. Följ bruksanvisningen på varje produkts etikett.",
+      "article_cta": "I artikeln om Vital5 kan du läsa mer och öppna beställningssidan för ditt land."
+    },
+    "hu": {
+      "intro": "A Vital5 ötféle Forever terméket fog össze egy praktikus csomagban a rendezett napi rutin kialakításához.",
+      "contains": "A kiválasztott piaci változat tartalma: %s.",
+      "generic_contents": "Általában aloeital, Forever Daily, Forever Active Pro-B, Forever Arctic Sea és Forever ARGI+ található a csomagban. Egyes piacokon helyettesítő terméket tartalmazó változat kapható.",
+      "market_note": "Az aloeital változata, a palackok száma és a többi termék az országtól és az aktuális kínálattól függ. Az egyes termékeket a címkéjükön szereplő útmutató szerint használd.",
+      "article_cta": "A Vital5 csomagról szóló cikkben elolvashatod a részleteket, és megnyithatod az országodnak megfelelő rendelési oldalt."
+    },
+    "pl": {
+      "intro": "Vital5 łączy pięć rodzajów produktów Forever w wygodnym pakiecie, który ułatwia organizację codziennej rutyny.",
+      "contains": "Wybrany wariant dla danego rynku zawiera: %s.",
+      "generic_contents": "Standardowy zestaw obejmuje napój aloesowy, Forever Daily, Forever Active Pro-B, Forever Arctic Sea i Forever ARGI+. Na niektórych rynkach dostępny jest wariant z produktami zastępczymi.",
+      "market_note": "Wariant napoju aloesowego, liczba butelek i pozostała zawartość zależą od kraju oraz aktualnej oferty. Każdy produkt stosuj zgodnie z jego etykietą.",
+      "article_cta": "W artykule o pakiecie Vital5 możesz sprawdzić szczegóły i otworzyć stronę zamówienia dla swojego kraju."
+    },
+    "ro": {
+      "intro": "Vital5 reunește cinci tipuri de produse Forever într-un pachet practic pentru o rutină zilnică organizată.",
+      "contains": "Varianta aleasă pentru piața respectivă conține: %s.",
+      "generic_contents": "Conținutul obișnuit include o băutură cu aloe, Forever Daily, Forever Active Pro-B, Forever Arctic Sea și Forever ARGI+. Pe unele piețe este disponibilă o variantă cu produse înlocuitoare.",
+      "market_note": "Varianta băuturii cu aloe, numărul de sticle și restul conținutului depind de țară și de oferta actuală. Folosește fiecare produs conform propriei etichete.",
+      "article_cta": "În articolul despre pachetul Vital5 poți consulta detaliile și deschide pagina de comandă pentru țara ta."
+    }
+  },
+  "markets": {
+    "hr": {
+      "country_name": "Croatia",
+      "official_url": "https://foreverliving.com/shop/hrv/hr-hr/products/combo-paks/vital5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/hrv/hr-hr/products/combo-paks/vital5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "3bd88b9ea27583b3447dd29139e70d97d15bdf4548885dc3bd5232ac35ab46d7",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital5 - Forever Freedom"
+    },
+    "ba": {
+      "country_name": "Bosnia and Herzegovina",
+      "official_url": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/vital5-freedom/",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-aloeturm",
+          "name": "Forever AloeTurm",
+          "quantity": 3,
+          "quantity_label": "3 ×",
+          "replaces": "forever-daily"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Probiotic",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/vital5-freedom/",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "verification_method": "official_product_page_content"
+        }
+      ],
+      "primary_variant_sku": "459"
+    },
+    "al": {
+      "country_name": "Albania",
+      "official_url": "https://www.foreveralbania.com/produktet/produktet-me-pike/paketat-forever/vital5-freedom/",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-aloeturm",
+          "name": "Forever AloeTurm",
+          "quantity": 3,
+          "quantity_label": "3 ×",
+          "replaces": "forever-daily"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Probiotic",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://www.foreveralbania.com/produktet/produktet-me-pike/paketat-forever/vital5-freedom/",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "verification_method": "official_product_page_content"
+        }
+      ],
+      "primary_variant_sku": "459"
+    },
+    "si": {
+      "country_name": "Slovenia",
+      "official_url": "https://foreverliving.com/shop/svn/sl-si/products/combo-paks/vital5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/svn/sl-si/products/combo-paks/vital5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "99a3f9e4b3b5fbe83d198f647a9179208eb2e3f26feb8369422f668ce7e711e4",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital⁵ Combo Pack - Freedom"
+    },
+    "rs": {
+      "country_name": "Serbia",
+      "official_url": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/Vital-5-",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/Vital-5-",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "6b7c00849dd4dc67e7fac8b72f8c81d3b90a8377ce7340680a36603cb0f17c42",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital⁵ - Freedom"
+    },
+    "at": {
+      "country_name": "Austria",
+      "official_url": "https://foreverliving.com/shop/aut/en-at/products/vital5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-aloeturm",
+          "name": "Forever AloeTurm",
+          "quantity": 3,
+          "quantity_label": "3 ×",
+          "replaces": "forever-daily"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/aut/en-at/products/vital5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "dfd5672eaf5a1c0a893637315e931b0d3e67db4227ad74504deb3778bf68e5d7",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital5 Freedom"
+    },
+    "au": {
+      "country_name": "Australia",
+      "official_url": "",
+      "verification_status": "direct_offer_unverified",
+      "components": [],
+      "source_refs": [
+        {
+          "source_type": "market_research",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "result": "No direct Vital5 offer could be verified. Investigated official product search and public shop, which redirected to authentication. Do not fabricate a product URL or route the customer to another country."
+        }
+      ]
+    },
+    "ca": {
+      "country_name": "Canada",
+      "official_url": "",
+      "verification_status": "direct_offer_unverified",
+      "components": [],
+      "source_refs": [
+        {
+          "source_type": "market_research",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "result": "No direct Vital5 offer could be verified. Investigated official product search and public shop, which redirected to authentication. Do not fabricate a product URL or route the customer to another country."
+        }
+      ]
+    },
+    "de": {
+      "country_name": "Germany",
+      "official_url": "https://foreverliving.com/shop/deu/en-de/products/vital5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/deu/en-de/products/vital5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "e2525385f32dd9c1aed357a3d9479af741ddd9ec543c925b523a2c2f3b08668c",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital5 Freedom"
+    },
+    "ie": {
+      "country_name": "Ireland",
+      "official_url": "https://foreverliving.com/shop/irl/en-ie/products/456-VITAL-5-PACK",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-aloe-vera-gel",
+          "name": "Forever Aloe Vera Gel",
+          "quantity": 2,
+          "quantity_label": "2 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/irl/en-ie/products/456-VITAL-5-PACK",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "7d13b4496674d5859ab7d2713ea67f187d37ae9655117ac78e4b71b959750be2",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "456",
+      "page_name": "VITAL 5 PACK"
+    },
+    "lu": {
+      "country_name": "Luxembourg",
+      "official_url": "https://foreverliving.com/shop/lux/en-gb/products/combo-paks/vital5-lux",
+      "verification_status": "verified_official_listing_login_redirect",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-aloeturm",
+          "name": "Forever AloeTurm",
+          "quantity": 3,
+          "quantity_label": "3 ×",
+          "replaces": "forever-daily"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/lux/en-gb/products/combo-paks/vital5-lux",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "verification_method": "official_search_index_product_content"
+        }
+      ],
+      "primary_variant_sku": "459"
+    },
+    "nl": {
+      "country_name": "Netherlands",
+      "official_url": "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl",
+      "verification_status": "verified_official_listing_login_redirect",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-aloeturm",
+          "name": "Forever AloeTurm",
+          "quantity": 3,
+          "quantity_label": "3 ×",
+          "replaces": "forever-daily"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "verification_method": "official_search_index_product_content"
+        }
+      ],
+      "primary_variant_sku": "459"
+    },
+    "no": {
+      "country_name": "Norway",
+      "official_url": "https://foreverliving.com/shop/nor/nn-no/products/v5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-aloe-vera-gel",
+          "name": "Forever Aloe Vera Gel",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/nor/nn-no/products/v5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "898b46b72c1940c6d2daf29aa92e4a5d422bcc4e716255df67919f32b41a37a9",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "6279",
+      "page_name": "Vital5™"
+    },
+    "pl": {
+      "country_name": "Poland",
+      "official_url": "https://foreverliving.com/shop/pol/en-gb/products/456W-VITAL5-WITH-ALOE-VERA-GEL",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-aloe-vera-gel",
+          "name": "Forever Aloe Vera Gel",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/pol/en-gb/products/456W-VITAL5-WITH-ALOE-VERA-GEL",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "556d6c87de759a7122641ab92e20bf4804d57ce1dc8dea52543babebbb8ef616",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "456W",
+      "page_name": "VITAL5 WITH ALOE VERA GEL"
+    },
+    "se": {
+      "country_name": "Sweden",
+      "official_url": "https://foreverliving.com/shop/swe/sv-se/products/v5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-aloe-vera-gel",
+          "name": "Forever Aloe Vera Gel",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/swe/sv-se/products/v5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "362a16caa419bf64c734345b2b96fdee870a62b8ac48e6d6ed436689d6c098d6",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "6279",
+      "page_name": "Vital5™"
+    },
+    "gb": {
+      "country_name": "United Kingdom",
+      "official_url": "https://foreverliving.com/shop/gbr/en-gb/products/456-VITAL5-PACK",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-aloe-vera-gel",
+          "name": "Forever Aloe Vera Gel",
+          "quantity": 2,
+          "quantity_label": "2 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/gbr/en-gb/products/456-VITAL5-PACK",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "dc8c0158a30e8735c6df0ab6fb201f3456db7d3f0b83d93fa3b56e48f6e30c8d",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "456",
+      "page_name": "VITAL5 PACK"
+    },
+    "us": {
+      "country_name": "United States",
+      "official_url": "https://foreverliving.com/shop/usa/en-us/products/combo-paks/Vital5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/usa/en-us/products/combo-paks/Vital5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "2745b34cd332b1cb3565ef55b1f7a9695d6fb4cc6eb81a9998719d6691ee5337",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital5® - Forever Freedom"
+    },
+    "qa": {
+      "country_name": "Qatar",
+      "official_url": "",
+      "verification_status": "direct_offer_unverified",
+      "components": [],
+      "source_refs": [
+        {
+          "source_type": "market_research",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "result": "No direct Vital5 offer could be verified. Investigated official product search and public shop, which redirected to authentication. Do not fabricate a product URL or route the customer to another country."
+        }
+      ]
+    },
+    "ch": {
+      "country_name": "Switzerland",
+      "official_url": "https://foreverliving.com/shop/che/en-ch/products/vital5",
+      "verification_status": "verified_product",
+      "components": [
+        {
+          "product_key": "forever-freedom",
+          "name": "Forever Freedom",
+          "quantity": 4,
+          "quantity_label": "4 × 1 L"
+        },
+        {
+          "product_key": "forever-aloeturm",
+          "name": "Forever AloeTurm",
+          "quantity": 3,
+          "quantity_label": "3 ×",
+          "replaces": "forever-daily"
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity": 1,
+          "quantity_label": "1 ×"
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "source_url": "https://foreverliving.com/shop/che/en-ch/products/vital5",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "snapshot_sha256": "59bbc471ff44fca7d7adb5b382393e664e0360ce97e26e82e56b2577360e4a1b",
+          "verification_method": "rendered_official_product_page_and_public_product_response"
+        }
+      ],
+      "primary_variant_sku": "459",
+      "page_name": "Vital5 Forever Freedom"
+    },
+    "ae": {
+      "country_name": "United Arab Emirates",
+      "official_url": "",
+      "verification_status": "direct_offer_unverified",
+      "components": [],
+      "source_refs": [
+        {
+          "source_type": "market_research",
+          "accessed_at": "2026-10-05T09:22:21.603290+00:00",
+          "result": "No direct Vital5 offer could be verified. Investigated official product search and public shop, which redirected to authentication. Do not fabricate a product URL or route the customer to another country."
+        }
+      ]
+    },
+    "mk": {
+      "country_name": "North Macedonia",
+      "official_url": "https://foreverliving.com/shop/mkd/mk-gb/products/nutritional/vital-5",
+      "verification_status": "verified_product",
+      "primary_variant_sku": "456",
+      "page_name": "Vital5 Aloe Vera Gel",
+      "components": [
+        {
+          "product_key": "forever-aloe-vera-gel",
+          "name": "Forever Aloe Vera Gel",
+          "quantity_label": "4 ×",
+          "quantity": 4
+        },
+        {
+          "product_key": "forever-daily",
+          "name": "Forever Daily",
+          "quantity_label": ""
+        },
+        {
+          "product_key": "forever-active-pro-b",
+          "name": "Forever Active Pro-B",
+          "quantity_label": ""
+        },
+        {
+          "product_key": "forever-arctic-sea",
+          "name": "Forever Arctic Sea",
+          "quantity_label": ""
+        },
+        {
+          "product_key": "forever-argi",
+          "name": "Forever ARGI+",
+          "quantity_label": ""
+        }
+      ],
+      "source_refs": [
+        {
+          "source_type": "official_product_page",
+          "url": "https://foreverliving.com/shop/mkd/mk-gb/products/nutritional/vital-5",
+          "accessed_at": "2026-10-05T16:20:19.318915+00:00",
+          "verification_method": "rendered_public_product_response",
+          "product_detail_sha256": "4f317c79f1d8abb499429dc7eceaf142e2bd8ed921814d53e04e9c47ff2a9c68",
+          "local_ingredients_note": "Four Aloe Vera Gel bottles. Individual supplement quantities are not specified in the local composition list."
+        }
+      ]
+    }
+  },
+  "editorial_copy": {
+    "hr": {
+      "title": "Forever Vital5 paket: sastav, varijante i naručivanje",
+      "meta_title": "Forever Vital5 paket: sastav, varijante i naručivanje",
+      "meta_description": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka prehrani. Usporedi varijante i naruči putem službene trgovine za svoju…",
+      "format": "Paket proizvoda",
+      "intro": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka prehrani. Usporedi varijante i naruči putem službene trgovine za svoju zemlju.",
+      "teaser": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka prehrani. Usporedi varijante i naruči putem službene trgovine za svoju zemlju.",
+      "fit": "Želiš aloe napitak i četiri dodatka prehrani naručiti zajedno. Tražiš pregledan izbor za svakodnevnu rutinu. Želiš usporediti aloe varijante i upoznati svaki proizvod prije narudžbe.",
+      "faq": [
+        [
+          "Što dobivam u Vital5 paketu?",
+          "Hrvatska ponuda uključuje 4 × 1 L odabranog aloe napitka te po jedno pakiranje Forever Daily, Active Pro-B, Arctic Sea i ARGI+. Sadržaj za svoju zemlju provjeri u službenoj trgovini."
+        ],
+        [
+          "Mogu li odabrati okus aloe napitka?",
+          "Postoje varijante s Aloe Vera Gelom, Berry Nectarom, Peachesom i Freedomom. Dostupnost pojedine varijante ovisi o tržištu."
+        ],
+        [
+          "Traje li svako pakiranje jednako dugo?",
+          "Ne nužno. Količina i upute razlikuju se po proizvodu i tržištu. Za uporabu slijedi etiketu svakog pakiranja."
+        ],
+        [
+          "Gdje mogu provjeriti cijenu i dostavu?",
+          "Aktualna cijena, eventualna pogodnost paketa i uvjeti dostave prikazani su u službenoj Forever trgovini za tvoju zemlju."
+        ],
+        [
+          "Je li Vital5 jednak u svakoj zemlji?",
+          "Ne. Broj boca, aloe varijanta i dodatci mogu se razlikovati. U pojedinim ponudama Forever Daily zamijenjen je s 3 pakiranja Forever AloeTurm. Za konačan sastav vrijedi službena lokalna ponuda."
+        ]
+      ],
+      "headline": "Sastav i važne informacije",
+      "highlights": [
+        [
+          "Hrvatska ponuda",
+          "Aloe napitak 4 × 1 L"
+        ],
+        [
+          "Dodaci prehrani",
+          "4 proizvoda, po 1 pakiranje"
+        ],
+        [
+          "Odabir",
+          "4 aloe varijante"
+        ]
+      ],
+      "routine_title": "Sastav i važne informacije",
+      "routine": [
+        [
+          "Sastav i važne informacije",
+          "Ne nužno. Količina i upute razlikuju se po proizvodu i tržištu. Za uporabu slijedi etiketu svakog pakiranja."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Opis sastava s 4 × 1 L odnosi se na hrvatsku ponudu. Sadržaj i dostupnost paketa razlikuju se po tržištu.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "en": {
+      "title": "Forever Vital5 pack: contents, variants and ordering",
+      "meta_title": "Forever Vital5 pack: contents, variants and ordering",
+      "meta_description": "Discover the Forever Vital5 pack, the four aloe drinks in the Croatian offer and four food supplements. Compare variants and order from your country’s…",
+      "format": "Product pack",
+      "intro": "Discover the Forever Vital5 pack, the four aloe drinks in the Croatian offer and four food supplements. Compare variants and order from your country’s official shop.",
+      "teaser": "Discover the Forever Vital5 pack, the four aloe drinks in the Croatian offer and four food supplements. Compare variants and order from your country’s official shop.",
+      "fit": "You want to order an aloe drink and four food supplements together. You are looking for a clear selection for your everyday routine. You want to compare aloe variants and explore each product before ordering.",
+      "faq": [
+        [
+          "What do I receive in the Vital5 pack?",
+          "The Croatian offer includes 4 × 1 L of your chosen aloe drink and one pack each of Forever Daily, Active Pro-B, Arctic Sea and ARGI+. Check the official shop for the contents in your country."
+        ],
+        [
+          "Can I choose the aloe drink flavour?",
+          "Variants exist with Aloe Vera Gel, Berry Nectar, Peaches and Freedom. Availability of each variant depends on the market."
+        ],
+        [
+          "Does every pack last the same length of time?",
+          "Not necessarily. Quantities and directions differ by product and market. Follow each pack’s label for use."
+        ],
+        [
+          "Where can I check price and delivery?",
+          "The current price, any pack offer and delivery terms are displayed in the official Forever shop for your country."
+        ],
+        [
+          "Is Vital5 the same in every country?",
+          "No. The bottle count, aloe variant and supplements can differ. In some offers, Forever Daily is replaced with 3 packs of Forever AloeTurm. The official local offer determines the final contents."
+        ]
+      ],
+      "headline": "Contents and key details",
+      "highlights": [
+        [
+          "Croatian offer",
+          "Aloe drink 4 × 1 L"
+        ],
+        [
+          "Food supplements",
+          "4 products, 1 pack each"
+        ],
+        [
+          "Choice",
+          "4 aloe variants"
+        ]
+      ],
+      "routine_title": "Contents and key details",
+      "routine": [
+        [
+          "Contents and key details",
+          "Not necessarily. Quantities and directions differ by product and market. Follow each pack’s label for use."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "The contents described with 4 × 1 L refer to the Croatian offer. Pack contents and availability differ by market.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "sl": {
+      "title": "Paket Forever Vital5: vsebina, različice in naročilo",
+      "meta_title": "Paket Forever Vital5: vsebina, različice in naročilo",
+      "meta_description": "Spoznaj paket Forever Vital5, štiri napitke z alojo v hrvaški ponudbi in štiri prehranska dopolnila. Primerjaj različice in naroči v uradni trgovini za svojo…",
+      "format": "Paket izdelkov",
+      "intro": "Spoznaj paket Forever Vital5, štiri napitke z alojo v hrvaški ponudbi in štiri prehranska dopolnila. Primerjaj različice in naroči v uradni trgovini za svojo državo.",
+      "teaser": "Spoznaj paket Forever Vital5, štiri napitke z alojo v hrvaški ponudbi in štiri prehranska dopolnila. Primerjaj različice in naroči v uradni trgovini za svojo državo.",
+      "fit": "Želiš napitek z alojo in štiri prehranska dopolnila naročiti skupaj. Iščeš pregleden izbor za vsakodnevno rutino. Želiš primerjati različice z alojo in spoznati vsak izdelek pred naročilom.",
+      "faq": [
+        [
+          "Kaj prejmem v paketu Vital5?",
+          "Hrvaška ponudba vključuje 4 × 1 L izbranega napitka z alojo in po eno pakiranje Forever Daily, Active Pro-B, Arctic Sea in ARGI+. Vsebino za svojo državo preveri v uradni trgovini."
+        ],
+        [
+          "Ali lahko izberem okus napitka z alojo?",
+          "Obstajajo različice z Aloe Vera Gel, Berry Nectar, Peaches in Freedom. Razpoložljivost posamezne različice je odvisna od trga."
+        ],
+        [
+          "Ali vsako pakiranje zadostuje za enako dolgo obdobje?",
+          "Ne nujno. Količine in navodila se razlikujejo glede na izdelek in trg. Pri uporabi upoštevaj etiketo vsakega pakiranja."
+        ],
+        [
+          "Kje preverim ceno in dostavo?",
+          "Aktualna cena, morebitna ugodnost paketa in pogoji dostave so prikazani v uradni trgovini Forever za tvojo državo."
+        ],
+        [
+          "Ali je Vital5 enak v vsaki državi?",
+          "Ne. Število steklenic, različica z alojo in dopolnila se lahko razlikujejo. V nekaterih ponudbah Forever Daily nadomeščajo 3 pakiranja Forever AloeTurm. Za končno vsebino velja uradna lokalna ponudba."
+        ]
+      ],
+      "headline": "Vsebina in pomembne informacije",
+      "highlights": [
+        [
+          "Hrvaška ponudba",
+          "Napitek z alojo 4 × 1 L"
+        ],
+        [
+          "Prehranska dopolnila",
+          "4 izdelki, po 1 pakiranje"
+        ],
+        [
+          "Izbira",
+          "4 različice z alojo"
+        ]
+      ],
+      "routine_title": "Vsebina in pomembne informacije",
+      "routine": [
+        [
+          "Vsebina in pomembne informacije",
+          "Ne nujno. Količine in navodila se razlikujejo glede na izdelek in trg. Pri uporabi upoštevaj etiketo vsakega pakiranja."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Opis vsebine s 4 × 1 L velja za hrvaško ponudbo. Vsebina in razpoložljivost paketa se razlikujeta glede na trg.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "de": {
+      "title": "Forever Vital5 Paket: Inhalt, Varianten und Bestellung",
+      "meta_title": "Forever Vital5 Paket: Inhalt, Varianten und Bestellung",
+      "meta_description": "Entdecke das Forever Vital5 Paket mit vier Aloe Getränken im kroatischen Angebot und vier Nahrungsergänzungsmitteln. Vergleiche Varianten und bestelle im…",
+      "format": "Produktpaket",
+      "intro": "Entdecke das Forever Vital5 Paket mit vier Aloe Getränken im kroatischen Angebot und vier Nahrungsergänzungsmitteln. Vergleiche Varianten und bestelle im offiziellen Shop deines Landes.",
+      "teaser": "Entdecke das Forever Vital5 Paket mit vier Aloe Getränken im kroatischen Angebot und vier Nahrungsergänzungsmitteln. Vergleiche Varianten und bestelle im offiziellen Shop deines Landes.",
+      "fit": "Du möchtest ein Aloe Getränk und vier Nahrungsergänzungsmittel gemeinsam bestellen. Du suchst eine übersichtliche Auswahl für deine tägliche Routine. Du möchtest Aloe Varianten vergleichen und jedes Produkt vor der Bestellung kennenlernen.",
+      "faq": [
+        [
+          "Was erhalte ich im Vital5 Paket?",
+          "Das kroatische Angebot enthält 4 × 1 L des gewählten Aloe Getränks sowie je eine Packung Forever Daily, Active Pro-B, Arctic Sea und ARGI+. Prüfe den Inhalt für dein Land im offiziellen Shop."
+        ],
+        [
+          "Kann ich den Geschmack des Aloe Getränks wählen?",
+          "Es gibt Varianten mit Aloe Vera Gel, Berry Nectar, Peaches und Freedom. Die Verfügbarkeit der einzelnen Variante hängt vom Markt ab."
+        ],
+        [
+          "Reicht jede Packung gleich lange?",
+          "Nicht unbedingt. Mengen und Anwendungshinweise unterscheiden sich je nach Produkt und Markt. Befolge das Etikett jeder Packung."
+        ],
+        [
+          "Wo prüfe ich Preis und Lieferung?",
+          "Der aktuelle Preis, mögliche Paketvorteile und Lieferbedingungen stehen im offiziellen Forever Shop für dein Land."
+        ],
+        [
+          "Ist Vital5 in jedem Land gleich?",
+          "Nein. Flaschenanzahl, Aloe Variante und Ergänzungen können abweichen. In einigen Angeboten wird Forever Daily durch 3 Packungen Forever AloeTurm ersetzt. Für den endgültigen Inhalt gilt das offizielle lokale Angebot."
+        ]
+      ],
+      "headline": "Inhalt und wichtige Informationen",
+      "highlights": [
+        [
+          "Kroatisches Angebot",
+          "Aloe Getränk 4 × 1 L"
+        ],
+        [
+          "Nahrungsergänzungsmittel",
+          "4 Produkte, je 1 Packung"
+        ],
+        [
+          "Auswahl",
+          "4 Aloe Varianten"
+        ]
+      ],
+      "routine_title": "Inhalt und wichtige Informationen",
+      "routine": [
+        [
+          "Inhalt und wichtige Informationen",
+          "Nicht unbedingt. Mengen und Anwendungshinweise unterscheiden sich je nach Produkt und Markt. Befolge das Etikett jeder Packung."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Die Beschreibung mit 4 × 1 L bezieht sich auf das kroatische Angebot. Inhalt und Verfügbarkeit unterscheiden sich je nach Markt.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "sr": {
+      "title": "Forever Vital5 paket: sadržaj, varijante i naručivanje",
+      "meta_title": "Forever Vital5 paket: sadržaj, varijante i naručivanje",
+      "meta_description": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka ishrani. Uporedi varijante i naruči preko zvanične prodavnice za svoju…",
+      "format": "Paket proizvoda",
+      "intro": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka ishrani. Uporedi varijante i naruči preko zvanične prodavnice za svoju zemlju.",
+      "teaser": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka ishrani. Uporedi varijante i naruči preko zvanične prodavnice za svoju zemlju.",
+      "fit": "Želiš da naručiš aloe napitak i četiri dodatka ishrani zajedno. Tražiš pregledan izbor za svakodnevnu rutinu. Želiš da uporediš aloe varijante i upoznaš svaki proizvod pre porudžbine.",
+      "faq": [
+        [
+          "Šta dobijam u Vital5 paketu?",
+          "Hrvatska ponuda uključuje 4 × 1 L izabranog aloe napitka i po jedno pakovanje Forever Daily, Active Pro-B, Arctic Sea i ARGI+. Sadržaj za svoju zemlju proveri u zvaničnoj prodavnici."
+        ],
+        [
+          "Mogu li da izaberem ukus aloe napitka?",
+          "Postoje varijante sa Aloe Vera Gel, Berry Nectar, Peaches i Freedom. Dostupnost pojedine varijante zavisi od tržišta."
+        ],
+        [
+          "Traje li svako pakovanje isto?",
+          "Ne nužno. Količina i uputstva razlikuju se po proizvodu i tržištu. Za upotrebu prati etiketu svakog pakovanja."
+        ],
+        [
+          "Gde mogu da proverim cenu i dostavu?",
+          "Aktuelna cena, eventualna pogodnost paketa i uslovi dostave prikazani su u zvaničnoj Forever prodavnici za tvoju zemlju."
+        ],
+        [
+          "Da li je Vital5 isti u svakoj zemlji?",
+          "Ne. Broj boca, aloe varijanta i dodaci mogu da se razlikuju. U pojedinim ponudama Forever Daily zamenjen je sa 3 pakovanja Forever AloeTurm. Za konačan sadržaj važi zvanična lokalna ponuda."
+        ]
+      ],
+      "headline": "Sadržaj i važne informacije",
+      "highlights": [
+        [
+          "Hrvatska ponuda",
+          "Aloe napitak 4 × 1 L"
+        ],
+        [
+          "Dodaci ishrani",
+          "4 proizvoda, po 1 pakovanje"
+        ],
+        [
+          "Izbor",
+          "4 aloe varijante"
+        ]
+      ],
+      "routine_title": "Sadržaj i važne informacije",
+      "routine": [
+        [
+          "Sadržaj i važne informacije",
+          "Ne nužno. Količina i uputstva razlikuju se po proizvodu i tržištu. Za upotrebu prati etiketu svakog pakovanja."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Opis sadržaja sa 4 × 1 L odnosi se na hrvatsku ponudu. Sadržaj i dostupnost paketa razlikuju se po tržištima.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "cnr": {
+      "title": "Forever Vital5 paket: sadržaj, varijante i naručivanje",
+      "meta_title": "Forever Vital5 paket: sadržaj, varijante i naručivanje",
+      "meta_description": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka ishrani. Uporedi varijante i naruči preko zvanične prodavnice za svoju…",
+      "format": "Paket proizvoda",
+      "intro": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka ishrani. Uporedi varijante i naruči preko zvanične prodavnice za svoju zemlju.",
+      "teaser": "Upoznaj Forever Vital5 paket, četiri aloe napitka u hrvatskoj ponudi i četiri dodatka ishrani. Uporedi varijante i naruči preko zvanične prodavnice za svoju zemlju.",
+      "fit": "Želiš da naručiš aloe napitak i četiri dodatka ishrani zajedno. Tražiš pregledan izbor za svakodnevnu rutinu. Želiš da uporediš aloe varijante i upoznaš svaki proizvod prije narudžbe.",
+      "faq": [
+        [
+          "Šta dobijam u Vital5 paketu?",
+          "Hrvatska ponuda uključuje 4 × 1 L odabranog aloe napitka i po jedno pakovanje Forever Daily, Active Pro-B, Arctic Sea i ARGI+. Sadržaj za svoju zemlju provjeri u zvaničnoj prodavnici."
+        ],
+        [
+          "Mogu li da odaberem ukus aloe napitka?",
+          "Postoje varijante sa Aloe Vera Gel, Berry Nectar, Peaches i Freedom. Dostupnost pojedine varijante zavisi od tržišta."
+        ],
+        [
+          "Traje li svako pakovanje isto?",
+          "Ne nužno. Količina i uputstva razlikuju se po proizvodu i tržištu. Za upotrebu prati etiketu svakog pakovanja."
+        ],
+        [
+          "Gdje mogu da provjerim cijenu i dostavu?",
+          "Aktuelna cijena, eventualna pogodnost paketa i uslovi dostave prikazani su u zvaničnoj Forever prodavnici za tvoju zemlju."
+        ],
+        [
+          "Da li je Vital5 isti u svakoj zemlji?",
+          "Ne. Broj boca, aloe varijanta i dodaci mogu da se razlikuju. U pojedinim ponudama Forever Daily zamijenjen je sa 3 pakovanja Forever AloeTurm. Za konačan sadržaj važi zvanična lokalna ponuda."
+        ]
+      ],
+      "headline": "Sadržaj i važne informacije",
+      "highlights": [
+        [
+          "Hrvatska ponuda",
+          "Aloe napitak 4 × 1 L"
+        ],
+        [
+          "Dodaci ishrani",
+          "4 proizvoda, po 1 pakovanje"
+        ],
+        [
+          "Izbor",
+          "4 aloe varijante"
+        ]
+      ],
+      "routine_title": "Sadržaj i važne informacije",
+      "routine": [
+        [
+          "Sadržaj i važne informacije",
+          "Ne nužno. Količina i uputstva razlikuju se po proizvodu i tržištu. Za upotrebu prati etiketu svakog pakovanja."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Opis sadržaja sa 4 × 1 L odnosi se na hrvatsku ponudu. Sadržaj i dostupnost paketa razlikuju se po tržištima.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "es": {
+      "title": "Pack Forever Vital5: contenido, variantes y pedido",
+      "meta_title": "Pack Forever Vital5: contenido, variantes y pedido",
+      "meta_description": "Forever Vital5 en Croacia: 4 × 1 L de bebida de aloe y cuatro complementos alimenticios. Consulta el contenido de tu país en la tienda oficial Forever.",
+      "format": "Pack de productos",
+      "intro": "Descubre el pack Forever Vital5, las cuatro bebidas de aloe de la oferta croata y cuatro complementos alimenticios. Compara variantes y pide en la tienda oficial de tu país.",
+      "teaser": "Descubre el pack Forever Vital5, las cuatro bebidas de aloe de la oferta croata y cuatro complementos alimenticios. Compara variantes y pide en la tienda oficial de tu país.",
+      "fit": "Quieres pedir una bebida de aloe y cuatro complementos alimenticios juntos. Buscas una selección clara para tu rutina diaria. Quieres comparar variantes de aloe y conocer cada producto antes de pedir.",
+      "faq": [
+        [
+          "¿Qué recibo en el pack Vital5?",
+          "La oferta croata incluye 4 × 1 L de la bebida de aloe elegida y un envase de Forever Daily, Active Pro-B, Arctic Sea y ARGI+. Comprueba el contenido para tu país en la tienda oficial."
+        ],
+        [
+          "¿Puedo elegir el sabor de la bebida de aloe?",
+          "Existen variantes con Aloe Vera Gel, Berry Nectar, Peaches y Freedom. La disponibilidad de cada variante depende del mercado."
+        ],
+        [
+          "¿Todos los envases duran lo mismo?",
+          "No necesariamente. Las cantidades y las instrucciones cambian según el producto y el mercado. Sigue la etiqueta de cada envase."
+        ],
+        [
+          "¿Dónde consulto el precio y la entrega?",
+          "El precio actual, cualquier oferta del pack y las condiciones de entrega se muestran en la tienda oficial de Forever de tu país."
+        ],
+        [
+          "¿Vital5 es igual en todos los países?",
+          "No. El número de botellas, la variante de aloe y los complementos pueden cambiar. En algunas ofertas, Forever Daily se sustituye por 3 envases de Forever AloeTurm. La oferta oficial local determina el contenido final."
+        ]
+      ],
+      "headline": "Contenido y datos importantes",
+      "highlights": [
+        [
+          "Oferta croata",
+          "Bebida de aloe 4 × 1 L"
+        ],
+        [
+          "Complementos alimenticios",
+          "4 productos, 1 envase de cada uno"
+        ],
+        [
+          "Elección",
+          "4 variantes de aloe"
+        ]
+      ],
+      "routine_title": "Contenido y datos importantes",
+      "routine": [
+        [
+          "Contenido y datos importantes",
+          "No necesariamente. Las cantidades y las instrucciones cambian según el producto y el mercado. Sigue la etiqueta de cada envase."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "El contenido descrito con 4 × 1 L corresponde a la oferta croata. El contenido y la disponibilidad varían según el mercado.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "sq": {
+      "title": "Paketa Forever Vital5: përmbajtja, variantet dhe porosia",
+      "meta_title": "Paketa Forever Vital5: përmbajtja, variantet dhe porosia",
+      "meta_description": "Njihu me paketën Forever Vital5, katër pijet me aloe në ofertën kroate dhe katër shtesat ushqimore. Krahaso variantet dhe porosit në dyqanin zyrtar për vendin…",
+      "format": "Paketë produktesh",
+      "intro": "Njihu me paketën Forever Vital5, katër pijet me aloe në ofertën kroate dhe katër shtesat ushqimore. Krahaso variantet dhe porosit në dyqanin zyrtar për vendin tënd.",
+      "teaser": "Njihu me paketën Forever Vital5, katër pijet me aloe në ofertën kroate dhe katër shtesat ushqimore. Krahaso variantet dhe porosit në dyqanin zyrtar për vendin tënd.",
+      "fit": "Dëshiron të porositësh një pije me aloe dhe katër shtesa ushqimore së bashku. Kërkon një zgjedhje të qartë për rutinën e përditshme. Dëshiron të krahasosh variantet me aloe dhe të njohësh çdo produkt para porosisë.",
+      "faq": [
+        [
+          "Çfarë marr në paketën Vital5?",
+          "Oferta kroate përfshin 4 × 1 L të pijes së zgjedhur me aloe dhe nga një paketim Forever Daily, Active Pro-B, Arctic Sea dhe ARGI+. Kontrollo përmbajtjen për vendin tënd në dyqanin zyrtar."
+        ],
+        [
+          "A mund të zgjedh shijen e pijes me aloe?",
+          "Ekzistojnë variante me Aloe Vera Gel, Berry Nectar, Peaches dhe Freedom. Disponueshmëria e secilit variant varet nga tregu."
+        ],
+        [
+          "A zgjat çdo paketim njësoj?",
+          "Jo domosdoshmërisht. Sasitë dhe udhëzimet ndryshojnë sipas produktit dhe tregut. Për përdorimin ndiq etiketën e çdo paketimi."
+        ],
+        [
+          "Ku mund të kontrolloj çmimin dhe dërgesën?",
+          "Çmimi aktual, çdo ofertë e paketës dhe kushtet e dërgesës shfaqen në dyqanin zyrtar Forever për vendin tënd."
+        ],
+        [
+          "A është Vital5 i njëjtë në çdo vend?",
+          "Jo. Numri i shisheve, varianti me aloe dhe shtesat mund të ndryshojnë. Në disa oferta, Forever Daily zëvendësohet me 3 paketime Forever AloeTurm. Oferta zyrtare lokale përcakton përmbajtjen përfundimtare."
+        ]
+      ],
+      "headline": "Përmbajtja dhe informacioni kryesor",
+      "highlights": [
+        [
+          "Oferta kroate",
+          "Pije me aloe 4 × 1 L"
+        ],
+        [
+          "Shtesat ushqimore",
+          "4 produkte, nga 1 paketim"
+        ],
+        [
+          "Zgjedhja",
+          "4 variante me aloe"
+        ]
+      ],
+      "routine_title": "Përmbajtja dhe informacioni kryesor",
+      "routine": [
+        [
+          "Përmbajtja dhe informacioni kryesor",
+          "Jo domosdoshmërisht. Sasitë dhe udhëzimet ndryshojnë sipas produktit dhe tregut. Për përdorimin ndiq etiketën e çdo paketimi."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Përmbajtja e përshkruar me 4 × 1 L i referohet ofertës kroate. Përmbajtja dhe disponueshmëria ndryshojnë sipas tregut.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "fr": {
+      "title": "Pack Forever Vital5 : contenu, variantes et commande",
+      "meta_title": "Pack Forever Vital5 : contenu, variantes et commande",
+      "meta_description": "Découvre le pack Forever Vital5, les quatre boissons à l’aloe de l’offre croate et quatre compléments alimentaires. Compare les variantes et commande dans la…",
+      "format": "Pack de produits",
+      "intro": "Découvre le pack Forever Vital5, les quatre boissons à l’aloe de l’offre croate et quatre compléments alimentaires. Compare les variantes et commande dans la boutique officielle de ton pays.",
+      "teaser": "Découvre le pack Forever Vital5, les quatre boissons à l’aloe de l’offre croate et quatre compléments alimentaires. Compare les variantes et commande dans la boutique officielle de ton pays.",
+      "fit": "Tu souhaites commander une boisson à l’aloe et quatre compléments alimentaires ensemble. Tu cherches une sélection claire pour ta routine quotidienne. Tu souhaites comparer les variantes à l’aloe et découvrir chaque produit avant de commander.",
+      "faq": [
+        [
+          "Que contient le pack Vital5 ?",
+          "L’offre croate comprend 4 × 1 L de la boisson à l’aloe choisie et une boîte de Forever Daily, Active Pro-B, Arctic Sea et ARGI+. Vérifie le contenu pour ton pays dans la boutique officielle."
+        ],
+        [
+          "Le choix du goût de la boisson à l’aloe est possible ?",
+          "Il existe des variantes avec Aloe Vera Gel, Berry Nectar, Peaches et Freedom. Leur disponibilité dépend du marché."
+        ],
+        [
+          "Combien de temps dure chaque boîte ?",
+          "Pas nécessairement. Les quantités et consignes diffèrent selon le produit et le marché. Suis l’étiquette de chaque boîte."
+        ],
+        [
+          "Où vérifier le prix et la livraison ?",
+          "Le prix actuel, toute offre du pack et les conditions de livraison figurent dans la boutique officielle Forever de ton pays."
+        ],
+        [
+          "Le contenu du pack Vital5 est identique dans chaque pays ?",
+          "Non. Le nombre de bouteilles, la variante à l’aloe et les compléments peuvent différer. Dans certaines offres, Forever Daily est remplacé par 3 boîtes de Forever AloeTurm. L’offre officielle locale détermine le contenu final."
+        ]
+      ],
+      "headline": "Contenu et informations essentielles",
+      "highlights": [
+        [
+          "Offre croate",
+          "Boisson à l’aloe 4 × 1 L"
+        ],
+        [
+          "Compléments alimentaires",
+          "4 produits, 1 boîte chacun"
+        ],
+        [
+          "Choix",
+          "4 variantes à l’aloe"
+        ]
+      ],
+      "routine_title": "Contenu et informations essentielles",
+      "routine": [
+        [
+          "Contenu et informations essentielles",
+          "Pas nécessairement. Les quantités et consignes diffèrent selon le produit et le marché. Suis l’étiquette de chaque boîte."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Le contenu décrit avec 4 × 1 L correspond à l’offre croate. Le contenu et la disponibilité varient selon le marché.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "sv": {
+      "title": "Forever Vital5-paketet: innehåll, varianter och beställning",
+      "meta_title": "Forever Vital5-paketet: innehåll, varianter och beställning",
+      "meta_description": "Forever Vital5 i Kroatien: 4 × 1 L aloedryck och fyra kosttillskott. Kontrollera paketets innehåll i ditt lands officiella Foreverbutik.",
+      "format": "Produktpaket",
+      "intro": "Upptäck Forever Vital5-paketet, fyra aloe-drycker i det kroatiska sortimentet och fyra kosttillskott. Jämför varianterna och beställ via den officiella butiken för ditt land.",
+      "teaser": "Upptäck Forever Vital5-paketet, fyra aloe-drycker i det kroatiska sortimentet och fyra kosttillskott. Jämför varianterna och beställ via den officiella butiken för ditt land.",
+      "fit": "Du vill beställa en aloe-dryck och fyra kosttillskott tillsammans. Du söker ett överskådligt urval för din dagliga rutin. Du vill jämföra aloe-varianterna och lära känna varje produkt innan du beställer.",
+      "faq": [
+        [
+          "Vad ingår i Vital5-paketet?",
+          "Sortimentet i Kroatien innehåller 4 × 1 L av en vald aloe-dryck samt en förpackning vardera av Forever Daily, Active Pro-B, Arctic Sea och ARGI+. Kontrollera innehållet för ditt land i den officiella butiken."
+        ],
+        [
+          "Kan jag välja smak på aloe-drycken?",
+          "Det finns varianter med Aloe Vera Gel, Berry Nectar, Peaches och Freedom. Tillgången till varje variant beror på marknaden."
+        ],
+        [
+          "Räcker varje förpackning lika länge?",
+          "Inte nödvändigtvis. Mängd och anvisningar varierar mellan produkter och marknader. Följ etiketten på varje förpackning när du använder produkten."
+        ],
+        [
+          "Var kan jag kontrollera pris och leverans?",
+          "Aktuellt pris, eventuell paketförmån och leveransvillkor visas i den officiella Forever-butiken för ditt land."
+        ],
+        [
+          "Är Vital5 likadant i alla länder?",
+          "Nej. Antalet flaskor, aloe-variant och kosttillskott kan variera. I vissa erbjudanden har Forever Daily ersatts med 3 förpackningar Forever AloeTurm. Det officiella lokala erbjudandet anger det slutliga innehållet."
+        ]
+      ],
+      "headline": "Innehåll och viktig information",
+      "highlights": [
+        [
+          "Sortimentet i Kroatien",
+          "Aloe-dryck 4 × 1 L"
+        ],
+        [
+          "Kosttillskott",
+          "4 produkter, 1 förpackning av varje"
+        ],
+        [
+          "Urval",
+          "4 aloe-varianter"
+        ]
+      ],
+      "routine_title": "Innehåll och viktig information",
+      "routine": [
+        [
+          "Innehåll och viktig information",
+          "Inte nödvändigtvis. Mängd och anvisningar varierar mellan produkter och marknader. Följ etiketten på varje förpackning när du använder produkten."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Beskrivningen av innehållet med 4 × 1 L gäller sortimentet i Kroatien. Paketets innehåll och tillgänglighet varierar mellan marknader.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "hu": {
+      "title": "Forever Vital5 csomag: összetétel, változatok és rendelés",
+      "meta_title": "Forever Vital5 csomag: összetétel, változatok és rendelés",
+      "meta_description": "Forever Vital5 horvát kínálat: 4 × 1 L aloeital és négy étrend-kiegészítő. Ellenőrizd a helyi csomag tartalmát az országod hivatalos Forever áruházában.",
+      "format": "Termékcsomag",
+      "intro": "Ismerd meg a Forever Vital5 csomagot, amely a horvátországi kínálatban négy aloe italból és négy étrend-kiegészítőből áll. Hasonlítsd össze a változatokat, és rendelj az országod hivatalos webáruházából.",
+      "teaser": "Ismerd meg a Forever Vital5 csomagot, amely a horvátországi kínálatban négy aloe italból és négy étrend-kiegészítőből áll. Hasonlítsd össze a változatokat, és rendelj az országod hivatalos webáruházából.",
+      "fit": "Szeretnéd együtt megrendelni az aloe italt és a négy étrend-kiegészítőt. Áttekinthető választást keresel a mindennapi rutinodhoz. Szeretnéd összehasonlítani az aloe ital változatait, és rendelés előtt megismerni az egyes termékeket.",
+      "faq": [
+        [
+          "Mit kapok a Vital5 csomagban?",
+          "A horvátországi kínálatban 4 × 1 l a választott aloe italból, valamint egy-egy csomag Forever Daily, Active Pro-B, Arctic Sea és ARGI+ található. Az országod kínálatának pontos tartalmát a hivatalos webáruházban ellenőrizd."
+        ],
+        [
+          "Kiválaszthatom az aloeital ízét?",
+          "A változatok között Aloe Vera Gel, Berry Nectar, Peaches és Freedom található. Az egyes változatok elérhetősége piacfüggő."
+        ],
+        [
+          "Minden csomag ugyanannyi ideig tart?",
+          "Nem feltétlenül. A mennyiség és a használati útmutató termékenként és piaconként eltérő. Használatkor kövesd az egyes csomagolások címkéjén szereplő utasításokat."
+        ],
+        [
+          "Hol ellenőrizhetem az árat és a szállítást?",
+          "Az aktuális ár, az esetleges csomagkedvezmény és a szállítási feltételek az országod hivatalos Forever webáruházában vannak feltüntetve."
+        ],
+        [
+          "Minden országban azonos a Vital5 csomag?",
+          "Nem. A palackok száma, az aloe ital változata és az étrend-kiegészítők eltérhetnek. Egyes ajánlatokban a Forever Daily helyett 3 csomag Forever AloeTurm szerepel. A végleges összetételről a hivatalos helyi ajánlat ad tájékoztatást."
+        ]
+      ],
+      "headline": "Összetétel és fontos tudnivalók",
+      "highlights": [
+        [
+          "Horvátországi kínálat",
+          "Aloe ital, 4 × 1 l"
+        ],
+        [
+          "Étrend-kiegészítők",
+          "4 termék, mindegyikből 1 csomag"
+        ],
+        [
+          "Kiválasztás",
+          "4 aloe italváltozat"
+        ]
+      ],
+      "routine_title": "Összetétel és fontos tudnivalók",
+      "routine": [
+        [
+          "Összetétel és fontos tudnivalók",
+          "Nem feltétlenül. A mennyiség és a használati útmutató termékenként és piaconként eltérő. Használatkor kövesd az egyes csomagolások címkéjén szereplő utasításokat."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "A 4 × 1 l-es összetétel leírása a horvátországi kínálatra vonatkozik. A csomag tartalma és elérhetősége piaconként eltérő.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "pl": {
+      "title": "Pakiet Forever Vital5: skład, warianty i zamawianie",
+      "meta_title": "Pakiet Forever Vital5: skład, warianty i zamawianie",
+      "meta_description": "Forever Vital5 w Chorwacji: 4 × 1 L napoju aloesowego i cztery suplementy. Sprawdź skład i warianty w oficjalnym sklepie Forever dla swojego kraju.",
+      "format": "Pakiet produktów",
+      "intro": "Poznaj pakiet Forever Vital5, cztery napoje aloesowe dostępne w ofercie w Chorwacji oraz cztery suplementy diety. Porównaj warianty i zamów w oficjalnym sklepie dla swojego kraju.",
+      "teaser": "Poznaj pakiet Forever Vital5, cztery napoje aloesowe dostępne w ofercie w Chorwacji oraz cztery suplementy diety. Porównaj warianty i zamów w oficjalnym sklepie dla swojego kraju.",
+      "fit": "Chcesz zamówić razem napój aloesowy i cztery suplementy diety. Szukasz przejrzystego zestawu do codziennej rutyny. Chcesz porównać warianty napoju aloesowego i poznać każdy produkt przed złożeniem zamówienia.",
+      "faq": [
+        [
+          "Co zawiera pakiet Vital5?",
+          "Oferta w Chorwacji obejmuje 4 × 1 l wybranego napoju aloesowego oraz po jednym opakowaniu Forever Daily, Active Pro-B, Arctic Sea i ARGI+. Sprawdź zawartość dla swojego kraju w oficjalnym sklepie."
+        ],
+        [
+          "Czy mogę wybrać smak napoju aloesowego?",
+          "Dostępne są warianty z Aloe Vera Gel, Berry Nectar, Peaches i Freedom. Dostępność poszczególnych wariantów zależy od rynku."
+        ],
+        [
+          "Czy każde opakowanie wystarcza na taki sam czas?",
+          "Niekoniecznie. Ilość i wskazówki dotyczące stosowania różnią się w zależności od produktu i rynku. Stosuj każdy produkt zgodnie z informacjami na etykiecie opakowania."
+        ],
+        [
+          "Gdzie mogę sprawdzić cenę i dostawę?",
+          "Aktualna cena, ewentualna korzyść cenowa przy zakupie pakietu oraz warunki dostawy są podane w oficjalnym sklepie Forever dla Twojego kraju."
+        ],
+        [
+          "Czy pakiet Vital5 jest taki sam w każdym kraju?",
+          "Nie. Liczba butelek, wariant napoju aloesowego i suplementy mogą się różnić. W niektórych ofertach Forever Daily zastąpiono 3 opakowaniami Forever AloeTurm. Ostateczny skład określa oficjalna oferta lokalna."
+        ]
+      ],
+      "headline": "Skład i ważne informacje",
+      "highlights": [
+        [
+          "Oferta w Chorwacji",
+          "Napój aloesowy 4 × 1 l"
+        ],
+        [
+          "Suplementy diety",
+          "4 produkty, po 1 opakowaniu"
+        ],
+        [
+          "Wybór",
+          "4 warianty aloesowe"
+        ]
+      ],
+      "routine_title": "Skład i ważne informacje",
+      "routine": [
+        [
+          "Skład i ważne informacje",
+          "Niekoniecznie. Ilość i wskazówki dotyczące stosowania różnią się w zależności od produktu i rynku. Stosuj każdy produkt zgodnie z informacjami na etykiecie opakowania."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Opis składu obejmujący 4 × 1 l dotyczy oferty w Chorwacji. Zawartość pakietu i jego dostępność różnią się w zależności od rynku.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    },
+    "ro": {
+      "title": "Pachetul Forever Vital5: compoziție, variante și comandă",
+      "meta_title": "Pachetul Forever Vital5: compoziție, variante și comandă",
+      "meta_description": "Forever Vital5 în Croația: 4 × 1 L băutură cu aloe și patru suplimente. Verifică variantele și conținutul în magazinul oficial Forever din țara ta.",
+      "format": "Pachet de produse",
+      "intro": "Descoperă pachetul Forever Vital5, care include patru băuturi cu aloe din oferta din Croația și patru suplimente alimentare. Compară variantele și comandă din magazinul oficial pentru țara ta.",
+      "teaser": "Descoperă pachetul Forever Vital5, care include patru băuturi cu aloe din oferta din Croația și patru suplimente alimentare. Compară variantele și comandă din magazinul oficial pentru țara ta.",
+      "fit": "Vrei să comanzi împreună o băutură cu aloe și patru suplimente alimentare. Cauți o selecție clară pentru rutina ta zilnică. Vrei să compari variantele cu aloe și să afli mai multe despre fiecare produs înainte de a comanda.",
+      "faq": [
+        [
+          "Ce conține pachetul Vital5?",
+          "Oferta din Croația include 4 × 1 L din băutura cu aloe aleasă, precum și câte un ambalaj de Forever Daily, Active Pro-B, Arctic Sea și ARGI+. Verifică ce conține oferta pentru țara ta în magazinul oficial."
+        ],
+        [
+          "Pot alege aroma băuturii cu aloe?",
+          "Există variante cu Aloe Vera Gel, Berry Nectar, Peaches și Freedom. Disponibilitatea fiecărei variante depinde de piață."
+        ],
+        [
+          "Are fiecare ambalaj aceeași durată de utilizare?",
+          "Nu neapărat. Cantitatea și instrucțiunile diferă în funcție de produs și de piață. Pentru utilizare, urmează instrucțiunile de pe eticheta fiecărui ambalaj."
+        ],
+        [
+          "Unde pot verifica prețul și livrarea?",
+          "Prețul actual, eventualele avantaje ale pachetului și condițiile de livrare sunt afișate în magazinul oficial Forever din țara ta."
+        ],
+        [
+          "Este pachetul Vital5 identic în fiecare țară?",
+          "Nu. Numărul de sticle, varianta cu aloe și suplimentele pot fi diferite. În unele oferte, Forever Daily este înlocuit cu 3 ambalaje de Forever AloeTurm. Compoziția finală este cea din oferta oficială locală."
+        ]
+      ],
+      "headline": "Compoziție și informații importante",
+      "highlights": [
+        [
+          "Oferta din Croația",
+          "Băutură cu aloe, 4 × 1 L"
+        ],
+        [
+          "Suplimente alimentare",
+          "4 produse, câte 1 ambalaj din fiecare"
+        ],
+        [
+          "Selecție",
+          "4 variante cu aloe"
+        ]
+      ],
+      "routine_title": "Compoziție și informații importante",
+      "routine": [
+        [
+          "Compoziție și informații importante",
+          "Nu neapărat. Cantitatea și instrucțiunile diferă în funcție de produs și de piață. Pentru utilizare, urmează instrucțiunile de pe eticheta fiecărui ambalaj."
+        ]
+      ],
+      "fit_in_highlights": true,
+      "photo_note": "Descrierea compoziției cu 4 × 1 L se referă la oferta din Croația. Conținutul și disponibilitatea pachetului diferă în funcție de piață.",
+      "curated": true,
+      "editorial": true,
+      "product_key": "vital5"
+    }
+  }
+}

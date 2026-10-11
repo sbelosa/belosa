@@ -1,4 +1,4 @@
-<?php defined('ALTUMCODE') || die() ?>
+<?php defined('ALTUMCODE') || die(); if(fcc_partner_enabled()) { require THEME_PATH.'views/partner/header.php'; return; } ?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white border border-gray-100 mt-4 index-highly-rounded d-lg-none">
     <div class="container">

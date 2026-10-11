@@ -497,6 +497,11 @@ let password_toggle_view_initiate = () => {
         label_icon.setAttribute('tabindex', '0');
         label_icon.innerHTML = '<i class="fas fa-fw fa-sm fa-eye-slash"></i>'
         label_icon.setAttribute('title', element.getAttribute('data-password-toggle-view-show'));
+        label_icon.setAttribute('aria-label', element.getAttribute('data-password-toggle-view-show') + ': ' + label.textContent.trim());
+        label_icon.setAttribute('aria-pressed', 'false');
+        label_icon.addEventListener('keydown', event => {
+            if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); label_icon.click(); }
+        });
         label_icon.setAttribute('data-toggle', 'tooltip');
         label_icon.setAttribute('data-tooltip-hide-on-click', '');
 
@@ -504,6 +509,8 @@ let password_toggle_view_initiate = () => {
         label_icon.addEventListener('click', event => {
             let input = element.querySelector(`input`);
             input.type = input.type === 'text' ? 'password' : 'text';
+            label_icon.setAttribute('aria-pressed', input.type === 'text' ? 'true' : 'false');
+            label_icon.setAttribute('aria-label', (input.type === 'text' ? element.getAttribute('data-password-toggle-view-hide') : element.getAttribute('data-password-toggle-view-show')) + ': ' + label_span.textContent.trim());
             label_icon.innerHTML = input.type === 'text' ? '<i class="fas fa-fw fa-sm fa-eye"></i>' : '<i class="fas fa-fw fa-sm fa-eye-slash"></i>';
             label_icon.setAttribute('title', input.type === 'text' ? element.getAttribute('data-password-toggle-view-hide') : element.getAttribute('data-password-toggle-view-show'));
             label_icon.setAttribute('data-original-title', input.type === 'text' ? element.getAttribute('data-password-toggle-view-hide') : element.getAttribute('data-password-toggle-view-show'));

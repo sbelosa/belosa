@@ -308,6 +308,10 @@ class ApiDomains extends Controller {
             $is_enabled = 0;
         }
 
+        if(fc_nfc_domain_change_is_blocked($domain, $_POST)) {
+            $this->response_error(l('link.settings.url_help_main_biolink_locked'), 403);
+        }
+
         /* Database query */
         db()->where('domain_id', $domain->domain_id)->update('domains', [
             'scheme' => $_POST['scheme'],
@@ -383,6 +387,9 @@ class ApiDomains extends Controller {
             $this->return_404();
         }
 
+        if(fc_domain_has_nfc_link((int) $domain->domain_id)) {
+            $this->response_error(l('link_delete_modal.error_message.main_biolink_locked'), 403);
+        }
         (new Domain())->delete($domain->domain_id);
 
         http_response_code(200);

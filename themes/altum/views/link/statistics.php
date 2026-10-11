@@ -7,72 +7,72 @@ $fcc_stats_is_hr = in_array(mb_strtolower((string) $fcc_stats_language_name), ['
 $fcc_stats_is_main = !empty($data->is_main_biolink_app);
 $fcc_stats_is_biolink = $data->link->type === 'biolink';
 
-$fcc_stats_guide_label = $fcc_stats_is_hr ? 'Pokreni tutorijal' : 'Start tutorial';
-$fcc_stats_extra_title = $fcc_stats_is_hr ? 'Dodatna FCC aplikacija' : 'Additional FCC app';
+$fcc_stats_guide_label = $fcc_stats_is_hr ? fcc_t('Pokreni tutorijal') : 'Start tutorial';
+$fcc_stats_extra_title = $fcc_stats_is_hr ? fcc_t('Dodatna FCC aplikacija') : fcc_t('Additional FCC app');
 $fcc_stats_extra_text = $fcc_stats_is_hr
-    ? 'Ovdje pratiš statistiku ove dodatne FCC aplikacije. AI analiza, javni prikaz i rast unutar FCC sustava ostaju vezani uz glavnu FCC aplikaciju.'
-    : 'Here you are tracking the statistics of this additional FCC app. AI analysis, public showcase and growth inside FCC remain tied to the main FCC app.';
-$fcc_stats_extra_cta = $fcc_stats_is_hr ? 'Otvori glavnu aplikaciju' : 'Open main app';
+    ? fcc_t('Ovdje pratiš statistiku ove dodatne FCC aplikacije. AI analiza, javni prikaz i rast unutar FCC sustava ostaju vezani uz glavnu FCC aplikaciju.')
+    : fcc_t('Here you are tracking the statistics of this additional FCC app. AI analysis, public showcase and growth inside FCC remain tied to the main FCC app.');
+$fcc_stats_extra_cta = $fcc_stats_is_hr ? fcc_t('Otvori glavnu aplikaciju') : fcc_t('Open main app');
 
 $fcc_tour_main_steps = [
     [
         'selector' => '#fcc_app_stats_tour_step_ai_block',
-        'title' => $fcc_stats_is_hr ? 'AI analiza glavne aplikacije' : 'AI analysis for the main app',
+        'title' => $fcc_stats_is_hr ? fcc_t('AI analiza glavne aplikacije') : fcc_t('AI analysis for the main app'),
         'text' => $fcc_stats_is_hr
-            ? 'Ovdje vidiš kako glavna aplikacija trenutno stoji, što treba doraditi i gdje pokrećeš AI analizu povezanu s Tvojim planom rasta.'
-            : 'Here you see how the main app is performing, what needs work and where you launch the AI analysis connected to your Growth Plan.',
+            ? fcc_t('Ovdje vidiš kako glavna aplikacija trenutno stoji, što treba doraditi i gdje pokrećeš AI analizu povezanu s Tvojim planom rasta.')
+            : fcc_t('Here you see how the main app is performing, what needs work and where you launch the AI analysis connected to your Growth Plan.'),
     ],
     [
         'selector' => '#fcc_app_stats_tour_step_nav',
-        'title' => $fcc_stats_is_hr ? 'Pregledi statistike' : 'Statistics views',
+        'title' => $fcc_stats_is_hr ? fcc_t('Pregledi statistike') : fcc_t('Statistics views'),
         'text' => $fcc_stats_is_hr
-            ? 'Ovdje biraš pregled statistike, unose, izvore, države, uređaje, UTM-ove i ostale detalje za ovu aplikaciju.'
-            : 'Here you choose overview, entries, sources, countries, devices, UTMs and other details for this app.',
+            ? fcc_t('Ovdje biraš pregled statistike, unose, izvore, države, uređaje, UTM-ove i ostale detalje za ovu aplikaciju.')
+            : fcc_t('Here you choose overview, entries, sources, countries, devices, UTMs and other details for this app.'),
     ],
     [
         'selector' => '#fcc_app_stats_tour_step_overview',
-        'title' => $fcc_stats_is_hr ? 'Glavni rezultat aplikacije' : 'Main app result',
+        'title' => $fcc_stats_is_hr ? fcc_t('Glavni rezultat aplikacije') : fcc_t('Main app result'),
         'text' => $fcc_stats_is_hr
-            ? 'U ovom dijelu pratiš ključne brojke i kretanje interesa za odabranu aplikaciju kroz odabrano razdoblje.'
-            : 'In this section you track the key numbers and the movement of interest for the selected app across the chosen date range.',
+            ? fcc_t('U ovom dijelu pratiš ključne brojke i kretanje interesa za odabranu aplikaciju kroz odabrano razdoblje.')
+            : fcc_t('In this section you track the key numbers and the movement of interest for the selected app across the chosen date range.'),
     ],
     [
         'selector' => '#fcc_app_stats_tour_step_latest',
-        'title' => $fcc_stats_is_hr ? 'Zadnje posjete i izvori' : 'Latest visits and sources',
+        'title' => $fcc_stats_is_hr ? fcc_t('Zadnje posjete i izvori') : fcc_t('Latest visits and sources'),
         'text' => $fcc_stats_is_hr
-            ? 'Ovdje vidiš zadnje posjete, odakle su došle i kada su se dogodile. To je korisno za praćenje kampanja i ponašanja posjetitelja.'
-            : 'Here you see the latest visits, where they came from and when they happened. This is useful for tracking campaigns and visitor behaviour.',
+            ? fcc_t('Ovdje vidiš zadnje posjete, odakle su došle i kada su se dogodile. To je korisno za praćenje kampanja i ponašanja posjetitelja.')
+            : fcc_t('Here you see the latest visits, where they came from and when they happened. This is useful for tracking campaigns and visitor behaviour.'),
     ],
 ];
 
 $fcc_tour_extra_steps = [
     [
         'selector' => '#fcc_app_stats_tour_step_extra_info',
-        'title' => $fcc_stats_is_hr ? 'Statistika dodatne aplikacije' : 'Additional app statistics',
+        'title' => $fcc_stats_is_hr ? fcc_t('Statistika dodatne aplikacije') : fcc_t('Additional app statistics'),
         'text' => $fcc_stats_is_hr
-            ? 'Ovdje pratiš rezultate ove dodatne FCC aplikacije. AI analiza i plan rasta ostaju vezani uz glavnu FCC aplikaciju.'
-            : 'Here you track the results of this additional FCC app. AI analysis and the Growth Plan remain tied to the main FCC app.',
+            ? fcc_t('Ovdje pratiš rezultate ove dodatne FCC aplikacije. AI analiza i plan rasta ostaju vezani uz glavnu FCC aplikaciju.')
+            : fcc_t('Here you track the results of this additional FCC app. AI analysis and the Growth Plan remain tied to the main FCC app.'),
     ],
     [
         'selector' => '#fcc_app_stats_tour_step_nav',
-        'title' => $fcc_stats_is_hr ? 'Pregledi statistike' : 'Statistics views',
+        'title' => $fcc_stats_is_hr ? fcc_t('Pregledi statistike') : fcc_t('Statistics views'),
         'text' => $fcc_stats_is_hr
-            ? 'Ovdje biraš pregled statistike, unose, izvore, države, uređaje, UTM-ove i ostale detalje za ovu dodatnu aplikaciju.'
-            : 'Here you choose overview, entries, sources, countries, devices, UTMs and other details for this additional app.',
+            ? fcc_t('Ovdje biraš pregled statistike, unose, izvore, države, uređaje, UTM-ove i ostale detalje za ovu dodatnu aplikaciju.')
+            : fcc_t('Here you choose overview, entries, sources, countries, devices, UTMs and other details for this additional app.'),
     ],
     [
         'selector' => '#fcc_app_stats_tour_step_overview',
-        'title' => $fcc_stats_is_hr ? 'Učinak ove aplikacije' : 'Performance of this app',
+        'title' => $fcc_stats_is_hr ? fcc_t('Učinak ove aplikacije') : fcc_t('Performance of this app'),
         'text' => $fcc_stats_is_hr
-            ? 'U ovom dijelu pratiš kako se ova dodatna aplikacija ponaša kroz vrijeme i iz kojih izvora dolazi interes.'
-            : 'In this section you track how this additional app performs over time and which sources bring interest.',
+            ? fcc_t('U ovom dijelu pratiš kako se ova dodatna aplikacija ponaša kroz vrijeme i iz kojih izvora dolazi interes.')
+            : fcc_t('In this section you track how this additional app performs over time and which sources bring interest.'),
     ],
     [
         'selector' => '#fcc_app_stats_tour_step_latest',
-        'title' => $fcc_stats_is_hr ? 'Zadnje posjete i izvori' : 'Latest visits and sources',
+        'title' => $fcc_stats_is_hr ? fcc_t('Zadnje posjete i izvori') : fcc_t('Latest visits and sources'),
         'text' => $fcc_stats_is_hr
-            ? 'Ovdje vidiš zadnje posjete, izvore i vrijeme posjeta za ovu dodatnu aplikaciju.'
-            : 'Here you see the latest visits, sources and timestamps for this additional app.',
+            ? fcc_t('Ovdje vidiš zadnje posjete, izvore i vrijeme posjeta za ovu dodatnu aplikaciju.')
+            : fcc_t('Here you see the latest visits, sources and timestamps for this additional app.'),
     ],
 ];
 
@@ -648,7 +648,7 @@ $fcc_stats_storage_key = $fcc_stats_is_main ? 'fccTutorialSeenAppStatisticsMain'
     <div class="fcc-app-stats-nav-header">
         <div class="fcc-app-stats-nav-title">
             <h2><?= l('link.statistics.header') ?></h2>
-            <p><?= $fcc_stats_is_hr ? 'Prati ključne brojke, kretanje interesa i izvore prometa za odabranu FCC aplikaciju.' : 'Track key numbers, movement of interest and traffic sources for the selected FCC app.' ?></p>
+            <p><?= $fcc_stats_is_hr ? fcc_t('Prati ključne brojke, kretanje interesa i izvore prometa za odabranu FCC aplikaciju.') : fcc_t('Track key numbers, movement of interest and traffic sources for the selected FCC app.') ?></p>
         </div>
 
         <div class="d-flex align-items-center col-auto p-0">
@@ -800,10 +800,10 @@ $fcc_stats_storage_key = $fcc_stats_is_main ? 'fccTutorialSeenAppStatisticsMain'
     <h3 id="fcc_app_stats_tour_title"></h3>
     <p id="fcc_app_stats_tour_text"></p>
     <div class="fcc-app-stats-tour-actions">
-        <button type="button" class="fcc-app-stats-tour-dismiss" id="fcc_app_stats_tour_skip"><?= $fcc_stats_is_hr ? 'Preskoči' : 'Skip' ?></button>
+        <button type="button" class="fcc-app-stats-tour-dismiss" id="fcc_app_stats_tour_skip"><?= $fcc_stats_is_hr ? fcc_t('Preskoči') : fcc_t('Skip') ?></button>
         <div class="fcc-app-stats-tour-nav">
-            <button type="button" class="fcc-app-stats-tour-btn fcc-app-stats-tour-btn--secondary" id="fcc_app_stats_tour_prev"><?= $fcc_stats_is_hr ? 'Natrag' : 'Back' ?></button>
-            <button type="button" class="fcc-app-stats-tour-btn fcc-app-stats-tour-btn--primary" id="fcc_app_stats_tour_next"><?= $fcc_stats_is_hr ? 'Dalje' : 'Next' ?></button>
+            <button type="button" class="fcc-app-stats-tour-btn fcc-app-stats-tour-btn--secondary" id="fcc_app_stats_tour_prev"><?= $fcc_stats_is_hr ? fcc_t('Natrag') : fcc_t('Back') ?></button>
+            <button type="button" class="fcc-app-stats-tour-btn fcc-app-stats-tour-btn--primary" id="fcc_app_stats_tour_next"><?= $fcc_stats_is_hr ? fcc_t('Dalje') : fcc_t('Next') ?></button>
         </div>
     </div>
 </div>
@@ -959,7 +959,7 @@ moment.tz.setDefault(<?= json_encode($this->user->timezone) ?>);
             title.textContent = step.title;
             text.textContent = step.text;
             prevButton.style.visibility = activeIndex === 0 ? 'hidden' : 'visible';
-            nextButton.textContent = activeIndex === validSteps.length - 1 ? <?= json_encode($fcc_stats_is_hr ? 'Završi' : 'Finish') ?> : <?= json_encode($fcc_stats_is_hr ? 'Dalje' : 'Next') ?>;
+            nextButton.textContent = activeIndex === validSteps.length - 1 ? <?= json_encode($fcc_stats_is_hr ? fcc_t('Završi') : fcc_t('Finish')) ?> : <?= json_encode($fcc_stats_is_hr ? fcc_t('Dalje') : fcc_t('Next')) ?>;
 
             requestAnimationFrame(() => {
                 positionCardNearTarget();

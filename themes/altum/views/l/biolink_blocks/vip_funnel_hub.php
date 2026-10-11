@@ -95,7 +95,7 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
 
             <?php if($block_image): ?>
                 <div class="mb-3">
-                    <img src="<?= $block_image ?>" alt="<?= htmlspecialchars((string) ($settings['name'] ?? 'VIP Funnel Hub'), ENT_QUOTES, 'UTF-8') ?>" loading="lazy" style="width:100%; max-height:11rem; object-fit:cover; border-radius:1rem; border:1px solid rgba(255,255,255,.08);" />
+                    <img src="<?= $block_image ?>" alt="<?= htmlspecialchars((string) ($settings['name'] ?? fcc_t('VIP Funnel Hub')), ENT_QUOTES, 'UTF-8') ?>" loading="lazy" style="width:100%; max-height:11rem; object-fit:cover; border-radius:1rem; border:1px solid rgba(255,255,255,.08);" />
                 </div>
             <?php endif ?>
 
@@ -127,11 +127,11 @@ $columns = (int) ($settings['columns'] ?? 1) === 2 ? '6' : '12';
             <div class="d-flex flex-wrap" style="gap:.75rem; justify-content:<?= $cta_justify ?>; align-items:<?= $cta_align_items ?>;" data-vip-funnel-hub-cta-alignment>
                 <?php if($cta_url): ?>
                     <a href="<?= $cta_url ?>" data-vip-hub-stop="true" class="btn btn-primary" style="font-weight:700; border-radius:.95rem; padding:.8rem 1.1rem;">
-                        <?= htmlspecialchars($render['primary_cta_text'] ?: 'Otvori funnel', ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars($render['primary_cta_text'] ?: fcc_t('Otvori funnel'), ENT_QUOTES, 'UTF-8') ?>
                     </a>
                 <?php else: ?>
                     <button type="button" class="btn btn-light disabled" style="font-weight:700; border-radius:.95rem; padding:.8rem 1.1rem; opacity:.82; pointer-events:none;">
-                        <?= htmlspecialchars($render['primary_cta_text'] ?: 'Otvori funnel', ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars($render['primary_cta_text'] ?: fcc_t('Otvori funnel'), ENT_QUOTES, 'UTF-8') ?>
                     </button>
                 <?php endif ?>
 

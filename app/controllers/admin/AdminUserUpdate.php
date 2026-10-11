@@ -257,52 +257,18 @@ class AdminUserUpdate extends Controller {
                 }
             }
 
+            if(isset($_POST['team_form'])) {
+                try {
+                    fcc_team_validate((int)$this->user->user_id, (int)$user->user_id, array_merge($_POST, ['team_fbo_id'=>$_POST['user_meta']['foreverId']??'']));
+                } catch(\InvalidArgumentException $e) { Alerts::add_error($e->getMessage()); }
+            }
+
             /* If there are no errors, continue */
             if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
                 $became_approved_fcc_user = $_POST['status'] == 1
                     && $user->status == 0
                     && is_null($_POST['user_meta']['limited']);
 
-                /* Custom code */
-                if ($became_approved_fcc_user) {
-                    $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $user->user_id) ?? 0);
-
-                    if (!$main_biolink_id) {
-                        $biolink = db()->where('user_id', $user->user_id)->where('type', 'biolink')->getOne('links'); 
-                        $vcard = db()->where('user_id', $user->user_id)->where('type', 'vcard')->getOne('links'); 
-
-                        if($biolink && !db()->where('user_id', $user->user_id)->has('users_biolinks')) {
-                            db()->insert('users_biolinks', [
-                                'user_id' => $user->user_id,
-                                'biolink_id' => $biolink->link_id
-                            ]);
-                        }
-                        db()->insert('users_vcards', [
-                            'user_id' => $user->user_id,
-                            'vcard_id' => $vcard->link_id
-                        ]);            
-                    } else {
-                        $biolink = db()->where('link_id', $main_biolink_id)->getOne('links');
-
-                        /* Send webhook notification if needed */
-                        if(settings()->webhooks->user_new) {
-                            \Unirest\Request::post(settings()->webhooks->user_new, [], [
-                                'user_id' => $user->user_id,
-                                'name' => $_POST['name'],      
-                                'email' => $_POST['email'],
-                                'biolink' => isset($biolink->url) ? SITE_URL . $biolink->url : null,
-                                /* Custom code: FC-2026-02-26: fix webhook phone payload source */
-                                'phone' => isset($_POST['user_meta']['phone']) ? $_POST['user_meta']['phone'] : null,
-                                /* /Custom code: FC-2026-02-26 */
-                                'address' => isset($_POST['user_meta']['address']) ? $_POST['user_meta']['address'] : null,
-                                'zip' => isset($_POST['user_meta']['zip']) ? $_POST['user_meta']['zip'] : null,
-                                'city' => isset($_POST['user_meta']['city']) ? $_POST['user_meta']['city'] : null,
-                                'country' => isset($_POST['user_meta']['country']) ? $_POST['user_meta']['country'] : null,
-                                'foreverId' => isset($_POST['user_meta']['foreverId']) ? $_POST['user_meta']['foreverId'] : null,
-                            ]);
-                        }
-                    }
-                }             
                 $preferences = json_decode($user->preferences ?? '{}');
                 if(is_array($preferences)) {
                     $preferences = (object) $preferences;
@@ -354,7 +320,7 @@ class AdminUserUpdate extends Controller {
 
 
                 /* Update the basic user settings */
-                db()->where('user_id', $user->user_id)->update('users', [
+                $user_changes = [
                     'name' => $_POST['name'],
                     'email' => $_POST['email'],
                     'status' => $_POST['status'],
@@ -366,7 +332,59 @@ class AdminUserUpdate extends Controller {
                     'plan_trial_done' => $_POST['plan_trial_done'],
                     'referred_by' => $user->referred_by != $_POST['referred_by'] ? $_POST['referred_by'] : $user->referred_by,
                     'preferences' => json_encode($preferences), /* Custom code */
-                ]);
+                ];
+                if(isset($_POST['team_form'])) {
+                    try {
+                        fcc_team_admin_save((int)$this->user->user_id, (int)$user->user_id,
+                            array_merge($_POST, ['team_fbo_id'=>$preferences->meta->foreverId??'']),
+                            function() use ($user,$user_changes) { if(!db()->where('user_id',$user->user_id)->update('users',$user_changes)) throw new \RuntimeException(fcc_t('Spremanje računa nije uspjelo.')); });
+                    } catch(\InvalidArgumentException $e) {
+                        Alerts::add_error($e->getMessage());
+                        redirect('admin/user-update/'.(int)$user->user_id);
+                    }
+                } else { db()->where('user_id',$user->user_id)->update('users',$user_changes); }
+
+                /* Custom code */
+                if ($became_approved_fcc_user) {
+                    $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $user->user_id) ?? 0);
+
+                    if (!$main_biolink_id) {
+                        $biolink = db()->where('user_id', $user->user_id)->where('type', 'biolink')->getOne('links');
+                        $vcard = db()->where('user_id', $user->user_id)->where('type', 'vcard')->getOne('links');
+
+                        if($biolink && !db()->where('user_id', $user->user_id)->has('users_biolinks')) {
+                            db()->insert('users_biolinks', [
+                                'user_id' => $user->user_id,
+                                'biolink_id' => $biolink->link_id
+                            ]);
+                        }
+                        db()->insert('users_vcards', [
+                            'user_id' => $user->user_id,
+                            'vcard_id' => $vcard->link_id
+                        ]);
+                    } else {
+                        $biolink = db()->where('link_id', $main_biolink_id)->getOne('links');
+
+                        /* Send webhook notification if needed */
+                        if(settings()->webhooks->user_new) {
+                            \Unirest\Request::post(settings()->webhooks->user_new, [], [
+                                'user_id' => $user->user_id,
+                                'name' => $_POST['name'],
+                                'email' => $_POST['email'],
+                                'biolink' => isset($biolink->url) ? SITE_URL . $biolink->url : null,
+                                /* Custom code: FC-2026-02-26: fix webhook phone payload source */
+                                'phone' => isset($_POST['user_meta']['phone']) ? $_POST['user_meta']['phone'] : null,
+                                /* /Custom code: FC-2026-02-26 */
+                                'address' => isset($_POST['user_meta']['address']) ? $_POST['user_meta']['address'] : null,
+                                'zip' => isset($_POST['user_meta']['zip']) ? $_POST['user_meta']['zip'] : null,
+                                'city' => isset($_POST['user_meta']['city']) ? $_POST['user_meta']['city'] : null,
+                                'country' => isset($_POST['user_meta']['country']) ? $_POST['user_meta']['country'] : null,
+                                'foreverId' => isset($_POST['user_meta']['foreverId']) ? $_POST['user_meta']['foreverId'] : null,
+                            ]);
+                        }
+                    }
+                }
+
 
                 if($main_biolink) {
                     db()->where('link_id', $main_biolink->link_id)->where('user_id', $user->user_id)->update('links', [
@@ -379,6 +397,11 @@ class AdminUserUpdate extends Controller {
                 }
 
                 (new \Altum\Models\User())->sync_links_with_plan($user->user_id);
+                if($became_approved_fcc_user) {
+                    foreach(db()->where('user_id',$user->user_id)->where('type','biolink')->where('is_enabled',1)->get('links',null,['link_id']) as $approved_card) {
+                        fc_ensure_factory_shop_block((int)$user->user_id,(int)$approved_card->link_id);
+                    }
+                }
 
                 /* The approval remains successful even if the provider is
                  * temporarily unavailable. Failed deliveries stay queued and
@@ -429,7 +452,7 @@ class AdminUserUpdate extends Controller {
                                     '{{LINK}}' => '<a href="' . SITE_URL . $link->url . '">' . SITE_URL . $link->url . '</a>',
                                     '{{DASHBOARD_LINK}}' => '<a href="' . $dashboard_link . '">' . $dashboard_link . '</a>',
                                 ],
-                                l('global.emails.admin.card_sent_email.body', $language)
+                                l('global.emails.admin.card_sent_email.body', $language) . fcc_partner_install_email_content($language, (int)$user->user_id)
                             );
 
                             send_mail($user->email, $email_template->subject, $email_template->body, ['anti_phishing_code' => $user->anti_phishing_code ?? null, 'language' => $language]);

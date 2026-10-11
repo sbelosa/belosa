@@ -37,14 +37,14 @@ class Blog extends Controller {
         $main_biolink_id = fc_get_user_main_biolink_id($user_id);
 
         if($main_biolink_id) {
-            $biolink = db()->where('link_id', $main_biolink_id)->where('type', 'biolink')->getOne('links', ['url']);
+            $biolink = db()->where('link_id', $main_biolink_id)->where('user_id', $user_id)->where('is_enabled', 1)->where('type', 'biolink')->getOne('links', ['url']);
 
             if($biolink && !empty($biolink->url)) {
                 return $biolink->url;
             }
         }
 
-        $biolink = db()->where('user_id', $user_id)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
+        $biolink = db()->where('user_id', $user_id)->where('is_enabled', 1)->where('type', 'biolink')->orderBy('link_id', 'ASC')->getOne('links', ['url']);
 
         return ($biolink && !empty($biolink->url)) ? $biolink->url : null;
     }
@@ -56,7 +56,7 @@ class Blog extends Controller {
             return $url;
         }
 
-        return $url . (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
+        return fcc_product_owned_url($url, $referral);
     }
 
     private function resolve_referral_to_biolink_slug(?string $referral_key = null): ?string {
@@ -361,6 +361,35 @@ class Blog extends Controller {
             }
         }
 
+        // Keep the reviewed package and its components connected in the same language.
+        if(!function_exists('fcc_vital5_package')) require_once APP_PATH . 'helpers/fcc_vital5.php';
+        $package = fcc_vital5_package();
+        $component_slugs = array_values(array_unique(array_filter((array) ($package['component_article_slugs'] ?? []), static function($slug) {
+            return is_string($slug) && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D', $slug) === 1 && $slug !== 'vital5';
+        })));
+        $current_slug = (string) ($blog_post->url ?? '');
+        $preferred_slugs = ($package['product_key'] ?? '') === 'vital5'
+            ? ($current_slug === 'vital5' ? array_slice($component_slugs, 0, 4) : (in_array($current_slug, $component_slugs, true) ? ['vital5'] : [])) : [];
+        if($preferred_slugs) {
+            $quoted_slugs = implode(', ', array_map(static fn($slug) => "'" . db()->escape($slug) . "'", $preferred_slugs));
+            $preferred_result = database()->query("
+                SELECT `blog_post_id`, `blog_posts_category_id`, `title`, `description`, `url`, `language`,
+                    `image`, `image_description`, `total_views`, `datetime`, `last_datetime`, `webshop_links`, `sku`
+                FROM `blog_posts`
+                WHERE `url` IN ({$quoted_slugs}) AND `blog_post_id` != {$blog_post_id}
+                    AND `is_published` = 1 AND `language` = '{$language}'
+                ORDER BY FIELD(`url`, {$quoted_slugs}), `blog_post_id` ASC
+            ");
+            $preferred = [];
+            if($preferred_result) while($row = $preferred_result->fetch_object()) $preferred[] = $row;
+            $seen_ids = []; $seen_slugs = []; $merged = [];
+            foreach(array_merge($preferred, $related_posts) as $row) {
+                $id = (int) ($row->blog_post_id ?? 0); $slug = (string) ($row->url ?? '');
+                if(isset($seen_ids[$id]) || isset($seen_slugs[$slug])) continue;
+                $seen_ids[$id] = true; $seen_slugs[$slug] = true; $merged[] = $row;
+            }
+            $related_posts = array_slice($merged, 0, 4);
+        }
         return $related_posts;
     }
 
@@ -428,12 +457,20 @@ class Blog extends Controller {
                 setcookie($cookie_name, (int) true, time()+60*60*24*1);
             }
 
-            $blog_post_url = SITE_URL . ($blog_post->language ? ((\Altum\Language::$active_languages[$blog_post->language] ?? null) ? \Altum\Language::$active_languages[$blog_post->language] . '/' : null) : null) . 'blog/' . $blog_post->url;
+            $blog_post_url = $this->build_localized_public_url('blog/' . $blog_post->url, $blog_post->language);
             $blog_post_shop_context = fc_blog_shop_context_normalize($blog_post->shop_context ?? null);
             $blog_post_public_bundle = fc_build_blog_post_public_bundle($blog_post, $blog_posts_category, $blog_post_shop_context, \Altum\Language::$code ?? ($blog_post->language ?? null));
 
+            if(function_exists('fcc_library_pilot_enabled') && fcc_library_pilot_enabled()) {
+                $editorial_product=fcc_library_pilot_product($blog_post->url);
+                if(!empty($editorial_product['curated'])) {
+                    $blog_post_public_bundle['meta_title']=$editorial_product['meta_title'];
+                    $blog_post_public_bundle['meta_description']=$editorial_product['meta_description'];
+                }
+            }
+
             /* Set a custom title */
-            $blog_post_title_is_full = stripos($blog_post_public_bundle['meta_title'], settings()->main->title) !== false;
+            $blog_post_title_is_full = !empty($editorial_product['curated']) || stripos($blog_post_public_bundle['meta_title'], settings()->main->title) !== false;
             Title::set($blog_post_public_bundle['meta_title'], $blog_post_title_is_full);
 
             /* Meta */
@@ -442,7 +479,7 @@ class Blog extends Controller {
             Meta::set_canonical_url($blog_post_url);
             Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
             if($blog_post->image) {
-                Meta::set_social_image(\Altum\Uploads::get_full_url('blog') . $blog_post->image);
+                Meta::set_social_image(!empty($editorial_product['curated']) ? fcc_product_editorial_image($blog_post)['url'] : \Altum\Uploads::get_full_url('blog') . $blog_post->image);
             }
 
             /* Disable automated link language alternate */
@@ -472,6 +509,10 @@ class Blog extends Controller {
             $referral_key = null;
             $legacy_referral_slug = 'wpebe1grqr';
             $default_referral_slug = 'ddglabhlcn';
+            // Local fixtures do not contain the production default sponsor. Never replace an explicit referral.
+            if(getenv('FCC_LOCAL') === '1' && db()->where('url','fcc-pregled')->where('type','biolink')->has('links')) {
+                $default_referral_slug = 'fcc-pregled';
+            }
 
             if(isset($_GET['ref']) && $_GET['ref'] !== '') {
                 $referral_key = query_clean($_GET['ref']);
@@ -483,6 +524,10 @@ class Blog extends Controller {
                 /* Custom code: FC-2026-02-26: default affiliate fallback slug */
                 $referral_key = $default_referral_slug;
                 /* /Custom code: FC-2026-02-26 */
+            }
+
+            if(getenv('FCC_LOCAL') === '1' && empty($_GET['ref']) && $referral_key === 'ddglabhlcn' && $default_referral_slug === 'fcc-pregled') {
+                $referral_key = $default_referral_slug;
             }
 
             if(
@@ -611,64 +656,52 @@ class Blog extends Controller {
 
             if ($referral) {                      
                 /* Custom code: FC-2026-02-26: robust visitor country detection for blog webshop routing */
-                $country_code = null;
-                $country_code_is_trusted = false;
-                $header_country_code = null;
-                $external_geo_country_code = null;
-                $maxmind_country_code = null;
-                $maxmind_city_country_code = null;
-                $accept_language_header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
-
-                foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_COUNTRY'] as $country_header_key) {
-                    if(!empty($_SERVER[$country_header_key])) {
-                        $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
-                        $header_country_code = mb_substr($header_country_code, 0, 2);
-
-                        if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
-                            $country_code = $header_country_code;
-                            $country_code_is_trusted = true;
-                            break;
-                        }
-                    }
-                }
-
-                if(!$country_code) {
-                    $external_geo_country_code = \Altum\Link::get_external_geo_country_code(get_ip());
-                    $country_code = $external_geo_country_code;
-                }
-
-                if(!$country_code) {
-                    try {
-                        $maxmind_city = get_maxmind_reader_city()->get(get_ip());
-                    } catch(\Exception $exception) {
-                        /* :) */
-                    }
-
-                    $maxmind_city_country_code = isset($maxmind_city) && isset($maxmind_city['country']) ? ($maxmind_city['country']['iso_code'] ?? null) : null;
-                    $country_code = $maxmind_city_country_code;
-                }
-
-                if(!$country_code) {
-                    try {
-                        $maxmind = get_maxmind_reader_country()->get(get_ip());
-                    } catch(\Exception $exception) {
-                        /* :) */
-                    }
-
-                    $maxmind_country_code = isset($maxmind) && isset($maxmind['country']) ? ($maxmind['country']['iso_code'] ?? null) : null;
-                    $country_code = $maxmind_country_code;
-                }
+                $country_context=fcc_forever_country_context();
+                $country_code=$country_context['country'];
+                $country_code_is_trusted=true;
+                $accept_language_header=null;
+                fcc_forever_remember_country();
+                header('Cache-Control: private, no-store');
                 /* /Custom code: FC-2026-02-26 */
 
+                // Editorial content can be cached, but the offer map must agree with
+                // the current records used by the referral destination generator.
+                if((fcc_market_policy_enabled() || fcc_library_pilot_enabled()) && ($catalog_post=fcc_library_product_index()[$blog_post->url]??null)) {
+                    $blog_post->webshop_links=$catalog_post->webshop_links;
+                }
+                $is_starter=($blog_post->url??'')==='start-paket';
+                if($is_starter)$blog_post->webshop_links=json_encode(array_map(static fn($m)=>$m['business'],fcc_forever_markets()));
                 $product_webshop_links = json_decode($blog_post->webshop_links ?? '{}');
                 $available_market_country_codes = array_keys(array_filter((array) $product_webshop_links, static function($value) {
                     return !empty($value);
                 }));
                 $resolved_market_country_code = \Altum\Link::resolve_preferred_forever_market_country_code($country_code, $available_market_country_codes, $accept_language_header, $country_code_is_trusted);
+                if(fcc_market_policy_enabled() || fcc_library_pilot_enabled()) {
+                    // Explicit country choice is separate from display language and automatic detection.
+                    $chosen_market=fcc_forever_country_code($_GET['market']??null)??'';
+                    if(array_key_exists($chosen_market,\FccShopCatalog::CURRENCIES)) {
+                        $resolved_market_country_code=$chosen_market;
+                        $country_code=strtoupper($chosen_market);
+                    } elseif(($detected_market=\Altum\Link::resolve_forever_market_country_code($country_code))) {
+                        $resolved_market_country_code=$detected_market;
+                    }
+                }
                 $webshop_link = \Altum\Link::get_product_webshop_link($referral, $blog_post->blog_post_id, $resolved_market_country_code);
+                if(fcc_market_policy_enabled() || fcc_library_pilot_enabled()) {
+                    // A missing local offer must not silently become a foreign order.
+                    $market_base=((array)$product_webshop_links)[$resolved_market_country_code??'']??'';
+                    if(!$market_base || \FccShopCatalog::market($market_base)!==$resolved_market_country_code || !\FccShopCatalog::clean($market_base))$webshop_link=null;
+                    elseif($webshop_link && fcc_market_policy_enabled() && !$is_starter) {
+                        $verified_offer=\FccShopCatalog::cached($market_base);
+                        if(($verified_offer['status']??'')!=='verified_product' || ($verified_offer['market']??'')!==$resolved_market_country_code) {
+                            \FccShopCatalog::requestRefresh($market_base);
+                            $webshop_link=null;
+                        }
+                    }
+                }
 
                 if($webshop_link) {
-                    $tracked_webshop_link = url('blog-click?blog_post_id=' . (int) $blog_post->blog_post_id . '&ref=' . rawurlencode($referral) . '&destination=' . rawurlencode($webshop_link));
+                    $tracked_webshop_link = url('blog-click?blog_post_id=' . (int) $blog_post->blog_post_id . '&ref=' . rawurlencode($referral) . '&market=' . rawurlencode((string)$resolved_market_country_code) . '&destination=' . rawurlencode($webshop_link));
                     $tracked_utm_source = '';
 
                     if(isset($_GET['utm_source']) && trim((string) $_GET['utm_source']) !== '') {
@@ -698,10 +731,9 @@ class Blog extends Controller {
             $blog_posts_popular = settings()->content->blog_popular_widget_is_enabled ? (new BlogPosts())->get_popular_blog_posts_by_language($language) : [];
 
             /* Prepare the view */
-            $share_url = $blog_post_url;
-            if($referral) {
-                $share_url .= (parse_url($share_url, PHP_URL_QUERY) ? '&' : '?') . http_build_query(['ref' => $referral]);
-            }
+            // Sharing uses the signed-in partner. Incoming sponsor attribution remains intact.
+            $share_referral = \Altum\Authentication::check() ? $this->get_logged_in_referral_biolink_url() : $referral;
+            $share_url = $this->append_referral_to_url($blog_post_url, $share_referral);
 
             $alternate_urls = $this->get_blog_post_alternate_urls($blog_post);
             $related_blog_posts = $this->get_related_blog_posts($blog_post, $language);
@@ -718,6 +750,8 @@ class Blog extends Controller {
                 'private_display' => isset($private_display) ? $private_display : null,
                 'private' => isset($private) ? $private : null,
                 'webshop_link' => isset($webshop_link) && !empty($webshop_link) ? $webshop_link : null,
+                'resolved_market_country_code' => $resolved_market_country_code ?? null,
+                'detected_visitor_country_code' => $country_code ?? null,
                 'tracked_webshop_link' => isset($tracked_webshop_link) && !empty($tracked_webshop_link) ? $tracked_webshop_link : null,
                 'blog_post_url' => $blog_post_url,
                 'share_url' => $share_url,
@@ -846,7 +880,7 @@ class Blog extends Controller {
             $total_rows = \Altum\Cache::cache_function_result('blog_posts_count?hash=' . md5($total_rows_query), 'blog_posts', function() use ($total_rows_query) {
                 return database()->query($total_rows_query)->fetch_object()->total ?? 0;
             });
-            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('blog/category/' . $blog_posts_category->url . '?' . $filters->get_get() . '&page=%d')));
+            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('blog/category/' . $blog_posts_category->url . '?' . fcc_public_pagination_query($filters->get_get()) . '&page=%d')));
             
             $blog_posts_result_query = "
                 SELECT * 
@@ -918,7 +952,7 @@ class Blog extends Controller {
             /* Get popular posts */
             $blog_posts_popular = settings()->content->blog_popular_widget_is_enabled ? (new BlogPosts())->get_popular_blog_posts_by_language($language) : [];
 
-            $blog_posts_category_url = SITE_URL . ($blog_posts_category->language ? ((\Altum\Language::$active_languages[$blog_posts_category->language] ?? null) ? \Altum\Language::$active_languages[$blog_posts_category->language] . '/' : null) : null) . 'blog/category/' . $blog_posts_category->url;
+            $blog_posts_category_url = $this->build_localized_public_url('blog/category/' . $blog_posts_category->url, $blog_posts_category->language);
             $blog_posts_direct_children_result = database()->query("
                 SELECT `blog_posts_category_id`, `title`, `description`, `url`, `language`
                 FROM `blog_posts_categories`
@@ -1041,7 +1075,7 @@ class Blog extends Controller {
             $total_rows = \Altum\Cache::cache_function_result('blog_posts_count?hash=' . md5($total_rows_query), 'blog_posts', function() use ($total_rows_query) {
                 return database()->query($total_rows_query)->fetch_object()->total ?? 0;
             });
-            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('blog?' . $filters->get_get() . '&page=%d')));
+            $paginator = (new \Altum\Paginator($total_rows, $filters->get_results_per_page(), $_GET['page'] ?? 1, url('blog?' . fcc_public_pagination_query($filters->get_get(), true) . '&page=%d')));
 
             /* Blog posts query */
             /* Custom code: FC-2026-03-09: ranked ordering for search results */
@@ -1093,6 +1127,17 @@ class Blog extends Controller {
             /* Get popular posts */
             $blog_posts_popular = settings()->content->blog_popular_widget_is_enabled ? (new BlogPosts())->get_popular_blog_posts_by_language($language) : [];
 
+            /* Public collection metadata; referral context never changes canonical identity. */
+            $blog_page = max(1, (int) ($_GET['page'] ?? 1));
+            $blog_index_url = $this->build_localized_public_url('blog', $language);
+            $blog_title = \Altum\Language::$code === 'hr' ? 'Forever proizvodi i FCC poslovni vodiči' : fcc_t('Forever products and FCC business guides');
+            Title::set($blog_title . ($blog_page > 1 ? ' · ' . $blog_page : ''));
+            Meta::set_description(\Altum\Language::$code === 'hr'
+                ? 'Istraži Forever proizvode, njihove sastojke i način uporabe te praktične FCC vodiče za preporuke, osobnu karticu i razvoj poslovanja.'
+                : fcc_t('Explore Forever products, ingredients and usage, plus practical FCC guides for referrals, your personal card and business development.'));
+            Meta::set_canonical_url($blog_index_url . ($blog_page > 1 ? '?page=' . $blog_page : ''));
+            Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+
             if(!empty($_GET['search'])) {
                 /* Set a custom title */
                 Title::set(sprintf(l('blog.title_search'), input_clean($_GET['search'])));
@@ -1109,7 +1154,7 @@ class Blog extends Controller {
                 'pagination' => $pagination,
                 'filters' => $filters,                
                 'blog_posts_popular' => $blog_posts_popular,
-                'blog_index_url' => SITE_URL . ($language ? ((\Altum\Language::$active_languages[$language] ?? null) ? \Altum\Language::$active_languages[$language] . '/' : null) : null) . 'blog',
+                'blog_index_url' => $blog_index_url,
                 'share_url' => $this->append_referral_to_url(
                     SITE_URL . ($language ? ((\Altum\Language::$active_languages[$language] ?? null) ? \Altum\Language::$active_languages[$language] . '/' : null) : null) . 'blog' . (!empty($_GET['search']) ? '?search=' . urlencode($_GET['search']) : ''),
                     $this->get_logged_in_referral_biolink_url()

@@ -462,7 +462,7 @@ class AccountPlan extends Controller {
             'stripe_retry_payment_url' => url('account-plan/retry_stripe_payment' . \Altum\Csrf::get_url_query()),
         ];
 
-        $view = new \Altum\View('account-plan/index', (array) $this);
+        $view = new \Altum\View(fcc_partner_enabled()?'partner/package':'account-plan/index', (array) $this);
 
         $this->add_view_content('content', $view->run($data));
 
@@ -608,9 +608,18 @@ class AccountPlan extends Controller {
         if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
 
             try {
-                (new User())->cancel_subscription($this->user->user_id, true);
+                if(fcc_partner_enabled() && $this->user->payment_processor==='stripe') {
+                    require_once APP_PATH.'helpers/fcc_partner_billing.php';
+                    $state=fcc_partner_cancel_stripe_subscription($this->user);
+                    $saved=fcc_partner_query("UPDATE users SET extra=JSON_SET(COALESCE(NULLIF(extra,''),'{}'),'$.billing_cancel_at_period_end',?,'$.billing_current_period_end',?,'$.billing_subscription_cancelled_at',?,'$.billing_stripe_status',?) WHERE user_id=? AND payment_subscription_id=?",[(int)$state['cancel_at_period_end'],$state['period_end'],get_date(),$state['status'],(int)$this->user->user_id,$state['subscription_id']]);
+                    if($saved->affected_rows===0&&!fcc_partner_one('SELECT user_id FROM users WHERE user_id=? AND payment_subscription_id=?',[(int)$this->user->user_id,$state['subscription_id']])) throw new \RuntimeException(fcc_t('Subscription changed during cancellation.'));
+                    cache()->deleteItemsByTag('user_id='.(int)$this->user->user_id);
+                } else {
+                    (new User())->cancel_subscription($this->user->user_id, true);
+                }
             } catch (\Exception $exception) {
-                Alerts::add_error($exception->getCode() . ':' . $exception->getMessage());
+                error_log('Subscription cancellation failed: '.get_class($exception));
+                Alerts::add_error(fcc_t('Otkazivanje nije potvrđeno. Pretplata nije označena kao otkazana; pokušaj ponovno ili kontaktiraj podršku.'));
                 redirect('account-plan');
             }
 

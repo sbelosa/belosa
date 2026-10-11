@@ -70,7 +70,6 @@ class Link {
             $fallback_biolink = db()
                 ->where('user_id', $user_id)
                 ->where('type', 'biolink')
-                ->orderBy('is_enabled', 'DESC')
                 ->orderBy('datetime', 'ASC')
                 ->orderBy('link_id', 'ASC')
                 ->getOne('links', ['link_id']);
@@ -97,19 +96,7 @@ class Link {
     }
 
     public static function get_trusted_forever_request_country_code(): ?string {
-        /* X-Country is a client-controlled convention, not a trusted proxy signal. */
-        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE'] as $country_header_key) {
-            if(!empty($_SERVER[$country_header_key])) {
-                $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
-                $header_country_code = mb_substr($header_country_code, 0, 2);
-
-                if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
-                    return self::resolve_forever_market_country_code($header_country_code);
-                }
-            }
-        }
-
-        return null;
+        return function_exists('fcc_forever_country_context') ? fcc_forever_country_context()['country'] : null;
     }
 
     public static function get_external_geo_country_code(?string $ip_address = null): ?string {
@@ -119,7 +106,7 @@ class Link {
             return null;
         }
 
-        $cache_key = 'fcc_external_geo_country?' . md5($ip_address);
+        $cache_key = 'fcc_external_geo_country_v2?' . md5($ip_address);
         $cache_instance = cache()->getItem($cache_key);
 
         if(!is_null($cache_instance->get())) {
@@ -140,8 +127,8 @@ class Link {
                 curl_setopt_array($curl_handle, [
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_FOLLOWLOCATION => true,
-                    CURLOPT_TIMEOUT => 3,
-                    CURLOPT_CONNECTTIMEOUT => 2,
+                    CURLOPT_TIMEOUT => 2,
+                    CURLOPT_CONNECTTIMEOUT => 1,
                     CURLOPT_USERAGENT => 'ForeverCardClub/1.0',
                     CURLOPT_HTTPHEADER => ['Accept: application/json'],
                 ]);
@@ -172,7 +159,7 @@ class Link {
             }
         }
 
-        cache()->save($cache_instance->set($resolved_country_code)->expiresAfter(86400));
+        cache()->save($cache_instance->set($resolved_country_code ?: 'xx')->expiresAfter($resolved_country_code ? 86400 : 300));
 
         return $resolved_country_code;
     }
@@ -1331,100 +1318,13 @@ class Link {
             return null;
         }
 
-        return in_array($country_code, ['xk'], true) ? 'al' : $country_code;
+        return $country_code;
     }
 
     public static function get_forever_webshop_registration_country_links(): array {
-        return [
-            'hr' => [
-                'label' => 'Hrvatska',
-                'base_url' => 'https://foreverliving.com/shop/hrv/hr-hr/drinks/',
-            ],
-            'ba' => [
-                'label' => 'Bosna i Hercegovina',
-                'base_url' => 'https://www.flpshop.ba/kategorija/napici/',
-            ],
-            'al' => [
-                'label' => 'Albanija',
-                'base_url' => 'https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/forever-aloe-mango-pet/',
-            ],
-            'xk' => [
-                'label' => 'Kosovo',
-                'base_url' => 'https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/forever-aloe-mango-pet/',
-            ],
-            'me' => [
-                'label' => 'Crna Gora',
-                'base_url' => 'https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/forever-aloe-mango-pet/',
-            ],
-            'si' => [
-                'label' => 'Slovenija',
-                'base_url' => 'https://foreverliving.com/shop/svn/sl-si/drinks/',
-            ],
-            'rs' => [
-                'label' => 'Srbija',
-                'base_url' => 'https://foreverliving.com/shop/scg/sr-cyrl-rs/drinks/',
-            ],
-            'at' => [
-                'label' => 'Austrija',
-                'base_url' => 'https://foreverliving.com/shop/aut/de-at/drinks/',
-            ],
-            'au' => [
-                'label' => 'Australija',
-                'base_url' => 'https://foreverliving.com/shop/aus/en-au/drinks/',
-            ],
-            'ca' => [
-                'label' => 'Kanada',
-                'base_url' => 'https://foreverliving.com/shop/can/en-ca/drinks/',
-            ],
-            'de' => [
-                'label' => 'Njemačka',
-                'base_url' => 'https://foreverliving.com/shop/deu/de-de/drinks/',
-            ],
-            'ie' => [
-                'label' => 'Irska',
-                'base_url' => 'https://foreverliving.com/shop/irl/en-ie/drinks/',
-            ],
-            'lu' => [
-                'label' => 'Luksemburg',
-                'base_url' => 'https://foreverliving.com/shop/lux/fr-lu/drinks/',
-            ],
-            'nl' => [
-                'label' => 'Nizozemska',
-                'base_url' => 'https://foreverliving.com/shop/nld/nl-nl/drinks/',
-            ],
-            'no' => [
-                'label' => 'Norveska',
-                'base_url' => 'https://foreverliving.com/shop/nor/nb-no/drinks/',
-            ],
-            'pl' => [
-                'label' => 'Poljska',
-                'base_url' => 'https://foreverliving.com/shop/pol/pl-pl/drinks/',
-            ],
-            'se' => [
-                'label' => 'Svedska',
-                'base_url' => 'https://foreverliving.com/shop/swe/sv-se/drinks/',
-            ],
-            'gb' => [
-                'label' => 'Ujedinjeno Kraljevstvo',
-                'base_url' => 'https://foreverliving.com/shop/gbr/en-gb/drinks/',
-            ],
-            'us' => [
-                'label' => 'Sjedinjene Americke Drzave',
-                'base_url' => 'https://foreverliving.com/shop/usa/en-us/drinks/',
-            ],
-            'qa' => [
-                'label' => 'Katar',
-                'base_url' => 'https://foreverliving.com/shop/qat/en-us/drinks/',
-            ],
-            'ch' => [
-                'label' => 'Svicarska',
-                'base_url' => 'https://foreverliving.com/shop/che/de-ch/drinks/',
-            ],
-            'ae' => [
-                'label' => 'Emirati',
-                'base_url' => 'https://foreverliving.com/shop/are/en-us/drinks/',
-            ],
-        ];
+        $links=[];
+        foreach(fcc_forever_markets() as $country=>$market)$links[$country]=['label'=>fcc_library_pilot_country_name($country),'base_url'=>$market['shop']];
+        return $links;
     }
 
     public static function get_forever_webshop_registration_base_url($country_code = null): ?string {
@@ -1609,28 +1509,8 @@ class Link {
     /* /Custom code: FC-2026-03-31 */
 
     public static function resolve_preferred_forever_market_country_code($country_code = null, array $available_country_codes = [], ?string $accept_language_header = null, bool $country_code_is_trusted = false): ?string {
-        $normalized_country_code = self::resolve_forever_market_country_code($country_code);
-        $available_country_codes = array_values(array_unique(array_filter(array_map([self::class, 'resolve_forever_market_country_code'], $available_country_codes))));
-
-        if($country_code_is_trusted && $normalized_country_code) {
-            if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
-                return $normalized_country_code;
-            }
-        }
-
-        if($normalized_country_code) {
-            if(empty($available_country_codes) || in_array($normalized_country_code, $available_country_codes, true)) {
-                return $normalized_country_code;
-            }
-        }
-
-        foreach(self::get_accept_language_forever_market_candidates($accept_language_header) as $candidate_country_code) {
-            if(empty($available_country_codes) || in_array($candidate_country_code, $available_country_codes, true)) {
-                return $candidate_country_code;
-            }
-        }
-
-        return $normalized_country_code;
+        // A missing product never changes the visitor's country. Language is not geography.
+        return self::resolve_forever_market_country_code($country_code);
     }
 
     private static function get_accept_language_forever_market_candidates(?string $accept_language_header): array {
@@ -1668,44 +1548,18 @@ class Link {
     }
 
     public static function build_forever_destination_url($base_url, $forever_id = null, $country_code = null, array $extra_query_params = []) {
-        if(!$base_url || !filter_var($base_url, FILTER_VALIDATE_URL)) {
-            return false;
+        $market=self::resolve_forever_market_country_code($country_code);
+        $forever_id=(string)$forever_id;
+        if(!preg_match('/^[0-9]{12}$/D',$forever_id) || !is_string($base_url)
+            || fcc_forever_destination_market($base_url)!==$market || !$market) return false;
+        if(function_exists('fcc_market_destination_allowed') && !fcc_market_destination_allowed($base_url,$market))return false;
+        $parts=parse_url($base_url);parse_str($parts['query']??'', $query);
+        foreach(['id','fboId','distribID','discountConfigType','uniqueExtRefID','referralUuid','shortenUrl'] as $key)unset($query[$key]);
+        $query[self::get_forever_referral_parameter($market)]=$forever_id;
+        if(!in_array($market,['ba','al'],true))foreach(['discountConfigType','uniqueExtRefID','referralUuid'] as $key) {
+            if(isset($extra_query_params[$key])&&is_string($extra_query_params[$key])&&strlen($extra_query_params[$key])<=200)$query[$key]=$extra_query_params[$key];
         }
-
-        $parsed_url = parse_url($base_url);
-        $query_params = [];
-
-        if(!empty($parsed_url['query'])) {
-            parse_str($parsed_url['query'], $query_params);
-        }
-
-        if($forever_id !== null && $forever_id !== '') {
-            $query_params[self::get_forever_referral_parameter($country_code)] = $forever_id;
-        }
-
-        foreach($extra_query_params as $key => $value) {
-            if($value !== null && $value !== '') {
-                $query_params[$key] = $value;
-            }
-        }
-
-        $final_url = ($parsed_url['scheme'] ?? 'https') . '://' . ($parsed_url['host'] ?? '');
-
-        if(isset($parsed_url['port'])) {
-            $final_url .= ':' . $parsed_url['port'];
-        }
-
-        $final_url .= $parsed_url['path'] ?? '';
-
-        if(!empty($query_params)) {
-            $final_url .= '?' . http_build_query($query_params, '', '&', PHP_QUERY_RFC3986);
-        }
-
-        if(isset($parsed_url['fragment'])) {
-            $final_url .= '#' . $parsed_url['fragment'];
-        }
-
-        return $final_url;
+        return 'https://'.$parts['host'].($parts['path']??'/').'?'.http_build_query($query,'','&',PHP_QUERY_RFC3986);
     }
 
     public static function append_query_parameters_to_url($url, array $params = [], bool $preserve_existing = true) {
@@ -1772,12 +1626,45 @@ class Link {
         return self::append_query_parameters_to_url($url, $query_parameters, true);
     }
 
-    public static function get_main_biolink_discount_query_params(int $user_id): array {
+    public static function is_forever_destination_for_market(string $url, string $required_market): bool {
+        $required_market = (string) self::resolve_forever_market_country_code($required_market);
+        $market_base_url = self::get_forever_webshop_registration_base_url($required_market);
+        if($required_market === '' || !$market_base_url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $parts = parse_url($url);
+        $base_parts = parse_url($market_base_url);
+        if(!is_array($parts) || !is_array($base_parts)) {
+            return false;
+        }
+
+        $scheme = mb_strtolower((string) ($parts['scheme'] ?? ''));
+        $host = mb_strtolower(rtrim((string) ($parts['host'] ?? ''), '.'));
+        $base_host = mb_strtolower(rtrim((string) ($base_parts['host'] ?? ''), '.'));
+        $path = rawurldecode((string) ($parts['path'] ?? ''));
+        $base_path = rawurldecode((string) ($base_parts['path'] ?? ''));
+        $market_path_prefix = preg_replace('~[^/]+/?$~', '', $base_path) ?? '';
+
+        return $scheme === 'https'
+            && $host !== ''
+            && hash_equals($base_host, $host)
+            && empty($parts['user'])
+            && empty($parts['pass'])
+            && empty($parts['port'])
+            && $market_path_prefix !== ''
+            && str_starts_with(mb_strtolower($path), mb_strtolower($market_path_prefix))
+            && preg_match('~(?:^|/)\.\.?($|/)~', $path) !== 1
+            && preg_match('/%(?:2e|2f|5c)/i', $path) !== 1
+            && !str_contains($path, '\\');
+    }
+
+    public static function get_main_biolink_discount_query_params(int $user_id, ?string $required_market = null): array {
         if(!$user_id) {
             return [];
         }
 
-        $main_biolink_id = self::get_user_main_biolink_id($user_id);
+        $main_biolink_id = self::get_user_main_biolink_id($user_id, false);
 
         if(!$main_biolink_id) {
             return [];
@@ -1802,19 +1689,13 @@ class Link {
 
         $decoded_url = $discount_block->settings->decoded_url ?? null;
 
-        if(!$decoded_url && !empty($discount_block->location_url) && strpos($discount_block->location_url, 'https://thealoeveraco.shop/') === 0) {
-            $decoded_url = self::decode_discount_link($discount_block->location_url);
-        }
-
-        if(!$decoded_url || !filter_var($decoded_url, FILTER_VALIDATE_URL)) {
-            return [];
-        }
-
-        return self::get_forever_discount_query_params($decoded_url);
+        // Never resolve remote short links during a visitor request.
+        $owner=db()->where('user_id',$user_id)->getOne('users',['preferences']);
+        return $owner ? fcc_forever_campaign((string)$decoded_url, fcc_forever_id($owner->preferences), $required_market) : [];
     }
 
    public static function get_product_webshop_link($referral, $product_id, $country_code = null, $browser_language = null) {                        
-        if($biolink = db()->where('url', $referral)->where('type', 'biolink')->getOne('links', ['user_id'])) {
+        if($biolink = db()->where('url', $referral)->where('type', 'biolink')->where('is_enabled', 1)->getOne('links', ['user_id'])) {
             if($user = db()->where('user_id', $biolink->user_id)->getOne('users', ['user_id', 'status', 'plan_id', 'preferences'])) {
                     if($user->status == 1) {
                         $referral_active = true;   
@@ -1832,6 +1713,10 @@ class Link {
             return;
         }
 
+        if(($product->url??'')==='start-paket')return fcc_forever_market_destination(fcc_forever_id($user->preferences),'business',self::resolve_forever_market_country_code($country_code));
+
+        if(function_exists('fcc_market_policy_enabled') && fcc_market_policy_enabled() && !fcc_market_product_allowed($product, self::resolve_forever_market_country_code($country_code))) return false;
+
         if(isset($product->webshop_links) && !empty($product->webshop_links)) {                        
             $webshop_links = json_decode($product->webshop_links);    
             $preferences = json_decode($user->preferences ?? '');                                        
@@ -1842,22 +1727,15 @@ class Link {
                 $forever_id = '';
             }
 
+            if(function_exists('fcc_market_policy_enabled') && fcc_market_policy_enabled() && trim((string)$forever_id)==='') return false;
+
             /* Market routing uses the caller-resolved preferred market code. */
             $webshop_country_code = self::resolve_forever_market_country_code($country_code);
             $webshop_base_url = $webshop_links->{$webshop_country_code} ?? null;
 
-            if(!$webshop_base_url && !empty($webshop_links->us)) {
-                $webshop_country_code = 'us';
-                $webshop_base_url = $webshop_links->us;
-            }
 
-            if(!$webshop_base_url && !empty($webshop_links->gb)) {
-                $webshop_country_code = 'gb';
-                $webshop_base_url = $webshop_links->gb;
-            }
-
-            if($webshop_base_url) {
-                $discount_params = self::get_main_biolink_discount_query_params((int) $user->user_id);
+            if($webshop_base_url && fcc_forever_product_identity_allows($product,$webshop_country_code,$webshop_base_url)) {
+                $discount_params = self::get_main_biolink_discount_query_params((int) $user->user_id, $webshop_country_code);
                 $url = self::build_forever_destination_url($webshop_base_url, $forever_id, $webshop_country_code, $discount_params);
             }
         }
@@ -1866,32 +1744,19 @@ class Link {
     }
 
     public static function decode_discount_link($url) {         
-        $curlhandle = curl_init();
-        curl_setopt($curlhandle, CURLOPT_URL, $url);
-        curl_setopt($curlhandle, CURLOPT_HEADER, 1);
-        curl_setopt($curlhandle, CURLOPT_USERAGENT, 'googlebot');
-        curl_setopt($curlhandle, CURLOPT_FOLLOWLOCATION, 0);
-        curl_setopt($curlhandle, CURLOPT_RETURNTRANSFER, 1);
-        $final = curl_exec($curlhandle);
-        if (preg_match('~Location: (.*)~i', $final, $lasturl)) {
-            $location = trim($lasturl[1]);
-            
-            if ($location) {
-                $curlhandle = curl_init();
-                curl_setopt($curlhandle, CURLOPT_URL, $location);
-                curl_setopt($curlhandle, CURLOPT_HEADER, 1);
-                curl_setopt($curlhandle, CURLOPT_USERAGENT, 'googlebot');
-                curl_setopt($curlhandle, CURLOPT_FOLLOWLOCATION, 0);
-                curl_setopt($curlhandle, CURLOPT_RETURNTRANSFER, 1);
-                $final = curl_exec($curlhandle);
-
-                if (preg_match('~Location: (.*)~i', $final, $lasturl)) {
-                    $destination = trim($lasturl[1]);                    
-                }
-            }
+        for($hop=0;$hop<5;$hop++) {
+            $p=parse_url((string)$url);
+            if(!$p||($p['scheme']??'')!=='https'||isset($p['user'])||isset($p['pass'])||isset($p['port'])
+                ||!in_array(strtolower($p['host']??''),['thealoeveraco.shop','foreverliving.com','www.foreverliving.com'],true))return false;
+            parse_str($p['query']??'', $query);
+            if(fcc_forever_destination_market($url)&&preg_match('/^[0-9]{12}$/D',(string)($query['fboId']??'')))return $url;
+            $ch=curl_init($url);
+            curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_HEADER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_TIMEOUT=>2,CURLOPT_CONNECTTIMEOUT=>1,CURLOPT_USERAGENT=>'Mozilla/5.0']);
+            $response=curl_exec($ch);$status=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);curl_close($ch);
+            if(!$response||$status<300||$status>=400||!preg_match('/^Location:\s*(.+)$/mi',$response,$m))return false;
+            $next=trim($m[1]);$url=str_starts_with($next,'/')?'https://'.$p['host'].$next:$next;
         }
-
-        return isset($destination) ? $destination : '';
+        return false;
     }
     /* /Custom code */    
 }

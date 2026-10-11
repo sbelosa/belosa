@@ -458,31 +458,32 @@ foreach($funnels as $item) {
 </style>
 
 <div class="vip-funnel-center">
+<?php if(fcc_partner_enabled()): require THEME_PATH.'views/partner/funnels.php'; else: ?>
     <section class="vip-funnel-center-hero">
         <div>
-            <div class="vip-funnel-center-eyebrow"><i class="fas fa-fw fa-diagram-project"></i> VIP Funnel 2.0 centar</div>
-            <h1 class="vip-funnel-center-title">Svi funnel-i na jednom mjestu</h1>
-            <p class="vip-funnel-center-copy">Ovdje biraš koji funnel uređuješ, kopiraš javni URL, ulaziš u pregled i importiraš gotov FCC VIP funnel koji kasnije samo prilagodiš svom tekstu, videu, mentorstvu i ponudi.</p>
+            <div class="vip-funnel-center-eyebrow"><i class="fas fa-fw fa-diagram-project"></i> <?= htmlspecialchars(fcc_t('VIP Funnel 2.0 centar'), ENT_QUOTES, 'UTF-8') ?></div>
+            <h1 class="vip-funnel-center-title"><?= htmlspecialchars(fcc_t('Tvoji funneli'), ENT_QUOTES, 'UTF-8') ?></h1>
+            <p class="vip-funnel-center-copy"><?= htmlspecialchars(fcc_t('Odaberi funnel, uredi sadržaj ili kreni od gotovog predloška. Svaki ima svoju poveznicu za dijeljenje.'), ENT_QUOTES, 'UTF-8') ?></p>
         </div>
 
         <div class="vip-funnel-center-actions">
             <a href="<?= $e($data->analytics_url ?? url('funnels-analytics')) ?>" class="vip-funnel-center-btn">
-                <i class="fas fa-fw fa-chart-line"></i> Analitika
+                <i class="fas fa-fw fa-chart-line"></i> <?= htmlspecialchars(fcc_t('Analitika'), ENT_QUOTES, 'UTF-8') ?>
             </a>
         </div>
     </section>
 
     <div class="vip-funnel-center-grid">
         <div class="vip-funnel-center-kpi">
-            <div class="vip-funnel-center-kpi-label">Ukupno funnel-a</div>
+            <div class="vip-funnel-center-kpi-label"><?= htmlspecialchars(fcc_t('Ukupno funnel-a'), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="vip-funnel-center-kpi-value"><?= nr(count($funnels)) ?></div>
         </div>
         <div class="vip-funnel-center-kpi">
-            <div class="vip-funnel-center-kpi-label">Pregledi</div>
+            <div class="vip-funnel-center-kpi-label"><?= htmlspecialchars(fcc_t('Pregledi'), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="vip-funnel-center-kpi-value"><?= nr($total_views) ?></div>
         </div>
         <div class="vip-funnel-center-kpi">
-            <div class="vip-funnel-center-kpi-label">Leadovi</div>
+            <div class="vip-funnel-center-kpi-label"><?= htmlspecialchars(fcc_t('Leadovi'), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="vip-funnel-center-kpi-value"><?= nr($total_leads) ?></div>
         </div>
     </div>
@@ -490,21 +491,21 @@ foreach($funnels as $item) {
     <section class="vip-funnel-center-panel">
         <div class="vip-funnel-center-section-head">
             <div>
-                <h2 class="vip-funnel-center-section-title">Moji funnel-i</h2>
-                <p class="vip-funnel-center-section-sub">Svaki funnel ima svoj javni URL i može se zasebno odabrati u FCC App bloku.</p>
+                <h2 class="vip-funnel-center-section-title"><?= htmlspecialchars(fcc_t('Moji funneli'), ENT_QUOTES, 'UTF-8') ?></h2>
+                <p class="vip-funnel-center-section-sub"><?= htmlspecialchars(fcc_t('Svaki funnel ima svoj javni URL i može se zasebno odabrati u FCC App bloku.'), ENT_QUOTES, 'UTF-8') ?></p>
             </div>
             <form method="post" class="vip-funnel-center-actions">
                 <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
                 <input type="hidden" name="create_vip_funnel" value="1" />
-                <input type="text" name="funnel_name" class="form-control" maxlength="120" placeholder="Naziv novog funnel-a" style="min-width:16rem;" />
+                <input type="text" name="funnel_name" class="form-control" maxlength="120" placeholder="<?= htmlspecialchars(fcc_t('Naziv novog funnel-a'), ENT_QUOTES, 'UTF-8') ?>" style="min-width:16rem;" />
                 <button type="submit" class="vip-funnel-center-btn vip-funnel-center-btn-primary">
-                    <i class="fas fa-fw fa-plus"></i> Novi funnel
+                    <i class="fas fa-fw fa-plus"></i> <?= htmlspecialchars(fcc_t('Novi funnel'), ENT_QUOTES, 'UTF-8') ?>
                 </button>
             </form>
         </div>
 
         <?php if(empty($funnels)): ?>
-            <div class="vip-funnel-center-empty">Još nema spremljenih funnel-a. Kreiraj prvi funnel ili importiraj gotov FCC VIP predložak.</div>
+            <div class="vip-funnel-center-empty"><?= htmlspecialchars(fcc_t('Još nema spremljenih funnel-a. Kreiraj prvi funnel ili importiraj gotov FCC VIP predložak.'), ENT_QUOTES, 'UTF-8') ?></div>
         <?php else: ?>
             <div class="vip-funnel-center-list">
                 <?php foreach($funnels as $funnel_index => $item): ?>
@@ -516,29 +517,29 @@ foreach($funnels as $item) {
                     <article class="vip-funnel-center-card">
                         <div class="vip-funnel-center-card-top">
                             <div>
-                                <h3 class="vip-funnel-center-card-title"><?= $e($row->name ?? 'VIP Funnel 2.0') ?></h3>
+                                <h3 class="vip-funnel-center-card-title"><?= $e($row->name ?? fcc_t('VIP Funnel 2.0')) ?></h3>
                                 <div class="vip-funnel-center-meta">
-                                    <span class="vip-funnel-center-chip vip-funnel-center-chip-index">Funnel <?= nr($funnel_index + 1) ?></span>
-                                    <span class="vip-funnel-center-chip">ID <?= (int) ($row->vip_funnel_id ?? 0) ?></span>
+                                    <span class="vip-funnel-center-chip vip-funnel-center-chip-index"><?= htmlspecialchars(fcc_t('Funnel'), ENT_QUOTES, 'UTF-8') ?> <?= nr($funnel_index + 1) ?></span>
+                                    <span class="vip-funnel-center-chip"><?= htmlspecialchars(fcc_t('ID'), ENT_QUOTES, 'UTF-8') ?> <?= (int) ($row->vip_funnel_id ?? 0) ?></span>
                                     <span class="vip-funnel-center-chip"><?= $e($row->status ?? 'draft') ?></span>
                                     <span class="vip-funnel-center-chip">/<?= $e($row->slug ?? '') ?></span>
                                 </div>
                             </div>
 	                            <div class="vip-funnel-center-card-actions">
 	                                <a href="<?= $e($item['edit_url'] ?? '#') ?>" class="vip-funnel-center-btn vip-funnel-center-btn-primary">
-	                                    <i class="fas fa-fw fa-pen"></i> Uredi
+	                                    <i class="fas fa-fw fa-pen"></i> <?= htmlspecialchars(fcc_t('Uredi'), ENT_QUOTES, 'UTF-8') ?>
 	                                </a>
 	                                <a href="<?= $e($public_url) ?>" target="_blank" rel="noopener" class="vip-funnel-center-btn">
-	                                    <i class="fas fa-fw fa-arrow-up-right-from-square"></i> Otvori
+	                                    <i class="fas fa-fw fa-arrow-up-right-from-square"></i> <?= htmlspecialchars(fcc_t('Otvori'), ENT_QUOTES, 'UTF-8') ?>
 	                                </a>
 	                                <button
 	                                    type="button"
 	                                    class="vip-funnel-center-btn vip-funnel-center-btn-danger"
 	                                    data-vip-funnel-delete-open
 	                                    data-funnel-id="<?= (int) ($row->vip_funnel_id ?? 0) ?>"
-	                                    data-funnel-name="<?= $e($row->name ?? 'VIP Funnel 2.0') ?>"
+	                                    data-funnel-name="<?= $e($row->name ?? fcc_t('VIP Funnel 2.0')) ?>"
 	                                >
-	                                    <i class="fas fa-fw fa-trash-alt"></i> Obriši
+	                                    <i class="fas fa-fw fa-trash-alt"></i> <?= htmlspecialchars(fcc_t('Obriši'), ENT_QUOTES, 'UTF-8') ?>
 	                                </button>
 	                            </div>
 	                        </div>
@@ -546,20 +547,20 @@ foreach($funnels as $item) {
                         <div class="vip-funnel-center-url-row">
                             <input class="vip-funnel-center-url" type="text" readonly value="<?= $e($public_url) ?>" data-vip-funnel-copy-source />
                             <button type="button" class="vip-funnel-center-btn" data-vip-funnel-copy>
-                                <i class="fas fa-fw fa-copy"></i> Kopiraj URL
+                                <i class="fas fa-fw fa-copy"></i> <?= htmlspecialchars(fcc_t('Kopiraj URL'), ENT_QUOTES, 'UTF-8') ?>
                             </button>
                         </div>
 
                         <div class="vip-funnel-center-mini-kpis">
-                            <div class="vip-funnel-center-mini-kpi"><span>Pregledi</span><strong><?= nr((int) ($analytics['views'] ?? 0)) ?></strong></div>
-                            <div class="vip-funnel-center-mini-kpi"><span>Submits</span><strong><?= nr((int) ($analytics['submits'] ?? 0)) ?></strong></div>
-                            <div class="vip-funnel-center-mini-kpi"><span>Leadovi</span><strong><?= nr((int) ($analytics['leads'] ?? 0)) ?></strong></div>
-                            <div class="vip-funnel-center-mini-kpi"><span>Lead rate</span><strong><?= nr((float) ($analytics['lead_rate'] ?? 0), 2) ?>%</strong></div>
+                            <div class="vip-funnel-center-mini-kpi"><span><?= htmlspecialchars(fcc_t('Pregledi'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= nr((int) ($analytics['views'] ?? 0)) ?></strong></div>
+                            <div class="vip-funnel-center-mini-kpi"><span><?= htmlspecialchars(fcc_t('Submits'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= nr((int) ($analytics['submits'] ?? 0)) ?></strong></div>
+                            <div class="vip-funnel-center-mini-kpi"><span><?= htmlspecialchars(fcc_t('Leadovi'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= nr((int) ($analytics['leads'] ?? 0)) ?></strong></div>
+                            <div class="vip-funnel-center-mini-kpi"><span><?= htmlspecialchars(fcc_t('Lead rate'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= nr((float) ($analytics['lead_rate'] ?? 0), 2) ?>%</strong></div>
                         </div>
 
                         <div class="vip-funnel-center-card-actions">
                             <a href="<?= $e($item['analytics_url'] ?? '#') ?>" class="vip-funnel-center-btn">
-                                <i class="fas fa-fw fa-chart-simple"></i> Analitika funnel-a
+                                <i class="fas fa-fw fa-chart-simple"></i> <?= htmlspecialchars(fcc_t('Analitika funnel-a'), ENT_QUOTES, 'UTF-8') ?>
                             </a>
                         </div>
                     </article>
@@ -571,8 +572,8 @@ foreach($funnels as $item) {
     <section class="vip-funnel-center-panel">
         <div class="vip-funnel-center-section-head">
             <div>
-                <h2 class="vip-funnel-center-section-title">Import FCC VIP funnel-a</h2>
-                <p class="vip-funnel-center-section-sub">Predložak se importira kao novi kompletan funnel u HR ili ENG varijanti. Nakon importa otvara se editor i možeš promijeniti tekstove, video, CTA gumbe i logiku.</p>
+                <h2 class="vip-funnel-center-section-title"><?= htmlspecialchars(fcc_t('Import FCC VIP funnel-a'), ENT_QUOTES, 'UTF-8') ?></h2>
+                <p class="vip-funnel-center-section-sub"><?= htmlspecialchars(fcc_t('Predložak se importira kao novi kompletan funnel u HR ili ENG varijanti. Nakon importa otvara se editor i možeš promijeniti tekstove, video, CTA gumbe i logiku.'), ENT_QUOTES, 'UTF-8') ?></p>
             </div>
         </div>
 
@@ -582,7 +583,7 @@ foreach($funnels as $item) {
                     <div class="vip-funnel-center-meta mb-2">
                         <span class="vip-funnel-center-chip"><?= $e($template['badge'] ?? 'Demo') ?></span>
                         <?php if(!empty($template['recommended'])): ?>
-                            <span class="vip-funnel-center-chip">Preporučeno</span>
+                            <span class="vip-funnel-center-chip"><?= htmlspecialchars(fcc_t('Preporučeno'), ENT_QUOTES, 'UTF-8') ?></span>
                         <?php endif ?>
                     </div>
                     <h3 class="vip-funnel-center-card-title mb-2"><?= $e($template['name'] ?? '') ?></h3>
@@ -600,7 +601,7 @@ foreach($funnels as $item) {
                                 <input type="hidden" name="template_key" value="<?= $e($template['key'] ?? '') ?>" />
                                 <input type="hidden" name="template_language" value="<?= $e($language_key) ?>" />
                                 <button type="submit" class="vip-funnel-center-btn <?= $language_key === 'hr' ? 'vip-funnel-center-btn-primary' : '' ?>">
-                                    <i class="fas fa-fw fa-file-import"></i> Import <?= $e($language_label) ?>
+                                    <i class="fas fa-fw fa-file-import"></i> <?= htmlspecialchars(fcc_t('Import'), ENT_QUOTES, 'UTF-8') ?> <?= $e($language_label) ?>
                                 </button>
                             </form>
                         <?php endforeach ?>
@@ -610,21 +611,22 @@ foreach($funnels as $item) {
 	        </div>
 	    </section>
 
+	    <?php endif ?>
 	    <div class="vip-funnel-delete-modal" id="vip_funnel_delete_modal" aria-hidden="true">
 	        <div class="vip-funnel-delete-backdrop" data-vip-funnel-delete-close></div>
 	        <div class="vip-funnel-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="vip_funnel_delete_title">
-	            <button type="button" class="vip-funnel-delete-close" data-vip-funnel-delete-close aria-label="Zatvori">
+	            <button type="button" class="vip-funnel-delete-close" data-vip-funnel-delete-close aria-label="<?= htmlspecialchars(fcc_t('Zatvori'), ENT_QUOTES, 'UTF-8') ?>">
 	                <i class="fas fa-fw fa-times"></i>
 	            </button>
 	            <div class="vip-funnel-delete-icon">
 	                <i class="fas fa-fw fa-triangle-exclamation"></i>
 	            </div>
-	            <h2 class="vip-funnel-delete-title" id="vip_funnel_delete_title">Trajno obrisati funnel?</h2>
+	            <h2 class="vip-funnel-delete-title" id="vip_funnel_delete_title"><?= htmlspecialchars(fcc_t('Trajno obrisati funnel?'), ENT_QUOTES, 'UTF-8') ?></h2>
 	            <p class="vip-funnel-delete-copy">
-	                Funnel <strong data-vip-funnel-delete-name>VIP Funnel 2.0</strong> bit će uklonjen iz tvog popisa, javni URL više neće otvarati taj funnel, a njegova Funnel analitika se briše.
+	                <?= htmlspecialchars(fcc_t('Funnel'), ENT_QUOTES, 'UTF-8') ?> <strong data-vip-funnel-delete-name><?= htmlspecialchars(fcc_t('VIP Funnel 2.0'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('bit će uklonjen iz tvog popisa, javni URL više neće otvarati taj funnel, a njegova Funnel analitika se briše.'), ENT_QUOTES, 'UTF-8') ?>
 	            </p>
 	            <div class="vip-funnel-delete-warning">
-	                Ova radnja se ne može poništiti nakon brisanja. Kontakti i demo zapisi ostaju spremljeni u pregledima.
+	                <?= htmlspecialchars(fcc_t('Ova radnja se ne može poništiti nakon brisanja. Kontakti i demo zapisi ostaju spremljeni u pregledima.'), ENT_QUOTES, 'UTF-8') ?>
 	            </div>
 	            <form method="post" id="vip_funnel_delete_form">
 	                <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -633,13 +635,13 @@ foreach($funnels as $item) {
 
 	                <label class="vip-funnel-delete-check">
 	                    <input type="checkbox" name="delete_funnel_confirmed" value="1" data-vip-funnel-delete-confirm />
-	                    <span>Razumijem da brišem funnel trajno i da se ova radnja ne može vratiti.</span>
+	                    <span><?= htmlspecialchars(fcc_t('Razumijem da brišem funnel trajno i da se ova radnja ne može vratiti.'), ENT_QUOTES, 'UTF-8') ?></span>
 	                </label>
 
 	                <div class="vip-funnel-center-card-actions justify-content-end">
-	                    <button type="button" class="vip-funnel-center-btn" data-vip-funnel-delete-close>Odustani</button>
+	                    <button type="button" class="vip-funnel-center-btn" data-vip-funnel-delete-close><?= htmlspecialchars(fcc_t('Odustani'), ENT_QUOTES, 'UTF-8') ?></button>
 	                    <button type="submit" class="vip-funnel-center-btn vip-funnel-center-btn-danger" data-vip-funnel-delete-submit disabled>
-	                        <i class="fas fa-fw fa-trash-alt"></i> Trajno obriši
+	                        <i class="fas fa-fw fa-trash-alt"></i> <?= htmlspecialchars(fcc_t('Trajno obriši'), ENT_QUOTES, 'UTF-8') ?>
 	                    </button>
 	                </div>
 	            </form>

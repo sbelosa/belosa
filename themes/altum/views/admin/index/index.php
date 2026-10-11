@@ -594,9 +594,9 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
 
                                 <!-- Custom code: FC-2026-03-18: sales chart 30/60/90 period toggle -->
                                 <div class="btn-group btn-group-sm mt-3 mt-md-0" role="group" aria-label="<?= l('admin_index.sales_subscriptions.chart_period_label') ?>">
-                                    <button type="button" class="btn btn-outline-primary active" data-sales-subscriptions-period="30">30d</button>
-                                    <button type="button" class="btn btn-outline-primary" data-sales-subscriptions-period="60">60d</button>
-                                    <button type="button" class="btn btn-outline-primary" data-sales-subscriptions-period="90">90d</button>
+                                    <button type="button" class="btn btn-outline-primary active" data-sales-subscriptions-period="30"><?= htmlspecialchars(fcc_t('30d'), ENT_QUOTES, 'UTF-8') ?></button>
+                                    <button type="button" class="btn btn-outline-primary" data-sales-subscriptions-period="60"><?= htmlspecialchars(fcc_t('60d'), ENT_QUOTES, 'UTF-8') ?></button>
+                                    <button type="button" class="btn btn-outline-primary" data-sales-subscriptions-period="90"><?= htmlspecialchars(fcc_t('90d'), ENT_QUOTES, 'UTF-8') ?></button>
                                 </div>
                                 <!-- /Custom code: FC-2026-03-18 -->
                             </div>
@@ -1770,7 +1770,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
 
                 <p class="text-muted mb-3"><?= l('admin_index.sales_link_missing.subheader') ?></p>
 
-                <form method="get" action="<?= url('admin') ?>" class="mb-3">
+                <form method="get" action="<?= url('admin') ?>" class="mb-3 fp-admin-search">
                     <input type="hidden" name="sales_page" value="1" />
                     <div class="input-group">
                         <input
@@ -1793,7 +1793,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
                     <div class="alert alert-info mb-0"><?= l('admin_index.sales_link_missing.no_results') ?></div>
                 <?php else: ?>
                     <div class="table-responsive table-custom-container mb-3" id="sales_link_missing_table_container">
-                        <table class="table table-custom">
+                        <table class="table table-custom fp-admin-responsive-table">
                             <thead>
                             <tr>
                                 <th><?= l('global.user') ?></th>
@@ -1807,7 +1807,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
                                     <td class="text-nowrap">
                                         <a href="<?= url('admin/user-view/' . $pending_user->user_id) ?>"><?= $pending_user->name ?></a>
                                     </td>
-                                    <td class="text-nowrap">
+                                    <td data-label="Forever ID" class="text-nowrap">
                                         <span class="badge badge-light"><?= $pending_user->forever_id ?></span>
                                     </td>
                                     <td class="text-nowrap">
@@ -1844,7 +1844,7 @@ $dashboard_toggle_url = $data->dashboard_toggle_url ?? ($is_sensitive_dashboard 
 
                 <p class="text-muted mb-3"><?= l('admin_index.fcc_pending.subheader') ?></p>
 
-                <form method="get" action="<?= url('admin') ?>" class="mb-3">
+                <form method="get" action="<?= url('admin') ?>" class="mb-3 fp-admin-search">
                     <input type="hidden" name="fcc_page" value="1" />
                     <div class="input-group">
                         <input

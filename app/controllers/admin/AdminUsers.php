@@ -57,6 +57,7 @@ class AdminUsers extends Controller {
             {$paginator->get_sql_limit()}
         ");
         while($row = $users_result->fetch_object()) {
+            $row->fcc_main_avatar = fcc_rel_avatar((int)$row->user_id);
             $row->main_biolink_url = null;
             $row->main_biolink_nfc_url = null;
 

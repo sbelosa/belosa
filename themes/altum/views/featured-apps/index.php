@@ -3,10 +3,10 @@
 <?php $fcc_is_hr = \Altum\Language::$code === 'hr'; ?>
 <?php $featured_app_visible_tags_limit = 2; ?>
 <?php $featured_app_weekly_check_label = $fcc_is_hr ? '7d provjera' : '7d check'; ?>
-<?php $featured_app_app_clicks_label = $fcc_is_hr ? 'App klikovi' : 'App clicks'; ?>
-<?php $featured_app_blog_clicks_label = $fcc_is_hr ? 'Blog klikovi' : 'Blog clicks'; ?>
-<?php $featured_app_funnel_clicks_label = $fcc_is_hr ? 'Funnel klikovi' : 'Funnel clicks'; ?>
-<?php $featured_app_funnel_contacts_label = $fcc_is_hr ? 'Funnel kontakti ×3' : 'Funnel contacts ×3'; ?>
+<?php $featured_app_app_clicks_label = $fcc_is_hr ? fcc_t('App klikovi') : fcc_t('App clicks'); ?>
+<?php $featured_app_blog_clicks_label = $fcc_is_hr ? fcc_t('Blog klikovi') : fcc_t('Blog clicks'); ?>
+<?php $featured_app_funnel_clicks_label = $fcc_is_hr ? fcc_t('Funnel klikovi') : fcc_t('Funnel clicks'); ?>
+<?php $featured_app_funnel_contacts_label = $fcc_is_hr ? fcc_t('Funnel kontakti ×3') : fcc_t('Funnel contacts ×3'); ?>
 <?php $featured_app_weekly_breakdown_label = $fcc_is_hr ? '7d ritam' : '7d rhythm'; ?>
 
 <div class="container my-5 featured-apps-page">
@@ -59,7 +59,7 @@
                                 <span class="featured-app-pill featured-app-pill--accent"><?= l('featured_apps.performance') ?>: <?= nr($app['growth_signal_30d']) ?></span>
                                 <span class="featured-app-pill"><?= $featured_app_weekly_check_label ?>: <?= nr($app['growth_signal_7d']) ?></span>
                                 <?php if(!empty($app['has_weekly_check_7d'])): ?>
-                                    <span class="featured-app-pill"><?= $fcc_is_hr ? 'Ritam potvrđen' : 'Rhythm confirmed' ?></span>
+                                    <span class="featured-app-pill"><?= $fcc_is_hr ? fcc_t('Ritam potvrđen') : fcc_t('Rhythm confirmed') ?></span>
                                 <?php endif ?>
                                 <?php if(!empty($app['has_experience_signal_30d'])): ?>
                                     <span class="featured-app-pill featured-app-pill--experience"><?= l('featured_apps.experience_badge') ?></span>
@@ -93,7 +93,7 @@
                                         <?php if(!empty($remaining_feature_labels)): ?>
                                             <details class="featured-app-more">
                                                 <summary class="featured-app-tag featured-app-tag--more">
-                                                    <?= $fcc_is_hr ? '+ još ' . count($remaining_feature_labels) : '+ ' . count($remaining_feature_labels) . ' more' ?>
+                                                    <?= $fcc_is_hr ? fcc_t('+ još ') . count($remaining_feature_labels) : '+ ' . count($remaining_feature_labels) . ' more' ?>
                                                 </summary>
 
                                                 <div class="featured-app-more__panel">
@@ -112,7 +112,7 @@
                             <div class="d-flex flex-column flex-sm-row mt-auto">
                                 <?php if(!empty($app['has_experience_signal_30d']) && !empty($app['profile_url'])): ?>
                                     <a href="<?= $app['profile_url'] ?>" class="btn btn-outline-primary mr-sm-2 mb-2 mb-sm-0">
-                                        <?= $fcc_is_hr ? 'Sponsor profil' : 'Sponsor profile' ?>
+                                        <?= $fcc_is_hr ? fcc_t('Sponsor profil') : fcc_t('Sponsor profile') ?>
                                     </a>
                                 <?php endif ?>
 

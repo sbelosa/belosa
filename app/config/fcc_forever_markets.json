@@ -1,0 +1,86 @@
+{
+  "hr": {
+    "shop": "https://foreverliving.com/shop/hrv/hr-hr/drinks",
+    "business": "https://foreverliving.com/join/hrv/hr-hr/welcome"
+  },
+  "ba": {
+    "shop": "https://www.flpshop.ba/kategorija/bodovni-proizvodi/",
+    "business": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/start-your-journey-best-sellers-vanilla/"
+  },
+  "al": {
+    "shop": "https://www.foreveralbania.com/kategorija/produktet-me-pike/",
+    "business": "https://www.foreveralbania.com/produktet/produktet-me-pike/paketat-forever/start-your-journey-pak-best-sellers-c9-chocolate/"
+  },
+  "si": {
+    "shop": "https://foreverliving.com/shop/svn/sl-si/products/",
+    "business": "https://foreverliving.com/join/svn/sl-si/welcome"
+  },
+  "rs": {
+    "shop": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/",
+    "business": "https://foreverliving.com/join/scg/sr-cyrl-rs/welcome"
+  },
+  "at": {
+    "shop": "https://foreverliving.com/shop/aut/en-at/products/",
+    "business": "https://foreverliving.com/join/aut/en-at/welcome"
+  },
+  "au": {
+    "shop": "https://foreverliving.com/shop/aus/en-au/products/",
+    "business": "https://foreverliving.com/join/aus/en-au/welcome"
+  },
+  "ca": {
+    "shop": "https://foreverliving.com/shop/can/en-ca/products/",
+    "business": "https://foreverliving.com/join/can/en-ca/fbo-enrollment"
+  },
+  "de": {
+    "shop": "https://foreverliving.com/shop/deu/de-de/products",
+    "business": "https://foreverliving.com/join/deu/de-de/welcome"
+  },
+  "ie": {
+    "shop": "https://foreverliving.com/shop/irl/en-ie/products/",
+    "business": "https://foreverliving.com/join/irl/en-ie/welcome"
+  },
+  "lu": {
+    "shop": "https://foreverliving.com/shop/lux/en-gb/products/",
+    "business": "https://foreverliving.com/join/lux/en-gb/welcome"
+  },
+  "nl": {
+    "shop": "https://foreverliving.com/shop/nld/en-gb/products/",
+    "business": "https://foreverliving.com/join/nld/en-gb/welcome"
+  },
+  "no": {
+    "shop": "https://foreverliving.com/shop/nor/en-no/products/",
+    "business": "https://foreverliving.com/join/nor/en-no/welcome"
+  },
+  "pl": {
+    "shop": "https://foreverliving.com/shop/pol/en-gb/products/",
+    "business": "https://foreverliving.com/join/pol/en-gb/welcome"
+  },
+  "se": {
+    "shop": "https://foreverliving.com/shop/swe/en-se/products/",
+    "business": "https://foreverliving.com/join/swe/en-se/welcome"
+  },
+  "gb": {
+    "shop": "https://foreverliving.com/shop/gbr/en-gb/products/",
+    "business": "https://foreverliving.com/join/gbr/en-gb/welcome"
+  },
+  "us": {
+    "shop": "https://foreverliving.com/shop/usa/en-us/products/",
+    "business": "https://foreverliving.com/join/usa/en-us/fbo-enrollment"
+  },
+  "qa": {
+    "shop": "https://foreverliving.com/shop/qat/en-us/products/",
+    "business": "https://foreverliving.com/join/qat/en-us/welcome"
+  },
+  "ch": {
+    "shop": "https://foreverliving.com/shop/che/en-ch/products/",
+    "business": "https://foreverliving.com/join/che/en-ch/welcome"
+  },
+  "ae": {
+    "shop": "https://foreverliving.com/shop/are/en-us/products/",
+    "business": "https://foreverliving.com/join/are/en-us/welcome"
+  },
+  "mk": {
+    "shop": "https://foreverliving.com/shop/mkd/mk-gb/products/",
+    "business": null
+  }
+}

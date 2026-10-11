@@ -24,10 +24,10 @@
                     <div class="notification-container"></div>
 
                     <div class="alert alert-info mb-0">
-                        <div class="font-weight-bold mb-1">FCC AI popup za ljubimce</div>
+                        <div class="font-weight-bold mb-1"><?= htmlspecialchars(fcc_t('FCC AI popup za ljubimce'), ENT_QUOTES, 'UTF-8') ?></div>
                         <div class="small">
-                            Ovaj blok sada automatski prikazuje novi <strong>ChatExtreme Pets</strong> popup. Ne treba vanjski embed kod.
-                            Kasnije ga fino podešavaš u <strong>FCC AI</strong> sučelju.
+                            <?= htmlspecialchars(fcc_t('Ovaj blok sada automatski prikazuje novi'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('ChatExtreme Pets'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('popup. Ne treba vanjski embed kod.
+                            Kasnije ga fino podešavaš u'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('FCC AI'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('sučelju.'), ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     </div>
 

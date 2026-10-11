@@ -45,6 +45,14 @@ class Controller {
             return;
         }
 
+        if(is_logged_in() && fcc_partner_enabled() && ($_SERVER['REQUEST_METHOD']??'GET')==='GET') {
+            try {
+                $key=(string)\Altum\Router::$controller_key;
+                $module=fcc_los_module($key,(string)($this->params[0]??'today'),is_string($_GET['type']??null)?$_GET['type']:'');
+                fcc_rel_usage((int)\Altum\Authentication::$user_id,$module);
+            } catch(\Throwable $e){error_log('FCC usage collection unavailable: '.get_class($e));}
+        }
+
         if(\Altum\Router::$path == '') {
             $meta_content = [];
             if(!settings()->main->se_indexing) $meta_content[] = 'noindex';
@@ -77,6 +85,14 @@ class Controller {
             if(in_array(\Altum\Router::$controller_key, ['directory', 'tools'])) {
                 \Altum\Router::$controller_settings['wrapper'] = is_logged_in() ? 'app_wrapper' : 'wrapper';
             }
+
+            /* Keep the library in the Partner workspace for enrolled members.
+               Guest article URLs, feed/search handlers and referral attribution stay unchanged. */
+            if(\Altum\Router::$controller_key === 'blog' && is_logged_in() && fcc_partner_enabled() && ($_GET['view'] ?? '') !== 'public') {
+                \Altum\Router::$controller_settings['wrapper'] = 'app_wrapper';
+            }
+
+            if(\Altum\Router::$controller_key==='page' && ($this->params[0]??'')==='contact' && is_logged_in() && fcc_partner_enabled())\Altum\Router::$controller_settings['wrapper']='app_wrapper';
 
             /* Normal wrapper ( not logged in ) */
             if(\Altum\Router::$controller_settings['wrapper'] == 'wrapper') {

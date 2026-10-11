@@ -32,7 +32,8 @@ class AccountPayments extends Controller {
             return;
         }
 
-        if(!settings()->payment->is_enabled) {
+        /* Payment history remains available even when new purchases are paused. */
+        if(!settings()->payment->is_enabled && !fcc_partner_enabled()) {
             throw_404();
         }
 

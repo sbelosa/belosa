@@ -30,7 +30,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('pages') ?>"><?= l('pages.index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
@@ -172,7 +172,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
     <?php if($fcc_has_page_content): ?>
         <section class="fcc-page-content">
             <div class="fcc-page-content__inner <?= !empty($data->is_foreverclub_page) ? 'fcc-page-content__inner--foreverclub' : null ?> <?= $data->page->editor == 'wysiwyg' ? 'ql-content' : null ?>">
-                <?= $data->page->content ?>
+                <?= preg_replace('~<(\/?)(h1)(\b[^>]*)>~i', '<$1h2$3>', $data->page->content) ?>
             </div>
         </section>
     <?php endif ?>
@@ -190,9 +190,12 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
         $fcc_contact_display_image = $fcc_contact_hero_image ?: $fcc_contact_default_image;
         $fcc_phone_link = $fcc_contact_phone_value ? preg_replace('/\s+/', '', $fcc_contact_phone_value) : '';
         $fcc_whatsapp_digits = preg_replace('/\D+/', '', $fcc_contact_phone_value);
+        if(str_starts_with($fcc_whatsapp_digits,'00'))$fcc_whatsapp_digits=substr($fcc_whatsapp_digits,2);
         $fcc_whatsapp_url = $fcc_whatsapp_digits ? 'https://wa.me/' . $fcc_whatsapp_digits : '';
         $fcc_product_url = fc_get_forever_products_blog_category_url();
         $fcc_business_url = url('blog/start-paket');
+        $fcc_contact_slug=basename((string)parse_url($fcc_contact_app_url,PHP_URL_PATH));
+        if($fcc_contact_slug!==''){foreach(['fcc_product_url','fcc_business_url'] as $key){$$key.=(str_contains($$key,'?')?'&':'?').http_build_query(['ref'=>$fcc_contact_slug]);}}
         ?>
         <section id="fcc-contact-top" class="fcc-collab-contact-wrap">
             <div class="fcc-collab-contact-card">
@@ -209,7 +212,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
                         />
                         <div>
                             <div class="fcc-collab-contact-eyebrow"><?= l('fcc.page.contact_eyebrow') ?></div>
-                            <h2><?= $fcc_contact_name ?: $fcc_contact_title ?></h2>
+                            <h1 class="fcc-contact-heading"><?= $fcc_contact_name ?: $fcc_contact_title ?></h1>
                             <p><?= $fcc_contact_intro ?></p>
                         </div>
                     </div>
@@ -287,7 +290,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
         <section class="fcc-page-share">
             <div class="fcc-page-share__inner">
                 <div class="d-flex align-items-center flex-wrap gap-3">
-                    <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => url(\Altum\Router::$original_request), 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true, 'tracking_context' => 'page_share']) ?>
+                    <?= include_view(THEME_PATH . 'views/partials/share_buttons.php', ['url' => $data->share_url ?? url(\Altum\Router::$original_request), 'class' => 'btn btn-gray-100', 'copy_to_clipboard' => true, 'tracking_context' => 'page_share']) ?>
                 </div>
             </div>
         </section>
@@ -887,7 +890,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
 
     .fcc-collab-contact-hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+        grid-template-columns: minmax(0, 1fr) minmax(200px, 0.35fr);
         gap: 18px;
         margin-bottom: 24px;
     }
@@ -899,6 +902,7 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
     }
 
     .fcc-collab-contact-avatar {
+        flex-shrink: 0;
         width: 108px;
         height: 108px;
         border-radius: 22px;
@@ -1192,30 +1196,14 @@ $fcc_page_authors = $data->page_schema_authors ?? [];
 
 <?php ob_start() ?>
 <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "<?= l('index.title') ?>",
-                    "item": "<?= url() ?>"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "<?= l('blog.title') ?>",
-                    "item": "<?= url('blog') ?>"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 3,
-                    "name": "<?= $data->page->title ?>",
-                    "item": "<?= $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language) ?>"
-                }
-            ]
-        }
+<?= json_encode([
+    '@context'=>'https://schema.org', '@type'=>'BreadcrumbList',
+    'itemListElement'=>[
+        ['@type'=>'ListItem','position'=>1,'name'=>l('index.breadcrumb'),'item'=>url()],
+        ['@type'=>'ListItem','position'=>2,'name'=>l('pages.header'),'item'=>url('pages')],
+        ['@type'=>'ListItem','position'=>3,'name'=>$data->page->title,'item'=>$data->page_url ?? fc_get_internal_page_url($data->page->url,$data->page->language)],
+    ],
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>
 </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 
@@ -1231,7 +1219,7 @@ $fcc_page_schema = [
     'url' => $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language),
     'datePublished' => !empty($data->page->datetime) ? date(DATE_ATOM, strtotime($data->page->datetime)) : null,
     'dateModified' => !empty($data->page->last_datetime) ? date(DATE_ATOM, strtotime($data->page->last_datetime)) : (!empty($data->page->datetime) ? date(DATE_ATOM, strtotime($data->page->datetime)) : null),
-    'inLanguage' => \Altum\Language::$code,
+    'inLanguage' => fcc_language_tag(),
     'mainEntityOfPage' => [
         '@type' => 'WebPage',
         '@id' => $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language),
@@ -1241,13 +1229,13 @@ $fcc_page_schema = [
         : [
             '@type' => 'Organization',
             '@id' => SITE_URL . '#fcc-organization',
-            'name' => 'Forever Card Club',
+            'name' => fcc_t('Forever Card Club'),
             'url' => SITE_URL,
         ],
     'publisher' => [
         '@type' => 'Organization',
         '@id' => SITE_URL . '#fcc-organization',
-        'name' => 'Forever Card Club',
+        'name' => fcc_t('Forever Card Club'),
         'url' => SITE_URL,
         'logo' => [
             '@type' => 'ImageObject',
@@ -1286,7 +1274,7 @@ if(!empty($data->is_foreverclub_page)) {
 
     $fcc_page_schema['isPartOf'] = [
         '@type' => 'CollectionPage',
-        'name' => $data->pages_category->title ?? 'Forever Card Club',
+        'name' => $data->pages_category->title ?? fcc_t('Forever Card Club'),
         'url' => !empty($data->pages_category)
             ? SITE_URL . ($data->pages_category->language ? \Altum\Language::$active_languages[$data->pages_category->language] . '/' : null) . 'pages/' . $data->pages_category->url
             : SITE_URL . 'pages/foreverclub',
@@ -1304,42 +1292,42 @@ if(!empty($data->is_foreverclub_page) && $data->page->url === 'forever-card-club
         '@context' => 'https://schema.org',
         '@type' => 'SoftwareApplication',
         '@id' => SITE_URL . '#fcc-software',
-        'name' => 'Forever Card Club',
-        'alternateName' => ['FCC', 'Forever Card Club (FCC)'],
+        'name' => fcc_t('Forever Card Club'),
+        'alternateName' => ['FCC', fcc_t('Forever Card Club (FCC)')],
         'applicationCategory' => 'BusinessApplication',
         'operatingSystem' => 'Web',
         'url' => $data->page_url ?? SITE_URL,
         'description' => $data->page->description ?: ($data->foreverclub_semantics['term_description'] ?? ''),
-        'inLanguage' => \Altum\Language::$code,
+        'inLanguage' => fcc_language_tag(),
         'audience' => [
             '@type' => 'Audience',
             'audienceType' => \Altum\Language::$code === 'hr'
-                ? 'Forever Living Products partneri'
-                : 'Forever Living Products partners',
+                ? fcc_t('Forever Living Products partneri')
+                : fcc_t('Forever Living Products partners'),
         ],
         'publisher' => [
             '@type' => 'Organization',
-            'name' => 'Forever Card Club',
+            'name' => fcc_t('Forever Card Club'),
             'url' => SITE_URL,
         ],
         'featureList' => \Altum\Language::$code === 'hr'
             ? [
-                'Osobna aplikacija partnera',
-                'Pametni preporučni linkovi',
-                'AI asistenti za proizvode',
-                'Sustav za prikupljanje kontakata',
-                'Analitika i praćenje interesa',
-                'NFC kartica povezana s aplikacijom',
-                'Usmjeravanje prema službenom Forever web shopu',
+                fcc_t('Osobna aplikacija partnera'),
+                fcc_t('Pametni preporučni linkovi'),
+                fcc_t('AI asistenti za proizvode'),
+                fcc_t('Sustav za prikupljanje kontakata'),
+                fcc_t('Analitika i praćenje interesa'),
+                fcc_t('NFC kartica povezana s aplikacijom'),
+                fcc_t('Usmjeravanje prema službenom Forever web shopu'),
             ]
             : [
-                'Personal partner app',
-                'Smart referral links',
-                'AI product assistants',
-                'Lead capture system',
-                'Analytics and engagement tracking',
-                'NFC card connected to the app',
-                'Routing toward the official Forever webshop',
+                fcc_t('Personal partner app'),
+                fcc_t('Smart referral links'),
+                fcc_t('AI product assistants'),
+                fcc_t('Lead capture system'),
+                fcc_t('Analytics and engagement tracking'),
+                fcc_t('NFC card connected to the app'),
+                fcc_t('Routing toward the official Forever webshop'),
             ],
         'offers' => [
             '@type' => 'Offer',
@@ -1403,7 +1391,7 @@ if(!empty($data->is_foreverclub_page) && isset($fcc_howto_map[$data->page->url])
         '@type' => 'HowTo',
         'name' => $howto['name'],
         'description' => $howto['description'],
-        'inLanguage' => \Altum\Language::$code,
+        'inLanguage' => fcc_language_tag(),
         'url' => $data->page_url ?? fc_get_internal_page_url($data->page->url, $data->page->language),
         'step' => [],
     ];
@@ -1534,3 +1522,21 @@ if(!empty($data->is_foreverclub_page) && !empty($data->page->content) && class_e
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>
 <?php endif ?>
 <?php endif ?>
+
+<style>
+body:has(#fcc-contact-top){background:#edf4ef!important;color:#183f37!important}
+body:has(#fcc-contact-top) .fcc-page-share__inner,#fcc-contact-top .fcc-collab-contact-card,#fcc-contact-top .fcc-collab-section{background:#fff!important;color:#183f37!important;border:1px solid #d8e7e0!important;box-shadow:0 8px 24px #173e3608!important}
+#fcc-contact-top .fcc-collab-contact-card::before{display:none!important}
+#fcc-contact-top .fcc-collab-choice-card{background:#f1f7f3!important;border:1px solid #d8e7e0!important;box-shadow:none!important;color:#183f37!important}
+#fcc-contact-top .fcc-collab-contact-eyebrow,#fcc-contact-top .fcc-collab-pill{color:#17634f!important;background:#e9f3ed!important}
+#fcc-contact-top a:not(.btn),#fcc-contact-top .fcc-collab-choice-card span{color:#12634f!important}
+#fcc-contact-top .btn-primary{background:#17634f!important;border-color:#17634f!important;color:#fff!important}
+#fcc-contact-top .btn-outline-primary{color:#17634f!important;border-color:#b8d3c7!important}
+#fcc-contact-top p,#fcc-contact-top small{color:#496b60!important}
+#fcc-contact-top h1,#fcc-contact-top h2,#fcc-contact-top h3,#fcc-contact-top h4{color:#183f37!important}
+body:has(#fcc-contact-top) .fcc-page-share__inner a{color:#17634f!important}
+body:has(#fcc-contact-top) .container{max-width:1240px;min-width:0}
+#fcc-contact-top img{object-fit:cover}#fcc-contact-top *{min-width:0}#fcc-contact-top a{overflow-wrap:anywhere}
+body:has(#fcc-contact-top) .custom-breadcrumbs{color:#496b60!important}
+@media(max-width:600px){#fcc-contact-top .fcc-collab-contact-card{padding:20px!important}#fcc-contact-top .fcc-collab-section__actions{gap:10px}}
+</style>

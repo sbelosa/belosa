@@ -25,12 +25,12 @@ $chatbot_language_code = $chatbot_owner_user_id > 0
 $chatbot_is_english = str_starts_with(mb_strtolower($chatbot_language_code), 'en');
 $chatbot_dom_id = 'fcc-chatbot-' . $block_unique_id;
 $chatbot_source_context = $is_pets_chatbot
-    ? ($chatbot_is_english ? 'FCC pet app popup chat' : 'FCC pet app popup chat')
-    : ($chatbot_is_english ? 'FCC app popup chat' : 'FCC app popup chat');
-$chatbot_intro_label = $is_pets_chatbot ? 'Extreme Chat Pets' : 'FCC Preporuka';
+    ? ($chatbot_is_english ? fcc_t('FCC pet app popup chat') : fcc_t('FCC pet app popup chat'))
+    : ($chatbot_is_english ? fcc_t('FCC app popup chat') : fcc_t('FCC app popup chat'));
+$chatbot_intro_label = $is_pets_chatbot ? fcc_t('Extreme Chat Pets') : fcc_t('FCC Preporuka');
 $chatbot_input_placeholder = $is_pets_chatbot
-    ? ($chatbot_is_english ? 'Tell me about your pet' : 'Napišite nešto o ljubimcu')
-    : ($chatbot_is_english ? 'What would you like to know?' : 'Što vas zanima?');
+    ? ($chatbot_is_english ? fcc_t('Tell me about your pet') : fcc_t('Napišite nešto o ljubimcu'))
+    : ($chatbot_is_english ? fcc_t('What would you like to know?') : fcc_t('Što vas zanima?'));
 ?>
 
 <?php ob_start() ?>

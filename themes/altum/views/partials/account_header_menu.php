@@ -1,4 +1,6 @@
-<?php defined('ALTUMCODE') || die() ?>
+<?php defined('ALTUMCODE') || die(); if(fcc_partner_enabled()): ?>
+<nav class="fp-account-nav" aria-label="<?= htmlspecialchars(fcc_t('Postavke računa'), ENT_QUOTES, 'UTF-8') ?>"><?php foreach(fcc_localize_copy(['partner/settings'=>fcc_t('← Moj račun'),'account'=>fcc_t('Profil i sigurnost'),'account-plan'=>fcc_t('Moj paket'),'account-payments'=>'Uplate','account-logs'=>fcc_t('Prijave i evidencija')]) as $href=>$label): ?><a href="<?= url($href) ?>"><?= $label ?></a><?php endforeach ?><details><summary><?= htmlspecialchars(fcc_t('Više postavki'), ENT_QUOTES, 'UTF-8') ?></summary><a href="<?= url('account-preferences') ?>"><?= htmlspecialchars(fcc_t('Postavke prikaza'), ENT_QUOTES, 'UTF-8') ?></a><a href="<?= url('account-delete') ?>"><?= htmlspecialchars(fcc_t('Brisanje računa'), ENT_QUOTES, 'UTF-8') ?></a></details></nav>
+<?php return; endif ?>
 
 <div class="d-lg-none mb-4">
     <select name="account_header_menu" class="custom-select">

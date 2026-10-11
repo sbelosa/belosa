@@ -573,6 +573,18 @@ class ApiLinks extends Controller {
 		if(!$link) {
 			$this->return_404();
 		}
+
+        $nfc_locked = fc_is_nfc_link((int) $link->link_id);
+        if($nfc_locked) {
+            if((array_key_exists('url', $_POST) && (string) $_POST['url'] !== (string) $link->url)
+                || (array_key_exists('domain_id', $_POST) && (int) $_POST['domain_id'] !== (int) $link->domain_id)
+                || (isset($_POST['is_enabled']) && (int) $_POST['is_enabled'] !== (int) $link->is_enabled)) {
+                $this->response_error(l('link.settings.url_help_main_biolink_locked'), 403);
+            }
+            // The generic API otherwise generates a new alias when url is omitted.
+            $_POST['url'] = $link->url;
+            $_POST['domain_id'] = $link->domain_id;
+        }
 		$link->settings = json_decode($link->settings ?? '');
 		$link->pixels_ids = json_decode($link->pixels_ids);
 
@@ -786,6 +798,11 @@ class ApiLinks extends Controller {
 
 		$settings = json_encode($settings);
 
+        if($nfc_locked) {
+            $url = (string) $link->url;
+            $domain_id = $link->domain_id;
+        }
+
 		/* Database query */
 		db()->where('link_id', $link->link_id)->update('links', [
 			'project_id' => $_POST['project_id'],
@@ -842,6 +859,10 @@ class ApiLinks extends Controller {
 		if(!$link) {
 			$this->return_404();
 		}
+
+        if(fc_is_nfc_link((int) $link->link_id)) {
+            $this->response_error(l('link_delete_modal.error_message.main_biolink_locked'), 403);
+        }
 
 		/* Delete the resource */
 		(new \Altum\Models\Link())->delete($link->link_id);

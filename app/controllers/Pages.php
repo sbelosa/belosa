@@ -125,7 +125,7 @@ class Pages extends Controller {
             /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
             $pages = array_values($pages);
 
-            $pages_category_url = SITE_URL . ($pages_category->language ? ((\Altum\Language::$active_languages[$pages_category->language] ?? null) ? \Altum\Language::$active_languages[$pages_category->language] . '/' : null) : null) . 'pages/' . $pages_category->url;
+            $pages_category_url = SITE_URL . ($pages_category->language && $pages_category->language !== settings()->main->default_language ? ((\Altum\Language::$active_languages[$pages_category->language] ?? null) ? \Altum\Language::$active_languages[$pages_category->language] . '/' : null) : null) . 'pages/' . $pages_category->url;
             $meta_title = $pages_category->title;
             $meta_description = $pages_category->description ?: 'Browse all articles and resources from this content hub.';
             $meta_keywords = null;
@@ -234,6 +234,9 @@ class Pages extends Controller {
 
             /* Set a custom title */
             /* Custom code: FC-2026-03-24: strengthen category SEO metadata for content hubs */
+            $meta_title = fcc_t($meta_title);
+            $meta_description = fcc_t($meta_description);
+            $meta_keywords = fcc_t($meta_keywords);
             Title::set($meta_title);
             /* /Custom code: FC-2026-03-24 */
 

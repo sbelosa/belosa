@@ -97,6 +97,9 @@ class Sitemap extends Controller {
         /* Keep only public, canonical routes in the main sitemap. */
         $this->add_localized_sitemap_route($sitemap_urls);
         $this->add_sitemap_url($sitemap_urls, SITE_URL . 'llms.txt');
+        if(!fcc_legal_pending()) {
+            foreach(['privacy', 'terms'] as $document) $this->add_localized_sitemap_route($sitemap_urls, 'legal/'.$document);
+        }
 
         if(\Altum\Plugin::is_active('affiliate') && settings()->affiliate->is_enabled) {
             $this->add_localized_sitemap_route($sitemap_urls, 'affiliate');
@@ -140,10 +143,11 @@ class Sitemap extends Controller {
         }
 
         if(settings()->content->pages_is_enabled) {
-            $pages = db()->where('type', 'internal')->where('is_published', 1)->get('pages', null, ['url', 'language', 'last_datetime', 'datetime']);
+            $pages = db()->where('type', 'internal')->where('is_published', 1)->where("(plans_ids IS NULL OR plans_ids = '' OR plans_ids = '[]')")->get('pages', null, ['url', 'language', 'last_datetime', 'datetime']);
             $pages_categories = db()->get('pages_categories', null, ['url', 'language']);
 
             foreach ($pages as $page) {
+                if($page->language && !isset(\Altum\Language::$active_languages[$page->language])) continue;
                 $this->add_sitemap_url(
                     $sitemap_urls,
                     $this->build_localized_internal_page_url((string) $page->url, $page->language),
@@ -152,6 +156,7 @@ class Sitemap extends Controller {
             }
 
             foreach ($pages_categories as $pages_category) {
+                if($pages_category->language && !isset(\Altum\Language::$active_languages[$pages_category->language])) continue;
                 $this->add_sitemap_url(
                     $sitemap_urls,
                     $this->build_localized_public_url('pages/' . (string) $pages_category->url, $pages_category->language)
@@ -164,6 +169,7 @@ class Sitemap extends Controller {
             $blog_posts_categories = db()->get('blog_posts_categories', null, ['blog_posts_category_id', 'title', 'url', 'language']);
 
             foreach ($blog_posts as $blog_post) {
+                if($blog_post->language && !isset(\Altum\Language::$active_languages[$blog_post->language])) continue;
                 $this->add_sitemap_url(
                     $sitemap_urls,
                     $this->build_localized_public_url('blog/' . (string) $blog_post->url, $blog_post->language),
@@ -172,6 +178,7 @@ class Sitemap extends Controller {
             }
 
             foreach ($blog_posts_categories as $blog_posts_category) {
+                if($blog_posts_category->language && !isset(\Altum\Language::$active_languages[$blog_posts_category->language])) continue;
                 $category_indexing_bundle = fc_build_blog_category_indexing_bundle($blog_posts_category);
 
                 if(!$category_indexing_bundle['should_index']) {
@@ -253,6 +260,7 @@ class Sitemap extends Controller {
                         AND `links`.`type` IN ('biolink','static')
                         AND `links`.`domain_id` = 0
                         AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`links`.`settings`, '$.seo.block')), '0') != '1'
+                        AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`links`.`settings`, '$.password')), '') IN ('','null')
                   ")->fetch_object()->total ?? 0;
 
                 /* Calculate the needed sitemaps */
@@ -261,7 +269,7 @@ class Sitemap extends Controller {
                 /* Prepare the urls */
                 $sitemap_urls = [];
 
-                foreach(range(1, $total_sitemaps) as $key) {
+                for($key = 1; $key <= $total_sitemaps; $key++) {
                     $sitemap_urls[] = SITE_URL . 'sitemap/links/' . $key;
                 }
 
@@ -296,6 +304,7 @@ class Sitemap extends Controller {
                         AND `links`.`type` IN ('biolink','static')
                         AND `links`.`domain_id` = 0
                         AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`links`.`settings`, '$.seo.block')), '0') != '1'
+                        AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`links`.`settings`, '$.password')), '') IN ('','null')
                     LIMIT 
                         {$limit_start}, {$pagination}
                 ");

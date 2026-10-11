@@ -7,14 +7,14 @@ $fcc_stats_is_hr = in_array(mb_strtolower((string) $fcc_stats_language_name), ['
 
 $top_country_code = array_key_first($data->statistics['country_code'] ?? []);
 $top_country_value = $top_country_code !== null ? (($data->statistics['country_code'][$top_country_code] ?? 0)) : 0;
-$top_country_label = $top_country_code ? get_country_from_country_code($top_country_code) : ($fcc_stats_is_hr ? 'Nema podataka' : 'No data');
+$top_country_label = $top_country_code ? get_country_from_country_code($top_country_code) : ($fcc_stats_is_hr ? fcc_t('Nema podataka') : 'No data');
 
 $top_source_key = array_key_first($data->statistics['referrer_host'] ?? []);
 $top_source_value = $top_source_key !== null ? (($data->statistics['referrer_host'][$top_source_key] ?? 0)) : 0;
 if($top_source_key === '' || $top_source_key === null) {
     $top_source_label = $fcc_stats_is_hr ? 'Direktno' : 'Direct';
 } elseif($top_source_key === 'qr') {
-    $top_source_label = $fcc_stats_is_hr ? 'QR kod' : 'QR code';
+    $top_source_label = $fcc_stats_is_hr ? fcc_t('QR kod') : fcc_t('QR code');
 } else {
     $top_source_label = $top_source_key;
 }
@@ -22,19 +22,19 @@ if($top_source_key === '' || $top_source_key === null) {
 $latest_count = is_array($data->latest ?? null) ? count($data->latest) : 0;
 $latest_preview_limit = $this->user->preferences->default_results_per_page ?? settings()->main->default_results_per_page;
 $overview_lead = $data->link->type === 'biolink'
-    ? ($fcc_stats_is_hr ? 'Ovdje vidiš kako se ova aplikacija ponaša kroz posjete, kretanje interesa i izvore prometa u odabranom razdoblju.' : 'Here you see how this app performs through visits, movement of interest and traffic sources across the selected range.')
+    ? ($fcc_stats_is_hr ? fcc_t('Ovdje vidiš kako se ova aplikacija ponaša kroz posjete, kretanje interesa i izvore prometa u odabranom razdoblju.') : fcc_t('Here you see how this app performs through visits, movement of interest and traffic sources across the selected range.'))
     : l('link.statistics.data_preview');
 ?>
 
 <div class="fcc-app-overview-shell">
     <div class="fcc-app-overview-intro">
         <div>
-            <div class="fcc-app-overview-intro-eyebrow"><?= $fcc_stats_is_hr ? 'FCC pregled aplikacije' : 'FCC app overview' ?></div>
-            <h3><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Ključne brojke i signali za ovu aplikaciju' : 'Key numbers and signals for this app') : l('link.statistics.overview') ?></h3>
+            <div class="fcc-app-overview-intro-eyebrow"><?= $fcc_stats_is_hr ? fcc_t('FCC pregled aplikacije') : fcc_t('FCC app overview') ?></div>
+            <h3><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? fcc_t('Ključne brojke i signali za ovu aplikaciju') : fcc_t('Key numbers and signals for this app')) : l('link.statistics.overview') ?></h3>
             <p><?= $overview_lead ?></p>
         </div>
         <div class="fcc-app-overview-intro-badge">
-            <span><?= $fcc_stats_is_hr ? 'Zadnje zabilježenih posjeta' : 'Latest tracked visits' ?></span>
+            <span><?= $fcc_stats_is_hr ? fcc_t('Zadnje zabilježenih posjeta') : fcc_t('Latest tracked visits') ?></span>
             <strong><?= nr($latest_count) ?></strong>
         </div>
     </div>
@@ -46,7 +46,7 @@ $overview_lead = $data->link->type === 'biolink'
                 <span><?= l('link.statistics.pageviews') ?></span>
             </div>
             <p class="fcc-app-overview-kpi-value"><?= nr($data->totals['pageviews']) ?></p>
-            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Ukupan broj otvaranja aplikacije u odabranom razdoblju.' : 'Total app opens in the selected period.' ?></div>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? fcc_t('Ukupan broj otvaranja aplikacije u odabranom razdoblju.') : fcc_t('Total app opens in the selected period.') ?></div>
         </div>
 
         <div class="fcc-app-overview-kpi">
@@ -55,25 +55,25 @@ $overview_lead = $data->link->type === 'biolink'
                 <span><?= l('link.statistics.visitors') ?></span>
             </div>
             <p class="fcc-app-overview-kpi-value"><?= nr($data->totals['visitors']) ?></p>
-            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Jedinstveni ljudi koji su otvorili ovu aplikaciju.' : 'Unique people who opened this app.' ?></div>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? fcc_t('Jedinstveni ljudi koji su otvorili ovu aplikaciju.') : fcc_t('Unique people who opened this app.') ?></div>
         </div>
 
         <div class="fcc-app-overview-kpi">
             <div class="fcc-app-overview-kpi-eyebrow">
                 <i class="fas fa-fw fa-globe-europe"></i>
-                <span><?= $fcc_stats_is_hr ? 'Najjače tržište' : 'Top market' ?></span>
+                <span><?= $fcc_stats_is_hr ? fcc_t('Najjače tržište') : fcc_t('Top market') ?></span>
             </div>
             <p class="fcc-app-overview-kpi-value fcc-app-overview-kpi-value--compact"><?= htmlspecialchars((string) $top_country_label, ENT_QUOTES, 'UTF-8') ?></p>
-            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Najviše posjeta dolazi iz ovog tržišta.' : 'Most visits currently come from this market.' ?> <strong><?= nr($top_country_value) ?></strong></div>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? fcc_t('Najviše posjeta dolazi iz ovog tržišta.') : fcc_t('Most visits currently come from this market.') ?> <strong><?= nr($top_country_value) ?></strong></div>
         </div>
 
         <div class="fcc-app-overview-kpi">
             <div class="fcc-app-overview-kpi-eyebrow">
                 <i class="fas fa-fw fa-random"></i>
-                <span><?= $fcc_stats_is_hr ? 'Glavni izvor' : 'Main source' ?></span>
+                <span><?= $fcc_stats_is_hr ? fcc_t('Glavni izvor') : fcc_t('Main source') ?></span>
             </div>
             <p class="fcc-app-overview-kpi-value fcc-app-overview-kpi-value--compact"><?= htmlspecialchars((string) $top_source_label, ENT_QUOTES, 'UTF-8') ?></p>
-            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? 'Ovaj kanal ti trenutno dovodi najviše interesa.' : 'This channel is currently bringing the most interest.' ?> <strong><?= nr($top_source_value) ?></strong></div>
+            <div class="fcc-app-overview-kpi-note"><?= $fcc_stats_is_hr ? fcc_t('Ovaj kanal ti trenutno dovodi najviše interesa.') : fcc_t('This channel is currently bringing the most interest.') ?> <strong><?= nr($top_source_value) ?></strong></div>
         </div>
     </div>
 
@@ -81,8 +81,8 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card-body">
             <div class="fcc-app-overview-chart-head">
                 <div>
-                    <h3><?= $data->link->type === 'biolink' ? 'Kretanje interesa za ovu FCC aplikaciju' : l('link.statistics.overview') ?></h3>
-                    <p><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Prati ritam otvaranja i jedinstvenih posjeta. Ovaj graf ti pomaže povezati objave, kampanje i stvarni interes za aplikaciju.' : 'Track the rhythm of opens and unique visits. This chart helps connect posts, campaigns and real interest in the app.') : l('link.statistics.data_preview') ?></p>
+                    <h3><?= $data->link->type === 'biolink' ? fcc_t('Kretanje interesa za ovu FCC aplikaciju') : l('link.statistics.overview') ?></h3>
+                    <p><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? fcc_t('Prati ritam otvaranja i jedinstvenih posjeta. Ovaj graf ti pomaže povezati objave, kampanje i stvarni interes za aplikaciju.') : fcc_t('Track the rhythm of opens and unique visits. This chart helps connect posts, campaigns and real interest in the app.')) : l('link.statistics.data_preview') ?></p>
                 </div>
             </div>
             <div class="chart-container">
@@ -91,10 +91,10 @@ $overview_lead = $data->link->type === 'biolink'
         </div>
     </div>
 
-    <div class="fcc-app-preview-strip" data-toggle="tooltip" title="<?= $fcc_stats_is_hr ? 'Kartice ispod koriste cijelo odabrano razdoblje. Tablica najnovijih unosa prikazuje zadnjih ' . nr($latest_preview_limit) . ' zabilježenih posjeta.' : 'The cards below use the full selected period. The latest entries table shows the last ' . nr($latest_preview_limit) . ' tracked visits.' ?>">
+    <div class="fcc-app-preview-strip" data-toggle="tooltip" title="<?= $fcc_stats_is_hr ? fcc_t('Kartice ispod koriste cijelo odabrano razdoblje. Tablica najnovijih unosa prikazuje zadnjih ') . nr($latest_preview_limit) . fcc_t(' zabilježenih posjeta.') : fcc_t('The cards below use the full selected period. The latest entries table shows the last ') . nr($latest_preview_limit) . ' tracked visits.' ?>">
         <div>
-            <strong><?= $fcc_stats_is_hr ? 'Pregled izvora i ponašanja' : 'Traffic and behaviour snapshot' ?></strong>
-            <div class="small text-muted mt-1"><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? 'Kartice ispod prikazuju cijelo odabrano razdoblje, a tablica na dnu zadnje zabilježene posjete za brzi dnevni pregled.' : 'The cards below cover the full selected period, while the table at the bottom shows the latest tracked visits for a quick daily check.') : l('link.statistics.data_preview') ?></div>
+            <strong><?= $fcc_stats_is_hr ? fcc_t('Pregled izvora i ponašanja') : fcc_t('Traffic and behaviour snapshot') ?></strong>
+            <div class="small text-muted mt-1"><?= $data->link->type === 'biolink' ? ($fcc_stats_is_hr ? fcc_t('Kartice ispod prikazuju cijelo odabrano razdoblje, a tablica na dnu zadnje zabilježene posjete za brzi dnevni pregled.') : fcc_t('The cards below cover the full selected period, while the table at the bottom shows the latest tracked visits for a quick daily check.')) : l('link.statistics.data_preview') ?></div>
         </div>
         <i class="fas fa-fw fa-info-circle text-muted"></i>
     </div>
@@ -104,7 +104,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('global.continents') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Gdje se otvara tvoja aplikacija po kontinentima.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Gdje se otvara tvoja aplikacija po kontinentima.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['continent_code'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['continent_code_total_sum'] * 100, 1) ?>
@@ -144,7 +144,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('global.countries') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Najaktivnija tržišta za ovu aplikaciju.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Najaktivnija tržišta za ovu aplikaciju.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['country_code'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['country_code_total_sum'] * 100, 1) ?>
@@ -183,7 +183,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('global.cities') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Gradovi iz kojih dolazi najveći interes.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Gradovi iz kojih dolazi najveći interes.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['city_name'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['city_name_total_sum'] * 100, 1) ?>
@@ -217,7 +217,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.referrer_host') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Kanali i stranice koje ti dovode promet na aplikaciju.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Kanali i stranice koje ti dovode promet na aplikaciju.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['referrer_host'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['referrer_host_total_sum'] * 100, 1) ?>
@@ -259,7 +259,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.device') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Na kojim uređajima se tvoja aplikacija najviše otvara.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Na kojim uređajima se tvoja aplikacija najviše otvara.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['device_type'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['device_type_total_sum'] * 100, 1) ?>
@@ -297,7 +297,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.os') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Operativni sustavi tvojih posjetitelja.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Operativni sustavi tvojih posjetitelja.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['os_name'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['os_name_total_sum'] * 100, 1) ?>
@@ -332,7 +332,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.browser') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Preglednici kroz koje posjetitelji dolaze.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Preglednici kroz koje posjetitelji dolaze.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['browser_name'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['browser_name_total_sum'] * 100, 1) ?>
@@ -367,7 +367,7 @@ $overview_lead = $data->link->type === 'biolink'
         <div class="card h-100 fcc-app-insight-card">
             <div class="card-body">
                 <h3 class="h5"><?= l('link.statistics.language') ?></h3>
-                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Jezici preglednika koji dominiraju u prometu.' : '&nbsp;' ?></div>
+                <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Jezici preglednika koji dominiraju u prometu.') : '&nbsp;' ?></div>
 
                 <?php $i = 0; foreach($data->statistics['browser_language'] as $key => $value): $i++; if($i > 5) break; ?>
                     <?php $percentage = round($value / $data->statistics['browser_language_total_sum'] * 100, 1) ?>
@@ -406,8 +406,8 @@ $overview_lead = $data->link->type === 'biolink'
     <div class="fcc-app-latest-card card">
         <div class="card-body">
             <h3><?= l('link.statistics.latest') ?></h3>
-            <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? 'Zadnje posjete, odakle su došle i kada su se dogodile. Ovo je koristan dnevni pregled kampanja i aktivnosti.' : l('link.statistics.latest') ?></div>
-            <div class="small text-muted mb-3"><?= $fcc_stats_is_hr ? 'Prikazano je zadnjih ' . nr($latest_preview_limit) . ' zabilježenih posjeta u odabranom razdoblju.' : 'Showing the last ' . nr($latest_preview_limit) . ' tracked visits in the selected period.' ?></div>
+            <div class="fcc-app-insight-subtitle"><?= $data->link->type === 'biolink' ? fcc_t('Zadnje posjete, odakle su došle i kada su se dogodile. Ovo je koristan dnevni pregled kampanja i aktivnosti.') : l('link.statistics.latest') ?></div>
+            <div class="small text-muted mb-3"><?= $fcc_stats_is_hr ? fcc_t('Prikazano je zadnjih ') . nr($latest_preview_limit) . fcc_t(' zabilježenih posjeta u odabranom razdoblju.') : 'Showing the last ' . nr($latest_preview_limit) . ' tracked visits in the selected period.' ?></div>
 
             <div class="table-responsive table-custom-container">
                 <table class="table table-custom">

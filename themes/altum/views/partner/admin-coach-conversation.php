@@ -1,0 +1,17 @@
+<?php defined('ALTUMCODE') || die();
+if(!\Altum\Authentication::is_admin())return;
+$threadId=max(0,(int)($_GET['thread']??0));
+$thread=fcc_partner_one("SELECT c.fcc_ai_conversation_id,c.user_id,u.name FROM fcc_ai_conversations c JOIN users u ON u.user_id=c.user_id WHERE c.fcc_ai_conversation_id=? AND c.scope='internal_coach' AND c.assistant_type='coach'",[$threadId]);
+if(!$thread){echo '<p>Razgovor nije dostupan.</p>';return;}
+$cursor=max(1,(int)($_GET['message_before']??PHP_INT_MAX));
+$rows=fcc_partner_rows("SELECT fcc_ai_message_id,role,content,meta,datetime FROM fcc_ai_messages WHERE fcc_ai_conversation_id=? AND role IN ('user','assistant') AND fcc_ai_message_id<? ORDER BY fcc_ai_message_id DESC LIMIT 51",[$threadId,$cursor]);
+$more=count($rows)>50;$rows=array_slice($rows,0,50);$older=$rows?(int)end($rows)['fcc_ai_message_id']:0;$rows=array_reverse($rows);
+$signalLabels=['intent_correction'=>fcc_t('Korisnik ispravlja namjeru'),'repeated_question'=>fcc_t('Ponovljeno isto pitanje'),'knowledge_gap'=>fcc_t('Nedostaje obrađena tema'),'support_contact_missing'=>fcc_t('Nedostaje kontakt odabrane zemlje')];
+?>
+<a class="fp-link" href="<?= url('partner/admin?coach=1') ?>"><?= htmlspecialchars(fcc_t('← Razgovori i ocjene Coacha'), ENT_QUOTES, 'UTF-8') ?></a><h2><?= $h($thread['name']) ?></h2><p><?= htmlspecialchars(fcc_t('Cjelovit razgovor dostupan je kroz stranice po 50 poruka. Starije poruke mogu prethoditi današnjim uputama Coachu.'), ENT_QUOTES, 'UTF-8') ?></p>
+<?php if($more): ?><a class="fp-button fp-button-outline" href="<?= url('partner/admin?coach=1&thread='.$threadId.'&message_before='.$older) ?>"><?= htmlspecialchars(fcc_t('Prethodnih 50 poruka'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+<?php if(isset($_GET['message_before'])): ?><a class="fp-link" href="<?= url('partner/admin?coach=1&thread='.$threadId) ?>"><?= htmlspecialchars(fcc_t('Najnovije poruke'), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+<?php foreach($rows as $row):$meta=json_decode($row['meta']??'{}',true)?:[];$learning=$meta['learning']??[]; ?>
+<article class="fp-panel fp-coach-review" id="message-<?= (int)$row['fcc_ai_message_id'] ?>"><strong><?= $row['role']==='user'?fcc_t('Suradnik'):fcc_t('Coach') ?></strong><small> · <?= $h($row['datetime']) ?> <?= htmlspecialchars(fcc_t('UTC'), ENT_QUOTES, 'UTF-8') ?></small><p class="fp-coach-review-text"><?= $h($row['content']) ?></p>
+<?php if($row['role']==='assistant'): ?><details><summary><?= htmlspecialchars(fcc_t('Verzija i izvori odgovora'), ENT_QUOTES, 'UTF-8') ?></summary><p><?= htmlspecialchars(fcc_t('Upute:'), ENT_QUOTES, 'UTF-8') ?> <?= $h($meta['coach_prompt_version']??fcc_t('Nije zabilježeno')) ?><?= htmlspecialchars(fcc_t('. Znanje:'), ENT_QUOTES, 'UTF-8') ?> <?= $h($learning['knowledge_version']??fcc_t('Nije zabilježeno')) ?><?= htmlspecialchars(fcc_t('. Video edukacija:'), ENT_QUOTES, 'UTF-8') ?> <?= $h($learning['education_version']??fcc_t('Nije zabilježeno')) ?>.</p><p><?= htmlspecialchars(fcc_t('Namjera:'), ENT_QUOTES, 'UTF-8') ?> <?= $h($learning['intent']??fcc_t('Nije zabilježeno')) ?><?= htmlspecialchars(fcc_t('. Teme:'), ENT_QUOTES, 'UTF-8') ?> <?= $h(implode(', ',$learning['topics']??[])) ?><?= htmlspecialchars(fcc_t('. Zemlja:'), ENT_QUOTES, 'UTF-8') ?> <?= $h($learning['market']??'') ?>.</p><?php foreach($learning['signals']??[] as $signal): ?><p><?= $h($signalLabels[$signal]??$signal) ?></p><?php endforeach ?></details><?php endif ?>
+</article><?php endforeach ?>

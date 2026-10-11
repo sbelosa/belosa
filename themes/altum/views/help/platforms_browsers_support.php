@@ -9,29 +9,29 @@
         <tr>
             <td></td>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/os/windows.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Windows" alt="Windows" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/windows.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Windows'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Windows'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/os/apple.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="MacOS" alt="MacOS" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/apple.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('MacOS'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('MacOS'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/os/chromeos.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="ChromeOS" alt="ChromeOS" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/chromeos.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('ChromeOS'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('ChromeOS'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/os/ubuntu.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Ubuntu" alt="Ubuntu" />
-                <img src="<?= ASSETS_FULL_URL . 'images/os/linux.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Linux" alt="Linux" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/ubuntu.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Ubuntu'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Ubuntu'), ENT_QUOTES, 'UTF-8') ?>" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/linux.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Linux'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Linux'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/os/android.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Android" alt="Android" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/android.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Android'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Android'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/os/ios.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="iOS & iPadOS" alt="iOS & iPadOS" />
+                <img src="<?= ASSETS_FULL_URL . 'images/os/ios.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('iOS & iPadOS'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('iOS & iPadOS'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
         </tr>
 
         <tr>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/browsers/chrome.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Chrome" alt="Chrome" />
+                <img src="<?= ASSETS_FULL_URL . 'images/browsers/chrome.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Chrome'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Chrome'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
@@ -43,7 +43,7 @@
 
         <tr>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/browsers/safari.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Safari" alt="Safari" />
+                <img src="<?= ASSETS_FULL_URL . 'images/browsers/safari.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Safari'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Safari'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td><span><i class="fas fa-fw fa-sm fa-minus-circle text-muted"></i></span> <span class="text-muted"><?= l('global.none') ?></span></td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
@@ -55,7 +55,7 @@
 
         <tr>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/browsers/edge.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Edge" alt="Edge" />
+                <img src="<?= ASSETS_FULL_URL . 'images/browsers/edge.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Edge'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Edge'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
@@ -67,7 +67,7 @@
 
         <tr>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/browsers/firefox.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Firefox" alt="Firefox" />
+                <img src="<?= ASSETS_FULL_URL . 'images/browsers/firefox.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Firefox'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Firefox'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
@@ -79,7 +79,7 @@
 
         <tr>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/browsers/samsung.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Samsung Internet" alt="Samsung Internet" />
+                <img src="<?= ASSETS_FULL_URL . 'images/browsers/samsung.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Samsung Internet'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Samsung Internet'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td><span><i class="fas fa-fw fa-sm fa-minus-circle text-muted"></i></span> <span class="text-muted"><?= l('global.none') ?></span></td>
             <td><span><i class="fas fa-fw fa-sm fa-minus-circle text-muted"></i></span> <span class="text-muted"><?= l('global.none') ?></span></td>
@@ -91,7 +91,7 @@
 
         <tr>
             <td>
-                <img src="<?= ASSETS_FULL_URL . 'images/browsers/opera.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="Opera" alt="Opera" />
+                <img src="<?= ASSETS_FULL_URL . 'images/browsers/opera.svg' ?>" class="icon-favicon" loading="lazy" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('Opera'), ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('Opera'), ENT_QUOTES, 'UTF-8') ?>" />
             </td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>
             <td><span><i class="fas fa-fw fa-sm fa-check-circle text-success"></i></span> <span class="text-muted"><?= l('global.yes') ?></span></td>

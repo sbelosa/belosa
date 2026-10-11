@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
             <li class="active" aria-current="page"><?= l('tools.http_headers_lookup.name') ?></li>

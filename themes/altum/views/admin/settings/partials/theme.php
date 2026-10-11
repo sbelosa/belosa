@@ -2,28 +2,28 @@
 
 <?php
 $fonts = [
-    'Times New Roman, Times, serif',
+    fcc_t('Times New Roman, Times, serif'),
     'serif',
-    'Georgia, serif',
+    fcc_t('Georgia, serif'),
     'monospace',
-    'Courier, monospace',
-    'Arial, sans-serif',
-    'Helvetica, Arial, sans-serif',
-    'Verdana, sans-serif',
-    'Tahoma, Geneva, sans-serif',
-    'Trebuchet MS, sans-serif',
-    'Courier New, Courier, monospace',
-    'Monaco, monospace',
-    'Comic Sans MS, cursive',
-    'Impact, fantasy',
-    'Baskerville, serif',
-    'Papyrus, fantasy',
-    'Lucida Console, Monaco, monospace',
-    'Lucida Sans Unicode, Lucida Grande, sans-serif',
-    'Garamond, serif',
-    'Palatino Linotype, Book Antiqua, Palatino, serif',
-    'Candara, Calibri, Segoe, sans-serif',
-    'Segoe UI, Tahoma, Geneva, sans-serif'
+    fcc_t('Courier, monospace'),
+    fcc_t('Arial, sans-serif'),
+    fcc_t('Helvetica, Arial, sans-serif'),
+    fcc_t('Verdana, sans-serif'),
+    fcc_t('Tahoma, Geneva, sans-serif'),
+    fcc_t('Trebuchet MS, sans-serif'),
+    fcc_t('Courier New, Courier, monospace'),
+    fcc_t('Monaco, monospace'),
+    fcc_t('Comic Sans MS, cursive'),
+    fcc_t('Impact, fantasy'),
+    fcc_t('Baskerville, serif'),
+    fcc_t('Papyrus, fantasy'),
+    fcc_t('Lucida Console, Monaco, monospace'),
+    fcc_t('Lucida Sans Unicode, Lucida Grande, sans-serif'),
+    fcc_t('Garamond, serif'),
+    fcc_t('Palatino Linotype, Book Antiqua, Palatino, serif'),
+    fcc_t('Candara, Calibri, Segoe, sans-serif'),
+    fcc_t('Segoe UI, Tahoma, Geneva, sans-serif')
 ];
 ?>
 
@@ -216,7 +216,7 @@ $fonts = [
                 <div id="<?= $mode . '_primary_advanced_container' ?>">
                     <?php foreach(['50', '100', '200', '300', '400', '500', '600', '700', '800', '900'] as $key): ?>
                         <div class="form-group">
-                            <label for="<?= $mode . '_primary_' . $key ?>">Primary <?= $key ?></label>
+                            <label for="<?= $mode . '_primary_' . $key ?>"><?= htmlspecialchars(fcc_t('Primary'), ENT_QUOTES, 'UTF-8') ?> <?= $key ?></label>
                             <input id="<?= $mode . '_primary_' . $key ?>" type="hidden" name="<?= $mode . '_primary_' . $key ?>" class="form-control" value="<?= settings()->theme->{$mode . '_primary_' . $key} ?? $defaults[$mode]['primary'][$key] ?>" data-color-picker />
                         </div>
                     <?php endforeach ?>
@@ -228,7 +228,7 @@ $fonts = [
                 <div id="<?= $mode . '_gray_advanced_container' ?>">
                     <?php foreach(['50', '100', '200', '300', '400', '500', '600', '700', '800', '900'] as $key): ?>
                         <div class="form-group">
-                            <label for="<?= $mode . '_gray_' . $key ?>">Gray <?= $key ?></label>
+                            <label for="<?= $mode . '_gray_' . $key ?>"><?= htmlspecialchars(fcc_t('Gray'), ENT_QUOTES, 'UTF-8') ?> <?= $key ?></label>
                             <input id="<?= $mode . '_gray_' . $key ?>" type="hidden" name="<?= $mode . '_gray_' . $key ?>" class="form-control" value="<?= settings()->theme->{$mode . '_gray_' . $key} ?? $defaults[$mode]['gray'][$key] ?>" data-color-picker />
                         </div>
                     <?php endforeach ?>
@@ -425,7 +425,7 @@ $fonts = [
                 <div id="<?= $mode . '_primary_advanced_container' ?>">
                     <?php foreach(array_reverse(['50', '100', '200', '300', '400', '500', '600', '700', '800', '900']) as $key): ?>
                         <div class="form-group">
-                            <label for="<?= $mode . '_primary_' . $key ?>">Primary <?= $key ?></label>
+                            <label for="<?= $mode . '_primary_' . $key ?>"><?= htmlspecialchars(fcc_t('Primary'), ENT_QUOTES, 'UTF-8') ?> <?= $key ?></label>
                             <input id="<?= $mode . '_primary_' . $key ?>" type="hidden" name="<?= $mode . '_primary_' . $key ?>" class="form-control" value="<?= settings()->theme->{$mode . '_primary_' . $key} ?? $defaults[$mode]['primary'][$key] ?>" data-color-picker />
                         </div>
                     <?php endforeach ?>
@@ -437,7 +437,7 @@ $fonts = [
                 <div id="<?= $mode . '_gray_advanced_container' ?>">
                     <?php foreach(array_reverse(['50', '100', '200', '300', '400', '500', '600', '700', '800', '900']) as $key): ?>
                         <div class="form-group">
-                            <label for="<?= $mode . '_gray_' . $key ?>">Gray <?= $key ?></label>
+                            <label for="<?= $mode . '_gray_' . $key ?>"><?= htmlspecialchars(fcc_t('Gray'), ENT_QUOTES, 'UTF-8') ?> <?= $key ?></label>
                             <input id="<?= $mode . '_gray_' . $key ?>" type="hidden" name="<?= $mode . '_gray_' . $key ?>" class="form-control" value="<?= settings()->theme->{$mode . '_gray_' . $key} ?? $defaults[$mode]['gray'][$key] ?>" data-color-picker />
                         </div>
                     <?php endforeach ?>

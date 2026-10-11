@@ -14,8 +14,8 @@
 <div class="container my-5 fcc-sponsors-page">
     <section class="fcc-sponsors-hero mb-4">
         <div class="fcc-sponsors-hero__content">
-            <div class="fcc-sponsors-eyebrow"><?= $ui['hub_eyebrow'] ?? 'Recommended sponsors' ?></div>
-            <h1 class="h2 mb-2"><?= $ui['hub_title'] ?? 'Recommended sponsors' ?></h1>
+            <div class="fcc-sponsors-eyebrow"><?= $ui['hub_eyebrow'] ?? fcc_t('Recommended sponsors') ?></div>
+            <h1 class="h2 mb-2"><?= $ui['hub_title'] ?? fcc_t('Recommended sponsors') ?></h1>
             <p class="text-muted mb-0"><?= $ui['hub_description'] ?? '' ?></p>
         </div>
 
@@ -287,7 +287,7 @@
 $item_list = [
     '@context' => 'https://schema.org',
     '@type' => 'CollectionPage',
-    'name' => $ui['hub_title'] ?? 'Recommended FCC Sponsors',
+    'name' => $ui['hub_title'] ?? fcc_t('Recommended FCC Sponsors'),
     'description' => $ui['hub_description'] ?? '',
     'url' => $data->hub_url ?? url('recommended-sponsors'),
     'inLanguage' => \Altum\Language::$code,

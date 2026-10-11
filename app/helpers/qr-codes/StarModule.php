@@ -20,7 +20,7 @@ final class StarModule implements ModuleInterface, Singleton
     public function __construct(float $size)
     {
         if($size <= 0 || $size > 1) {
-            throw new InvalidArgumentException('Size must between 0 (exclusive) and 1 (inclusive)');
+            throw new InvalidArgumentException(fcc_t('Size must between 0 (exclusive) and 1 (inclusive)'));
         }
 
         $this->size = $size;

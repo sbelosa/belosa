@@ -1440,8 +1440,8 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
 
                 <div class="fcc-ai-hero__side">
                     <div class="fcc-ai-hero__brand-card">
-                        <div class="fcc-ai-hero__brand-label">ChatExtreme</div>
-                        <img src="<?= htmlspecialchars($fcc_ai_brand_logo_url, ENT_QUOTES, 'UTF-8') ?>" alt="ChatExtreme" class="fcc-ai-hero__brand-logo" />
+                        <div class="fcc-ai-hero__brand-label"><?= htmlspecialchars(fcc_t('ChatExtreme'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <img src="<?= htmlspecialchars($fcc_ai_brand_logo_url, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars(fcc_t('ChatExtreme'), ENT_QUOTES, 'UTF-8') ?>" class="fcc-ai-hero__brand-logo" />
                         <p class="fcc-ai-hero__brand-copy"><?= l('fcc_ai.hero_brand_copy') ?></p>
                     </div>
                 </div>
@@ -2297,7 +2297,7 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
                 });
 
                 if(!response.ok) {
-                    throw new Error('Failed to load conversation details');
+                    throw new Error(window.fccT('Failed to load conversation details'));
                 }
 
                 const responseHtml = await response.text();
@@ -2471,7 +2471,7 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
                     const result = await response.json();
 
                     if(!response.ok || result.status !== 'success') {
-                        throw new Error(Array.isArray(result.message) ? result.message.join(' ') : (result.message || 'Signal nije označen kao riješen.'));
+                        throw new Error(Array.isArray(result.message) ? result.message.join(' ') : (result.message || window.fccT('Signal nije označen kao riješen.')));
                     }
 
                     reviewItem.remove();
@@ -2485,7 +2485,7 @@ $fcc_ai_build_hub_url = static function(array $overrides = []) use ($fcc_ai_filt
                     resolveButton.disabled = false;
                     resolveButton.classList.remove('disabled', 'container-disabled-simple');
                     resolveButton.innerHTML = originalLabel;
-                    showResolveError(error.message || 'Signal nije označen kao riješen.');
+                    showResolveError(error.message || window.fccT('Signal nije označen kao riješen.'));
                 }
             });
         };

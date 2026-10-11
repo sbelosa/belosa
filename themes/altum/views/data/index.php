@@ -721,7 +721,7 @@
                                     <i class="fas fa-fw fa-info-circle text-muted"></i>
                                 </span>
                             </h1>
-                            <p>Svi kontakti s vaših FCC aplikacija na jednom mjestu, spremni za brzu obradu i WhatsApp kontakt.</p>
+                            <p><?= htmlspecialchars(fcc_t('Svi kontakti s vaših FCC aplikacija na jednom mjestu, spremni za brzu obradu i WhatsApp kontakt.'), ENT_QUOTES, 'UTF-8') ?></p>
                         </div>
                     </div>
                 </div>
@@ -776,9 +776,9 @@
                                     </div>
 
                                     <div class="form-group px-4">
-                                        <label for="preferred_contact_channel" class="small">Preferirani kanal</label>
+                                        <label for="preferred_contact_channel" class="small"><?= htmlspecialchars(fcc_t('Preferirani kanal'), ENT_QUOTES, 'UTF-8') ?></label>
                                         <select name="preferred_contact_channel" id="preferred_contact_channel" class="custom-select custom-select-sm">
-                                            <option value="">Svi kanali</option>
+                                            <option value=""><?= htmlspecialchars(fcc_t('Svi kanali'), ENT_QUOTES, 'UTF-8') ?></option>
                                             <?php foreach($data->contact_channel_options as $channel_key => $channel_label): ?>
                                                 <option value="<?= $channel_key ?>" <?= ($_GET['preferred_contact_channel'] ?? null) === $channel_key ? 'selected="selected"' : null ?>><?= $channel_label ?></option>
                                             <?php endforeach ?>
@@ -841,33 +841,33 @@
         <div class="row fcc-contacts-summary">
             <div class="col-12 col-md-6 col-xl-3 mb-3">
                 <div class="fcc-contacts-summary-card">
-                    <div class="fcc-contacts-summary-label">Ukupno kontakata</div>
+                    <div class="fcc-contacts-summary-label"><?= htmlspecialchars(fcc_t('Ukupno kontakata'), ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="fcc-contacts-summary-value"><?= nr($data->summary['total']) ?></div>
-                    <div class="fcc-contacts-summary-note">Svi spremljeni kontakti iz obrazaca i funnel-a.</div>
+                    <div class="fcc-contacts-summary-note"><?= htmlspecialchars(fcc_t('Svi spremljeni kontakti iz obrazaca i funnel-a.'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             </div>
 
             <div class="col-12 col-md-6 col-xl-3 mb-3">
                 <div class="fcc-contacts-summary-card">
-                    <div class="fcc-contacts-summary-label">S telefonom</div>
+                    <div class="fcc-contacts-summary-label"><?= htmlspecialchars(fcc_t('S telefonom'), ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="fcc-contacts-summary-value"><?= nr($data->summary['with_phone']) ?></div>
-                    <div class="fcc-contacts-summary-note">Kontakti koje možeš odmah nazvati ili otvoriti u WhatsAppu.</div>
+                    <div class="fcc-contacts-summary-note"><?= htmlspecialchars(fcc_t('Kontakti koje možeš odmah nazvati ili otvoriti u WhatsAppu.'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             </div>
 
             <div class="col-12 col-md-6 col-xl-3 mb-3">
                 <div class="fcc-contacts-summary-card">
-                    <div class="fcc-contacts-summary-label">S email adresom</div>
+                    <div class="fcc-contacts-summary-label"><?= htmlspecialchars(fcc_t('S email adresom'), ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="fcc-contacts-summary-value"><?= nr($data->summary['with_email']) ?></div>
-                    <div class="fcc-contacts-summary-note">Kontakti spremni za follow-up mail ili newsletter segmentaciju.</div>
+                    <div class="fcc-contacts-summary-note"><?= htmlspecialchars(fcc_t('Kontakti spremni za follow-up mail ili newsletter segmentaciju.'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             </div>
 
             <div class="col-12 col-md-6 col-xl-3 mb-3">
                 <div class="fcc-contacts-summary-card">
-                    <div class="fcc-contacts-summary-label">Spremni za kontakt</div>
+                    <div class="fcc-contacts-summary-label"><?= htmlspecialchars(fcc_t('Spremni za kontakt'), ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="fcc-contacts-summary-value"><?= nr($data->summary['with_whatsapp']) ?></div>
-                    <div class="fcc-contacts-summary-note">Zapisi s valjanim kanalom za brzu poruku, poziv ili email.</div>
+                    <div class="fcc-contacts-summary-note"><?= htmlspecialchars(fcc_t('Zapisi s valjanim kanalom za brzu poruku, poziv ili email.'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             </div>
 
@@ -890,11 +890,11 @@
                                 <div class="fcc-contact-mobile-head-copy">
                                     <div class="fcc-contact-name"><?= $row->contact_identity ?></div>
 
-                                    <?php if($row->contact_email): ?><div class="fcc-contact-line"><strong>Email:</strong> <?= $row->contact_email ?></div><?php endif ?>
-                                    <?php if($row->contact_phone): ?><div class="fcc-contact-line"><strong>Telefon:</strong> <?= $row->contact_phone ?></div><?php endif ?>
+                                    <?php if($row->contact_email): ?><div class="fcc-contact-line"><strong><?= htmlspecialchars(fcc_t('Email:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= $row->contact_email ?></div><?php endif ?>
+                                    <?php if($row->contact_phone): ?><div class="fcc-contact-line"><strong><?= htmlspecialchars(fcc_t('Telefon:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= $row->contact_phone ?></div><?php endif ?>
 
                                     <?php if(!$row->contact_email && !$row->contact_phone && $row->contact_name): ?>
-                                        <div class="fcc-contact-line"><strong>Ime:</strong> <?= $row->contact_name ?></div>
+                                        <div class="fcc-contact-line"><strong><?= htmlspecialchars(fcc_t('Ime:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= $row->contact_name ?></div>
                                     <?php endif ?>
 
                                     <div class="fcc-contact-mobile-status">

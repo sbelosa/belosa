@@ -61,6 +61,7 @@ class BiolinkBlockAjax extends Controller {
     }
 
     private function validate_block_access_for_current_plan(string $block_type): void {
+        if(in_array($block_type,['link_forever_webshop_reg','link_forever_shop'],true))return;
         if($block_type === 'vip_funnel_hub' && function_exists('vip_funnel_resolve_access_state')) {
             $vip_funnel_access_state = vip_funnel_resolve_access_state($this->user);
 
@@ -8940,6 +8941,10 @@ class BiolinkBlockAjax extends Controller {
             $_POST['product_translation_key'] = $blog_post->url ?? '';
         }
 
+        $normalized = fcc_product_normalize_submission($_POST, $link);
+        if(!$normalized) Response::json(l('global.error_message.empty_fields'), 'error');
+        $_POST = $normalized;
+
         $required_fields = ['location_url', 'name'];
         foreach($required_fields as $field) {
             if(!isset($_POST[$field]) || (isset($_POST[$field]) && empty($_POST[$field]) && $_POST[$field] != '0')) {
@@ -8976,6 +8981,10 @@ class BiolinkBlockAjax extends Controller {
             'product_language_code' => $_POST['product_language_code'],
             'product_fallback_language_code' => $_POST['product_fallback_language_code'],
             'product_image_url' => $_POST['product_image_url'],
+            'product_name_mode' => $_POST['product_name_mode'],
+            'product_description_mode' => $_POST['product_description_mode'],
+            'product_name_auto_value' => $_POST['product_name_auto_value'],
+            'product_description_auto_value' => $_POST['product_description_auto_value'],
             'description' => $_POST['description'],
 
             /* Display settings */
@@ -9041,7 +9050,9 @@ class BiolinkBlockAjax extends Controller {
             $_POST['link_id'] = (int) $biolink_block->link_id;
         }
 
-        $link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links', ['settings']);
+        $link = db()->where('link_id', (int) $biolink_block->link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id', 'url', 'settings']);
+        if(!$link) die();
+        $_POST['link_id'] = (int) $link->link_id;
         $link_settings = $link ? json_decode($link->settings ?? '{}') : new \stdClass();
         $default_language_code = $link_settings->language_code ?? \Altum\Language::$default_code;
         $_POST['product_language_code'] = in_array($_POST['product_language_code'] ?? null, $available_language_codes, true) ? query_clean($_POST['product_language_code']) : $default_language_code;
@@ -9051,6 +9062,11 @@ class BiolinkBlockAjax extends Controller {
             $blog_post = db()->where('blog_post_id', $_POST['product_blog_post_id'])->getOne('blog_posts', ['url']);
             $_POST['product_translation_key'] = $blog_post->url ?? '';
         }
+
+        $link->settings = $link_settings;
+        $normalized = fcc_product_normalize_submission($_POST, $link, $biolink_block->settings);
+        if(!$normalized) Response::json(l('global.error_message.empty_fields'), 'error');
+        $_POST = $normalized;
 
         $required_fields = ['location_url', 'name'];
         foreach($required_fields as $field) {
@@ -9102,6 +9118,10 @@ class BiolinkBlockAjax extends Controller {
             'product_language_code' => $_POST['product_language_code'],
             'product_fallback_language_code' => $_POST['product_fallback_language_code'],
             'product_image_url' => $_POST['product_image_url'],
+            'product_name_mode' => $_POST['product_name_mode'],
+            'product_description_mode' => $_POST['product_description_mode'],
+            'product_name_auto_value' => $_POST['product_name_auto_value'],
+            'product_description_auto_value' => $_POST['product_description_auto_value'],
             'description' => $_POST['description'],
 
             /* Display settings */
@@ -9443,6 +9463,7 @@ class BiolinkBlockAjax extends Controller {
     /* /Custom code: FC-2026-03-05 */
 
     private function create_biolink_link_discount() {
+        Response::json(fcc_forever_copy('legacy_help'),'error');
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['location_url'] = get_url($_POST['location_url']);
         $_POST['name'] = mb_substr(query_clean($_POST['name']), 0, 128);
@@ -10377,17 +10398,7 @@ class BiolinkBlockAjax extends Controller {
     }
 
     private function get_default_whatsapp_phone_for_current_user() {
-        $referrer_phone = '';
-        if(!empty($this->user->referred_by)) {
-            $referrer_user = db()->where('user_id', (int) $this->user->referred_by)->getOne('users', ['preferences']);
-            $referrer_phone = $this->extract_user_phone_from_preferences($referrer_user);
-        }
-
-        if($referrer_phone) {
-            return $referrer_phone;
-        }
-
-        return $this->extract_user_phone_from_preferences($this->user);
+        return fc_get_user_default_whatsapp_phone($this->user);
     }
 
     private function create_biolink_custom_html_whatsapp() {

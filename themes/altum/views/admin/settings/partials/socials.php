@@ -37,7 +37,7 @@
             'whatsapp' => 'Whatsapp',
             'telegram' => 'Telegram',
             'snapchat' => 'Snapchat',
-            'microsoft_teams' => 'Microsoft Teams',
+            'microsoft_teams' => fcc_t('Microsoft Teams'),
             'email' => 'Email',
             'copy' => l('global.clipboard_copy'),
             'share' => l('global.device'),

@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li>
                     <a href="<?= url('links') ?>"><?= l('links.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -118,7 +118,7 @@
                                     <i class="fab fa-apple fa-fw fa-sm"></i>
                                 </small>
 
-                                Apple
+                                <?= htmlspecialchars(fcc_t('Apple'), ENT_QUOTES, 'UTF-8') ?>
                             </div>
 
                             <div class="col-12 col-lg-6 mb-2 mb-lg-0">
@@ -126,7 +126,7 @@
                                     <i class="fab fa-android fa-fw fa-sm"></i>
                                 </small>
 
-                                Android
+                                <?= htmlspecialchars(fcc_t('Android'), ENT_QUOTES, 'UTF-8') ?>
                             </div>
                         </div>
                     </div>
@@ -423,7 +423,7 @@
                                             <div class="form-row">
                                                 <div class="form-group col-lg-5">
                                                     <select name="targeting_os_name_key[<?= $key ?>]" class="custom-select">
-                                                        <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                                                        <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                                                             <option value="<?= $os_name ?>" <?= $targeting->key == $os_name ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                                                         <?php endforeach ?>
                                                     </select>
@@ -861,7 +861,7 @@
     <div class="form-row">
         <div class="form-group col-lg-5">
             <select name="targeting_os_name_key[]" class="custom-select">
-                <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                     <option value="<?= $os_name ?>"><?= $os_name ?></option>
                 <?php endforeach ?>
             </select>

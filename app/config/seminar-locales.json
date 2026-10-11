@@ -1,0 +1,676 @@
+{
+  "Satnica uskoro": {
+    "en": "Time to be announced",
+    "sl": "Ura bo objavljena kmalu",
+    "de": "Uhrzeit folgt",
+    "es": "Horario pendiente",
+    "sv": "Program kommer snart",
+    "hu": "A program hamarosan érkezik",
+    "pl": "Harmonogram już wkrótce",
+    "ro": "Programul va fi anunțat în curând"
+  },
+  "Program, fotografije i ulaznice": {
+    "en": "Programme, photos and tickets",
+    "sl": "Program, fotografije in vstopnice",
+    "de": "Programm, Fotos und Tickets",
+    "es": "Programa, fotos y entradas",
+    "sv": "Program, foton och biljetter",
+    "hu": "Program, fotók és jegyek",
+    "pl": "Program, zdjęcia i bilety",
+    "ro": "Program, fotografii și bilete"
+  },
+  "Za seminare i susrete uživo dodaj program i službenu poveznicu za kupnju.": {
+    "en": "For seminars and in person events, add a programme and the official ticket link.",
+    "sl": "Za seminarje in srečanja v živo dodaj program in uradno povezavo za nakup.",
+    "de": "Füge für Seminare und Veranstaltungen vor Ort das Programm und den offiziellen Ticketlink hinzu.",
+    "es": "Añade el programa y el enlace oficial de compra para los eventos presenciales.",
+    "sv": "För seminarier och fysiska träffar lägger du till programmet och den officiella biljettlänken.",
+    "hu": "Szemináriumokhoz és személyes találkozókhoz add meg a programot és a hivatalos jegyvásárlási linket.",
+    "pl": "W przypadku seminariów i spotkań na żywo dodaj program oraz oficjalny link do zakupu.",
+    "ro": "Pentru seminare și întâlniri cu participare fizică, adaugă programul și linkul oficial pentru cumpărare."
+  },
+  "Organizator": {
+    "en": "Organiser",
+    "sl": "Organizator",
+    "de": "Veranstalter",
+    "es": "Organizador",
+    "sv": "Arrangör",
+    "hu": "Szervező",
+    "pl": "Organizator",
+    "ro": "Organizator"
+  },
+  "Službena poveznica za ulaznice": {
+    "en": "Official ticket link",
+    "sl": "Uradna povezava za vstopnice",
+    "de": "Offizieller Ticketlink",
+    "es": "Enlace oficial de entradas",
+    "sv": "Officiell biljettlänk",
+    "hu": "Hivatalos jegyvásárlási link",
+    "pl": "Oficjalny link do biletów",
+    "ro": "Link oficial pentru bilete"
+  },
+  "Program i predavači": {
+    "en": "Programme and speakers",
+    "sl": "Program in predavatelji",
+    "de": "Programm und Referenten",
+    "es": "Programa y ponentes",
+    "sv": "Program och föreläsare",
+    "hu": "Program és előadók",
+    "pl": "Program i prelegenci",
+    "ro": "Programul și vorbitorii"
+  },
+  "Ime i prezime | Uloga | Tema predavanja": {
+    "en": "Full name | Role | Talk topic",
+    "sl": "Ime in priimek | Vloga | Tema predavanja",
+    "de": "Name | Rolle | Vortragsthema",
+    "es": "Nombre | Función | Tema",
+    "sv": "För- och efternamn | Roll | Föreläsningens ämne",
+    "hu": "Név | Szerepkör | Előadás témája",
+    "pl": "Imię i nazwisko | Rola | Temat wystąpienia",
+    "ro": "Nume și prenume | Rol | Subiectul prezentării"
+  },
+  "Svaki red predstavlja jednog predavača ili jednu točku programa. Odvoji ime, ulogu i temu znakom |.": {
+    "en": "Each line is a speaker or a programme item. Separate name, role and topic with |.",
+    "sl": "Vsaka vrstica je predavatelj ali točka programa. Ime, vlogo in temo loči z znakom |.",
+    "de": "Jede Zeile ist ein Referent oder Programmpunkt. Trenne Name, Rolle und Thema mit |.",
+    "es": "Cada línea es un ponente o una actividad. Separa nombre, función y tema con |.",
+    "sv": "Varje rad motsvarar en föreläsare eller programpunkt. Skilj namn, roll och ämne åt med tecknet |.",
+    "hu": "Minden sor egy előadót vagy programpontot jelöl. A nevet, a szerepkört és a témát | jellel válaszd el.",
+    "pl": "Każdy wiersz oznacza jednego prelegenta lub jeden punkt programu. Oddziel imię i nazwisko, rolę oraz temat znakiem |.",
+    "ro": "Fiecare rând reprezintă un vorbitor sau un punct din program. Separă numele, rolul și subiectul cu semnul |."
+  },
+  "Zadrži fotografiju": {
+    "en": "Keep photo",
+    "sl": "Obdrži fotografijo",
+    "de": "Foto behalten",
+    "es": "Conservar foto",
+    "sv": "Behåll fotot",
+    "hu": "Fotó megtartása",
+    "pl": "Zachowaj zdjęcie",
+    "ro": "Păstrează fotografia"
+  },
+  "Naslovna fotografija": {
+    "en": "Cover photo",
+    "sl": "Naslovna fotografija",
+    "de": "Titelbild",
+    "es": "Foto de portada",
+    "sv": "Omslagsfoto",
+    "hu": "Borítókép",
+    "pl": "Zdjęcie okładkowe",
+    "ro": "Fotografie de copertă"
+  },
+  "Dodaj fotografije": {
+    "en": "Add photos",
+    "sl": "Dodaj fotografije",
+    "de": "Fotos hinzufügen",
+    "es": "Añadir fotos",
+    "sv": "Lägg till foton",
+    "hu": "Fotók hozzáadása",
+    "pl": "Dodaj zdjęcia",
+    "ro": "Adaugă fotografii"
+  },
+  "JPG, PNG ili WebP, do 8 MB po fotografiji. Najviše 20 fotografija.": {
+    "en": "JPG, PNG or WebP, up to 8 MB per photo. Maximum 20 photos.",
+    "sl": "JPG, PNG ali WebP, do 8 MB na fotografijo. Največ 20 fotografij.",
+    "de": "JPG, PNG oder WebP, bis 8 MB je Foto. Höchstens 20 Fotos.",
+    "es": "JPG, PNG o WebP, hasta 8 MB por foto. Máximo 20 fotos.",
+    "sv": "JPG, PNG eller WebP, upp till 8 MB per foto. Högst 20 foton.",
+    "hu": "JPG, PNG vagy WebP, fotónként legfeljebb 8 MB. Legfeljebb 20 fotó.",
+    "pl": "JPG, PNG lub WebP, maksymalnie 8 MB na zdjęcie. Maksymalnie 20 zdjęć.",
+    "ro": "JPG, PNG sau WebP, până la 8 MB pentru fiecare fotografie. Maximum 20 de fotografii."
+  },
+  "Za susret uživo satnica još nije potvrđena": {
+    "en": "Time for this in person event is not yet confirmed",
+    "sl": "Ura srečanja v živo še ni potrjena",
+    "de": "Die Uhrzeit vor Ort steht noch nicht fest",
+    "es": "El horario del evento presencial aún no está confirmado",
+    "sv": "Tiden för den fysiska träffen är ännu inte bekräftad",
+    "hu": "Az élő találkozó programja még nincs véglegesítve",
+    "pl": "Harmonogram spotkania na żywo nie został jeszcze potwierdzony",
+    "ro": "Programul întâlnirii cu prezență fizică nu este încă confirmat"
+  },
+  "IDEJE, LJUDI I NOVI KORACI": {
+    "en": "IDEAS, PEOPLE AND NEXT STEPS",
+    "sl": "IDEJE, LJUDJE IN NOVI KORAKI",
+    "de": "IDEEN, MENSCHEN UND NÄCHSTE SCHRITTE",
+    "es": "IDEAS, PERSONAS Y NUEVOS PASOS",
+    "sv": "IDÉER, MÄNNISKOR OCH NYA STEG",
+    "hu": "ÖTLETEK, EMBEREK ÉS ÚJ LÉPÉSEK",
+    "pl": "POMYSŁY, LUDZIE I NOWE KROKI",
+    "ro": "IDEI, OAMENI ȘI PAȘI NOI"
+  },
+  "Pogledaj najave i fotografije": {
+    "en": "View posters and photos",
+    "sl": "Poglej napovedi in fotografije",
+    "de": "Ankündigungen und Fotos ansehen",
+    "es": "Ver anuncios y fotos",
+    "sv": "Se annonser och foton",
+    "hu": "Nézd meg a bejelentéseket és a fényképeket",
+    "pl": "Zobacz zapowiedzi i zdjęcia",
+    "ro": "Vezi anunțurile și fotografiile"
+  },
+  "Dodirni fotografiju za cijeli prikaz. Aktualne teme navedene su u programu iznad.": {
+    "en": "Tap a photo to see the full poster. Current topics are listed in the programme above.",
+    "sl": "Dotakni se fotografije za celoten prikaz. Aktualne teme so navedene v zgornjem programu.",
+    "de": "Tippe auf ein Foto für die vollständige Ansicht. Die aktuellen Themen stehen im Programm oben.",
+    "es": "Toca una foto para verla completa. Los temas actuales figuran en el programa de arriba.",
+    "sv": "Tryck på ett foto för att visa det i full storlek. Aktuella ämnen finns i programmet ovan.",
+    "hu": "Koppints a fényképre a teljes méretű megtekintéshez. Az aktuális témákat a fenti programban találod.",
+    "pl": "Dotknij zdjęcia, aby wyświetlić je w pełnym rozmiarze. Aktualne tematy znajdziesz w programie powyżej.",
+    "ro": "Atinge fotografia pentru a o vedea la dimensiune completă. Subiectele actuale sunt prezentate în programul de mai sus."
+  },
+  "Najava događaja": {
+    "en": "Event poster",
+    "sl": "Napoved dogodka",
+    "de": "Veranstaltungsankündigung",
+    "es": "Anuncio del evento",
+    "sv": "Evenemangsannons",
+    "hu": "Eseménybejelentés",
+    "pl": "Zapowiedź wydarzenia",
+    "ro": "Anunțul evenimentului"
+  },
+  "Osobni poziv na događaj": {
+    "en": "Your personal event invitation",
+    "sl": "Osebno vabilo na dogodek",
+    "de": "Deine persönliche Einladung",
+    "es": "Tu invitación al evento",
+    "sv": "Personlig inbjudan till ett evenemang",
+    "hu": "Személyes meghívó egy eseményre",
+    "pl": "Osobiste zaproszenie na wydarzenie",
+    "ro": "Invitație personală la eveniment"
+  },
+  "Hvala na prijavi interesa.": {
+    "en": "Thanks for your interest.",
+    "sl": "Hvala za prijavo interesa.",
+    "de": "Danke für dein Interesse.",
+    "es": "Gracias por tu interés.",
+    "sv": "Tack för att du har anmält ditt intresse.",
+    "hu": "Köszönjük, hogy jelezted az érdeklődésedet.",
+    "pl": "Dziękujemy za zgłoszenie zainteresowania.",
+    "ro": "Îți mulțumim că ți-ai exprimat interesul."
+  },
+  "Prijava interesa nije ulaznica. Kupnju završavaš u službenoj trgovini.": {
+    "en": "Registering your interest is not a ticket. Complete your purchase in the official shop.",
+    "sl": "Prijava interesa ni vstopnica. Nakup dokončaš v uradni trgovini.",
+    "de": "Die Anmeldung ist kein Ticket. Schließe den Kauf im offiziellen Shop ab.",
+    "es": "La inscripción de interés no es una entrada. Completa la compra en la tienda oficial.",
+    "sv": "En intresseanmälan är ingen biljett. Du slutför köpet i den officiella butiken.",
+    "hu": "Az érdeklődési jelentkezés nem jegy. A vásárlást a hivatalos áruházban fejezed be.",
+    "pl": "Zgłoszenie zainteresowania nie jest biletem. Zakup dokończysz w oficjalnym sklepie.",
+    "ro": "Manifestarea de interes nu este un bilet. Finalizezi achiziția în magazinul oficial."
+  },
+  "Nastavi na kupnju ulaznice": {
+    "en": "Continue to tickets",
+    "sl": "Nadaljuj na nakup vstopnice",
+    "de": "Weiter zum Ticketkauf",
+    "es": "Continuar a la compra de entradas",
+    "sv": "Fortsätt till biljettköpet",
+    "hu": "Tovább a jegyvásárláshoz",
+    "pl": "Przejdź do zakupu biletu",
+    "ro": "Continuă către achiziționarea biletului"
+  },
+  "Za nekoliko sekundi otvorit će se službena trgovina.": {
+    "en": "The official shop will open in a few seconds.",
+    "sl": "Uradna trgovina se bo odprla čez nekaj sekund.",
+    "de": "Der offizielle Shop öffnet sich in wenigen Sekunden.",
+    "es": "La tienda oficial se abrirá en unos segundos.",
+    "sv": "Den officiella butiken öppnas om några sekunder.",
+    "hu": "Néhány másodperc múlva megnyílik a hivatalos áruház.",
+    "pl": "Za kilka sekund otworzy się oficjalny sklep.",
+    "ro": "Magazinul oficial se va deschide în câteva secunde."
+  },
+  "Ako je prijava već zaprimljena, detalji su u tvojem emailu.": {
+    "en": "If you have already registered, check your email for details.",
+    "sl": "Če je prijava že prejeta, so podrobnosti v tvoji e-pošti.",
+    "de": "Wenn deine Anmeldung bereits vorliegt, findest du die Details in deiner E-Mail.",
+    "es": "Si ya te has inscrito, consulta los detalles en tu correo.",
+    "sv": "Om anmälan redan har tagits emot finns informationen i ditt mejl.",
+    "hu": "Ha a jelentkezésed már beérkezett, a részleteket megtalálod az emailedben.",
+    "pl": "Jeśli zgłoszenie zostało już wysłane, szczegóły znajdziesz w swojej skrzynce e-mail.",
+    "ro": "Dacă înscrierea a fost deja primită, găsești detaliile în emailul tău."
+  },
+  "SEMINARI I DAN USPJEHA": {
+    "en": "SEMINARS AND SUCCESS DAY",
+    "sl": "SEMINARJI IN DAN USPEHA",
+    "de": "SEMINARE UND SUCCESS DAY",
+    "es": "SEMINARIOS Y SUCCESS DAY",
+    "sv": "SEMINARIER OCH FRAMGÅNGSDAG",
+    "hu": "SZEMINÁRIUMOK ÉS A SIKER NAPJA",
+    "pl": "SEMINARIA I DZIEŃ SUKCESU",
+    "ro": "SEMINARE ȘI ZIUA SUCCESULUI"
+  },
+  "KADA": {
+    "en": "WHEN",
+    "sl": "KDAJ",
+    "de": "WANN",
+    "es": "CUÁNDO",
+    "sv": "NÄR",
+    "hu": "MIKOR",
+    "pl": "KIEDY",
+    "ro": "CÂND"
+  },
+  "GDJE": {
+    "en": "WHERE",
+    "sl": "KJE",
+    "de": "WO",
+    "es": "DÓNDE",
+    "sv": "VAR",
+    "hu": "HOL",
+    "pl": "GDZIE",
+    "ro": "UNDE"
+  },
+  "Poziva te": {
+    "en": "Invited by",
+    "sl": "Vabi te",
+    "de": "Eingeladen von",
+    "es": "Te invita",
+    "sv": "Du är inbjuden av",
+    "hu": "Meghív téged:",
+    "pl": "Zaprasza Cię",
+    "ro": "Te invită"
+  },
+  "Pogledaj prijavu i ulaznice": {
+    "en": "Registration and tickets",
+    "sl": "Prijava in vstopnice",
+    "de": "Anmeldung und Tickets",
+    "es": "Inscripción y entradas",
+    "sv": "Visa anmälan och biljetter",
+    "hu": "Jelentkezés és jegyek megtekintése",
+    "pl": "Zobacz zgłoszenie i bilety",
+    "ro": "Vezi înscrierea și biletele"
+  },
+  "VIDIMO SE UŽIVO": {
+    "en": "LET’S MEET IN PERSON",
+    "sl": "SE VIDIMO V ŽIVO",
+    "de": "WIR SEHEN UNS VOR ORT",
+    "es": "NOS VEMOS EN PERSONA",
+    "sv": "VI SES I VERKLIGHETEN",
+    "hu": "TALÁLKOZZUNK SZEMÉLYESEN",
+    "pl": "DO ZOBACZENIA NA ŻYWO",
+    "ro": "NE VEDEM FAȚĂ ÎN FAȚĂ"
+  },
+  "Dogovorimo dolazak.": {
+    "en": "Let’s plan your visit.",
+    "sl": "Dogovorimo se za prihod.",
+    "de": "Planen wir deinen Besuch.",
+    "es": "Organicemos tu visita.",
+    "sv": "Vi kommer överens om när du ska komma.",
+    "hu": "Beszéljük meg, hogyan jutsz el oda.",
+    "pl": "Ustalmy, jak dotrzesz na wydarzenie.",
+    "ro": "Să stabilim cum ajungi acolo."
+  },
+  "Ostavi kontakt za dogovor s osobom koja te pozvala. Zatim nastavi na kupnju ulaznice.": {
+    "en": "Leave your details so your inviter can help plan your visit. Then continue to buy your ticket.",
+    "sl": "Pusti kontakt za dogovor z osebo, ki te je povabila. Nato nadaljuj na nakup vstopnice.",
+    "de": "Hinterlasse deine Kontaktdaten für die gemeinsame Planung. Danach geht es zum Ticketkauf.",
+    "es": "Deja tus datos para coordinar la visita con quien te invitó. Después continúa para comprar tu entrada.",
+    "sv": "Lämna dina kontaktuppgifter så att personen som bjöd in dig kan komma överens med dig om ditt besök. Fortsätt sedan till biljettköpet.",
+    "hu": "Add meg az elérhetőségedet, hogy egyeztethess azzal, aki meghívott. Ezután folytasd a jegyvásárlást.",
+    "pl": "Zostaw swoje dane kontaktowe, aby ustalić szczegóły z osobą, która Cię zaprosiła. Następnie przejdź do zakupu biletu.",
+    "ro": "Lasă-ți datele de contact pentru a stabili detaliile cu persoana care te-a invitat. Apoi continuă pentru a cumpăra biletul."
+  },
+  "{name} mi se može javiti telefonom ili WhatsAppom radi dogovora o događaju.": {
+    "en": "{name} may contact me by phone or WhatsApp to arrange this event.",
+    "sl": "{name} me lahko pokliče ali mi piše na WhatsApp glede dogodka.",
+    "de": "{name} darf mich zur Planung dieses Events anrufen oder über WhatsApp kontaktieren.",
+    "es": "{name} puede llamarme o escribirme por WhatsApp para organizar este evento.",
+    "sv": "{name} får kontakta mig via telefon eller WhatsApp för att komma överens med mig om evenemanget.",
+    "hu": "{name} felhívhat vagy WhatsAppon írhat nekem, hogy egyeztessünk az eseményről.",
+    "pl": "{name} może skontaktować się ze mną telefonicznie lub przez WhatsApp, aby ustalić szczegóły wydarzenia.",
+    "ro": "{name} mă poate contacta telefonic sau pe WhatsApp pentru a stabili detaliile evenimentului."
+  },
+  "Tvoje podatke prima {name} za ovu prijavu i dogovor o dolasku.": {
+    "en": "{name} receives your details for this registration and to plan your visit.",
+    "sl": "{name} prejme tvoje podatke za to prijavo in dogovor o prihodu.",
+    "de": "{name} erhält deine Daten für diese Anmeldung und die Planung deines Besuchs.",
+    "es": "{name} recibe tus datos para esta inscripción y para organizar tu visita.",
+    "sv": "{name} tar emot dina uppgifter för den här anmälan och för att komma överens med dig om ditt besök.",
+    "hu": "Az adataidat {name} kapja meg ehhez a jelentkezéshez és az érkezés egyeztetéséhez.",
+    "pl": "Twoje dane otrzyma {name} w związku z tym zgłoszeniem i ustaleniem szczegółów Twojego udziału.",
+    "ro": "Pentru această înscriere și pentru a stabili detaliile sosirii, datele tale sunt primite de {name}."
+  },
+  "Želim email podsjetnike za ovaj događaj.": {
+    "en": "I would like email reminders for this event.",
+    "sl": "Želim e-poštne opomnike za ta dogodek.",
+    "de": "Ich möchte E-Mail-Erinnerungen für dieses Event.",
+    "es": "Quiero recordatorios por correo para este evento.",
+    "sv": "Jag vill få mejlpåminnelser om det här evenemanget.",
+    "hu": "Szeretnék emailes emlékeztetőket kapni erről az eseményről.",
+    "pl": "Chcę otrzymywać przypomnienia e-mail o tym wydarzeniu.",
+    "ro": "Vreau să primesc mementouri prin email despre acest eveniment."
+  },
+  "Pošalji prijavu i nastavi na ulaznice": {
+    "en": "Register interest and continue to tickets",
+    "sl": "Oddaj prijavo in nadaljuj na vstopnice",
+    "de": "Interesse anmelden und zu den Tickets",
+    "es": "Enviar inscripción y continuar a las entradas",
+    "sv": "Skicka anmälan och fortsätt till biljetterna",
+    "hu": "Küldd el a jelentkezésedet, majd folytasd a jegyekhez",
+    "pl": "Wyślij zgłoszenie i przejdź do biletów",
+    "ro": "Trimite înscrierea și continuă către bilete"
+  },
+  "Pošalji prijavu interesa": {
+    "en": "Register your interest",
+    "sl": "Prijavi interes",
+    "de": "Interesse anmelden",
+    "es": "Registrar interés",
+    "sv": "Skicka intresseanmälan",
+    "hu": "Küldd el az érdeklődési jelentkezést",
+    "pl": "Zgłoś zainteresowanie",
+    "ro": "Trimite manifestarea de interes"
+  },
+  "Lokalni pregled. Probne prijave ne šalju emailove izvan aplikacije.": {
+    "en": "Local preview. Test registrations do not send emails outside the app.",
+    "sl": "Lokalni predogled. Testne prijave ne pošiljajo e-pošte iz aplikacije.",
+    "de": "Lokale Vorschau. Testanmeldungen versenden keine externen E-Mails.",
+    "es": "Vista local. Las inscripciones de prueba no envían correos fuera de la aplicación.",
+    "sv": "Lokal förhandsgranskning. Testanmälningar skickar inga mejl utanför appen.",
+    "hu": "Helyi előnézet. A próba-jelentkezések nem küldenek emailt az alkalmazáson kívülre.",
+    "pl": "Podgląd lokalny. Testowe zgłoszenia nie wysyłają e-maili poza aplikację.",
+    "ro": "Previzualizare locală. Înscrierile de test nu trimit emailuri în afara aplicației."
+  },
+  "Kupi ulaznicu": {
+    "en": "Buy a ticket",
+    "sl": "Kupi vstopnico",
+    "de": "Ticket kaufen",
+    "es": "Comprar entrada",
+    "sv": "Köp biljett",
+    "hu": "Jegyvásárlás",
+    "pl": "Kup bilet",
+    "ro": "Cumpără un bilet"
+  },
+  "Pozovi na događaj.": {
+    "en": "Invite someone to the event.",
+    "sl": "Povabi na dogodek.",
+    "de": "Lade zum Event ein.",
+    "es": "Invita al evento.",
+    "sv": "Bjud in till evenemanget.",
+    "hu": "Hívd meg egy eseményre.",
+    "pl": "Zaproszenie na wydarzenie.",
+    "ro": "Invită la eveniment."
+  },
+  "Tvoja poveznica povezuje prijavu gosta s tobom.": {
+    "en": "Your link connects the guest registration to you.",
+    "sl": "Tvoja povezava poveže prijavo gosta s tabo.",
+    "de": "Dein Link ordnet die Gastanmeldung dir zu.",
+    "es": "Tu enlace vincula la inscripción del invitado contigo.",
+    "sv": "Din länk kopplar gästens anmälan till dig.",
+    "hu": "A linked összekapcsolja a vendég regisztrációját veled.",
+    "pl": "Twój link łączy rejestrację gościa z Tobą.",
+    "ro": "Linkul tău conectează înscrierea invitatului cu tine."
+  },
+  "Bok! Pozivam te na {event}.": {
+    "en": "Hi! Join me at {event}.",
+    "sl": "Živjo! Vabim te na {event}.",
+    "de": "Hallo! Ich lade dich zu {event} ein.",
+    "es": "¡Hola! Te invito a {event}.",
+    "sv": "Hej! Jag vill bjuda in dig till {event}.",
+    "hu": "Szia! Szeretnélek meghívni erre: {event}.",
+    "pl": "Cześć! Zapraszam Cię na {event}.",
+    "ro": "Bună! Te invit la {event}."
+  },
+  "Pogledaj program i prijavi interes. Možemo se dogovoriti za dolazak!": {
+    "en": "Take a look at the programme and register your interest. We can plan the visit together!",
+    "sl": "Poglej program in prijavi interes. Lahko se dogovorimo za prihod!",
+    "de": "Schau dir das Programm an und melde dein Interesse an. Wir können den Besuch gemeinsam planen!",
+    "es": "Consulta el programa y registra tu interés. ¡Podemos organizar la visita juntos!",
+    "sv": "Titta på programmet och anmäl ditt intresse. Vi kan komma överens om att gå tillsammans!",
+    "hu": "Nézd meg a programot, és jelezd az érdeklődésed. Megbeszélhetjük, hogyan tudnál részt venni!",
+    "pl": "Zapoznaj się z programem i zgłoś zainteresowanie. Możemy umówić się na przyjście!",
+    "ro": "Consultă programul și înscrie-ți interesul. Putem stabili împreună cum să ajungi!"
+  },
+  "Bok {name}! Hvala na interesu za {event}.": {
+    "en": "Hi {name}! Thanks for your interest in {event}.",
+    "sl": "Živjo {name}! Hvala za zanimanje za {event}.",
+    "de": "Hallo {name}! Danke für dein Interesse an {event}.",
+    "es": "¡Hola {name}! Gracias por tu interés en {event}.",
+    "sv": "Hej {name}! Tack för att du är intresserad av {event}.",
+    "hu": "Szia, {name}! Köszönjük, hogy érdeklődsz a(z) {event} iránt.",
+    "pl": "Cześć {name}! Dziękujemy za zainteresowanie wydarzeniem {event}.",
+    "ro": "Salut, {name}! Îți mulțumim pentru interesul față de {event}."
+  },
+  "Ulaznicu možeš kupiti ovdje:": {
+    "en": "Buy your ticket here:",
+    "sl": "Vstopnico lahko kupiš tukaj:",
+    "de": "Hier kannst du dein Ticket kaufen:",
+    "es": "Puedes comprar tu entrada aquí:",
+    "sv": "Du kan köpa en biljett här:",
+    "hu": "Itt vásárolhatsz jegyet:",
+    "pl": "Tutaj możesz kupić bilet:",
+    "ro": "Poți cumpăra biletul aici:"
+  },
+  "Trebaš li pomoć oko ulaznice ili dogovora za dolazak?": {
+    "en": "Do you need help with a ticket or planning your visit?",
+    "sl": "Potrebuješ pomoč pri vstopnici ali dogovoru za prihod?",
+    "de": "Brauchst du Hilfe beim Ticket oder bei der Planung deines Besuchs?",
+    "es": "¿Necesitas ayuda con la entrada o para organizar tu visita?",
+    "sv": "Behöver du hjälp med biljetten eller med att ordna resan dit?",
+    "hu": "Segíthetünk a jeggyel vagy az odautazás megszervezésével kapcsolatban?",
+    "pl": "Potrzebujesz pomocy z biletem lub organizacją dojazdu?",
+    "ro": "Ai nevoie de ajutor cu biletul sau cu organizarea deplasării?"
+  },
+  "Nova prijava interesa": {
+    "en": "New expression of interest",
+    "sl": "Nova prijava interesa",
+    "de": "Neue Interessensanmeldung",
+    "es": "Nueva inscripción de interés",
+    "sv": "Ny intresseanmälan",
+    "hu": "Új érdeklődői jelentkezés",
+    "pl": "Nowe zgłoszenie zainteresowania",
+    "ro": "O nouă manifestare de interes"
+  },
+  "Nova prijava preko tvoje pozivnice.": {
+    "en": "Someone registered through your invitation.",
+    "sl": "Nova prijava prek tvojega vabila.",
+    "de": "Über deine Einladung ist eine neue Anmeldung eingegangen.",
+    "es": "Nueva inscripción a través de tu invitación.",
+    "sv": "En ny anmälan via din inbjudningslänk.",
+    "hu": "Új jelentkezés az ajánlói meghívódon keresztül.",
+    "pl": "Nowe zgłoszenie z Twojego zaproszenia.",
+    "ro": "O nouă înscriere prin invitația ta."
+  },
+  "Novosti o tvojem događaju": {
+    "en": "An update about your event",
+    "sl": "Novosti o tvojem dogodku",
+    "de": "Neuigkeiten zu deinem Event",
+    "es": "Novedades sobre tu evento",
+    "sv": "Nyheter om ditt evenemang",
+    "hu": "Hírek az eseményedről",
+    "pl": "Aktualności dotyczące Twojego wydarzenia",
+    "ro": "Noutăți despre evenimentul tău"
+  },
+  "Za podsjetnike potvrdi email adresu:": {
+    "en": "Confirm your email for reminders:",
+    "sl": "Za opomnike potrdi e-poštni naslov:",
+    "de": "Bestätige deine E-Mail-Adresse für Erinnerungen:",
+    "es": "Confirma tu correo para recibir recordatorios:",
+    "sv": "Bekräfta din mejladress för att få påminnelser:",
+    "hu": "Az emlékeztetők fogadásához erősítsd meg az email-címedet:",
+    "pl": "Aby otrzymywać przypomnienia, potwierdź swój adres e-mail:",
+    "ro": "Pentru a primi mementouri, confirmă-ți adresa de email:"
+  },
+  "Tvoja kontakt osoba": {
+    "en": "Your contact person",
+    "sl": "Tvoja kontaktna oseba",
+    "de": "Deine Kontaktperson",
+    "es": "Tu persona de contacto",
+    "sv": "Din kontaktperson",
+    "hu": "A kapcsolattartód",
+    "pl": "Twoja osoba kontaktowa",
+    "ro": "Persoana ta de contact"
+  },
+  "Prijave na webinare i događaje": {
+    "en": "Webinar and event registrations",
+    "sl": "Prijave na webinarje in dogodke",
+    "de": "Anmeldungen zu Webinaren und Events",
+    "es": "Inscripciones a webinarios y eventos",
+    "sv": "Anmälningar till webbinarier och evenemang",
+    "hu": "Jelentkezés webináriumokra és eseményekre",
+    "pl": "Rejestracja na webinary i wydarzenia",
+    "ro": "Înscrieri la webinare și evenimente"
+  },
+  "Odaberi fotografiju iz galerije događaja.": {
+    "en": "Choose a photo from the event gallery.",
+    "sl": "Izberi fotografijo iz galerije dogodka.",
+    "de": "Wähle ein Foto aus der Eventgalerie.",
+    "es": "Elige una foto de la galería del evento.",
+    "sv": "Välj ett foto från evenemangets galleri.",
+    "hu": "Válassz fényképet az esemény galériájából.",
+    "pl": "Wybierz zdjęcie z galerii wydarzenia.",
+    "ro": "Alege o fotografie din galeria evenimentului."
+  },
+  "Za ulaznice upiši ispravnu HTTPS poveznicu.": {
+    "en": "Enter a valid HTTPS ticket link.",
+    "sl": "Vnesi veljavno HTTPS povezavo za vstopnice.",
+    "de": "Gib einen gültigen HTTPS-Ticketlink ein.",
+    "es": "Introduce un enlace HTTPS válido para las entradas.",
+    "sv": "Ange en giltig HTTPS-länk för biljetter.",
+    "hu": "A jegyekhez adj meg érvényes HTTPS-hivatkozást.",
+    "pl": "W przypadku biletów podaj prawidłowy link HTTPS.",
+    "ro": "Pentru bilete, introdu un link HTTPS valid."
+  },
+  "Dodaj najviše 20 fotografija.": {
+    "en": "Add no more than 20 photos.",
+    "sl": "Dodaj največ 20 fotografij.",
+    "de": "Füge höchstens 20 Fotos hinzu.",
+    "es": "Añade como máximo 20 fotos.",
+    "sv": "Lägg till högst 20 foton.",
+    "hu": "Legfeljebb 20 fényképet adhatsz hozzá.",
+    "pl": "Dodaj maksymalnie 20 zdjęć.",
+    "ro": "Adaugă cel mult 20 de fotografii."
+  },
+  "Fotografija nije učitana. Koristi JPG, PNG ili WebP do 8 MB.": {
+    "en": "Photo upload failed. Use JPG, PNG or WebP up to 8 MB.",
+    "sl": "Fotografija ni naložena. Uporabi JPG, PNG ali WebP do 8 MB.",
+    "de": "Foto nicht hochgeladen. Verwende JPG, PNG oder WebP bis 8 MB.",
+    "es": "No se ha subido la foto. Usa JPG, PNG o WebP de hasta 8 MB.",
+    "sv": "Fotot kunde inte laddas upp. Använd JPG, PNG eller WebP på upp till 8 MB.",
+    "hu": "A fénykép feltöltése nem sikerült. JPG, PNG vagy WebP formátumot használj, legfeljebb 8 MB méretben.",
+    "pl": "Nie udało się przesłać zdjęcia. Użyj pliku JPG, PNG lub WebP o rozmiarze do 8 MB.",
+    "ro": "Fotografia nu a fost încărcată. Folosește un fișier JPG, PNG sau WebP de cel mult 8 MB."
+  },
+  "Novosti iz ureda": {
+    "en": "News from the office",
+    "sl": "Novosti iz pisarne",
+    "de": "Neuigkeiten aus dem Büro",
+    "es": "Novedades de la oficina",
+    "sv": "Nyheter från kontoret",
+    "hu": "Irodai hírek",
+    "pl": "Nowości z biura",
+    "ro": "Noutăți de la birou"
+  },
+  "Novi proizvodi": {
+    "en": "New products",
+    "sl": "Novi izdelki",
+    "de": "Neue Produkte",
+    "es": "Nuevos productos",
+    "sv": "Nya produkter",
+    "hu": "Új termékek",
+    "pl": "Nowe produkty",
+    "ro": "Produse noi"
+  },
+  "Global Rally svake godine": {
+    "en": "Global Rally every year",
+    "sl": "Global Rally vsako leto",
+    "de": "Global Rally jedes Jahr",
+    "es": "Global Rally cada año",
+    "sv": "Global Rally varje år",
+    "hu": "Minden évben Global Rally",
+    "pl": "Coroczny Global Rally",
+    "ro": "Global Rally în fiecare an"
+  },
+  "Kako graditi Forever posao online": {
+    "en": "How to build your Forever business online",
+    "sl": "Kako graditi Forever posel na spletu",
+    "de": "So baust du dein Forever Business online auf",
+    "es": "Cómo construir tu negocio Forever online",
+    "sv": "Så bygger du en Forever-verksamhet online",
+    "hu": "Így építhetsz Forever üzletet online",
+    "pl": "Jak rozwijać biznes Forever w internecie",
+    "ro": "Cum să-ți construiești afacerea Forever online"
+  },
+  "Voditeljice programa": {
+    "en": "Programme hosts",
+    "sl": "Voditeljici programa",
+    "de": "Moderation",
+    "es": "Presentadoras del programa",
+    "sv": "Programledare",
+    "hu": "A program vezetői",
+    "pl": "Prowadzące program",
+    "ro": "Prezentatoarele programului"
+  },
+  "Jedan dan za nove ideje, susrete i tvoj sljedeći korak. U Opatiji nas čekaju novosti, iskustva Forever lidera i priznanja za ostvareni napredak.": {
+    "en": "A day of fresh ideas, connection and your next step. Join us in Opatija for news, experiences from Forever leaders and recognition of progress.",
+    "sl": "Dan za nove ideje, srečanja in tvoj naslednji korak. V Opatiji nas čakajo novosti, izkušnje Forever vodij in priznanja za napredek.",
+    "de": "Ein Tag für neue Ideen, Begegnungen und deinen nächsten Schritt. In Opatija erwarten uns Neuigkeiten, Erfahrungen von Forever Führungskräften und Anerkennung für Fortschritte.",
+    "es": "Un día de nuevas ideas, encuentros y tu próximo paso. En Opatija nos esperan novedades, experiencias de líderes Forever y reconocimientos al progreso.",
+    "sv": "En dag för nya idéer, möten och ditt nästa steg. I Opatija väntar nyheter, erfarenheter från Forever-ledare och uppmärksammanden för dina framsteg.",
+    "hu": "Egy nap új ötleteknek, találkozásoknak és a következő lépésednek. Opatijában újdonságok, Forever vezetők tapasztalatai és az elért eredmények elismerése vár.",
+    "pl": "Jeden dzień pełen nowych pomysłów, spotkań i kolejnego kroku dla Ciebie. W Opatiji czekają na nas nowości, doświadczenia liderów Forever oraz wyróżnienia za osiągnięte postępy.",
+    "ro": "O zi dedicată ideilor noi, întâlnirilor și următorului tău pas. La Opatija te așteaptă noutăți, experiențe ale liderilor Forever și recunoașteri pentru progresul realizat."
+  },
+  "Sponzor koji stvara…": {
+    "en": "A sponsor who builds…",
+    "sl": "Sponzor, ki ustvarja…",
+    "de": "Ein Sponsor, der aufbaut…",
+    "es": "Un patrocinador que construye…",
+    "sv": "En sponsor som skapar…",
+    "hu": "A támogató, aki…",
+    "pl": "Sponsor, który tworzy…",
+    "ro": "Sponsorul care creează…"
+  },
+  "Eagle se ne događa…": {
+    "en": "Eagle does not just happen…",
+    "sl": "Eagle se ne zgodi…",
+    "de": "Eagle entsteht nicht einfach…",
+    "es": "Eagle no ocurre sin más…",
+    "sv": "Eagle händer inte…",
+    "hu": "Nem lesz Eagle…",
+    "pl": "Orzeł nie pojawia się…",
+    "ro": "Eagle nu se întâmplă…"
+  },
+  "Provedi dan s Forever zajednicom u Budimpešti. Success Day prilika je za susret s timom, nove ideje i razgovore o daljnjem razvoju poslovanja. Među najavljenim gostima su Aidan O’Hare, Peter Boots i Holly Stout.\n\nVrata se otvaraju u 9:30. Program traje od 11:00 do 17:00.": {
+    "hr": "Provedi dan s Forever zajednicom u Budimpešti. Success Day prilika je za susret s timom, nove ideje i razgovore o daljnjem razvoju poslovanja. Među najavljenim gostima su Aidan O’Hare, Peter Boots i Holly Stout.\n\nVrata se otvaraju u 9:30. Program traje od 11:00 do 17:00.",
+    "en": "Spend a day with the Forever community in Budapest. Success Day is a chance to meet your team, discover new ideas and talk about developing your business. Announced guests include Aidan O’Hare, Peter Boots and Holly Stout.\n\nDoors open at 9:30. The programme runs from 11:00 to 17:00.",
+    "sl": "Preživi dan s skupnostjo Forever v Budimpešti. Success Day je priložnost za srečanje z ekipo, nove ideje in pogovore o nadaljnjem razvoju poslovanja. Med napovedanimi gosti so Aidan O’Hare, Peter Boots in Holly Stout.\n\nVrata se odprejo ob 9:30. Program poteka od 11:00 do 17:00.",
+    "de": "Verbringe einen Tag mit der Forever Community in Budapest. Der Success Day bietet Gelegenheit, dein Team zu treffen, neue Ideen zu entdecken und über die Weiterentwicklung deines Geschäfts zu sprechen. Zu den angekündigten Gästen gehören Aidan O’Hare, Peter Boots und Holly Stout.\n\nEinlass ist ab 9:30 Uhr. Das Programm findet von 11:00 bis 17:00 Uhr statt.",
+    "es": "Pasa un día con la comunidad Forever en Budapest. Success Day es una oportunidad para reunirte con tu equipo, descubrir nuevas ideas y conversar sobre el desarrollo de tu negocio. Entre los invitados anunciados están Aidan O’Hare, Peter Boots y Holly Stout.\n\nLas puertas abren a las 9:30. El programa se desarrolla de 11:00 a 17:00.",
+    "sv": "Tillbringa en dag med Forever-gemenskapen i Budapest. Success Day är ett tillfälle att träffa teamet, få nya idéer och prata om hur du kan utveckla din verksamhet. Bland de gäster som har tillkännagivits finns Aidan O’Hare, Peter Boots och Holly Stout.\n\nDörrarna öppnas kl. 9:30. Programmet pågår från kl. 11:00 till 17:00.",
+    "hu": "Tölts el egy napot a Forever közösségével Budapesten. A Success Day lehetőséget ad arra, hogy találkozz a csapatoddal, új ötleteket fedezz fel, és beszélgess vállalkozásod további fejlesztéséről. A bejelentett vendégek között van Aidan O’Hare, Peter Boots és Holly Stout.\n\nA kapuk 9:30-kor nyílnak. A program 11:00-tól 17:00-ig tart.",
+    "pl": "Spędź dzień ze społecznością Forever w Budapeszcie. Success Day to okazja, by spotkać się ze swoim zespołem, poznać nowe pomysły i porozmawiać o dalszym rozwoju biznesu. Wśród zapowiedzianych gości są Aidan O’Hare, Peter Boots i Holly Stout.\n\nDrzwi otwierają się o 9:30. Program trwa od 11:00 do 17:00.",
+    "ro": "Petrece o zi alături de comunitatea Forever din Budapesta. Success Day este o ocazie de a-ți întâlni echipa, de a descoperi idei noi și de a discuta despre dezvoltarea afacerii tale. Printre invitații anunțați se numără Aidan O’Hare, Peter Boots și Holly Stout.\n\nUșile se deschid la 9:30. Programul se desfășoară între orele 11:00 și 17:00."
+  },
+  "Predsjednik Forever Living Products": {
+    "hr": "Predsjednik Forever Living Products",
+    "en": "President of Forever Living Products",
+    "sl": "Predsednik Forever Living Products",
+    "de": "Präsident von Forever Living Products",
+    "es": "Presidente de Forever Living Products",
+    "sv": "President för Forever Living Products",
+    "hu": "A Forever Living Products elnöke",
+    "pl": "Prezes Forever Living Products",
+    "ro": "Președintele Forever Living Products"
+  },
+  "Potpredsjednik za Europu": {
+    "hr": "Potpredsjednik za Europu",
+    "en": "Vice President for Europe",
+    "sl": "Podpredsednik za Evropo",
+    "de": "Vizepräsident für Europa",
+    "es": "Vicepresidente para Europa",
+    "sv": "Vicepresident för Europa",
+    "hu": "Európai alelnök",
+    "pl": "Wiceprezes ds. Europy",
+    "ro": "Vicepreședinte pentru Europa"
+  },
+  "Potpredsjednica za razvoj proizvoda": {
+    "hr": "Potpredsjednica za razvoj proizvoda",
+    "en": "Vice President of Product Development",
+    "sl": "Podpredsednica za razvoj izdelkov",
+    "de": "Vizepräsidentin für Produktentwicklung",
+    "es": "Vicepresidenta de Desarrollo de Productos",
+    "sv": "Vicepresident för produktutveckling",
+    "hu": "Termékfejlesztési alelnök",
+    "pl": "Wiceprezeska ds. rozwoju produktów",
+    "ro": "Vicepreședinta pentru dezvoltarea produselor"
+  }
+}

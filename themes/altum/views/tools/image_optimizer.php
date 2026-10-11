@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li class="active" aria-current="page"><?= l('tools.image_optimizer.name') ?></li>
@@ -36,7 +36,7 @@
                     <label for="image"><i class="fas fa-fw fa-sm fa-image text-muted mr-1"></i> <?= l('global.image') ?></label>
                     <input id="image" type="file" name="image" accept=".gif, .png, .jpg, .jpeg, .webp" class="form-control-file altum-file-input <?= \Altum\Alerts::has_field_errors('image') ? 'is-invalid' : null ?>" />
                     <?= \Altum\Alerts::output_field_error('image') ?>
-                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), '.gif, .png, .jpg, .jpeg, .webp') . ' ' . sprintf(l('global.accessibility.file_size_limit'), '5') ?></small>
+                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), fcc_t('.gif, .png, .jpg, .jpeg, .webp')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), '5') ?></small>
                 </div>
 
                 <div class="form-group">
@@ -61,7 +61,7 @@
                             <?= l('tools.image_optimizer.result.original_size') ?>
                         </td>
                         <td class="text-nowrap <?= $data->result['original_size'] > $data->result['new_size'] ? 'text-danger' : 'text-success'; ?>">
-                            <?= nr($data->result['original_size']) . ' KB' ?>
+                            <?= nr($data->result['original_size']) . fcc_t(' KB') ?>
                         </td>
                     </tr>
 
@@ -70,7 +70,7 @@
                             <?= l('tools.image_optimizer.result.new_size') ?>
                         </td>
                         <td class="text-nowrap <?= $data->result['original_size'] >= $data->result['new_size'] ? 'text-success' : 'text-danger'; ?>">
-                            <?= nr($data->result['new_size']) . ' KB' ?> <?= '(' . nr(get_percentage_change($data->result['original_size'], $data->result['new_size']), 2) . '%)' ?>
+                            <?= nr($data->result['new_size']) . fcc_t(' KB') ?> <?= '(' . nr(get_percentage_change($data->result['original_size'], $data->result['new_size']), 2) . '%)' ?>
                         </td>
                     </tr>
                     </tbody>

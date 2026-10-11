@@ -1,0 +1,855 @@
+{
+  "locale": "hu",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Első lépések az FCC rendszerében",
+      "summary": "Jelentkezz be, ellenőrizd a kártyádat, és keresd meg, melyik művelettel szeretnéd kezdeni.",
+      "keywords": [
+        "kezdés",
+        "regisztrációk",
+        "nyelv",
+        "telepítés"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Mi érhető el számodra",
+          "paragraphs": [
+            "Ugyanazt az FCC-fiókot használhatod számítógépen és mobilon. A Free és a PRO különböző lehetőségeket kínál, a Moj put programhoz való hozzáférést pedig külön kell jóváhagyni."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Készítsd elő a munkaterületedet",
+          "steps": [
+            "Jelentkezz be a meglévő e-mail-címeddel és jelszavaddal. Az alkalmazás telepítéséhez ne hozz létre másik fiókot.",
+            "A felső sávban válaszd ki a nyelvet. Ez nem változtatja meg a Forever-áruház országát.",
+            "Nyisd meg a Kártyám oldalt, és ellenőrizd a személyes elérhetőségeidet, a Forever ID-dat és a kártyád nyilvános nézetét.",
+            "Nyisd meg a Ma oldalt a következő lépésedért, vagy a Megosztás oldalt egy termékhez, üzleti bemutatóhoz vagy meghívóhoz.",
+            "A Továbbiak menüpontban megtalálod az FCC útmutatóit, az alkalmazás telepítésére vonatkozó tudnivalókat, a csomaggal kapcsolatos információkat és a támogatást."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ha elakadsz",
+          "questions": [
+            {
+              "question": "Miért nem látom a személyes napi feladatomat?",
+              "answer": "Ellenőrizd a Moj put programban a hozzáférési állapotodat és a pontjaidat. A nem megerősített adatok nem bizonyítják, hogy valamit nem végeztél el. A támogatás ellenőrizheti a fiókok összekapcsolását."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Ma és az utam",
+      "summary": "Tanulj meg egy dolgot, alkalmazd, és pontosan rögzítsd, mit végeztél el.",
+      "keywords": [
+        "ma",
+        "az utam",
+        "feladat",
+        "4 Core",
+        "haladás"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Egy összekapcsolt program",
+          "paragraphs": [
+            "A Moj put összekapcsolja a Toborzást, a Megtartást, a Produktivitást és a Fejlődést. Az elérhető lépést, gyakorlatot és a teljesítés feltételeit a feladatod mellett találod. A PRO személyes Coach-segítséget is biztosít."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Végezd el a lépésedet",
+          "steps": [
+            "Nyisd meg a Ma oldalt, és olvasd el a célkitűzést, valamint a lépésedhez tartozó műveleteket.",
+            "Nyisd meg a kapcsolódó eszközt vagy anyagot. Ha szükséges, kérj egyszerűbb magyarázatot.",
+            "Végezd el azt a műveletet, amelyet az illető szeretne, vagy válaszd a felkínált gyakorlatot, ha nincs megfelelő helyzet.",
+            "Csak a lépés feltételeinek megfelelő, tényleges eredményt igazold vissza. Egy kattintás és egy piszkozat nem jelenti azt, hogy beszélgetés történt.",
+            "A Haladásom oldalon nézd át a bejegyzéseket, az értékelésben pedig írd le, mi segített, vagy hol akadtál el."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "A mai lépés egy vásárlóval folytatott beszélgetést kér. Ha nincs olyan megfelelő személy, aki szeretne beszélgetni, végezd el a felkínált gyakorlatot, és jelöld meg gyakorlatként."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakori kérdés",
+          "questions": [
+            {
+              "question": "Az értékesítésnek számít a gyakorlat?",
+              "answer": "Nem. A gyakorlat és a tényleges alkalmazás külön jelölést kap. Az útmutató elolvasása önmagában nem teljesíti a lépést, és nem igazol üzleti eredményt."
+            },
+            {
+              "question": "A PRO automatikusan hozzáférést biztosít a Moj put programhoz?",
+              "answer": "Nem. A csomag és a programba való jóváhagyott felvétel két külön feltétel. Nyisd meg a hozzáférési állapotod nézetét, vagy kérj ellenőrzést a támogatástól."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Szerkeszd és ellenőrizd a kártyádat",
+      "summary": "Kapcsold össze az elérhetőségeidet, a tartalmaidat és a személyes ajánlásodat azon a kártyán, amelyet megosztasz.",
+      "keywords": [
+        "kártya",
+        "blokk",
+        "szerkesztés",
+        "közösségi média"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A látogatók által megtekintett kártya",
+          "paragraphs": [
+            "A Kártyám oldalon megnyithatod a kártyáidat és szerkesztheted őket. Minden blokk külön szerkeszthető, a Megjelenés pedig az általános nézetet módosítja. A kártyák száma és az elérhető blokkok a csomagodtól függnek."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Szerkessz egy részt, majd ellenőrizd",
+          "steps": [
+            "Nyisd meg a Kártyám oldalt, válaszd ki a kártyádat, majd koppints a Szerkesztésre.",
+            "A Tartalom résznél nyisd meg a Szerkesztés lehetőséget, vagy koppints a módosítani kívánt blokk melletti ceruzára.",
+            "Ellenőrizd a nevet, a leírást, a telefonszámot és a csatornákat. Ha a mező már megjelenít egy domaint, csak a cím kért részét írd be.",
+            "Új tartalom hozzáadásához válaszd a Blokk hozzáadása lehetőséget, és figyelmesen olvasd el a blokk rendeltetésének leírását.",
+            "Mentsd a módosítást, nyisd meg a kártya nyilvános előnézetét, és megosztás előtt próbáld ki a hivatkozást."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakorlati kérdés",
+          "questions": [
+            {
+              "question": "Hogyan adhatok hozzá egy rövid leírást a nevem alá?",
+              "answer": "Adj hozzá külön szöveges blokkot, és helyezd a címblokk alá. A teljes cím mérete és a leírás két külön beállítás."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop és országonkénti ajánlás",
+      "summary": "Az ajánlásod a látogatót a megfelelő Forever-kínálathoz irányítja.",
+      "keywords": [
+        "áruház",
+        "webáruház",
+        "Forever azonosító",
+        "ország",
+        "Titan",
+        "BiH",
+        "Albánia"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Egy fő blokk",
+          "paragraphs": [
+            "A fő Forever shop blokk a kapcsolt Forever ID-t és a meglévő ajánlási rendszert használja. A régi Titan blokk a korábban létrehozott kártyákon maradhat. Ne módosíts és ne találj ki ajánlói paramétereket."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Ellenőrizd az ajánlást",
+          "steps": [
+            "A Kártyám oldalon nyisd meg a Forever shop blokk szerkesztését.",
+            "Ellenőrizd a fiókodhoz kapcsolt Forever ID-t. Ha nem megfelelő, kérj ellenőrzést a támogatástól.",
+            "Olvasd el a blokk leírását, és különböztesd meg a termékrendelést az üzleti együttműködés kezdetétől.",
+            "Mentsd a módosítást, majd nyisd meg a kártya nyilvános előnézetét.",
+            "A rendelés előtt ellenőrizd a céloldalon az országot, az elérhető kínálatot és az ajánlás megjelenését."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "A nyelv és az ország két külön beállítás",
+          "paragraphs": [
+            "A rendszer az ország felismerésére rendelkezésre álló adatok és az áruház szabályai alapján választ céloldalt. A legtöbb piac a Titant használja, BiH és Albánia pedig helyi áruházat, eltérő ajánlási rendszerrel. A VPN és az utazás befolyásolhatja az ország felismerését. Ha nem a várt ország jelenik meg, rendelés előtt ellenőrizd. A nyelv módosítása nem változtatja meg a piacot."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "A látogató horvátul olvassa a kártyát, de Németországba szeretne rendelni. Rendelés előtt ellenőrzi a német kínálatot és az ajánlást, a kártya nyelvének megváltoztatása nélkül."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakori kérdés",
+          "questions": [
+            {
+              "question": "A kattintás igazolja a vásárlást?",
+              "answer": "Nem. Az áruházra mutató kattintás és a rendelés két külön esemény. Az FCC nem igazolja a vásárlást pusztán azért, mert valaki megnyitott egy hivatkozást."
+            },
+            {
+              "question": "Minden országhoz külön hivatkozást kell készítenem?",
+              "answer": "A fő blokk a meglévő, országonkénti céloldalválasztó rendszert használja. Ellenőrizd a kapcsolt Forever ID-t és a tényleges céloldalt. Ha nem megfelelő a piac vagy az ajánlás, küldj egy példát a támogatásnak."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Ajánlj terméket vagy cikket",
+      "summary": "Keress megfelelő tartalmat, és oszd meg a személyes hivatkozásoddal.",
+      "keywords": [
+        "termék",
+        "cikk",
+        "megosztás",
+        "ajánlás",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A tartalom jó kiindulópont a beszélgetéshez",
+          "paragraphs": [
+            "A Megosztás összekapcsolja a cikket és az ajánlásodat. A termékek, azok elérhetősége és a hivatalos útmutatók országonként eltérhetnek. A cikk nem helyettesíti a kiválasztott csomagoláson található termékismertetőt."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Készíts hasznos ajánlást",
+          "steps": [
+            "Nyisd meg a Megosztás oldalt, és keresd meg a terméket a pontos neve alapján, vagy válassz ki egy megfelelő cikket.",
+            "Olvasd el a tartalmat, és ellenőrizd, hogy megfelel-e az illető tényleges kérdésének.",
+            "Készítsd elő a hivatkozásodat, és igazítsd hozzá a szöveget. Ne találj ki személyes tapasztalatot vagy termékhatást.",
+            "Másold ki a tartalmat, vagy nyisd meg a WhatsAppot, és küldd el személyesen az üzenetet.",
+            "Ha az illető szeretné folytatni, egyeztessétek a következő kapcsolatfelvételt a Kapcsolatok között."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Rendelés előtt",
+          "questions": [
+            {
+              "question": "Mi a teendő, ha a termék nem kapható a vásárló országában?",
+              "answer": "Ellenőrizd a hivatalos helyi kínálatot. Ne cseréld le automatikusan a terméket, és ne feltételezd, hogy egy másik csomagolás összetétele vagy használati útmutatója megegyezik."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Oszd meg az üzleti bemutatót",
+      "summary": "Mutasd be az együttműködési lehetőségeket, és a fiókodon keresztül kövesd nyomon az önkéntes érdeklődéseket.",
+      "keywords": [
+        "üzlet",
+        "marketingterv",
+        "együttműködés",
+        "kezdőcsomag",
+        "bemutató"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Személyes beszélgetési hivatkozás",
+          "paragraphs": [
+            "Az üzleti bemutató különálló a webináriumtól. A személyes bemutató megtekintése és előkészítése a fiókhozzáféréstől és a csomagtól függ. A kezdőcsomag oldalának megnyitása nem jelenti a regisztráció megerősítését."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Készítsd elő és kövesd nyomon a beszélgetést",
+          "steps": [
+            "A Megosztás menüpontban nyisd meg a Marketingtervet vagy az elérhető üzleti bemutatót.",
+            "Olvasd el az áttekintést, és ellenőrizd a személyes ajánlást és az elérhetőséget.",
+            "Az illető érdeklődéséhez igazítsd a meghívást, és ne ígérj bevételt vagy eredményt.",
+            "Személyesen küldd el az előkészített hivatkozást, és egyeztess beszélgetést, amikor az illető szeretné.",
+            "Az önkéntes érdeklődést keresd meg a Kapcsolataid között, és jegyezd fel a következő egyeztetést."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Az eredmény jelentése",
+          "questions": [
+            {
+              "question": "Új együttműködésnek számít a kezdőcsomagra kattintás?",
+              "answer": "Nem. A vásárlás és a regisztráció a hivatalos Forever oldalon fejeződik be. Az FCC nyilvántartásában különböztesd meg a kattintást, a kapcsolatfelvételi érdeklődést és a személyesen megerősített eredményt."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Hívj meg egy vendéget, és kövesd nyomon a jelentkezését",
+      "summary": "Válassz időpontot, küldd el a meghívódat, majd a webinárium után ellenőrizd a tényleges eredményt.",
+      "keywords": [
+        "webinárium",
+        "webinárium",
+        "meghívó",
+        "Nagyítás",
+        "vendég",
+        "regisztrációk"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A meghívód és a kapcsolataid",
+          "paragraphs": [
+            "A Free és a PRO csomaggal is használhatod az elérhető webináriumok standard meghívóját. A PRO személyes bevezetőt és videót is kínál. A vendég a hivatkozásodon keresztül FCC-fiók nélkül jelentkezik."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "A meghívástól az egyeztetésig",
+          "steps": [
+            "Nyisd meg a Megosztás, Webináriummeghívó, Időpont kiválasztása menüpontot.",
+            "Ellenőrizd a kiválasztott esemény dátumát, időpontját és időzónáját.",
+            "Igazítsd az üzenetet a címzetthez, majd személyesen küldd el a meghívódat.",
+            "A jelentkezéseket a Vendégeim jelentkezései és a Kapcsolatok menüpontban tekintheted meg.",
+            "Ellenőrizd, hogy a vendég engedélyezte-e a kapcsolatfelvételt, majd az időpont után jegyezd fel az eredményt."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "A jelentkezés nem bizonyítja a részvételt",
+          "paragraphs": [
+            "Az Ismeretlen azt jelenti, hogy a részvételt még nem ellenőrizted. Nem jelenti azt, hogy a vendég nem jelent meg. A beszélgetés után válaszd ki a tényleges részvételt vagy távolmaradást. A vendégnek küldött emlékeztetők a választott beállítástól és a megerősített email-címtől függenek. A jelentkezés nem ad automatikus engedélyt minden jövőbeli üzenet elküldésére."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Meghívás új időpontra",
+          "paragraphs": [
+            "Ha a vendég másik időpontot szeretne, készíts új meghívót a vendégek áttekintésében vagy az időpontválasztónál. A vendégnek meg kell erősítenie az új jelentkezést. Meglévő kapcsolatot csak akkor használj, ha az azonosság egyezik. A részleges egyezést ellenőrizni kell. Az esemény ismétlődése nem jelenti azt, hogy a vendég automatikusan jelentkezik a jövőbeli időpontokra."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "Marko jelentkezett, de még nem tudod, hogy részt vett-e. Hagyd Ismeretlen állapotban, engedéllyel kérdezz rá, és csak ezután jelöld be a tényleges eredményt."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakori kérdés",
+          "questions": [
+            {
+              "question": "A WhatsApp megnyitása azt jelenti, hogy elküldtem a meghívót?",
+              "answer": "Nem. Az üzenetet személyesen küldöd el a WhatsApp alkalmazásban. Az FCC-ben csak akkor erősítsd meg az elküldést, ha valóban elküldted."
+            },
+            {
+              "question": "A vendégnek létre kell hoznia FCC-fiókot?",
+              "answer": "Nem. A vendég megnyitja a jelentkezési oldaladat, és megerősíti a kiválasztott időpontot. A jelentkezése továbbra is hozzád kapcsolódik meghívóként."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Hozz létre személyes vagy csapatszintű webináriumot",
+      "summary": "Add meg a témát, az időpontot, a nyelvet és azt a közönséget, amely használhatja a saját meghívóit.",
+      "keywords": [
+        "webinárium",
+        "szervező",
+        "csapat",
+        "ismétlődés",
+        "Nagyítás",
+        "nyelv"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Szervezés PRO-val",
+          "paragraphs": [
+            "Saját webinárium létrehozásához és szerkesztéséhez PRO szükséges. A Zoom- vagy másik virtuális szobát a megfelelő szolgáltatásban készítsd elő, az FCC-ben pedig add meg a teljes HTTPS-hozzáférési hivatkozást."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Készítsd elő az eseményedet",
+          "steps": [
+            "Nyisd meg a Megosztás, Webináriummeghívó, Webináriumaim menüpontot, majd az új webinárium űrlapját.",
+            "Add meg a címet és azt, hogy mit tudnak meg a vendégek. Válaszd ki, ki hívhat meg vendégeket.",
+            "Válaszd ki a meghívó és az értesítések nyelvét, a dátumot, a kezdési időpontot, az időtartamot és az időzónát.",
+            "Add meg a hozzáférési hivatkozásodat, majd válassz egyetlen időpontot vagy heti ismétlődést.",
+            "Mentsd el a webináriumot, majd használat előtt tekintsd át az előkészített meghívót."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Ki láthatja a csapatszintű webináriumot?",
+          "paragraphs": [
+            "A Teljes FCC csapatom a szervezőt és az alsó vonalában lévő megerősített együttműködőket foglalja magában, a mélyebben elhelyezkedő ágakkal együtt. A szervező feletti szponzorok és más csapatok nem tartoznak automatikusan a közönséghez. Az adminisztrátori felügyelet nem jelent közönségtagságot. Minden meghívó megőrzi a saját kapcsolatai feletti adatvédelmet, a szervező pedig a jelentkezések teljes számát látja."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Ismétlődés, módosítás és lemondás",
+          "paragraphs": [
+            "A heti ismétlődés a nyári időszámítás váltásakor is megőrzi a kiválasztott helyi időpontot. Szerkesztéskor válaszd a Csak ezt az időpontot vagy az Ezt és a jövőbeli időpontokat lehetőséget. A meglévő sorozat közönsége változatlan marad. Lemondáskor a kapcsolatok és az előzmények megmaradnak, de a lemondott időpontokra megszűnik a jelentkezés és a részvételi emlékeztetők küldése."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "A vasárnap 20:00-kor kezdődő szlovén találkozóhoz válaszd a Slovenščina nyelvet, az Europe/Ljubljana időzónát és a kívánt közönséget. Add meg a Zoom-szobád hivatkozását, majd ellenőrizd az első dátumot és az ismétlődést."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Az esemény nyelve",
+          "questions": [
+            {
+              "question": "A szlovén meghívó megváltoztatja a fiókom nyelvét?",
+              "answer": "Nem. Az esemény nyelve határozza meg a meghívó és az értesítések nyelvét. A fiók nyelve és a piac kiválasztása külön beállítás marad."
+            },
+            {
+              "question": "Meghívhatják a Free csomaggal rendelkező együttműködők az embereket a csapatszintű webináriumomra?",
+              "answer": "Igen, ha a megerősített közönség tagjai, használhatják a standard személyes meghívót. A webinárium létrehozásához és a kiegészítő személyes videóhoz PRO hozzáférés szükséges."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Kapcsolatok és egyeztetett kapcsolatfelvétel",
+      "summary": "Rögzítsd az érdeklődést, a kapcsolatfelvételi engedélyt és a következő egyeztetést úgy, hogy az előzmények ne vesszenek el.",
+      "keywords": [
+        "kapcsolatok",
+        "névjegyzék",
+        "kapcsolatfelvétel",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Személyes áttekintésed",
+          "paragraphs": [
+            "A Kapcsolatok a másokkal végzett személyes munkádat követi nyomon. A webinárium és az önkéntes üzleti érdeklődés összekapcsolhatja a jelentkezést egy kapcsolattal. Tartsd tiszteletben, ha valaki jelezte, hogy nem szeretne további megkeresést."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Szerkessz, és egyeztess következő lépést",
+          "steps": [
+            "Nyisd meg a Kapcsolatok menüpontot, és kézi új bejegyzés hozzáadása előtt keresd meg a meglévő személyt.",
+            "Nyisd meg a kapcsolatot, és ellenőrizd a nevet, a telefonszámot, az email-címet és a kapcsolatfelvételi engedélyt.",
+            "Jegyezd fel a tényleges értékesítési vagy üzleti érdeklődést, valamint a következő egyeztetés megbeszélt dátumát.",
+            "Mentsd el a módosításokat, és csak akkor nyisd meg a WhatsAppot, ha az illető szeretne beszélgetni.",
+            "Az eszköz névjegyzékébe mentéshez válaszd a Kapcsolat mentése lehetőséget, majd személyesen erősítsd meg a letöltött fájl importálását."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "A webinárium vendége már szerepel a Kapcsolatok között. Keresd meg a meglévő bejegyzést, és ahelyett, hogy kézzel létrehoznál egy másik kapcsolatot, egészítsd ki a megbeszélt dátummal."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakorlati kérdés",
+          "questions": [
+            {
+              "question": "A Kapcsolat mentése automatikusan mindent elment a Google-ba?",
+              "answer": "Nem. A gomb a megadott mezőkből elkészíti a kapcsolati fájlt. Telefonon erősítsd meg a mentést, számítógépen pedig te magad importálhatod a fájlt a Google Névjegyekbe."
+            },
+            {
+              "question": "Miért kell ellenőrizni a részleges egyezést a jelentkezésnél?",
+              "answer": "Az adatok egy része egyezhet egy korábbi kapcsolattal, más része viszont eltérhet. Összevonás előtt ellenőrizd a személyazonosságot. A név hasonlósága önmagában nem elég."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Személyes kapcsolatfelvétel egy együttműködővel",
+      "summary": "Készítsd elő az üzenetet, erősítsd meg, hogy valóban elküldted, és egyeztess a beszélgetés nyomon követéséről.",
+      "keywords": [
+        "csapatom",
+        "üzenet",
+        "piszkozat",
+        "küldés",
+        "támogatás"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "PRO-val támogathatod a csapattagokat",
+          "paragraphs": [
+            "A Csapatom menüpont és a csapatüzenetek PRO hozzáféréssel használhatók. Nyisd meg azt az együttműködőt, akinek támogatást nyújthatsz. A Coach az elérhető haladási és CC-adatokat használja, mások privát CRM-jegyzeteit nem."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "A piszkozattól a kapcsolatfelvételig",
+          "steps": [
+            "A Csapatom menüpontban nyisd meg az együttműködő profilját, majd a Támogatás és személyes kapcsolatfelvétel részt.",
+            "Válaszd ki a kapcsolatfelvétel okát, és igazítsd hozzá a Saját üzenetedet. Szükség esetén válaszd a Felkészülés a Coachcsal lehetőséget.",
+            "Mentsd el piszkozatként, másold ki az üzenetet, vagy nyisd meg a WhatsAppot.",
+            "Személyesen küldd el az üzenetet, majd az FCC rendszerében erősítsd meg az elküldését.",
+            "Válaszd ki a dátumot a Mikor szeretnéd ellenőrizni, hogyan sikerült? résznél, majd később jegyezd fel a ténylegesen megbeszélteket."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "A küldést személyesen erősíted meg",
+          "paragraphs": [
+            "A WhatsApp megnyitása és az üzenet másolása csak előkészítést jelent, nem bizonyítja az elküldést. Ha nem küldted el az üzenetet, válaszd ki a megfelelő megerősítést, vagy hagyd piszkozatként. A téves küldési megerősítést javíthatod a bejegyzésben. A bejegyzés eltávolítása nem törli az üzenetet a WhatsAppból. A piszkozatok és az eltávolított bejegyzések nem hoznak létre beszélgetési emlékeztetőt."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "Megnyitottad a WhatsAppot, de elküldés előtt meggondoltad magad. Hagyd piszkozatként, vagy erősítsd meg, hogy nem küldted el. Így a nyilvántartásban nem szerepel ténylegesen elküldött üzenet."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Nincs megerősített telefonszám",
+          "questions": [
+            {
+              "question": "Miért nem tudom megnyitni a WhatsAppot?",
+              "answer": "Az együttműködőnek megerősített üzleti telefonszámmal kell rendelkeznie. Kimásolhatod a szöveget, és elküldheted a már használt csatornádon, majd személyesen megerősítheted az elküldést."
+            },
+            {
+              "question": "Létrehoz beszélgetési emlékeztetőt egy elmentett piszkozat?",
+              "answer": "Nem. Az emlékeztető az üzenet állapotától függ. A piszkozatok és az eltávolított bejegyzések nem hoznak létre beszélgetési emlékeztetőt. Az ellenőrzés dátumát tényleges kapcsolatfelvételhez rendeld hozzá."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Hogyan kérj segítséget a Coachtól",
+      "summary": "Írd le a konkrét helyzetet, és kérj magyarázatot vagy egy általad személyesen ellenőrizhető vázlatot.",
+      "keywords": [
+        "coach",
+        "AI",
+        "kérdés",
+        "üzenet",
+        "útmutató"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Személyre szabott segítség a meglévő hozzáférésed alapján",
+          "paragraphs": [
+            "A PRO Coach segít a feladatokban, az üzenetekben és a saját munkádban. Hozzáférést kap a fiók engedélyezett kontextusához, de nem látja automatikusan a képernyődet, és nem erősíti meg az üzenetek elküldését, a vásárlást vagy a regisztrációt."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Tegyél fel egy hasznos kérdést",
+          "steps": [
+            "Nyisd meg a Coacht, vagy kérj segítséget tőle a feladatodhoz vagy az eszközödhöz.",
+            "Írd le, mit szeretnél csinálni, az alkalmazás melyik részén, és mi nem világos.",
+            "Üzenetvázlat készítéséhez írd le a kapcsolatotokat és a beszélgetés tényleges szakaszát, szükségtelen személyes vagy egészségügyi adatok nélkül.",
+            "Olvasd el a választ, és használat előtt ellenőrizd a tényeket és a címzettet.",
+            "Igazítsd a vázlatot a saját helyzetedhez, majd küldd el személyesen az üzenetet. A Coach nem küldi el helyetted."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Hivatkozások ellenőrzött útmutatókra",
+          "paragraphs": [
+            "A Coach felajánlhat egy releváns útmutatót a központból, annak egy konkrét szakaszával együtt. Az útmutató a fiókod nyelvén nyílik meg, és nem biztosít további hozzáférést az eszközökhöz. Ha a magyarázat nem elég, írd meg, mi nem világos még, vagy küldd el a kérdésedet az ügyfélszolgálatnak."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "Írd ezt: „Új időpontra szeretnék vendéget meghívni, hol tehetem meg?” A Coach elmagyarázhatja a lépést, és felajánlhatja az útmutató pontos szakaszát, a vendég neve nélkül."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "A válasz nyelve",
+          "questions": [
+            {
+              "question": "Megváltoztathatom csak a Coach nyelvét?",
+              "answer": "Kifejezetten kérheted, hogy a választ a kívánt nyelven kapd meg. Ez nem változtatja meg a Forever ajánlat országát. Ellenőrizd, hogy az elkészült üzenet nyelve megfelelő-e a címzettnek."
+            },
+            {
+              "question": "Olvashatok útmutatókat PRO Coach nélkül?",
+              "answer": "Igen. A központot bejelentkezett Free és PRO munkatársak is elérhetik. A személyre szabott AI-válaszhoz ugyanaz a Coach-hozzáférés szükséges, mint korábban."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Értesítések és emlékeztetők",
+      "summary": "Válaszd ki a témákat, a napi emlékeztetőt, valamint azt az eszközt, amelyen értesítéseket szeretnél kapni.",
+      "keywords": [
+        "push",
+        "értesítések",
+        "emlékeztető",
+        "hang",
+        "eszköz"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A rendszernek és az eszköznek saját beállításai vannak",
+          "paragraphs": [
+            "A Bejövő üzenetek és a pushértesítések nem ugyanazt a nézetet jelentik. A pushértesítésekhez engedélyezned kell az értesítéseket az eszközödön. A napi feladat és az egyeztetett értesítések összevonhatók, míg az eseményekhez és a fiókhoz külön értesítési idő tartozik."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Kézbesítés ellenőrzése",
+          "steps": [
+            "Nyisd meg az Értesítések részt, és olvasd el az üzenet címét, leírását és időpontját.",
+            "Nyisd meg az eszközöd Értesítések részét és a saját beállításaimat, majd válaszd az Engedélyezés ezen az eszközön lehetőséget.",
+            "Engedélyezd az értesítéseket a böngésződben vagy az eszközödön, majd mentsd el a kiválasztott kategóriákat.",
+            "A Saját tempóm résznél válaszd ki a napi emlékeztetőd időpontját.",
+            "Ha szeretnéd, kapcsold be a hangot, és küldj magadnak próbaértesítést, ha ez a gomb elérhető."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Hang és megjelenés",
+          "questions": [
+            {
+              "question": "Minden eszközön ugyanaz lesz a hang?",
+              "answer": "Nem. A böngésző, az operációs rendszer és a néma mód határozza meg a végső hangot és megjelenést. Az FCC beállítása nem írhatja felül az eszközöd tiltását vagy némítását."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Értsd meg az eredményeket és a CC-pontokat",
+      "summary": "Különböztesd meg a kattintásokat, a rögzített tevékenységeket és a rendelkezésre álló Forever-pontokat.",
+      "keywords": [
+        "eredmények",
+        "kattintások",
+        "CC",
+        "pontok",
+        "haladás"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Különböző mutatók",
+          "paragraphs": [
+            "Az FCC Eredmények az üzletekhez vezető, minősített átkattintásokat mutatja. A Haladásom a jelentett lépéseket mutatja. A CC-pontok a rendelkezésre álló Forever-adatok importálásából származnak, és az adott időszak összesített értékét jelentik."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "A mutatókat a megfelelő összefüggésben olvasd",
+          "steps": [
+            "Nyisd meg az FCC Eredmények részt, és olvasd el az időszakra, valamint a kattintások számlálásának szabályaira vonatkozó információkat.",
+            "A Haladásom résznél külön nézd meg a tényleges alkalmazást és a gyakorlatokat.",
+            "A Saját Forever és a CC-pontok résznél ellenőrizd az időszakot és a rendelkezésre álló adatok teljességét.",
+            "Minősítés vagy hivatalos üzleti cél esetén a szponzoroddal ellenőrizd a piacodra érvényes szabályokat."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakori téves feltételezés",
+          "questions": [
+            {
+              "question": "Bizonyítják a CC-pontok, hogy ki vásárolt meg egy adott terméket?",
+              "answer": "Nem. Az összesített CC-pontok nem bizonyítják az egyes vásárlásokat. A hiányos vagy elmaradt adatimport sem jelenti azt, hogy az érték igazoltan nulla."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free és PRO, fizetések és számlák",
+      "summary": "Fizetési mód módosítása előtt ellenőrizd a csomagodhoz való hozzáférést és az előfizetés állapotát.",
+      "keywords": [
+        "csomag",
+        "Ingyenes",
+        "PRO",
+        "Stripe",
+        "előfizetés",
+        "számla"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A csomag ugyanahhoz a fiókhoz tartozik",
+          "paragraphs": [
+            "A Free és a PRO különböző előnyöket kínál, amelyeket a csomagok aktuális összehasonlítása mutat be. A PRO nem igazolja, hogy regisztráltál a Saját utam programba. A számlázás aktiválása a Stripe visszaigazolásától függ."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Ellenőrizd a csomagodat",
+          "steps": [
+            "A Továbbiak résznél nyisd meg a Free és PRO csomagokat vagy a Saját csomagom oldalt.",
+            "Olvasd el az elérhető előnyöket, az előfizetés állapotát és a hozzáférés időszakát.",
+            "Aktiválás előtt ellenőrizd a kiválasztott fizetés összefoglalóját, mielőtt továbblépsz a Stripe-hoz.",
+            "A Befizetések és számlák résznél nézd meg a tényleges fizetési adatokat.",
+            "Kártyaadatok módosításához vagy lemondáshoz használd az előfizetés felkínált beállításait, és olvasd el, melyik időszak végét erősítették meg."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ha a fizetés figyelmet igényel",
+          "questions": [
+            {
+              "question": "Mi a teendő, ha a fizetés elakadt vagy nincs visszaigazolva?",
+              "answer": "Ellenőrizd a meglévő fiókot és a csomagodban lévő üzenetet. Használd a felajánlott megújítási lehetőséget, vagy fordulj az ügyfélszolgálathoz. Ne következtesd ki pusztán a csomag időtartamából, hogy levonták a pénzt, és ne adj le találomra újabb rendeléseket."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Töltsd le és alakítsd át a csapatbemutatót",
+      "summary": "Használd a közzétett verziót, módosítsd az előadó bemutatkozását, és ellenőrizd a saját előadásodat.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "bemutató",
+        "diák",
+        "letöltés"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Közös alap a bemutatkozáshoz",
+          "paragraphs": [
+            "A központban található prezentációkat bejelentkezett munkatársak érhetik el. A ténylegesen felkínált fájlt és nyelvet használd. A kiadás dátuma segít megkülönböztetni az aktuális prezentációt egy régebbi másolattól."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Készítsd elő az előadásodat",
+          "steps": [
+            "A Továbbiak menüben nyisd meg az FCC útmutatóit, majd a Töltsd le és alakítsd át a csapatbemutatót témát.",
+            "A letöltési szakaszban válaszd ki a nyelvet, majd kattints a PPT letöltése gombra. Az összes fordítást tartalmazó ZIP-csomaghoz válaszd az Összes nyelv letöltése lehetőséget.",
+            "Nyisd meg a PPT-fájlt a PowerPointban vagy egy kompatibilis alkalmazásban.",
+            "Módosítsd az előadó bemutatkozására szánt részt és a saját fényképedet.",
+            "Nézd át a jegyzeteket, és ellenőrizd a teljes prezentációt a webinár előtt."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Mit érdemes átalakítani",
+          "paragraphs": [
+            "A személyes bemutatkozás csak ellenőrizhető adatokat és a saját, valós tapasztalataidat tartalmazza. Tartsd meg a közös szerkezetet, és ne adj hozzá jövedelemre vagy gyógyulásra vonatkozó ígéreteket, illetve mások személyes adatait. A példákban mintaadatokat használj."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "A fájl nyelve és verziója",
+          "paragraphs": [
+            "Itt minden elérhető nyelven PPT-fájlokat és az összes fordítást tartalmazó ZIP-csomagot találsz. Letöltés előtt ellenőrizd a nyelvi és kiadási jelölést. Az FCC felületét ábrázoló képek az eredeti nyelven maradhatnak, miközben a szöveg és a jegyzetek le vannak fordítva. Időnként ellenőrizd, hogy elérhető-e újabb kiadás."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Gyakorlati példa",
+          "paragraphs": [
+            "Letöltöd az aktuális PPT-t, módosítod a bemutatkozásodat és a fényképedet, majd begyakorolsz egy megosztási példát. A bemutatóban mintaadatként megadott kapcsolatot használsz, nem egy vásárló személyes adatait."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Gyakorlati kérdés",
+          "questions": [
+            {
+              "question": "Összeállíthatom önállóan a prezentációt?",
+              "answer": "Az előadásodhoz igazíthatod a bemutatkozásra szánt részt és a sorrendet, de maradj a pontos tényeknél, és tartsd szem előtt a világos célt. Megjelenítés előtt ellenőrizd a diákat, a jegyzeteket és azt, hogy a leírt FCC-funkciók elérhetők-e."
+            },
+            {
+              "question": "Mi a teendő, ha az elérhető PPT-kép más nyelven jelenik meg?",
+              "answer": "A felületet ábrázoló képek az eredeti nyelven maradhatnak. Kövesd a lefordított jegyzeteket és útmutatókat, valamint az FCC-felületeden ténylegesen megjelenő gombneveket. Előadás előtt ellenőrizd az elérhető fájlt."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Speciális FCC-eszközök",
+      "summary": "Akkor nyiss meg egy további eszközt, ha konkrétan szükséged van rá, és ellenőrizd a hozzáférési jogosultságodat.",
+      "keywords": [
+        "QR",
+        "domainek",
+        "statisztikák",
+        "Tölcsérstúdió",
+        "speciális eszközök"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "További segítség a munkádhoz",
+          "paragraphs": [
+            "A Továbbiak menüben további hivatkozásokat, QR-kódokat, statisztikákat és speciális eszközöket találsz. Minden eszköznél ellenőrizni kell, hogy a csomagod biztosít-e hozzáférést. Kezdésként használd a kártyádat, a kapcsolataidat és egy egyértelmű műveletet."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Válassz célnak megfelelő eszközt",
+          "steps": [
+            "Nyisd meg a Továbbiak menüt, és nézd át az elérhető eszközök leírását.",
+            "Döntsd el, hogy a kártyádat szeretnéd megosztani, a látogatásokat követni, vagy különleges tartalmat készíteni.",
+            "Nyisd meg a kiválasztott eszközt, majd ellenőrizd az útmutatóját és a csomagodhoz tartozó hozzáférést.",
+            "Nézd meg az eredményt az előnézetben, mielőtt nyilvánosan használnád."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ha a funkció nem érhető el",
+          "questions": [
+            {
+              "question": "Szükségem van minden haladó eszközre az induláshoz?",
+              "answer": "Nem. Először készítsd elő a kártyát, és egyeztessetek időpontot a beszélgetésre. Akkor válassz további eszközt, ha megkönnyít egy valódi feladatot, az elérhetőségét pedig ellenőrizd az aktuális csomagodban."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Küldj kérdést az ügyfélszolgálatnak",
+      "summary": "Írd le a problémát, majd folytasd ugyanazt a beszélgetést, amíg hasznos megoldást nem kapsz.",
+      "keywords": [
+        "támogatás",
+        "segítség",
+        "probléma",
+        "kérés",
+        "hiba"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "A kérdésedet egy helyen követheted",
+          "paragraphs": [
+            "A Súgó és támogatás technikai problémák, javaslatok vagy webináriumokkal kapcsolatos témák esetén használható. A Coach elmagyarázhatja a folyamatot, de nem küld el helyetted kérelmet."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Írj egyértelmű kérelmet",
+          "steps": [
+            "Nyisd meg a Súgó és támogatás menüpontot, majd válaszd az Új üzenet az ügyfélszolgálatnak lehetőséget.",
+            "Adj meg egy rövid címet, majd válaszd ki a kérdés kategóriáját.",
+            "Írd le, az alkalmazás melyik részén dolgozol, mit tettél, és mi történt.",
+            "Szükség esetén csatolj képernyőképet, amelyen nem látszik jelszó, kártyaadat vagy más személyes adata.",
+            "Küldd el a kérdést, majd később nyisd meg ugyanazt a beszélgetést a válaszért vagy további pontosításért."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Amíg a válaszra vársz",
+          "questions": [
+            {
+              "question": "Ugyanarról a problémáról több kérelmet is küldjek?",
+              "answer": "Folytasd a meglévő beszélgetést, és add hozzá az új információkat. Írd meg, milyen eszközt használsz, és add meg a pontos hibaüzenetet. Így az ügyfélszolgálat egy helyen látja a teljes előzményt."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

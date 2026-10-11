@@ -16,7 +16,7 @@ final class CrossXModule implements ModuleInterface, Singleton
     public function __construct(float $size = 1.0)
     {
         if($size <= 0 || $size > 1) {
-            throw new InvalidArgumentException('Size must be between 0 and 1');
+            throw new InvalidArgumentException(fcc_t('Size must be between 0 and 1'));
         }
 
         $this->size = $size;

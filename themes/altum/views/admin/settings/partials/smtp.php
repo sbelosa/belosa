@@ -132,9 +132,9 @@
             <div class="form-group">
                 <label for="encryption"><i class="fas fa-fw fa-sm fa-user-shield text-muted mr-1"></i> <?= l('admin_settings.smtp.encryption') ?></label>
                 <select id="encryption" name="encryption" class="custom-select" autocomplete="off">
-                    <option value="0" <?= settings()->smtp->encryption == '0' ? 'selected="selected"' : null ?>>None</option>
-                    <option value="ssl" <?= settings()->smtp->encryption == 'ssl' ? 'selected="selected"' : null ?>>SSL</option>
-                    <option value="tls" <?= settings()->smtp->encryption == 'tls' ? 'selected="selected"' : null ?>>TLS</option>
+                    <option value="0" <?= settings()->smtp->encryption == '0' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('None'), ENT_QUOTES, 'UTF-8') ?></option>
+                    <option value="ssl" <?= settings()->smtp->encryption == 'ssl' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('SSL'), ENT_QUOTES, 'UTF-8') ?></option>
+                    <option value="tls" <?= settings()->smtp->encryption == 'tls' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('TLS'), ENT_QUOTES, 'UTF-8') ?></option>
                 </select>
             </div>
         </div>

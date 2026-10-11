@@ -917,7 +917,7 @@ class Cron extends Controller {
                         'last_evaluated_datetime' => get_date(),
                     ]);
 
-                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment_id, null, (int) $user_id, 'entered', ['message' => 'User entered the live automation segment.']);
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment_id, null, (int) $user_id, 'entered', ['message' => fcc_t('User entered the live automation segment.')]);
                     continue;
                 }
 
@@ -936,7 +936,7 @@ class Cron extends Controller {
                         'last_datetime' => get_date(),
                     ]);
 
-                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $existing_enrollment->automation_enrollment_id, null, (int) $user_id, 'reentered', ['message' => 'User re-entered the live automation segment.']);
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $existing_enrollment->automation_enrollment_id, null, (int) $user_id, 'reentered', ['message' => fcc_t('User re-entered the live automation segment.')]);
                 } elseif($existing_enrollment->status == 'active') {
                     db()->where('automation_enrollment_id', $existing_enrollment->automation_enrollment_id)->update('email_automation_enrollments', [
                         'last_evaluated_datetime' => get_date(),
@@ -967,7 +967,7 @@ class Cron extends Controller {
                 fc_mark_email_automation_goal_completed((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $enrollment->user_id);
                 /* /Custom code: FC-2026-03-19 */
 
-                fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => 'User exited because the segment condition is no longer true.', 'exit_reason' => 'condition_resolved']);
+                fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => fcc_t('User exited because the segment condition is no longer true.'), 'exit_reason' => 'condition_resolved']);
             }
         }
     }
@@ -1029,7 +1029,7 @@ class Cron extends Controller {
                     fc_mark_email_automation_goal_completed((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $enrollment->user_id);
                     /* /Custom code: FC-2026-03-19 */
 
-                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => 'Enrollment skipped because the user is no longer eligible.', 'exit_reason' => 'condition_resolved']);
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'exited', ['message' => fcc_t('Enrollment skipped because the user is no longer eligible.'), 'exit_reason' => 'condition_resolved']);
                     continue;
                 }
 
@@ -1043,7 +1043,7 @@ class Cron extends Controller {
                         'last_datetime' => get_date(),
                     ]);
 
-                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'completed', ['message' => 'Enrollment completed because there are no more steps.']);
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, null, (int) $enrollment->user_id, 'completed', ['message' => fcc_t('Enrollment completed because there are no more steps.')]);
                     continue;
                 }
 
@@ -1098,7 +1098,7 @@ class Cron extends Controller {
                     fc_store_email_automation_message((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, $user->email, $email_template->subject, $automation_tags, $send_result);
                     /* /Custom code: FC-2026-03-19 */
 
-                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'email_sent', ['message' => 'Automation step email sent successfully.']);
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'email_sent', ['message' => fcc_t('Automation step email sent successfully.')]);
 
                     if(DEBUG) {
                         echo sprintf('email_automations_send() -> automation_id %s sent step %s to user_id %s', $automation->automation_id, $current_step->step_order, $user->user_id);
@@ -1109,7 +1109,7 @@ class Cron extends Controller {
                         'last_datetime' => get_date(),
                     ]);
 
-                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'send_failed', ['message' => 'Automation step email failed and will retry in 60 minutes.']);
+                    fc_insert_email_automation_log((int) $automation->automation_id, (int) $enrollment->automation_enrollment_id, (int) $current_step->automation_step_id, (int) $user->user_id, 'send_failed', ['message' => fcc_t('Automation step email failed and will retry in 60 minutes.')]);
                 }
             }
         }

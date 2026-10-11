@@ -38,10 +38,10 @@ $avatar_preview_url = get_biolink_avatar_url($row->settings);
     <div class="form-group">
         <label for="<?= 'avatar_size_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-expand fa-sm text-muted mr-1"></i> <?= l('biolink_avatar.size') ?></label>
         <select id="<?= 'avatar_size_' . $row->biolink_block_id ?>" name="size" class="custom-select" data-is-not-custom-select>
-            <option value="75" <?= ($row->settings->size ?? 125) == '75' ? 'selected="selected"' : null ?>>75x75px</option>
-            <option value="100" <?= ($row->settings->size ?? 125) == '100' ? 'selected="selected"' : null ?>>100x100px</option>
-            <option value="125" <?= ($row->settings->size ?? 125) == '125' ? 'selected="selected"' : null ?>>125x125px</option>
-            <option value="150" <?= ($row->settings->size ?? 125) == '150' ? 'selected="selected"' : null ?>>150x150px</option>
+            <option value="75" <?= ($row->settings->size ?? 125) == '75' ? 'selected="selected"' : null ?>><?= htmlspecialchars('75x75px', ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="100" <?= ($row->settings->size ?? 125) == '100' ? 'selected="selected"' : null ?>><?= htmlspecialchars('100x100px', ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="125" <?= ($row->settings->size ?? 125) == '125' ? 'selected="selected"' : null ?>><?= htmlspecialchars('125x125px', ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="150" <?= ($row->settings->size ?? 125) == '150' ? 'selected="selected"' : null ?>><?= htmlspecialchars('150x150px', ENT_QUOTES, 'UTF-8') ?></option>
         </select>
     </div>
 
@@ -255,7 +255,7 @@ $avatar_preview_url = get_biolink_avatar_url($row->settings);
         <div class="form-group">
             <label for="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-server fa-sm text-muted mr-1"></i> <?= l('biolink_link.display_operating_systems') ?></label>
             <select id="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>" name="display_operating_systems[]" class="custom-select" multiple="multiple">
-                <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                     <option value="<?= $os_name ?>" <?= in_array($os_name, $row->settings->display_operating_systems ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                 <?php endforeach ?>
             </select>

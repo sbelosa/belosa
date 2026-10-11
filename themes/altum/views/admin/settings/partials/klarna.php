@@ -17,12 +17,12 @@
         <div class="form-group">
             <label for="mode"><?= l('admin_settings.payment.mode') ?></label>
             <select id="mode" name="mode" class="custom-select">
-                <option value="https://api.klarna.com/" <?= settings()->klarna->mode == 'https://api.klarna.com/' ? 'selected="selected"' : null ?>>api.klarna.com - production</option>
-                <option value="https://api-na.klarna.com/" <?= settings()->klarna->mode == 'https://api-na.klarna.com/' ? 'selected="selected"' : null ?>>api-na.klarna.com - production</option>
-                <option value="https://api-oc.klarna.com/" <?= settings()->klarna->mode == 'https://api-oc.klarna.com/' ? 'selected="selected"' : null ?>>api-oc.klarna.com - production</option>
-                <option value="https://api.playground.klarna.com/" <?= settings()->klarna->mode == 'https://api.playground.klarna.com/' ? 'selected="selected"' : null ?>>api.playground.klarna.com - development</option>
-                <option value="https://api-na.playground.klarna.com/" <?= settings()->klarna->mode == 'https://api-na.playground.klarna.com/' ? 'selected="selected"' : null ?>>api-na.playground.klarna.com - development</option>
-                <option value="https://api-oc.playground.klarna.com/" <?= settings()->klarna->mode == 'https://api-oc.playground.klarna.com/' ? 'selected="selected"' : null ?>>api-oc.playground.klarna.com - development</option>
+                <option value="https://api.klarna.com/" <?= settings()->klarna->mode == 'https://api.klarna.com/' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api.klarna.com - production'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="https://api-na.klarna.com/" <?= settings()->klarna->mode == 'https://api-na.klarna.com/' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-na.klarna.com - production'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="https://api-oc.klarna.com/" <?= settings()->klarna->mode == 'https://api-oc.klarna.com/' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-oc.klarna.com - production'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="https://api.playground.klarna.com/" <?= settings()->klarna->mode == 'https://api.playground.klarna.com/' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api.playground.klarna.com - development'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="https://api-na.playground.klarna.com/" <?= settings()->klarna->mode == 'https://api-na.playground.klarna.com/' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-na.playground.klarna.com - development'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="https://api-oc.playground.klarna.com/" <?= settings()->klarna->mode == 'https://api-oc.playground.klarna.com/' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-oc.playground.klarna.com - development'), ENT_QUOTES, 'UTF-8') ?></option>
             </select>
         </div>
 

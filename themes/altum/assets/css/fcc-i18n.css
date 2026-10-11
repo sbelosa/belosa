@@ -1,0 +1,16 @@
+.fcc-language-picker{position:relative;display:inline-block;font:inherit;color:inherit;z-index:65;text-align:left}
+.fcc-language-picker summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:7px 11px;border:1px solid #d8e5de;border-radius:999px;cursor:pointer;font-size:12px;font-weight:700;background:#f7fbf8;color:#175247;white-space:nowrap;transition:background .15s,border-color .15s}
+.fcc-language-picker summary::-webkit-details-marker{display:none}
+.fcc-language-picker summary:hover,.fcc-language-picker[open] summary{background:#e9f3ed;border-color:#aacbb9}
+.fcc-language-picker summary:focus-visible,.fcc-language-option:focus-visible{outline:2px solid #21765e;outline-offset:3px}
+.fcc-language-picker summary svg{flex-shrink:0}.fcc-language-picker[open] summary svg:last-child{transform:rotate(180deg)}
+.fcc-language-panel{position:absolute;right:0;top:calc(100% + 10px);width:264px;max-width:calc(100vw - 32px);padding:10px;border:1px solid #dae7df;border-radius:20px;background:#fff;color:#173f35;box-shadow:0 16px 48px #12392d24}
+.fcc-language-picker .fcc-language-title{margin:6px 10px 10px;font-size:15px;font-weight:700;line-height:1.4}
+.fcc-language-picker form{margin:0;padding:0;display:grid;gap:3px;max-height:min(480px,60dvh);overflow-y:auto;overscroll-behavior:contain}
+.fcc-language-picker .fcc-language-option{display:flex;align-items:center;gap:12px;width:100%;min-height:50px;margin:0;padding:9px 11px;border:1px solid transparent;border-radius:12px;background:transparent;color:#183f36;text-align:left;font:inherit;font-size:15px;font-weight:500;cursor:pointer;box-shadow:none}
+.fcc-language-picker .fcc-language-option:hover{background:#f3f7f4}.fcc-language-picker .fcc-language-option[aria-current=true]{background:#edf6ef;border-color:#d4e7d8;color:#10533e}
+.fcc-language-code{display:grid;place-items:center;min-width:31px;padding:0 4px;height:28px;border-radius:7px;background:#f1f5f2;color:#587267;font-size:10px;font-weight:700;letter-spacing:.04em}
+.fcc-language-option[aria-current=true] .fcc-language-code{background:#dcecdf;color:#17513c}.fcc-language-name{flex:1}.fcc-language-check{width:18px;font-weight:700;font-size:18px}
+.fcc-language-picker .fcc-language-hint{padding:9px 10px 2px;margin:0;font-size:11px;line-height:1.5;color:#667e73}
+.fcc-language-picker-footer .fcc-language-panel{top:auto;bottom:calc(100% + 10px)}
+@media(max-width:600px){.fp-top-actions{gap:6px}.fp-topbar .fcc-language-picker summary{min-height:36px;padding:6px 9px;gap:5px}.fcc-language-panel{width:250px}.fcc-language-option{min-height:52px}}

@@ -26,6 +26,10 @@ class FccEducation extends Controller {
     public function index() {
 
         \Altum\Authentication::guard();
+        if(fcc_journey_enabled() && $_SERVER['REQUEST_METHOD']==='GET') {
+            $video=isset($_GET['video'])&&is_scalar($_GET['video'])?'&video='.rawurlencode((string)$_GET['video']):'';
+            redirect('partner?view=materials'.$video);
+        }
 
         /* Custom code: FC-2026-02-25: allow admin to view education */
         if($this->user->type != 0 && !\Altum\Authentication::is_admin()) {
@@ -34,9 +38,9 @@ class FccEducation extends Controller {
         /* /Custom code: FC-2026-02-25 */
 
         /* Custom code: FC-2026-02-24: FCC education settings */
-        $language_name = $this->user->language ?? \Altum\Language::$default_name;
+        $language_name = (string) \Altum\Language::$name;
         $fcc_settings = settings()->fcc_education ?? null;
-        $education_settings = $fcc_settings->education_by_language->{$language_name} ?? null;
+        $education_settings = fcc_education_settings_for_language($language_name);
         if(is_array($education_settings)) {
             $education_settings = (object) $education_settings;
         }
@@ -68,6 +72,7 @@ class FccEducation extends Controller {
                     $preferences = (object) $preferences;
                 }
 
+                $preferences_before = json_decode(json_encode($preferences), true) ?: [];
                 $meta = $preferences->meta ?? new \stdClass();
                 if(is_array($meta)) {
                     $meta = (object) $meta;
@@ -105,9 +110,19 @@ class FccEducation extends Controller {
                 $preferences->fcc_core_completed = (bool) $meta->fcc_core_completed;
                 $preferences->fcc_core_completed_at = $meta->fcc_core_completed_at;
 
-                db()->where('user_id', $this->user->user_id)->update('users', [
-                    'preferences' => json_encode($preferences),
-                ]);
+                if(fcc_journey_enabled()) {
+                    try {
+                        $merged=fcc_partner_merge_preferences((int)$this->user->user_id,$preferences_before,json_decode(json_encode($preferences),true));
+                        $preferences=json_decode(json_encode($merged));
+                    } catch(\InvalidArgumentException $e) {
+                        Alerts::add_error(fcc_t('Napredak je ažuriran u drugom prozoru. Provjeri aktualnu lekciju.'));
+                        redirect('fcc-education');
+                    }
+                } else {
+                    db()->where('user_id', $this->user->user_id)->update('users', [
+                        'preferences' => json_encode($preferences),
+                    ]);
+                }
 
                 $this->user->preferences = $preferences;
                 \Altum\Authentication::$user->preferences = $preferences;

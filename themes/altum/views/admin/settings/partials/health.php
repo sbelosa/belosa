@@ -6,15 +6,15 @@
     <table class="table table-custom">
         <thead>
         <tr>
-            <th>Requirement</th>
-            <th>Status</th>
+            <th><?= htmlspecialchars(fcc_t('Requirement'), ENT_QUOTES, 'UTF-8') ?></th>
+            <th><?= htmlspecialchars(fcc_t('Status'), ENT_QUOTES, 'UTF-8') ?></th>
             <th></th>
         </tr>
         </thead>
         <tbody>
         <tr>
             <td>
-                PHP Version
+                <?= htmlspecialchars(fcc_t('PHP Version'), ENT_QUOTES, 'UTF-8') ?>
                 <div class="small text-muted">8.3 - 8.5</div>
             </td>
             <td><?= PHP_VERSION ?></td>
@@ -29,10 +29,10 @@
 
         <tr>
             <td>
-                OpenSSL
-                <div class="small text-muted">Extension</div>
+                <?= htmlspecialchars(fcc_t('OpenSSL'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Extension'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= extension_loaded('openssl') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= extension_loaded('openssl') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(extension_loaded('openssl')): ?>
                     ✅
@@ -44,10 +44,10 @@
 
         <tr>
             <td>
-                mbstring
-                <div class="small text-muted">Extension</div>
+                <?= htmlspecialchars(fcc_t('mbstring'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Extension'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= extension_loaded('mbstring') && function_exists('mb_get_info') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= extension_loaded('mbstring') && function_exists('mb_get_info') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(extension_loaded('mbstring') && function_exists('mb_get_info')): ?>
                     ✅
@@ -59,10 +59,10 @@
 
         <tr>
             <td>
-                GD
-                <div class="small text-muted">Extension</div>
+                <?= htmlspecialchars(fcc_t('GD'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Extension'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= extension_loaded('gd') && function_exists('gd_info') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= extension_loaded('gd') && function_exists('gd_info') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(extension_loaded('gd') && function_exists('gd_info')): ?>
                     ✅
@@ -74,10 +74,10 @@
 
         <tr>
             <td>
-                MySQLi
-                <div class="small text-muted">Extension</div>
+                <?= htmlspecialchars(fcc_t('MySQLi'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Extension'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= function_exists('mysqli_connect') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= function_exists('mysqli_connect') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(function_exists('mysqli_connect')): ?>
                     ✅
@@ -89,10 +89,10 @@
 
         <tr>
             <td>
-                cURL
-                <div class="small text-muted">Extension</div>
+                <?= htmlspecialchars(fcc_t('cURL'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Extension'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= function_exists('curl_version') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= function_exists('curl_version') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(function_exists('curl_version')): ?>
                     ✅
@@ -104,10 +104,10 @@
 
         <tr>
             <td>
-                INTL
-                <div class="small text-muted">Extension</div>
+                <?= htmlspecialchars(fcc_t('INTL'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Extension'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= extension_loaded('intl') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= extension_loaded('intl') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(extension_loaded('intl')): ?>
                     ✅
@@ -119,10 +119,10 @@
 
         <tr>
             <td>
-                set_time_limit()
-                <div class="small text-muted">Function</div>
+                <?= htmlspecialchars(fcc_t('set_time_limit()'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Function'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= function_exists('set_time_limit') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= function_exists('set_time_limit') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(function_exists('set_time_limit')): ?>
                     ✅
@@ -134,10 +134,10 @@
 
         <tr>
             <td>
-                iconv()
-                <div class="small text-muted">Function</div>
+                <?= htmlspecialchars(fcc_t('iconv()'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Function'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= function_exists('iconv') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= function_exists('iconv') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(function_exists('iconv')): ?>
                     ✅
@@ -149,10 +149,10 @@
 
         <tr>
             <td>
-                get_headers()
-                <div class="small text-muted">Function</div>
+                <?= htmlspecialchars(fcc_t('get_headers()'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Function'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= function_exists('get_headers') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= function_exists('get_headers') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(function_exists('get_headers')): ?>
                     ✅
@@ -164,10 +164,10 @@
 
         <tr>
             <td>
-                mime_content_type()
-                <div class="small text-muted">Function</div>
+                <?= htmlspecialchars(fcc_t('mime_content_type()'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('Function'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= function_exists('mime_content_type') ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= function_exists('mime_content_type') ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(function_exists('mime_content_type')): ?>
                     ✅
@@ -179,10 +179,10 @@
 
         <tr>
             <td>
-                allow_url_fopen
-                <div class="small text-muted">INI Configuration</div>
+                <?= htmlspecialchars(fcc_t('allow_url_fopen'), ENT_QUOTES, 'UTF-8') ?>
+                <div class="small text-muted"><?= htmlspecialchars(fcc_t('INI Configuration'), ENT_QUOTES, 'UTF-8') ?></div>
             </td>
-            <td><?= filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN) ? 'Enabled' : 'Not Enabled' ?></td>
+            <td><?= filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN) ? fcc_t('Enabled') : fcc_t('Not Enabled') ?></td>
             <td class="text-right">
                 <?php if(filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)): ?>
                     ✅

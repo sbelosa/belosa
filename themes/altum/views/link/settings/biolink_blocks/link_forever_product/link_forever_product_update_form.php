@@ -3,36 +3,39 @@
 <?php
 $fcc_is_hr = \Altum\Language::$code === 'hr';
 $fcc_forever_product_copy = $fcc_is_hr ? [
-    'product_section' => 'Izvor proizvoda i jezik',
-    'product_section_help' => 'Odaberi proizvod, postavi kako blok prati jezik aplikacije i definira fallback kada prijevod ne postoji.',
-    'language_mode' => 'Način jezika',
-    'language_mode_app' => 'Prati jezik aplikacije',
-    'language_mode_manual' => 'Koristi ručno odabrani jezik',
-    'language_mode_help' => 'U modu praćenja aplikacije blok automatski pokušava otvoriti verziju proizvoda na jeziku aplikacije.',
-    'manual_language' => 'Ručni jezik proizvoda',
-    'manual_language_help' => 'Koristi se samo kada ne želiš pratiti jezik aplikacije.',
-    'fallback_language' => 'Fallback jezik',
-    'fallback_language_help' => 'Ako željeni jezik proizvoda ne postoji, blok prelazi na ovaj jezik.',
-    'fallback_none' => 'Bez fallbacka',
-    'app_language_note' => 'Jezik aplikacije: ',
-    'selector_language_hint' => 'Dostupni jezici proizvoda: ',
+    'product_section' => fcc_t('Izvor proizvoda i jezik'),
+    'product_section_help' => fcc_t('Odaberi proizvod, postavi kako blok prati jezik aplikacije i definira fallback kada prijevod ne postoji.'),
+    'language_mode' => fcc_t('Način jezika'),
+    'language_mode_app' => fcc_t('Prati jezik aplikacije'),
+    'language_mode_manual' => fcc_t('Koristi ručno odabrani jezik'),
+    'language_mode_help' => fcc_t('U modu praćenja aplikacije blok automatski pokušava otvoriti verziju proizvoda na jeziku aplikacije.'),
+    'manual_language' => fcc_t('Ručni jezik proizvoda'),
+    'manual_language_help' => fcc_t('Koristi se samo kada ne želiš pratiti jezik aplikacije.'),
+    'fallback_language' => fcc_t('Fallback jezik'),
+    'fallback_language_help' => fcc_t('Ako željeni jezik proizvoda ne postoji, blok prelazi na ovaj jezik.'),
+    'fallback_none' => fcc_t('Bez fallbacka'),
+    'app_language_note' => fcc_t('Jezik aplikacije: '),
+    'selector_language_hint' => fcc_t('Dostupni jezici proizvoda: '),
 ] : [
     'product_section' => 'Product source and language',
-    'product_section_help' => 'Choose the product, define how the block follows the app language, and set the fallback when a translation is missing.',
+    'product_section_help' => fcc_t('Choose the product, define how the block follows the app language, and set the fallback when a translation is missing.'),
     'language_mode' => 'Language mode',
-    'language_mode_app' => 'Follow the app language',
+    'language_mode_app' => fcc_t('Follow the app language'),
     'language_mode_manual' => 'Use a manually selected language',
-    'language_mode_help' => 'When the block follows the app language it automatically tries to open the product in the app language first.',
-    'manual_language' => 'Manual product language',
-    'manual_language_help' => 'Used only when the block should not follow the app language.',
-    'fallback_language' => 'Fallback language',
-    'fallback_language_help' => 'If the preferred product language is missing, the block falls back to this language.',
-    'fallback_none' => 'No fallback',
-    'app_language_note' => 'App language: ',
-    'selector_language_hint' => 'Available product languages: ',
+    'language_mode_help' => fcc_t('When the block follows the app language it automatically tries to open the product in the app language first.'),
+    'manual_language' => fcc_t('Manual product language'),
+    'manual_language_help' => fcc_t('Used only when the block should not follow the app language.'),
+    'fallback_language' => fcc_t('Fallback language'),
+    'fallback_language_help' => fcc_t('If the preferred product language is missing, the block falls back to this language.'),
+    'fallback_none' => fcc_t('No fallback'),
+    'app_language_note' => fcc_t('App language: '),
+    'selector_language_hint' => fcc_t('Available product languages: '),
 ];
 
 $fcc_active_language_codes = array_values((array) \Altum\Language::$active_languages);
+$fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language::$default_code;
+$fcc_product_market = fcc_forever_country_code($_GET['market'] ?? null);
+if(!$fcc_product_market || !isset(fcc_forever_markets()[$fcc_product_market])) $fcc_product_market = '';
 $fcc_product_language_mode = in_array($row->settings->product_language_mode ?? 'app', ['app', 'manual'], true) ? $row->settings->product_language_mode : 'app';
 $fcc_product_language_code = $row->settings->product_language_code ?? ($data->link->settings->language_code ?? \Altum\Language::$default_code);
 $fcc_product_fallback_language_code = (string) ($row->settings->product_fallback_language_code ?? 'hr');
@@ -64,8 +67,14 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
         >
             <option value=""><?= l('create_biolink_link_forever_product_modal.product_placeholder') ?></option>
             <?php foreach($data->blog_products ?? [] as $blog_product): ?>
-                <?php $is_selected_product = $fcc_product_translation_key && $fcc_product_translation_key === (string) ($blog_product->translation_key ?? '') ?>
-                <?php $is_selected_product = $is_selected_product || ((int) ($row->settings->product_blog_post_id ?? 0) === (int) $blog_product->blog_post_id) ?>
+                <?php $is_selected_product = $fcc_product_translation_key !== ''
+                    ? $fcc_product_translation_key === (string) ($blog_product->translation_key ?? '')
+                    : (int) ($row->settings->product_blog_post_id ?? 0) === (int) $blog_product->blog_post_id ?>
+                <?php foreach((array) ($blog_product->translations ?? []) as $fcc_variant) {
+                    $fcc_variant = (object) $fcc_variant;
+                    if($fcc_product_translation_key === '' && !empty($row->settings->product_blog_post_id)
+                        && (int) $row->settings->product_blog_post_id === (int) ($fcc_variant->blog_post_id ?? 0)) $is_selected_product = true;
+                } ?>
                 <option
                     value="<?= $blog_product->blog_post_id ?>"
                     data-title="<?= htmlspecialchars($blog_product->title, ENT_QUOTES) ?>"
@@ -75,6 +84,7 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
                     data-translation-key="<?= htmlspecialchars($blog_product->translation_key ?? '', ENT_QUOTES) ?>"
                     data-language-code="<?= htmlspecialchars($blog_product->language_code ?? '', ENT_QUOTES) ?>"
                     data-language-label="<?= htmlspecialchars($blog_product->available_languages_label ?? '', ENT_QUOTES) ?>"
+                    data-translations="<?= htmlspecialchars(json_encode($blog_product->translations ?? new \stdClass(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
                     <?= $is_selected_product ? 'selected="selected"' : null ?>
                 >
                     <?= $blog_product->title ?><?= !empty($blog_product->available_languages_label) ? ' [' . $blog_product->available_languages_label . ']' : '' ?>
@@ -137,7 +147,7 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
             form="<?= 'update_biolink_block_' . $row->biolink_block_id ?>"
             data-forever-product-fallback-language-code
         >
-            <option value="hr" <?= $fcc_product_fallback_language_code === 'hr' ? 'selected="selected"' : null ?>>HR</option>
+            <option value="hr" <?= $fcc_product_fallback_language_code === 'hr' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('HR'), ENT_QUOTES, 'UTF-8') ?></option>
             <?php foreach($fcc_active_language_codes as $language_code): ?>
                 <?php if($language_code === 'hr') continue ?>
                 <option value="<?= $language_code ?>" <?= $language_code === $fcc_product_fallback_language_code ? 'selected="selected"' : null ?>><?= mb_strtoupper($language_code) ?></option>
@@ -167,6 +177,8 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
 <input type="hidden" name="product_blog_post_id" value="<?= (int) ($row->settings->product_blog_post_id ?? 0) ?>" data-forever-product-blog-post-id form="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" />
 <input type="hidden" name="product_translation_key" value="<?= htmlspecialchars($fcc_product_translation_key, ENT_QUOTES, 'UTF-8') ?>" data-forever-product-translation-key form="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" />
 <input type="hidden" name="product_image_url" value="<?= $row->settings->product_image_url ?? '' ?>" data-forever-product-image-url form="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" />
+<input type="hidden" name="product_name_mode" value="<?= fcc_product_saved_text_mode($row->settings, 'name', (string) ($row->settings->product_translation_key ?? '')) ?>" data-forever-product-name-mode form="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" />
+<input type="hidden" name="product_description_mode" value="<?= fcc_product_saved_text_mode($row->settings, 'description', (string) ($row->settings->product_translation_key ?? '')) ?>" data-forever-product-description-mode form="<?= 'update_biolink_block_' . $row->biolink_block_id ?>" />
 
 <?php ob_start() ?>
 <script>
@@ -184,7 +196,11 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
     const locationInput = form.querySelector('input[name="location_url"]');
     const blockTypeInput = form.querySelector('input[name="block_type"]');
     const iconInput = form.querySelector('input[name="icon"]');
-    const languageMode = form.querySelector('[data-forever-product-language-mode]');
+    const languageMode = document.querySelector(`[data-forever-product-language-mode][form="${formId}"]`);
+    const manualLanguage = document.querySelector(`[data-forever-product-language-code][form="${formId}"]`);
+    const fallbackLanguage = document.querySelector(`[data-forever-product-fallback-language-code][form="${formId}"]`);
+    const nameModeInput = document.querySelector(`[data-forever-product-name-mode][form="${formId}"]`);
+    const descriptionModeInput = document.querySelector(`[data-forever-product-description-mode][form="${formId}"]`);
     const manualLanguageWrapper = selector.closest('.card')?.querySelector('[data-forever-product-manual-language-wrapper]');
     const descriptionInput = document.querySelector(`textarea[name="description"][form="${formId}"]`);
     const blogPostIdInput = document.querySelector(`input[name="product_blog_post_id"][form="${formId}"]`);
@@ -193,98 +209,111 @@ foreach($data->blog_products ?? [] as $fcc_blog_product) {
     const previewWrapper = selector.closest('.card')?.querySelector('[data-forever-product-preview-wrapper]');
     const previewImage = selector.closest('.card')?.querySelector('[data-forever-product-preview-image]');
     const languageHint = selector.closest('.card')?.querySelector('[data-forever-product-language-hint]');
-    const getAutoTrackedValue = (element) => element ? (element.dataset.foreverProductAutoValue || '') : '';
-    const setAutoTrackedValue = (element, value) => {
-        if(element) {
-            element.dataset.foreverProductAutoValue = value || '';
-        }
+    const appLanguage = <?= json_encode((string) $fcc_app_language_code) ?>;
+    const selectedMarket = <?= json_encode((string) $fcc_product_market) ?>;
+    const normalizeText = value => String(value || '').replace(/\s+/g, ' ').trim();
+    const inputText = (value, element) => {
+        const text = String(value || '');
+        const limit = Number(element?.maxLength);
+        return limit > 0 ? Array.from(text).slice(0, limit).join('') : text;
     };
+    const translationsFor = option => {
+        if(!option || !option.value) return {};
+        let translations = {};
+        try {
+            const parsed = JSON.parse(option.getAttribute('data-translations') || '{}');
+            if(parsed && typeof parsed === 'object' && !Array.isArray(parsed)) translations = parsed;
+        } catch(error) {
+            translations = {};
+        }
+        const preferredCode = option.getAttribute('data-language-code') || appLanguage;
+        if(preferredCode && !translations[preferredCode]) {
+            translations[preferredCode] = {
+                blog_post_id: option.value,
+                title: option.getAttribute('data-title') || '',
+                description: option.getAttribute('data-description') || '',
+                blog_url: option.getAttribute('data-url') || '',
+                image_url: option.getAttribute('data-image-url') || '',
+                language_code: preferredCode
+            };
+        }
+        return translations;
+    };
+    let currentTranslations = translationsFor(selector.options[selector.selectedIndex]);
+    const matchesAutomaticText = (element, key) => {
+        const value = normalizeText(element?.value);
+        return value === '' || Object.values(currentTranslations).some(variant => variant && normalizeText(inputText(variant[key], element)) === value);
+    };
+    const initializeTextMode = (element, modeInput, key) => {
+        if(!element || !modeInput) return;
+        if(!['auto', 'custom'].includes(modeInput.value)) {
+            modeInput.value = matchesAutomaticText(element, key) ? 'auto' : 'custom';
+        }
+        const trackTextEdit = () => {
+            modeInput.value = matchesAutomaticText(element, key) ? 'auto' : 'custom';
+        };
+        element.addEventListener('input', trackTextEdit);
+        element.addEventListener('change', trackTextEdit);
+    };
+    initializeTextMode(nameInput, nameModeInput, 'title');
+    initializeTextMode(descriptionInput, descriptionModeInput, 'description');
 
     const syncLanguageMode = () => {
-        if(!manualLanguageWrapper || !languageMode) {
-            return;
+        if(manualLanguageWrapper && languageMode) {
+            manualLanguageWrapper.style.display = languageMode.value === 'manual' ? '' : 'none';
         }
-
-        manualLanguageWrapper.style.display = languageMode.value === 'manual' ? '' : 'none';
     };
-
+    const productUrl = value => {
+        if(!value || !selectedMarket) return value || '';
+        try {
+            const url = new URL(value, window.location.href);
+            url.searchParams.set('market', selectedMarket);
+            return url.href;
+        } catch(error) {
+            return value;
+        }
+    };
     const applySelectedProduct = () => {
         const option = selector.options[selector.selectedIndex];
-        if(!option || !option.value) {
-            if(blogPostIdInput) blogPostIdInput.value = 0;
-            if(translationKeyInput) translationKeyInput.value = '';
-            if(imageUrlInput) imageUrlInput.value = '';
-            if(previewWrapper) previewWrapper.style.display = 'none';
-            if(languageHint) {
-                languageHint.textContent = '';
-                languageHint.classList.add('d-none');
-            }
-            return;
-        }
+        currentTranslations = translationsFor(option);
+        const targetLanguage = languageMode?.value === 'manual' ? manualLanguage?.value : appLanguage;
+        const fallbackCode = fallbackLanguage?.value || '';
+        const variant = currentTranslations[targetLanguage] || (fallbackCode ? currentTranslations[fallbackCode] : null);
+        const translationKey = option?.value ? option.getAttribute('data-translation-key') || '' : '';
+        const languageLabel = option?.value ? option.getAttribute('data-language-label') || Object.keys(currentTranslations).map(code => code.toUpperCase()).join(' / ') : '';
 
-        const selectedTitle = option.getAttribute('data-title') || '';
-        const selectedDescription = option.getAttribute('data-description') || '';
-        const selectedUrl = option.getAttribute('data-url') || '';
-        const selectedImageUrl = option.getAttribute('data-image-url') || '';
-        const translationKey = option.getAttribute('data-translation-key') || '';
-        const languageLabel = option.getAttribute('data-language-label') || '';
-        const previousAutoName = getAutoTrackedValue(nameInput);
-        const previousAutoDescription = getAutoTrackedValue(descriptionInput);
-
-        if(blogPostIdInput) blogPostIdInput.value = option.value;
+        if(blogPostIdInput) blogPostIdInput.value = variant?.blog_post_id || 0;
         if(translationKeyInput) translationKeyInput.value = translationKey;
-        if(imageUrlInput) imageUrlInput.value = selectedImageUrl;
-        if(locationInput) locationInput.value = selectedUrl;
-        if(nameInput && (nameInput.value.trim() === '' || nameInput.value === previousAutoName)) {
-            nameInput.value = selectedTitle;
-        }
-        if(descriptionInput && (descriptionInput.value.trim() === '' || descriptionInput.value === previousAutoDescription)) {
-            descriptionInput.value = selectedDescription;
-        }
-        setAutoTrackedValue(nameInput, selectedTitle);
-        setAutoTrackedValue(descriptionInput, selectedDescription);
+        if(locationInput) locationInput.value = productUrl(variant?.blog_url || '');
+        if(imageUrlInput) imageUrlInput.value = variant?.image_url || '';
+        if(nameInput && nameModeInput?.value === 'auto') nameInput.value = inputText(variant?.title, nameInput);
+        if(descriptionInput && descriptionModeInput?.value === 'auto') descriptionInput.value = inputText(variant?.description, descriptionInput);
 
         if(languageHint) {
-            if(languageLabel) {
-                languageHint.textContent = <?= json_encode($fcc_forever_product_copy['selector_language_hint']) ?> + languageLabel;
-                languageHint.classList.remove('d-none');
-            } else {
-                languageHint.textContent = '';
-                languageHint.classList.add('d-none');
-            }
+            languageHint.textContent = languageLabel ? <?= json_encode($fcc_forever_product_copy['selector_language_hint']) ?> + languageLabel : '';
+            languageHint.classList.toggle('d-none', !languageLabel);
         }
-
         if(previewWrapper && previewImage) {
-            if(selectedImageUrl) {
-                previewImage.src = selectedImageUrl;
-                previewWrapper.style.display = '';
-            } else {
-                previewImage.src = '';
-                previewWrapper.style.display = 'none';
-            }
+            previewImage.src = variant?.image_url || '';
+            previewWrapper.style.display = variant?.image_url ? '' : 'none';
         }
     };
 
-    if(blockTypeInput) {
-        blockTypeInput.value = 'link_forever_product';
-    }
+    selector.addEventListener('change', applySelectedProduct);
+    languageMode?.addEventListener('change', () => {
+        syncLanguageMode();
+        applySelectedProduct();
+    });
+    manualLanguage?.addEventListener('change', applySelectedProduct);
+    fallbackLanguage?.addEventListener('change', applySelectedProduct);
+    syncLanguageMode();
+    if(selector.options[selector.selectedIndex]?.value) applySelectedProduct();
 
+    if(blockTypeInput) blockTypeInput.value = 'link_forever_product';
     if(iconInput) {
         iconInput.value = '';
         const iconGroup = iconInput.closest('.form-group');
-        if(iconGroup) {
-            iconGroup.style.display = 'none';
-        }
-    }
-
-    const initiallySelectedOption = selector.options[selector.selectedIndex];
-    setAutoTrackedValue(nameInput, initiallySelectedOption?.getAttribute('data-title') || '');
-    setAutoTrackedValue(descriptionInput, initiallySelectedOption?.getAttribute('data-description') || '');
-
-    selector.addEventListener('change', applySelectedProduct);
-    if(languageMode) {
-        languageMode.addEventListener('change', syncLanguageMode);
-        syncLanguageMode();
+        if(iconGroup) iconGroup.style.display = 'none';
     }
 
     const parentModal = $(selector).closest('.modal');

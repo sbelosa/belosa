@@ -3646,3 +3646,7 @@ body.fcc-blog-route .footer.app-footer {
 	}
 }
 /* /Custom code: FC-2026-02-26 */
+
+/* Text fallback when no site logo is configured: match the dark public navbar. */
+body.index #navbar.navbar-main .navbar-brand { color: #f3faf7 !important; }
+body.index #navbar.navbar-main .navbar-brand:hover { color: #bde9d9 !important; }

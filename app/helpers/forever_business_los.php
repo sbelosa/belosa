@@ -36,7 +36,7 @@ function forever_business_los_rows(string $query): array {
     $rows = [];
     $result = database()->query($query);
     if(!$result) {
-        throw new \RuntimeException('Moj Forever LOS query could not be completed safely.');
+        throw new \RuntimeException(fcc_t('Moj Forever LOS query could not be completed safely.'));
     }
     while($result && $row = $result->fetch_assoc()) {
         $rows[] = $row;
@@ -47,7 +47,7 @@ function forever_business_los_rows(string $query): array {
 function forever_business_los_row(string $query): array {
     $result = database()->query($query);
     if(!$result) {
-        throw new \RuntimeException('Moj Forever LOS query could not be completed safely.');
+        throw new \RuntimeException(fcc_t('Moj Forever LOS query could not be completed safely.'));
     }
     return $result && ($row = $result->fetch_assoc()) ? $row : [];
 }
@@ -638,7 +638,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             SUBSTRING_INDEX(GROUP_CONCAT(`action_key` ORDER BY `action_date` ASC, `outcome_id` ASC SEPARATOR ','), ',', 1) AS `action_key`
         FROM `forever_business_daily_outcomes`
         WHERE `status` = 'done'
-          AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+          AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[1-5][0-9]|60)$'
         GROUP BY `fbo_id`");
     foreach($started_path_rows as $row) {
         $started_fbo_id = (string) ($row['fbo_id'] ?? '');
@@ -692,7 +692,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             SUBSTRING_INDEX(SUBSTRING_INDEX(GROUP_CONCAT(
                 CASE WHEN `outcome`.`action_key` NOT LIKE 'vip26\\_sunday\\_%' THEN DATE_FORMAT(`outcome`.`action_date`, '%Y-%m-%d') END
                 ORDER BY `outcome`.`action_date` ASC, `outcome`.`outcome_id` ASC SEPARATOR ','
-            ), ',', 30), ',', -1) AS `completion_at`
+            ), ',', 60), ',', -1) AS `completion_at`
         FROM `forever_business_daily_outcomes` `outcome`
         LEFT JOIN `users` `account` ON `account`.`user_id` = `outcome`.`recorded_by_user_id`
         WHERE `outcome`.`status` = 'done'
@@ -707,7 +707,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         $participants[$participant_id]['started_at'] = $row['started_at'] ?: null;
         $participants[$participant_id]['last_task_date'] = $row['last_task_date'] ?: null;
         $participants[$participant_id]['vip_steps_completed'] = (int) ($row['vip_steps_completed'] ?? 0);
-        $participants[$participant_id]['completed_at'] = $participants[$participant_id]['vip_steps_completed'] >= 30
+        $participants[$participant_id]['completed_at'] = $participants[$participant_id]['vip_steps_completed'] >= 60
             ? ($row['completion_at'] ?: null)
             : null;
     }
@@ -743,11 +743,11 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
     }
 
     /* Lifetime progress remains available in vip_steps_completed. The active
-     * 30-step cycle is counted independently per track so a promotion starts
+     * 60-step cycle is counted independently per track so a promotion starts
      * at day one without erasing any earlier outcome. */
     $sequence_position_sql = isset($outcome_columns['sequence_position'])
         ? "CASE
-                WHEN `outcome`.`sequence_position` BETWEEN 1 AND 30 THEN `outcome`.`sequence_position`
+                WHEN `outcome`.`sequence_position` BETWEEN 1 AND 60 THEN `outcome`.`sequence_position`
                 WHEN `outcome`.`action_key` = 'vip26_activator_d01_biolink' THEN 1
                 ELSE CAST(RIGHT(`outcome`.`action_key`, 2) AS UNSIGNED)
             END"
@@ -759,7 +759,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             SUBSTRING_INDEX(GROUP_CONCAT(`track_progress`.`fbo_id` ORDER BY `track_progress`.`outcome_id` DESC SEPARATOR ','), ',', 1) AS `fbo_id`,
             MAX(`account`.`name`) AS `account_name`, `track_progress`.`track_key`, MAX(`track_progress`.`sequence_position`) AS `steps_completed`,
             MIN(`track_progress`.`action_date`) AS `started_at`, MAX(`track_progress`.`action_date`) AS `last_task_date`,
-            MAX(CASE WHEN `track_progress`.`sequence_position` = 30 THEN `track_progress`.`action_date` END) AS `completion_at`
+            MAX(CASE WHEN `track_progress`.`sequence_position` = 60 THEN `track_progress`.`action_date` END) AS `completion_at`
         FROM (
             SELECT `outcome`.`outcome_id`, `outcome`.`recorded_by_user_id`, `outcome`.`fbo_id`, `outcome`.`action_date`,
                 CASE
@@ -776,8 +776,8 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
               AND `outcome`.`recorded_by_user_id` IS NOT NULL
               AND `outcome`.`recorded_by_user_id` > 0
               AND (
-                  `outcome`.`action_key` REGEXP '^vip26_(starter|reactivation|builder|leader)_d(0[1-9]|[12][0-9]|30)$'
-                  OR `outcome`.`action_key` REGEXP '^vip26_activator_d(0[2-9]|[12][0-9]|30)$'
+                  `outcome`.`action_key` REGEXP '^vip26_(starter|reactivation|builder|leader)_d(0[1-9]|[1-5][0-9]|60)$'
+                  OR `outcome`.`action_key` REGEXP '^vip26_activator_d(0[2-9]|[1-5][0-9]|60)$'
                   OR `outcome`.`action_key` = 'vip26_activator_d01_biolink'
               )
         ) `track_progress`
@@ -794,7 +794,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
             'steps_completed' => $steps_completed,
             'started_at' => $row['started_at'] ?: null,
             'last_task_date' => $row['last_task_date'] ?: null,
-            'completed_at' => $steps_completed >= 30 ? ($row['completion_at'] ?: null) : null,
+            'completed_at' => $steps_completed >= 60 ? ($row['completion_at'] ?: null) : null,
         ];
     }
 
@@ -826,7 +826,7 @@ function forever_business_get_los_admin_analytics(int $admin_user_id, int $windo
         $participant['vip_current_track_started_at'] = $current_track_progress['started_at'] ?? null;
         $participant['vip_current_track_last_task_date'] = $current_track_progress['last_task_date'] ?? null;
         $participant['vip_current_track_completed_at'] = $current_track_progress['completed_at'] ?? null;
-        $participant['is_current_track_complete'] = $participant['vip_current_track_steps_completed'] >= 30;
+        $participant['is_current_track_complete'] = $participant['vip_current_track_steps_completed'] >= 60;
 
         $available_at = match($participant['track']) {
             'activator' => $participant['vip_activator_achieved_at'] ?? null,

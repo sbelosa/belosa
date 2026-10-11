@@ -1,361 +1,106 @@
-<?php defined('ALTUMCODE') || die() ?>
-
+<?php defined('ALTUMCODE') || die();
+require_once APP_PATH . 'helpers/fcc_email_design.php';
+$email_copy = fc_email_design_copy($data->language);
+$email_locale = \Altum\Language::$active_languages[$data->language] ?? 'en';
+$email_direction = l('direction', $data->language) === 'rtl' ? 'rtl' : 'ltr';
+$email_title = trim((string) ($data->title ?? '')) ?: settings()->main->title;
+$email_preheader = mb_substr(preg_replace('/\s+/u', ' ', fc_email_plain_text($data->content)), 0, 160);
+$email_site_url = fc_get_site_url();
+$email_logo = !empty(settings()->main->logo_email) ? \Altum\Uploads::get_full_url('logo_email') . settings()->main->logo_email : '';
+$email_link_style = 'color:#106653;text-decoration:underline;font-weight:600;';
+?>
 <!doctype html>
-<html lang="<?= \Altum\Language::$active_languages[$data->language] ?>" dir="<?= l('direction', $data->language) ?>">
+<html lang="<?= e($email_locale) ?>" dir="<?= $email_direction ?>" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-    <meta name="viewport" content="width=device-width" />
     <meta charset="UTF-8">
-    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title><?= e($email_title) ?></title>
+    <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
     <style>
-        img {
-            border: none;
-            -ms-interpolation-mode: bicubic;
-            max-width: 100%;
-            margin-bottom: 15px;
-        }
-
-        body {
-            background-color: #fff;
-            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
-            -webkit-font-smoothing: antialiased;
-            font-size: 16px;
-            line-height: 1.3;
-            margin: 0;
-            padding: 0;
-            -ms-text-size-adjust: 100%;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        table {
-            border-collapse: separate;
-            mso-table-lspace: 0pt;
-            mso-table-rspace: 0pt;
-            width: 100%;
-        }
-
-        table td {
-            font-size: 16px;
-            vertical-align: top;
-        }
-
-        .body {
-            background-color: #fff;
-            width: 100%;
-            direction: <?= l('direction', $data->language) ?>;
-        }
-
-        /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
-        .container {
-            display: block;
-            margin: 0 auto !important;
-            /* makes it centered */
-            max-width: 620px;
-            padding: 10px;
-            width: 620px;
-        }
-
-        /* This should also be a block element, so that it will fill 100% of the .container */
-        .content {
-            box-sizing: border-box;
-            display: block;
-            margin: 0 auto;
-            max-width: 620px;
-            padding: 10px;
-        }
-
-        /* -------------------------------------
-            HEADER, FOOTER, MAIN
-        ------------------------------------- */
-
-        .header a {
-            text-decoration: none;
-        }
-
-        .logo {
-            width: 180px;
-            max-width: 180px;
-            height: auto;
-            max-height: 56px;
-            margin-bottom: 20px;
-        }
-
-        .main {
-            background: #f7f7f7;
-            border-radius: <?= settings()->smtp->main_container_border_radius ?? '10' ?>px;
-            width: 100%;
-        }
-
-        .wrapper {
-            box-sizing: border-box;
-            padding: 30px;
-        }
-
-        .content-block {
-            padding-bottom: 10px;
-            padding-top: 10px;
-        }
-
-        .footer {
-            clear: both;
-            margin-top: 10px;
-            text-align: center;
-            width: 100%;
-        }
-        .footer td,
-        .footer p,
-        .footer span,
-        .footer a {
-            color: #6f6f6f;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        /* -------------------------------------
-            TYPOGRAPHY
-        ------------------------------------- */
-        h1,
-        h2,
-        h3,
-        h4 {
-            color: #000000;
-
-            font-weight: 500;
-            line-height: 1.3;
-            margin: 0;
-            margin-bottom: 17.5px;
-        }
-
-        h1 {
-            font-size: 30px;
-        }
-
-        p,
-        ul,
-        ol {
-
-            font-size: 16px;
-            font-weight: normal;
-            margin: 0;
-            margin-bottom: 15px;
-        }
-        p li,
-        ul li,
-        ol li {
-            list-style-position: inside;
-            margin-left: 5px;
-        }
-
-        a {
-            color: #13b9c9;
-            text-decoration: underline;
-            font-weight: 600;
-        }
-
-        a.cta {
-            color: <?= settings()->smtp->button_text_color ?? '#ffffff' ?>;
-            background-color: <?= settings()->smtp->button_background_color ?? '#1b1b1b' ?>;
-            padding: 10px 14px;
-            text-decoration: none;
-            border-radius: <?= settings()->smtp->button_border_radius ?? '10' ?>px;
-            font-weight: 600;
-        }
-
-        /* -------------------------------------
-            BUTTONS
-        ------------------------------------- */
-        .btn {
-            box-sizing: border-box;
-            width: 100%;
-        }
-
-        .btn > tbody > tr > td {
-            padding-bottom: 15px;
-        }
-
-        .btn table {
-            width: auto;
-        }
-
-        .btn table td {
-            background-color: #ffffff;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .btn a {
-            color: <?= settings()->smtp->button_text_color ?? '#ffffff' ?>;
-            background-color: <?= settings()->smtp->button_background_color ?? '#1b1b1b' ?>;
-            border-radius: <?= settings()->smtp->button_border_radius ?? '10' ?>px;
-            border: 0;
-            box-sizing: border-box;
-            cursor: pointer;
-            display: inline-block;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 0;
-            padding: 10px 16px;
-            text-decoration: none;
-        }
-
-        @media only screen and (max-width: 640px) {
-            .wrapper {
-                padding: 20px !important;
-            }
-            .content {
-                padding: 7.5px !important;
-            }
-            .container {
-                padding: 0 !important;
-                width: 100% !important;
-            }
-            .btn table {
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-            .btn a {
-                font-size: 16px !important;
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-        }
-
-        .note {
-            font-size: 14px;
-            color: #6f6f6f;
-        }
-
-        .align-center {
-            text-align: center;
-        }
-
-        .align-right {
-            text-align: right;
-        }
-
-        .align-left {
-            text-align: left;
-        }
-
-        .mt0 {
-            margin-top: 0;
-        }
-
-        .mb0 {
-            margin-bottom: 0;
-        }
-
-        .powered-by a {
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        hr {
-            border: 0;
-            border-bottom: 1px solid transparent;
-            margin: 10px 0;
-        }
-
-        .word-break-all {
-            word-break: break-all;
+        body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+        table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+        img { border:0; -ms-interpolation-mode:bicubic; }
+        a[x-apple-data-detectors] { color:inherit !important; font:inherit !important; }
+        .fcc-email-content { overflow-wrap:anywhere; word-wrap:break-word; }
+        .fcc-email-content img { max-width:100% !important; height:auto !important; }
+        .fcc-email-content table { max-width:100% !important; }
+        @media screen and (max-width:640px) {
+            .fcc-email-gutter { padding:16px 10px !important; }
+            .fcc-email-brand { padding:24px !important; }
+            .fcc-email-hero { padding:26px 24px !important; }
+            .fcc-email-title { font-size:26px !important; line-height:1.25 !important; }
+            .fcc-email-content { padding:28px 24px !important; }
+            .fcc-email-meta { padding:0 24px 26px !important; }
+            .fcc-email-footer { padding:24px 14px !important; }
+            .fcc-email-button { white-space:normal !important; }
         }
     </style>
 </head>
-<body>
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+<body style="margin:0;padding:0;width:100%;background-color:#edf3ef;color:#143d35;font-family:Arial,Helvetica,sans-serif;">
+<div class="fcc-email-preheader" style="display:none;font-size:1px;line-height:1px;color:#edf3ef;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;"><?= e($email_preheader) ?></div>
+<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#edf3ef" style="width:100%;table-layout:fixed;background-color:#edf3ef;">
     <tr>
-        <td>&nbsp;</td>
-        <td class="container">
-            <div class="content">
-
-                <div class="header align-center">
-                    <a href="<?= url() ?>">
-                        <?php if(!empty(settings()->main->logo_email)): ?>
-                            <!-- Custom code: FC-2026-03-24: reduce email logo size across all mail clients -->
-                            <img src="<?= \Altum\Uploads::get_full_url('logo_email') . settings()->main->logo_email ?>" class="logo" alt="<?= settings()->main->title ?>" width="180" style="display:inline-block;width:180px;max-width:180px;height:auto;max-height:56px;" />
-                            <!-- /Custom code: FC-2026-03-24 -->
-                        <?php else: ?>
-                            <h1><?= settings()->main->title ?></h1>
+        <td align="center" class="fcc-email-gutter" style="padding:36px 16px;direction:<?= $email_direction ?>;">
+            <!--[if mso]><table role="presentation" width="640" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+            <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="fcc-email-shell" style="width:100%;max-width:640px;table-layout:fixed;margin:0 auto;">
+                <tr><td>
+                    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="width:100%;table-layout:fixed;background-color:#ffffff;border:1px solid #dbe6df;border-radius:22px;border-collapse:separate;">
+                        <tr><td class="fcc-email-brand" style="padding:28px 36px;">
+                            <a href="<?= e($email_site_url) ?>" style="color:#143d35;font-size:23px;font-weight:700;text-decoration:none;">
+                                <?php if($email_logo): ?>
+                                    <img src="<?= e($email_logo) ?>" width="190" alt="<?= e(settings()->main->title) ?>" style="display:block;width:190px;max-width:100%;height:auto;border:0;">
+                                <?php else: ?><?= e(settings()->main->title) ?><?php endif ?>
+                            </a>
+                            <p style="margin:12px 0 0;color:#526b64;font-size:12px;line-height:1.5;"><?= e($email_copy['tagline']) ?></p>
+                        </td></tr>
+                        <tr><td class="fcc-email-hero" bgcolor="#143d35" style="padding:30px 36px;background-color:#143d35;">
+                            <p style="margin:0 0 12px;color:#bed9ca;font-size:10px;font-weight:700;line-height:1.5;letter-spacing:2px;">FOREVER CARD CLUB</p>
+                            <h1 class="fcc-email-title" style="margin:0;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:30px;font-weight:700;line-height:1.25;overflow-wrap:anywhere;"><?= e($email_title) ?></h1>
+                        </td></tr>
+                        <tr><td class="fcc-email-content" style="padding:34px 36px 30px;color:#143d35;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;text-align:<?= $email_direction === 'rtl' ? 'right' : 'left' ?>;overflow-wrap:anywhere;word-wrap:break-word;">
+                            <?= $data->content ?>
+                        </td></tr>
+                        <?php if(!empty($data->unsubscribe_url) && !$data->is_system_email): ?>
+                        <tr><td class="fcc-email-meta" style="padding:0 36px 26px;">
+                            <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td style="padding-top:20px;border-top:1px solid #dbe6df;color:#526b64;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;">
+                                <?= e($email_copy['unsubscribe_text']) ?><br>
+                                <a href="<?= e($data->unsubscribe_url) ?>" style="<?= $email_link_style ?>"><?= e($email_copy['unsubscribe_link']) ?></a>
+                            </td></tr></table>
+                        </td></tr>
                         <?php endif ?>
-                    </a>
-                </div>
-
-                <!-- START CENTERED WHITE CONTAINER -->
-                <table role="presentation" class="main">
-
-                    <!-- START MAIN CONTENT AREA -->
-                    <tr>
-                        <td class="wrapper">
-                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td>
-                                        <?= $data->content ?>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <?php if(!empty($data->unsubscribe_url) && !$data->is_system_email): ?>
-                                <hr />
-                                <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                                    <tr>
-                                        <td class="note align-center">
-                                            <?php $unsubscribe_copy = fc_get_email_unsubscribe_footer_copy($data->language ?? null); ?>
-                                            <small><?= e($unsubscribe_copy['text']) ?> <a href="<?= $data->unsubscribe_url ?>"><?= e($unsubscribe_copy['link']) ?></a></small>
-                                        </td>
-                                    </tr>
-                                </table>
-                            <?php endif ?>
-
-                            <?php if($data->anti_phishing_code): ?>
-                                <hr />
-                                <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                                    <tr>
-                                        <td class="note align-center">
-                                            <small><?= sprintf(l('global.emails.anti_phishing_code', $data->language), '<strong>' . $data->anti_phishing_code . '</strong>') ?></small>
-                                        </td>
-                                    </tr>
-                                </table>
-                            <?php endif ?>
-                        </td>
-                    </tr>
-
-                    <!-- END MAIN CONTENT AREA -->
-                </table>
-
-                <!-- START FOOTER -->
-                <div class="footer">
-                    <p class="content-block powered-by mb0">
-                        <?php $email_site_url = fc_get_site_url(); ?>
-                        <?= sprintf(l('global.emails.copyright', $data->language), date('Y'), '<a href="' . url() . '">' . settings()->main->title . '</a>' . ' • ' . rtrim(remove_url_protocol_from_url($email_site_url), '/')) ?>
+                        <?php if(!empty($data->anti_phishing_code)): ?>
+                        <tr><td class="fcc-email-meta" style="padding:0 36px 26px;">
+                            <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"><tr><td bgcolor="#edf3ef" style="padding:14px 18px;border-radius:10px;background-color:#edf3ef;color:#526b64;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;">
+                                <?= sprintf(l('global.emails.anti_phishing_code', $data->language), '<strong style="color:#143d35;">' . e($data->anti_phishing_code) . '</strong>') ?>
+                            </td></tr></table>
+                        </td></tr>
+                        <?php endif ?>
+                    </table>
+                </td></tr>
+                <tr><td align="center" class="fcc-email-footer" style="padding:26px 28px;color:#526b64;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;text-align:center;">
+                    <p style="margin:0 0 12px;"><?= e($email_copy['help']) ?> <a href="mailto:info@forevercard.club" style="<?= $email_link_style ?>"><?= e($email_copy['contact']) ?></a></p>
+                    <p style="margin:0 0 8px;">&copy; <?= date('Y') ?> <?= e(settings()->main->title) ?><br>
+                        <a href="<?= e($email_site_url) ?>" style="<?= $email_link_style ?>"><?= e(rtrim(remove_url_protocol_from_url($email_site_url), '/')) ?></a>
+                        &nbsp;&middot;&nbsp; <a href="<?= e(fcc_legal_url('privacy')) ?>" style="<?= $email_link_style ?>"><?= e($email_copy['privacy']) ?></a>
                     </p>
-                </div>
-                <!-- END FOOTER -->
-
-                <!-- SOCIALS -->
-                <?php if(settings()->smtp->display_socials): ?>
-                    <div class="content-block" style="text-align: center">
-                        <?php foreach(require APP_PATH . 'includes/admin_socials.php' as $key => $value): ?>
-                            <?php if(isset(settings()->socials->{$key}) && !empty(settings()->socials->{$key})): ?>
-                                <a href="<?= sprintf($value['format'], settings()->socials->{$key}) ?>" style="padding-right: 5px; padding-left: 5px; line-height: 30px;text-decoration: none !important;" target="_blank" title="<?= $value['name'] ?>">
-                                    <img src="<?= ASSETS_FULL_URL . 'images/email/' . $key . '.png' ?>" style="width: 20px; height: auto;" width="20" height="auto" alt="<?= $value['name'] ?>" />
-                                </a>
+                    <?php if(!empty(settings()->smtp->company_details)): ?>
+                        <p style="margin:12px 0 0;font-size:11px;line-height:1.6;"><?= nl2br(e(settings()->smtp->company_details)) ?></p>
+                    <?php endif ?>
+                    <?php if(!empty(settings()->smtp->display_socials)): ?>
+                        <p style="margin:16px 0 0;">
+                        <?php foreach(require APP_PATH . 'includes/admin_socials.php' as $key => $social): ?>
+                            <?php if(!empty(settings()->socials->{$key})): ?>
+                                <a href="<?= e(sprintf($social['format'], settings()->socials->{$key})) ?>" style="display:inline-block;margin:0 6px;text-decoration:none;"><img src="<?= e(ASSETS_FULL_URL . 'images/email/' . $key . '.png') ?>" width="20" height="20" alt="<?= e($social['name']) ?>" style="border:0;width:20px;height:20px;"></a>
                             <?php endif ?>
                         <?php endforeach ?>
-                    </div>
-                <?php endif ?>
-                <!-- END SOCIALS -->
-
-                <!-- COMPANY -->
-                <?php if(settings()->smtp->company_details): ?>
-                    <div class="footer">
-                        <p class="content-block" style="text-align: center"><?= nl2br(settings()->smtp->company_details) ?></p>
-                    </div>
-                <?php endif ?>
-                <!-- END COMPANY -->
-
-                <!-- END CENTERED WHITE CONTAINER -->
-            </div>
+                        </p>
+                    <?php endif ?>
+                </td></tr>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
         </td>
-        <td>&nbsp;</td>
     </tr>
 </table>
 </body>

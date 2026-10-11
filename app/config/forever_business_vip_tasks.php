@@ -3,7 +3,7 @@
 defined('ALTUMCODE') || die();
 
 return <<<'VIP_TASKS'
-# FCC VIP 4 Core — 30 koraka po edukacijskoj razini
+# FCC VIP 4 Core — 60 koraka po edukacijskoj razini
 
 Dobro došao/la u edukaciju koja kroz male dnevne korake pomaže graditi sigurnost, dobre razgovore i stabilan 4 Core ritam.
 
@@ -19,7 +19,7 @@ Početak programa: 1. rujna 2026.
 - Pristup VIP WhatsApp grupi: https://chat.whatsapp.com/G0Mxgm8yXfrIDAOxNqPbmw?mode=gi_t
 - Tjedni Marketing plan: svake nedjelje u 19:00, s novim terminom od 27. rujna 2026., na https://forevercard.club/vip-edukacija
 - Nakon svake uspješne sinkronizacije FCC provjerava treba li osobu prebaciti na višu razinu.
-- Svaka edukacijska razina ima vlastitih 30 redovnih koraka. Kada potvrđeni rezultat otvori višu razinu, ona kreće od 1. koraka, a svi ranije dovršeni zadaci i rezultati ostaju spremljeni. Nedjeljni zadaci ne preskaču nijedan redovni korak. Novi mjesec ne spušta osobu na nižu razinu niti briše napredak samo zato što mjesečni CC ponovno kreće od nule.
+- Svaka edukacijska razina ima vlastitih 60 redovnih koraka (postojećih 30 i novih 30 za primjenu). Kada potvrđeni rezultat otvori višu razinu, ona kreće od 1. koraka, a svi ranije dovršeni zadaci i rezultati ostaju spremljeni. Nedjeljni zadaci ne preskaču nijedan redovni korak. Novi mjesec ne spušta osobu na nižu razinu niti briše napredak samo zato što mjesečni CC ponovno kreće od nule.
 - Svaki redovni zadatak traje približno 10–25 minuta. Kada je puni korak prevelik, odaberi kraću verziju i zadrži ritam. Ako zapneš, mentor ti može pomoći pronaći sljedeći mali korak.
 - Razgovaramo prvenstveno s ljudima koje poznajemo i koji su otvoreni čuti više. Svaku poruku prilagođavamo stvarnom odnosu; primjeri su inspiracija, a ne skripte koje treba doslovno kopirati.
 - O proizvodima govorimo iz vlastitog iskustva i pokazujemo točan način korištenja iz aktualnih Forever uputa. O poslovanju govorimo otvoreno, realno i svojim riječima.

@@ -15,6 +15,7 @@
  */
 
 defined('ALTUMCODE') || die();
+require_once __DIR__ . '/fcc_email_design.php';
 
 function get_email_template($email_template_subject_array, $email_template_subject, $email_template_body_array, $email_template_body) {
 
@@ -66,9 +67,11 @@ function process_send_mail_template($title, $content, $data = []) {
     /* Custom code: FC-2026-03-24: use Croatian as outbound email language */
     $email_language = fc_resolve_email_language_name($data['language'] ?? settings()->main->default_language);
     /* /Custom code: FC-2026-03-24 */
+    $content = fc_email_design_content($content);
 
     /* Get the email template */
     $email_template = include_view(THEME_PATH . 'views/partials/email_wrapper.php', [
+        'title' => $title,
         'is_broadcast' => $data['is_broadcast'] ?? null,
         'is_system_email' => $data['is_system_email'] ?? true,
         /* Custom code: FC-2026-03-19: render one-click unsubscribe footer in shared wrapper */
@@ -85,6 +88,7 @@ function process_send_mail_template($title, $content, $data = []) {
         'title' => $title,
         'content' => $content,
         'email_template' => $email_template,
+        'text_template' => fc_email_plain_text($email_template),
     ];
 }
 
@@ -360,7 +364,7 @@ function send_brevo_mail($to, $title, $content, $data = [], $reply_to = null, $d
         'to' => $to_payload,
         'subject' => $title,
         'htmlContent' => $email_template,
-        'textContent' => strip_tags($email_template),
+        'textContent' => $data['text_content'] ?? $text_template,
     ];
 
     /* Custom code: FC-2026-03-19: support Brevo tags and transport response metadata */
@@ -601,7 +605,7 @@ function send_smtp_mail($to, $title, $content, $data = [], $reply_to = null, $de
         }
 
         /* CC */
-        if(settings()->smtp->cc) {
+        if(empty($data['skip_default_copies']) && settings()->smtp->cc) {
             $cc_emails = explode(',', settings()->smtp->cc);
             foreach($cc_emails as $email) {
                 $mail->addCC($email);
@@ -609,7 +613,7 @@ function send_smtp_mail($to, $title, $content, $data = [], $reply_to = null, $de
         }
 
         /* BCC */
-        if(settings()->smtp->bcc) {
+        if(empty($data['skip_default_copies']) && settings()->smtp->bcc) {
             $bcc_emails = explode(',', settings()->smtp->bcc);
             foreach($bcc_emails as $email) {
                 $mail->addBCC($email);
@@ -619,7 +623,7 @@ function send_smtp_mail($to, $title, $content, $data = [], $reply_to = null, $de
         /* Email title & content */
         $mail->Subject = $title;
         $mail->Body = $email_template;
-        $mail->AltBody = strip_tags($mail->Body);
+        $mail->AltBody = $data['text_content'] ?? $text_template;
 
         /* Save errors in array for debugging */
         $errors = [];

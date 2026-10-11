@@ -54,12 +54,12 @@ $difficulty_labels = [
     'easy' => l('admin_leader_operating_system.forever.difficulty.easy'),
     'normal' => l('admin_leader_operating_system.forever.difficulty.normal'),
     'hard' => l('admin_leader_operating_system.forever.difficulty.hard'),
-    'unspecified' => 'Nije evidentirano',
+    'unspecified' => fcc_t('Nije evidentirano'),
 ];
 $completion_mode_labels = [
-    'standard' => 'Puni korak',
-    'quick' => 'Brzi korak',
-    'unspecified' => 'Nije evidentirano',
+    'standard' => fcc_t('Puni korak'),
+    'quick' => fcc_t('Brzi korak'),
+    'unspecified' => fcc_t('Nije evidentirano'),
 ];
 $outcome_dimension_labels = [
     'result_type' => $result_type_labels,
@@ -84,8 +84,8 @@ $outcome_dimension_titles = [
     'result_type' => l('admin_leader_operating_system.forever.outcomes.result_type'),
     'core' => l('admin_leader_operating_system.forever.outcomes.core'),
     'track' => l('admin_leader_operating_system.forever.outcomes.track'),
-    'difficulty' => 'Zahtjevnost dovršenih koraka',
-    'completion_mode' => 'Način dovršavanja',
+    'difficulty' => fcc_t('Zahtjevnost dovršenih koraka'),
+    'completion_mode' => fcc_t('Način dovršavanja'),
 ];
 $global_metric_label = !empty($global['is_official_snapshot'])
     ? l('admin_leader_operating_system.forever.global_metric_official')
@@ -156,14 +156,14 @@ $global_metric_label = !empty($global['is_official_snapshot'])
         $kpi_cards = [
             ['qualified', l('admin_leader_operating_system.forever.kpi.qualified'), 'fa-check-circle', false],
             ['enrolled', l('admin_leader_operating_system.forever.kpi.enrolled'), 'fa-user-plus', true],
-            ['started', 'Pokrenuli trenutačnu razinu', 'fa-play-circle', true],
-            ['completed', 'Dovršili trenutačnu razinu', 'fa-flag-checkered', true],
+            ['started', fcc_t('Pokrenuli trenutačnu razinu'), 'fa-play-circle', true],
+            ['completed', fcc_t('Dovršili trenutačnu razinu'), 'fa-flag-checkered', true],
             ['active', l('admin_leader_operating_system.forever.kpi.active'), 'fa-bolt', false],
             ['tasks', l('admin_leader_operating_system.forever.kpi.tasks'), 'fa-tasks', false],
-            ['standard_tasks', 'Puni koraci', 'fa-check-double', false],
-            ['quick_tasks', 'Brzi koraci', 'fa-stopwatch', false],
-            ['hard_tasks', 'Označeno kao teško', 'fa-mountain', false],
-            ['open_help', 'Otvoreni zahtjevi za pomoć', 'fa-hands-helping', false],
+            ['standard_tasks', fcc_t('Puni koraci'), 'fa-check-double', false],
+            ['quick_tasks', fcc_t('Brzi koraci'), 'fa-stopwatch', false],
+            ['hard_tasks', fcc_t('Označeno kao teško'), 'fa-mountain', false],
+            ['open_help', fcc_t('Otvoreni zahtjevi za pomoć'), 'fa-hands-helping', false],
             ['official_four_cc', l('admin_leader_operating_system.forever.kpi.official_four_cc'), 'fa-shield-alt', false],
             ['effective_four_cc', l('admin_leader_operating_system.forever.kpi.effective_four_cc'), 'fa-calculator', false],
         ];
@@ -205,7 +205,7 @@ $global_metric_label = !empty($global['is_official_snapshot'])
     <div class="card mb-4">
         <div class="card-header"><h2 class="h5 mb-0"><?= l('admin_leader_operating_system.forever.linkage_title') ?></h2></div>
         <div class="card-body">
-            <?php $current_track_funnel_labels = ['started' => 'Pokrenuli trenutačnu razinu', 'completed' => 'Dovršili trenutačnu razinu']; ?>
+            <?php $current_track_funnel_labels = ['started' => fcc_t('Pokrenuli trenutačnu razinu'), 'completed' => fcc_t('Dovršili trenutačnu razinu')]; ?>
             <div class="los-forever-funnel">
                 <?php foreach($analytics['linkage_funnel'] ?? [] as $step): ?>
                     <div class="los-forever-funnel-step">
@@ -214,10 +214,10 @@ $global_metric_label = !empty($global['is_official_snapshot'])
                     </div>
                 <?php endforeach ?>
             </div>
-            <div class="small text-muted mt-3">Pokrenuli i dovršili odnose se na trenutačnu edukacijsku razinu svakog suradnika. Aktivni se odnose na odabrani vremenski prozor, a ostali pokazatelji zadržavaju postojeća pravila obuhvata. Zajednički odobren Forever ID nije pogreška i ne spaja napredak računa.</div>
+            <div class="small text-muted mt-3"><?= htmlspecialchars(fcc_t('Pokrenuli i dovršili odnose se na trenutačnu edukacijsku razinu svakog suradnika. Aktivni se odnose na odabrani vremenski prozor, a ostali pokazatelji zadržavaju postojeća pravila obuhvata. Zajednički odobren Forever ID nije pogreška i ne spaja napredak računa.'), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="row mt-3">
                 <div class="col-md-3 mb-2 mb-md-0"><div class="alert alert-light mb-0 py-2"><strong><?= $format_number($data_quality['missing_linkage'] ?? 0) ?></strong> <?= l('admin_leader_operating_system.forever.missing_linkage') ?></div></div>
-                <div class="col-md-3 mb-2 mb-md-0"><div class="alert alert-info mb-0 py-2"><strong><?= $format_number($data_quality['shared_fbo_ids'] ?? 0) ?></strong> Forever ID-a zajednički koristi <strong><?= $format_number($data_quality['shared_accounts'] ?? 0) ?></strong> aktivnih FCC računa; to je dopušteno i svaki račun ima vlastiti napredak.</div></div>
+                <div class="col-md-3 mb-2 mb-md-0"><div class="alert alert-info mb-0 py-2"><strong><?= $format_number($data_quality['shared_fbo_ids'] ?? 0) ?></strong> <?= htmlspecialchars(fcc_t('Forever ID-a zajednički koristi'), ENT_QUOTES, 'UTF-8') ?> <strong><?= $format_number($data_quality['shared_accounts'] ?? 0) ?></strong> <?= htmlspecialchars(fcc_t('aktivnih FCC računa; to je dopušteno i svaki račun ima vlastiti napredak.'), ENT_QUOTES, 'UTF-8') ?></div></div>
                 <div class="col-md-3 mb-2 mb-md-0"><div class="alert alert-light mb-0 py-2"><strong><?= $format_number($data_quality['enrolled_without_active_linkage'] ?? 0) ?></strong> <?= l('admin_leader_operating_system.forever.enrolled_linkage_issue') ?></div></div>
                 <div class="col-md-3"><div class="alert alert-light mb-0 py-2"><strong><?= $format_number($data_quality['enrolled_outside_current_structure'] ?? 0) ?></strong> <?= l('admin_leader_operating_system.forever.enrolled_outside_structure') ?></div></div>
             </div>
@@ -225,7 +225,7 @@ $global_metric_label = !empty($global['is_official_snapshot'])
                 <div class="alert alert-warning mt-3 mb-0"><strong><?= $format_number($data_quality['started_without_enrollment']) ?></strong> <?= l('admin_leader_operating_system.forever.started_without_enrollment') ?></div>
             <?php endif ?>
             <?php if(!empty($data_quality['outcome_fbo_mismatch_accounts'])): ?>
-                <div class="alert alert-warning mt-3 mb-0"><strong><?= $format_number($data_quality['outcome_fbo_mismatch_accounts']) ?></strong> FCC računa ima povijesni VIP zapis pod drugim Forever ID-em od trenutačno povezanog. Napredak ostaje vezan uz račun, ali vezu treba administrativno provjeriti.</div>
+                <div class="alert alert-warning mt-3 mb-0"><strong><?= $format_number($data_quality['outcome_fbo_mismatch_accounts']) ?></strong> <?= htmlspecialchars(fcc_t('FCC računa ima povijesni VIP zapis pod drugim Forever ID-em od trenutačno povezanog. Napredak ostaje vezan uz račun, ali vezu treba administrativno provjeriti.'), ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif ?>
         </div>
     </div>
@@ -233,25 +233,25 @@ $global_metric_label = !empty($global['is_official_snapshot'])
     <?php if(!empty($email_queue)): ?>
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">VIP e-mail red slanja</h2>
-                <span class="badge badge-secondary">Ukupno <?= $format_number($email_queue['total'] ?? 0) ?></span>
+                <h2 class="h5 mb-0"><?= htmlspecialchars(fcc_t('VIP e-mail red slanja'), ENT_QUOTES, 'UTF-8') ?></h2>
+                <span class="badge badge-secondary"><?= htmlspecialchars(fcc_t('Ukupno'), ENT_QUOTES, 'UTF-8') ?> <?= $format_number($email_queue['total'] ?? 0) ?></span>
             </div>
             <div class="card-body">
                 <div class="row text-center">
-                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted">Čeka</div><div class="h4 mb-0"><?= $format_number($email_queue['pending'] ?? 0) ?></div></div>
-                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted">Šalje se</div><div class="h4 mb-0"><?= $format_number($email_queue['sending'] ?? 0) ?></div></div>
-                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted">Ponovni pokušaj</div><div class="h4 mb-0"><?= $format_number($email_queue['retryable_failed'] ?? 0) ?></div></div>
-                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted">Iscrpljeni pokušaji</div><div class="h4 mb-0 text-danger"><?= $format_number($email_queue['exhausted_failed'] ?? 0) ?></div></div>
-                    <div class="col-12 col-md"><div class="small text-muted">Transport prihvatio</div><div class="h4 mb-0 text-success"><?= $format_number($email_queue['accepted'] ?? 0) ?></div></div>
+                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted"><?= htmlspecialchars(fcc_t('Čeka'), ENT_QUOTES, 'UTF-8') ?></div><div class="h4 mb-0"><?= $format_number($email_queue['pending'] ?? 0) ?></div></div>
+                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted"><?= htmlspecialchars(fcc_t('Šalje se'), ENT_QUOTES, 'UTF-8') ?></div><div class="h4 mb-0"><?= $format_number($email_queue['sending'] ?? 0) ?></div></div>
+                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted"><?= htmlspecialchars(fcc_t('Ponovni pokušaj'), ENT_QUOTES, 'UTF-8') ?></div><div class="h4 mb-0"><?= $format_number($email_queue['retryable_failed'] ?? 0) ?></div></div>
+                    <div class="col-6 col-md mb-3 mb-md-0"><div class="small text-muted"><?= htmlspecialchars(fcc_t('Iscrpljeni pokušaji'), ENT_QUOTES, 'UTF-8') ?></div><div class="h4 mb-0 text-danger"><?= $format_number($email_queue['exhausted_failed'] ?? 0) ?></div></div>
+                    <div class="col-12 col-md"><div class="small text-muted"><?= htmlspecialchars(fcc_t('Transport prihvatio'), ENT_QUOTES, 'UTF-8') ?></div><div class="h4 mb-0 text-success"><?= $format_number($email_queue['accepted'] ?? 0) ?></div></div>
                 </div>
-                <div class="alert alert-light small mt-3 mb-0"><strong>Važno:</strong> status “transport prihvatio” znači da je pružatelj prihvatio poruku za slanje. To nije potvrda dostave u inbox, otvaranja ni čitanja. “Iscrpljeni pokušaji” su trajno neuspjeli zapisi nakon pet pokušaja i traže provjeru.</div>
+                <div class="alert alert-light small mt-3 mb-0"><strong><?= htmlspecialchars(fcc_t('Važno:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('status “transport prihvatio” znači da je pružatelj prihvatio poruku za slanje. To nije potvrda dostave u inbox, otvaranja ni čitanja. “Iscrpljeni pokušaji” su trajno neuspjeli zapisi nakon pet pokušaja i traže provjeru.'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
         </div>
     <?php endif ?>
 
     <div class="row">
         <div class="col-xl-7 mb-4"><div class="card h-100">
-            <div class="card-header"><h2 class="h5 mb-0">Dnevno dovršeni koraci · puni i brzi</h2></div>
+            <div class="card-header"><h2 class="h5 mb-0"><?= htmlspecialchars(fcc_t('Dnevno dovršeni koraci · puni i brzi'), ENT_QUOTES, 'UTF-8') ?></h2></div>
             <div class="card-body los-forever-chart"><canvas id="los_forever_daily_chart"></canvas></div>
         </div></div>
         <div class="col-xl-5 mb-4"><div class="card h-100">
@@ -277,27 +277,27 @@ $global_metric_label = !empty($global['is_official_snapshot'])
     <div class="row">
         <div class="col-xl-4 mb-4"><div class="card h-100">
             <div class="card-header"><h2 class="h5 mb-0"><?= l('admin_leader_operating_system.forever.top_performers') ?></h2></div>
-            <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= l('admin_leader_operating_system.forever.tasks') ?></th><th>Puni</th><th>Brzi</th></tr></thead><tbody>
+            <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= l('admin_leader_operating_system.forever.tasks') ?></th><th><?= htmlspecialchars(fcc_t('Puni'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Brzi'), ENT_QUOTES, 'UTF-8') ?></th></tr></thead><tbody>
                 <?php if(empty($analytics['top_performers'])): ?><tr><td colspan="4" class="text-muted"><?= l('admin_leader_operating_system.forever.no_data') ?></td></tr><?php endif ?>
                 <?php foreach($analytics['top_performers'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['title']) ?></div><?php if($member['result_type']): ?><div class="small text-muted"><?= l('admin_leader_operating_system.forever.latest_result_type') ?> <?= htmlspecialchars($outcome_dimension_labels['result_type'][$member['result_type']] ?? $member['result_type']) ?></div><?php endif ?></td><td><?= $format_number($member['tasks']) ?></td><td><?= $format_number($member['standard_tasks']) ?></td><td><?= $format_number($member['quick_tasks']) ?></td></tr><?php endforeach ?>
             </tbody></table></div>
             <div class="card-footer small text-muted"><?= l('admin_leader_operating_system.forever.results_not_cc') ?></div>
         </div></div>
         <div class="col-xl-4 mb-4"><div class="card h-100">
-            <div class="card-header"><h2 class="h5 mb-0">Način dovršavanja po polazniku</h2></div>
-            <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th><?= l('admin_leader_operating_system.forever.member') ?></th><th>Puni</th><th>Brzi</th><th>Teško</th></tr></thead><tbody>
+            <div class="card-header"><h2 class="h5 mb-0"><?= htmlspecialchars(fcc_t('Način dovršavanja po polazniku'), ENT_QUOTES, 'UTF-8') ?></h2></div>
+            <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= htmlspecialchars(fcc_t('Puni'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Brzi'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Teško'), ENT_QUOTES, 'UTF-8') ?></th></tr></thead><tbody>
                 <?php if(empty($analytics['top_results'])): ?><tr><td colspan="4" class="text-muted"><?= l('admin_leader_operating_system.forever.no_data') ?></td></tr><?php endif ?>
-                <?php foreach($analytics['top_results'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= $format_number($member['tasks']) ?> ukupno</div></td><td><?= $format_number($member['standard_tasks']) ?></td><td><?= $format_number($member['quick_tasks']) ?></td><td><?= $format_number($member['hard_tasks']) ?></td></tr><?php endforeach ?>
+                <?php foreach($analytics['top_results'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= $format_number($member['tasks']) ?> <?= htmlspecialchars(fcc_t('ukupno'), ENT_QUOTES, 'UTF-8') ?></div></td><td><?= $format_number($member['standard_tasks']) ?></td><td><?= $format_number($member['quick_tasks']) ?></td><td><?= $format_number($member['hard_tasks']) ?></td></tr><?php endforeach ?>
             </tbody></table></div>
-            <div class="card-footer small text-muted">Ovdje se uspoređuju dovršeni koraci. Sirove količine kontakata, poruka, objava i treninga namjerno se ne rangiraju zajedno.</div>
+            <div class="card-footer small text-muted"><?= htmlspecialchars(fcc_t('Ovdje se uspoređuju dovršeni koraci. Sirove količine kontakata, poruka, objava i treninga namjerno se ne rangiraju zajedno.'), ENT_QUOTES, 'UTF-8') ?></div>
         </div></div>
         <div class="col-xl-4 mb-4"><div class="card h-100">
             <div class="card-header"><h2 class="h5 mb-0"><?= l('admin_leader_operating_system.forever.attention_queue') ?></h2></div>
             <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= l('admin_leader_operating_system.forever.signal') ?></th><th><?= l('admin_leader_operating_system.forever.last_task') ?></th></tr></thead><tbody>
                 <?php if(empty($analytics['attention_queue'])): ?><tr><td colspan="3" class="text-muted"><?= l('admin_leader_operating_system.forever.no_attention') ?></td></tr><?php endif ?>
-                <?php foreach($analytics['attention_queue'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id']) ?><?= !empty($member['user_id']) ? ' · FCC #' . (int) $member['user_id'] : '' ?></div></td><td><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php if((int) ($member['open_help_count'] ?? 0) > 1): ?><span class="badge badge-light ml-1"><?= (int) $member['open_help_count'] ?> otvorena</span><?php endif ?><?php if($member['difficulty']): ?><div class="small text-muted mt-1"><?= htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) ?></div><?php endif ?><?php if(!empty($member['help_note'])): ?><div class="small border-left border-danger pl-2 mt-2 text-break"><?= nl2br(htmlspecialchars($member['help_note'])) ?></div><?php endif ?></td><td><?= $format_date($member['stall_state'] === 'needs_help' ? ($member['help_requested_at'] ?? null) : ($member['vip_current_track_last_task_date'] ?? null)) ?></td></tr><?php endforeach ?>
+                <?php foreach($analytics['attention_queue'] ?? [] as $member): ?><tr><td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id']) ?><?= !empty($member['user_id']) ? fcc_t(' · FCC #') . (int) $member['user_id'] : '' ?></div></td><td><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php if((int) ($member['open_help_count'] ?? 0) > 1): ?><span class="badge badge-light ml-1"><?= (int) $member['open_help_count'] ?> <?= htmlspecialchars(fcc_t('otvorena'), ENT_QUOTES, 'UTF-8') ?></span><?php endif ?><?php if($member['difficulty']): ?><div class="small text-muted mt-1"><?= htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) ?></div><?php endif ?><?php if(!empty($member['help_note'])): ?><div class="small border-left border-danger pl-2 mt-2 text-break"><?= nl2br(htmlspecialchars($member['help_note'])) ?></div><?php endif ?></td><td><?= $format_date($member['stall_state'] === 'needs_help' ? ($member['help_requested_at'] ?? null) : ($member['vip_current_track_last_task_date'] ?? null)) ?></td></tr><?php endforeach ?>
             </tbody></table></div>
-            <div class="card-footer small text-muted">Otvorena pomoć dolazi iz zasebnog zahtjeva polaznika. Bilješka je vidljiva samo administratoru, prikazuje se escaped i ne dovršava zadatak.</div>
+            <div class="card-footer small text-muted"><?= htmlspecialchars(fcc_t('Otvorena pomoć dolazi iz zasebnog zahtjeva polaznika. Bilješka je vidljiva samo administratoru, prikazuje se escaped i ne dovršava zadatak.'), ENT_QUOTES, 'UTF-8') ?></div>
         </div></div>
     </div>
 
@@ -307,18 +307,18 @@ $global_metric_label = !empty($global['is_official_snapshot'])
             <input type="search" id="los_forever_member_search" class="form-control form-control-sm" style="max-width: 18rem" placeholder="<?= l('admin_leader_operating_system.forever.search') ?>" />
         </div>
         <div class="table-responsive"><table class="table table-sm los-forever-member-table mb-0" id="los_forever_member_table"><thead><tr>
-            <th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= l('admin_leader_operating_system.forever.status') ?></th><th>CC</th><th>4 CC</th><th><?= l('admin_leader_operating_system.forever.tasks') ?></th><th>Puni / brzi</th><th>Zahtjevnost</th><th><?= l('admin_leader_operating_system.forever.last_task_track') ?></th><th><?= l('admin_leader_operating_system.forever.last_task') ?></th>
+            <th><?= l('admin_leader_operating_system.forever.member') ?></th><th><?= l('admin_leader_operating_system.forever.status') ?></th><th><?= htmlspecialchars(fcc_t('CC'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('4 CC'), ENT_QUOTES, 'UTF-8') ?></th><th><?= l('admin_leader_operating_system.forever.tasks') ?></th><th><?= htmlspecialchars(fcc_t('Puni / brzi'), ENT_QUOTES, 'UTF-8') ?></th><th><?= htmlspecialchars(fcc_t('Zahtjevnost'), ENT_QUOTES, 'UTF-8') ?></th><th><?= l('admin_leader_operating_system.forever.last_task_track') ?></th><th><?= l('admin_leader_operating_system.forever.last_task') ?></th>
         </tr></thead><tbody>
             <?php if(empty($analytics['members'])): ?><tr><td colspan="9" class="text-muted"><?= l('admin_leader_operating_system.forever.no_data') ?></td></tr><?php endif ?>
             <?php foreach($analytics['members'] ?? [] as $member): $member_effective_four_cc = forever_business_los_effective_four_cc($member); ?>
                 <tr>
-                    <td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id'] . (!empty($member['user_id']) ? ' · FCC #' . (int) $member['user_id'] : '') . ($member['title'] ? ' · ' . $member['title'] : '')) ?></div></td>
+                    <td><?= htmlspecialchars($member['name']) ?><div class="small text-muted"><?= htmlspecialchars($member['fbo_id'] . (!empty($member['user_id']) ? fcc_t(' · FCC #') . (int) $member['user_id'] : '') . ($member['title'] ? ' · ' . $member['title'] : '')) ?></div></td>
                     <td>
                         <?php if($member['stall_state']): ?><span class="badge badge-<?= $member['stall_state'] === 'needs_help' ? 'danger' : 'warning' ?>"><?= htmlspecialchars($stall_labels[$member['stall_state']] ?? $member['stall_state']) ?></span><?php elseif(!empty($member['is_current_track_complete'])): ?><span class="badge badge-primary"><?= l('admin_leader_operating_system.forever.completed') ?></span><?php elseif($member['tasks'] > 0): ?><span class="badge badge-success"><?= l('admin_leader_operating_system.forever.active') ?></span><?php elseif($member['is_enrolled']): ?><span class="badge badge-info"><?= l('admin_leader_operating_system.forever.enrolled') ?></span><?php else: ?><span class="badge badge-light"><?= l('admin_leader_operating_system.forever.not_enrolled') ?></span><?php endif ?>
-                        <?php if((int) $member['linked_accounts'] > 1): ?><div class="mt-1"><span class="badge badge-info">Zajednički Forever ID · <?= (int) $member['linked_accounts'] ?> FCC računa</span></div><?php elseif((int) $member['linked_accounts'] === 0): ?><div class="mt-1"><span class="badge badge-danger"><?= l('admin_leader_operating_system.forever.link_missing') ?></span></div><?php endif ?>
-                        <?php if(!empty($member['has_outcome_fbo_mismatch'])): ?><div class="mt-1"><span class="badge badge-warning">Povijesni zapis pod drugim ID-em</span></div><?php endif ?>
+                        <?php if((int) $member['linked_accounts'] > 1): ?><div class="mt-1"><span class="badge badge-info"><?= htmlspecialchars(fcc_t('Zajednički Forever ID ·'), ENT_QUOTES, 'UTF-8') ?> <?= (int) $member['linked_accounts'] ?> <?= htmlspecialchars(fcc_t('FCC računa'), ENT_QUOTES, 'UTF-8') ?></span></div><?php elseif((int) $member['linked_accounts'] === 0): ?><div class="mt-1"><span class="badge badge-danger"><?= l('admin_leader_operating_system.forever.link_missing') ?></span></div><?php endif ?>
+                        <?php if(!empty($member['has_outcome_fbo_mismatch'])): ?><div class="mt-1"><span class="badge badge-warning"><?= htmlspecialchars(fcc_t('Povijesni zapis pod drugim ID-em'), ENT_QUOTES, 'UTF-8') ?></span></div><?php endif ?>
                         <?php if(empty($member['is_in_current_structure'])): ?><div class="mt-1"><span class="badge badge-secondary"><?= l('admin_leader_operating_system.forever.outside_structure') ?></span></div><?php endif ?>
-                        <?php if($member['is_enrolled'] && $member['qualification_source']): ?><div class="small text-muted mt-1"><?= htmlspecialchars($qualification_source_labels[$member['qualification_source']] ?? $member['qualification_source']) ?> · <?= $format_cc($member['qualifying_personal_cc'] ?? 0) ?> CC · <?= $format_period($member['qualifying_period'] ?? null) ?></div><?php endif ?>
+                        <?php if($member['is_enrolled'] && $member['qualification_source']): ?><div class="small text-muted mt-1"><?= htmlspecialchars($qualification_source_labels[$member['qualification_source']] ?? $member['qualification_source']) ?> · <?= $format_cc($member['qualifying_personal_cc'] ?? 0) ?> <?= htmlspecialchars(fcc_t('CC ·'), ENT_QUOTES, 'UTF-8') ?> <?= $format_period($member['qualifying_period'] ?? null) ?></div><?php endif ?>
                     </td>
                     <td><?= $member['personal_cc'] === null ? '—' : $format_cc($member['personal_cc']) ?></td>
                     <td>
@@ -329,11 +329,11 @@ $global_metric_label = !empty($global['is_official_snapshot'])
                             <?php if($member['is_4cc_active'] === null): ?><div class="small text-muted mt-1"><?= $member['personal_cc'] !== null && $member['total_active_cc'] !== null ? l('admin_leader_operating_system.forever.formula') : l('admin_leader_operating_system.forever.incomplete_activity_data') ?></div><?php endif ?>
                         <?php endif ?>
                     </td>
-                    <td><?= $format_number($member['tasks']) ?></td><td><?= $format_number($member['standard_tasks']) ?> / <?= $format_number($member['quick_tasks']) ?></td><td><?= $member['difficulty'] ? htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) : '—' ?><?= !empty($member['needs_help']) ? '<div class="small text-danger">Otvorena pomoć</div>' : '' ?></td><td><strong><?= htmlspecialchars($outcome_dimension_labels['track'][$member['track']] ?? ($member['track'] ?: '—')) ?></strong><div class="small text-muted"><?= min(30, (int) ($member['vip_current_track_steps_completed'] ?? 0)) ?>/30 u razini · <?= (int) ($member['vip_steps_completed'] ?? 0) ?> ukupno</div></td><td><?= $format_date($member['vip_current_track_last_task_date'] ?? null) ?><?php if(!empty($member['last_task_date']) && ($member['last_task_date'] ?? null) !== ($member['vip_current_track_last_task_date'] ?? null)): ?><div class="small text-muted">Ukupno zadnje: <?= $format_date($member['last_task_date']) ?></div><?php endif ?></td>
+                    <td><?= $format_number($member['tasks']) ?></td><td><?= $format_number($member['standard_tasks']) ?> / <?= $format_number($member['quick_tasks']) ?></td><td><?= $member['difficulty'] ? htmlspecialchars($difficulty_labels[$member['difficulty']] ?? $member['difficulty']) : '—' ?><?= !empty($member['needs_help']) ? '<div class="small text-danger">Otvorena pomoć</div>' : '' ?></td><td><strong><?= htmlspecialchars($outcome_dimension_labels['track'][$member['track']] ?? ($member['track'] ?: '—')) ?></strong><div class="small text-muted"><?= min(60, (int) ($member['vip_current_track_steps_completed'] ?? 0)) ?><?= htmlspecialchars(fcc_t('/60 u razini ·'), ENT_QUOTES, 'UTF-8') ?> <?= (int) ($member['vip_steps_completed'] ?? 0) ?> <?= htmlspecialchars(fcc_t('ukupno'), ENT_QUOTES, 'UTF-8') ?></div></td><td><?= $format_date($member['vip_current_track_last_task_date'] ?? null) ?><?php if(!empty($member['last_task_date']) && ($member['last_task_date'] ?? null) !== ($member['vip_current_track_last_task_date'] ?? null)): ?><div class="small text-muted"><?= htmlspecialchars(fcc_t('Ukupno zadnje:'), ENT_QUOTES, 'UTF-8') ?> <?= $format_date($member['last_task_date']) ?></div><?php endif ?></td>
                 </tr>
             <?php endforeach ?>
         </tbody></table></div>
-        <div class="card-footer small text-muted">Status dovršetka i zastoji odnose se na trenutačnu edukacijsku razinu. Ukupan broj zadržava cijelu povijest svih ranije dovršenih razina. <?= l('admin_leader_operating_system.forever.privacy_note') ?></div>
+        <div class="card-footer small text-muted"><?= htmlspecialchars(fcc_t('Status dovršetka i zastoji odnose se na trenutačnu edukacijsku razinu. Ukupan broj zadržava cijelu povijest svih ranije dovršenih razina.'), ENT_QUOTES, 'UTF-8') ?> <?= l('admin_leader_operating_system.forever.privacy_note') ?></div>
     </div>
 </div>
 
@@ -347,8 +347,8 @@ document.addEventListener('DOMContentLoaded', function () {
             type: 'line',
             data: { labels: chartPayload.daily.labels || [], datasets: [
                 { label: <?= json_encode(l('admin_leader_operating_system.forever.tasks')) ?>, data: chartPayload.daily.tasks || [], borderColor: '#5b6df8', backgroundColor: 'rgba(91,109,248,.12)', fill: true },
-                { label: 'Puni koraci', data: chartPayload.daily.standard || [], borderColor: '#16a085', backgroundColor: 'rgba(22,160,133,.08)', fill: false },
-                { label: 'Brzi koraci', data: chartPayload.daily.quick || [], borderColor: '#f39c12', backgroundColor: 'rgba(243,156,18,.08)', fill: false }
+                { label: window.fccT('Puni koraci'), data: chartPayload.daily.standard || [], borderColor: '#16a085', backgroundColor: 'rgba(22,160,133,.08)', fill: false },
+                { label: window.fccT('Brzi koraci'), data: chartPayload.daily.quick || [], borderColor: '#f39c12', backgroundColor: 'rgba(243,156,18,.08)', fill: false }
             ]}, options: {...chart_options, plugins: {...chart_options.plugins, legend: {display: true}}}
         });
         const ccCanvas = document.getElementById('los_forever_cc_chart');

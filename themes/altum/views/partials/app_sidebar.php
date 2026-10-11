@@ -1,4 +1,4 @@
-<?php defined('ALTUMCODE') || die() ?>
+<?php defined('ALTUMCODE') || die(); if(fcc_partner_enabled()) { require THEME_PATH.'views/partner/navigation.php'; return; } ?>
 
 <?php
 /* Custom code: FC-2026-03-03: hidden sidebar items for all users */
@@ -356,7 +356,7 @@ if(is_logged_in()) {
                     <div class="divider"></div>
                 </div>
                 <li class="app-sidebar-section-label" id="fcc_dashboard_tour_sidebar_section">
-                    <span>FCC zona</span>
+                    <span><?= htmlspecialchars(fcc_t('FCC zona'), ENT_QUOTES, 'UTF-8') ?></span>
                 </li>
                 <?php /* Custom code: FC-2026-03-31: Next step sidebar entry above FCC results */ ?>
                 <li class="<?= (\Altum\Router::$controller_key ?? null) === 'ai-plan' ? 'active' : null ?> app-sidebar-fcc-item">
@@ -376,7 +376,7 @@ if(is_logged_in()) {
                 <?php endif ?>
                 <li class="<?= \Altum\Router::$controller == 'FccAiHub' ? 'active' : null ?> app-sidebar-fcc-item">
                     <a href="<?= url('fcc-ai') ?>" id="fcc_dashboard_tour_sidebar_fcc_ai" class="<?= $has_fcc_ai_access ? null : 'disabled pointer-events-all' ?>" <?= $has_fcc_ai_access ? null : get_plan_feature_disabled_info() ?>>
-                        <i class="fas fa-fw fa-sm fa-robot mr-2"></i> FCC AI
+                        <i class="fas fa-fw fa-sm fa-robot mr-2"></i> <?= htmlspecialchars(fcc_t('FCC AI'), ENT_QUOTES, 'UTF-8') ?>
                         <?php if($user_fcc_ai_signal_count): ?>
                             <span class="badge badge-danger ml-2"><?= nr($user_fcc_ai_signal_count) ?></span>
                         <?php endif ?>
@@ -391,7 +391,7 @@ if(is_logged_in()) {
                 <?php /* Custom code: FC-2026-08-13: Self-only collaborator and admin 4 Core workspace */ ?>
                 <li class="<?= \Altum\Router::$controller == 'ForeverBusiness' ? 'active' : null ?> app-sidebar-fcc-item">
                     <a href="<?= url('forever-business') ?>">
-                        <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> MOJ FOREVER
+                        <i class="fas fa-fw fa-sm fa-chart-line mr-2"></i> <?= htmlspecialchars(fcc_t('MOJ FOREVER'), ENT_QUOTES, 'UTF-8') ?>
                     </a>
                 </li>
                 <?php /* /Custom code: FC-2026-08-13 */ ?>
@@ -403,10 +403,10 @@ if(is_logged_in()) {
                     </li>
                 <?php endif ?>
                 <li class="<?= \Altum\Router::$controller == 'FccEducation' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= url('fcc-education?video=last') ?>" id="fcc_dashboard_tour_sidebar_education"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> FOREVER EDUKACIJA</a>
+                    <a href="<?= url('fcc-education?video=last') ?>" id="fcc_dashboard_tour_sidebar_education"><i class="fas fa-fw fa-sm fa-graduation-cap mr-2"></i> <?= htmlspecialchars(fcc_t('FOREVER EDUKACIJA'), ENT_QUOTES, 'UTF-8') ?></a>
                 </li>
                 <li class="<?= \Altum\Router::$controller == 'Blog' ? 'active' : null ?> app-sidebar-fcc-item">
-                    <a href="<?= fc_get_forever_products_blog_category_url() ?>" id="fcc_dashboard_tour_sidebar_products"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> FOREVER PROIZVODI</a>
+                    <a href="<?= fc_get_forever_products_blog_category_url() ?>" id="fcc_dashboard_tour_sidebar_products"><i class="fas fa-fw fa-sm fa-leaf mr-2"></i> <?= htmlspecialchars(fcc_t('FOREVER PROIZVODI'), ENT_QUOTES, 'UTF-8') ?></a>
                 </li>
         </ul>
     </div>

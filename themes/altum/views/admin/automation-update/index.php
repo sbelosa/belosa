@@ -655,7 +655,7 @@
             }
         });
 
-        quill.root.innerHTML = target.value || '<p></p>';
+        quill.clipboard.dangerouslyPasteHTML(target.value || '<p></p>', 'silent');
         editors[target.id] = quill;
         element.dataset.initialized = 'true';
     };

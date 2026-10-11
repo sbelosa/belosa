@@ -111,6 +111,8 @@ class AdminFeedbackTickets extends Controller {
         $this->auto_close_read_answered_tickets();
         /* /Custom code: FC-2026-03-08 */
 
+        $waiting_only = ($_GET['waiting'] ?? '') === '1';
+        if($waiting_only) db()->where('feedback_tickets.status', 'open');
         $feedback_tickets = db()
             ->join('users', 'feedback_tickets.user_id = users.user_id', 'LEFT')
             ->orderBy('feedback_tickets.last_datetime', 'DESC')
@@ -123,6 +125,7 @@ class AdminFeedbackTickets extends Controller {
 
         $data = [
             'feedback_tickets' => $feedback_tickets,
+            'waiting_only' => $waiting_only,
         ];
 
         $view = new \Altum\View('admin/feedback-tickets/index', (array) $this);
@@ -166,7 +169,7 @@ class AdminFeedbackTickets extends Controller {
                     'user_id' => $feedback_ticket->user_id,
                     'admin_user_id' => $this->user->user_id,
                     'is_admin_reply' => 1,
-                    'message' => 'Ticket je označen kao riješen. Ako trebaš dodatnu pomoć, slobodno odgovori na ovaj ticket i ponovno ćemo ga otvoriti.',
+                    'message' => fcc_t('Ticket je označen kao riješen. Ako trebaš dodatnu pomoć, slobodno odgovori na ovaj ticket i ponovno ćemo ga otvoriti.'),
                     'attachment' => null,
                     'datetime' => get_date(),
                 ]);

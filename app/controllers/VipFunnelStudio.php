@@ -38,7 +38,7 @@ class VipFunnelStudio extends Controller {
 
     private function decode_posted_payload($user = null): ?array {
         if(isset($_POST['reset_vip_funnel_studio'])) {
-            Alerts::add_error('Vraćanje početnog studija je onemogućeno jer može prebrisati funnel koji je već u izradi.');
+            Alerts::add_error(fcc_t('Vraćanje početnog studija je onemogućeno jer može prebrisati funnel koji je već u izradi.'));
             return null;
         }
 
@@ -137,14 +137,14 @@ class VipFunnelStudio extends Controller {
                     $delete_confirmed = (int) ($_POST['delete_funnel_confirmed'] ?? 0) === 1;
 
                     if(!$delete_confirmed) {
-                        Alerts::add_error('Za brisanje funnel-a potrebno je potvrditi da razumiješ da se radnja ne može poništiti.');
+                        Alerts::add_error(fcc_t('Za brisanje funnel-a potrebno je potvrditi da razumiješ da se radnja ne može poništiti.'));
                     } elseif($delete_funnel_id <= 0) {
-                        Alerts::add_error('Funnel za brisanje nije pronađen.');
+                        Alerts::add_error(fcc_t('Funnel za brisanje nije pronađen.'));
                     } elseif(vip_funnel_studio_delete_funnel($this->user, $delete_funnel_id)) {
-                        Alerts::add_success('Funnel je trajno obrisan. Kontakti i demo zapisi ostaju spremljeni u pregledima.');
+                        Alerts::add_success(fcc_t('Funnel je trajno obrisan. Kontakti i demo zapisi ostaju spremljeni u pregledima.'));
                         redirect('vip-funnel-studio');
                     } else {
-                        Alerts::add_error('Funnel nije obrisan. Provjeri je li funnel još uvijek tvoj i pokušaj ponovno.');
+                        Alerts::add_error(fcc_t('Funnel nije obrisan. Provjeri je li funnel još uvijek tvoj i pokušaj ponovno.'));
                     }
                 }
 
@@ -154,7 +154,7 @@ class VipFunnelStudio extends Controller {
                     $payload['funnel']['slug'] = vip_funnel_slugify($payload['funnel']['name']);
 
                     if($row = vip_funnel_studio_create_funnel_from_payload($this->user, $payload)) {
-                        Alerts::add_success('Novi funnel je kreiran.');
+                        Alerts::add_success(fcc_t('Novi funnel je kreiran.'));
                         redirect('vip-funnel-studio?funnel_id=' . (int) $row->vip_funnel_id);
                     }
 
@@ -167,11 +167,11 @@ class VipFunnelStudio extends Controller {
                     $payload = vip_funnel_get_import_template_payload($template_key, $this->user, $template_language);
 
                     if($payload && ($row = vip_funnel_studio_create_funnel_from_payload($this->user, $payload))) {
-                        Alerts::add_success('FCC VIP funnel je importiran i spreman za uređivanje.');
+                        Alerts::add_success(fcc_t('FCC VIP funnel je importiran i spreman za uređivanje.'));
                         redirect('vip-funnel-studio?funnel_id=' . (int) $row->vip_funnel_id);
                     }
 
-                    Alerts::add_error('Import FCC VIP funnel-a trenutno nije uspio.');
+                    Alerts::add_error(fcc_t('Import FCC VIP funnel-a trenutno nije uspio.'));
                 }
 
                 $payload = isset($_POST['create_vip_funnel']) || isset($_POST['import_vip_funnel_template']) || isset($_POST['delete_vip_funnel']) ? null : $this->decode_posted_payload($this->user);
@@ -187,7 +187,7 @@ class VipFunnelStudio extends Controller {
                 /* Custom code: FC-2026-08-20: require the explicitly selected VIP Funnel before saving */
                 if($payload !== null && !Alerts::has_field_errors() && !Alerts::has_errors()) {
                     if(vip_funnel_studio_schema_is_ready() && $selected_funnel_id <= 0) {
-                        Alerts::add_error('Odabrani funnel nije pronađen. Osvježi stranicu i pokušaj ponovno.');
+                        Alerts::add_error(fcc_t('Odabrani funnel nije pronađen. Osvježi stranicu i pokušaj ponovno.'));
                     }
                 }
                 /* /Custom code: FC-2026-08-20 */

@@ -61,6 +61,10 @@ class DomainUpdate extends Controller {
                 $is_enabled = 0;
             }
 
+            if(fc_nfc_domain_change_is_blocked($domain, $_POST)) {
+                Alerts::add_error(l('link.settings.url_help_main_biolink_locked'));
+            }
+
             //ALTUMCODE:DEMO if(DEMO) if($this->user->user_id == 1) Alerts::add_error('Please create an account on the demo to test out this function.');
 
             /* Check for any errors */

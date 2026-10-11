@@ -226,7 +226,7 @@
                     </div>
                 </th>
                 <th><?= l('global.user') ?></th>
-                <th><?= l('global.status') ?></th>
+                <th><?= fcc_partner_enabled() ? fcc_t('Status računa') : l('global.status') ?></th>
                 <th><?= l('admin_users.plan_id') ?></th>
                 <th><?= l('global.details') ?></th>
                 <th></th>
@@ -245,7 +245,7 @@
                     <td class="text-nowrap">
                         <div class="d-flex">
                             <a href="<?= url('admin/user-view/' . $row->user_id) ?>">
-                                <img src="<?= get_user_avatar($row->avatar, $row->email) ?>" class="user-avatar rounded-circle mr-3" alt="" />
+                                <img src="<?= htmlspecialchars($row->fcc_main_avatar ?: get_user_avatar($row->avatar, $row->email),ENT_QUOTES,'UTF-8') ?>" class="user-avatar rounded-circle mr-3" alt="" />
                             </a>
 
                             <div class="d-flex flex-column">
@@ -254,6 +254,7 @@
                                 </div>
 
                                 <span class="small text-muted"><?= $row->email ?></span>
+                                <div class="mt-2"><?php if((int)$row->status===1&&(int)$row->user_id!==(int)$this->user->user_id): ?><button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#user_login_modal" data-user-id="<?= (int)$row->user_id ?>"><i class="fas fa-sign-in-alt" aria-hidden="true"></i> <?= l('global.login') ?></button><?php endif ?></div>
                             </div>
                         </div>
                     </td>
@@ -272,6 +273,7 @@
                                 <a href="<?= url('admin/plan-update/' . $row->plan_id) ?>" class="badge badge-light"><?= $data->plans[$row->plan_id]->name ?></a>
                             </div>
 
+                            <?php if(fcc_partner_enabled() && $row->plan_id != 'free' && !empty($row->plan_expiration_date) && strtotime($row->plan_expiration_date) < time()): ?><span class="badge badge-warning"><?= htmlspecialchars(fcc_t('Datum paketa je istekao'), ENT_QUOTES, 'UTF-8') ?></span><?php endif ?>
                             <?php if($row->plan_id != 'free'): ?>
                                 <div>
                                     <small class="text-muted" data-toggle="tooltip" title="<?= l('admin_users.plan_expiration_date') ?>"><?= \Altum\Date::get($row->plan_expiration_date, 1) ?></small>
@@ -327,7 +329,7 @@
                             <?php if ($row->type == 0 && isset($row->biolink_id) && !empty($row->main_biolink_nfc_url)): ?>
                                 <i class="fa fa-fw fa-clipboard text-muted link-copy" style="cursor:pointer"></i>                                    
                                 <input class="link-val" type="hidden" value="<?= htmlspecialchars($row->main_biolink_nfc_url, ENT_QUOTES, 'UTF-8') ?>" ?>
-                                <a href="<?= htmlspecialchars($row->main_biolink_nfc_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" data-toggle="tooltip" title="NFC tracking link">
+                                <a href="<?= htmlspecialchars($row->main_biolink_nfc_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" data-toggle="tooltip" title="<?= htmlspecialchars(fcc_t('NFC tracking link'), ENT_QUOTES, 'UTF-8') ?>">
                                     <?= htmlspecialchars($row->main_biolink_url, ENT_QUOTES, 'UTF-8') ?>
                                 </a>
                             <?php endif; ?>
@@ -336,6 +338,7 @@
                     </td>
                     <td>
                         <div class="d-flex justify-content-end">
+                            
                             <?= include_view(THEME_PATH . 'views/admin/users/admin_user_dropdown_button.php', ['id' => $row->user_id, 'resource_name' => $row->name]) ?>
                         </div>
                     </td>

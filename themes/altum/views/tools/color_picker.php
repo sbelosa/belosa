@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
             <li class="active" aria-current="page"><?= l('tools.color_picker.name') ?></li>
@@ -47,7 +47,7 @@
                 <tbody>
                 <tr>
                     <td class="font-weight-bold">
-                        HEXA
+                        <?= htmlspecialchars(fcc_t('HEXA'), ENT_QUOTES, 'UTF-8') ?>
                     </td>
                     <td class="text-nowrap" id="hexa"></td>
                     <td>
@@ -70,7 +70,7 @@
                 </tr>
                 <tr>
                     <td class="font-weight-bold">
-                        CMYK
+                        <?= htmlspecialchars(fcc_t('CMYK'), ENT_QUOTES, 'UTF-8') ?>
                     </td>
                     <td class="text-nowrap" id="cmyk"></td>
                     <td>
@@ -93,7 +93,7 @@
                 </tr>
                 <tr>
                     <td class="font-weight-bold">
-                        HSLA
+                        <?= htmlspecialchars(fcc_t('HSLA'), ENT_QUOTES, 'UTF-8') ?>
                     </td>
                     <td class="text-nowrap" id="hsla"></td>
                     <td>
@@ -116,7 +116,7 @@
                 </tr>
                 <tr>
                     <td class="font-weight-bold">
-                        HSVA
+                        <?= htmlspecialchars(fcc_t('HSVA'), ENT_QUOTES, 'UTF-8') ?>
                     </td>
                     <td class="text-nowrap" id="hsva"></td>
                     <td>
@@ -139,7 +139,7 @@
                 </tr>
                 <tr>
                     <td class="font-weight-bold">
-                        RGBA
+                        <?= htmlspecialchars(fcc_t('RGBA'), ENT_QUOTES, 'UTF-8') ?>
                     </td>
                     <td class="text-nowrap" id="rgba"></td>
                     <td>

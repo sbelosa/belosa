@@ -572,6 +572,7 @@ $fcc_qr_tour_steps = [
     </div>
     </div>
 
+    <?php if(fcc_partner_enabled()): ?><details class="fp-qr-help"><summary><?= htmlspecialchars(fcc_t('Ideje za korištenje QR kodova'), ENT_QUOTES, 'UTF-8') ?></summary><?php endif ?>
     <section class="fcc-qr-guide" id="fcc_qr_tour_step_guide">
         <div class="fcc-qr-guide-copy">
             <h2><?= l('qr_codes.guide_title') ?></h2>
@@ -600,6 +601,7 @@ $fcc_qr_tour_steps = [
             </article>
         </div>
     </section>
+    <?php if(fcc_partner_enabled()): ?></details><?php endif ?>
 
     <?php if (!empty($data->qr_codes)): ?>
         <form id="table" action="<?= SITE_URL . 'qr-codes/bulk' ?>" method="post" role="form">

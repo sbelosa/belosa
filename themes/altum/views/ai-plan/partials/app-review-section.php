@@ -126,7 +126,7 @@
                 </div>
 
                 <div class="ai-plan-preview-frame-wrap" id="ai-plan-preview-frame-wrap" <?= $app_review_preview_url ? null : 'style="display:none;"' ?>>
-                    <iframe id="ai-plan-preview-frame" class="ai-plan-preview-frame" <?= $app_review_preview_url ? 'src="' . htmlspecialchars($app_review_preview_url, ENT_QUOTES, 'UTF-8') . '"' : null ?> loading="lazy" title="<?= htmlspecialchars($app_review_preview_label ?: 'App preview', ENT_QUOTES, 'UTF-8') ?>"></iframe>
+                    <iframe id="ai-plan-preview-frame" class="ai-plan-preview-frame" <?= $app_review_preview_url ? 'src="' . htmlspecialchars($app_review_preview_url, ENT_QUOTES, 'UTF-8') . '"' : null ?> loading="lazy" title="<?= htmlspecialchars($app_review_preview_label ?: fcc_t('App preview'), ENT_QUOTES, 'UTF-8') ?>"></iframe>
                 </div>
 
                 <div class="ai-plan-preview-empty" id="ai-plan-preview-empty" <?= $app_review_preview_url ? 'style="display:none;"' : null ?>>

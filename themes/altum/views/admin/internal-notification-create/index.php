@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-    <nav aria-label="breadcrumb">
+    <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li>
                 <a href="<?= url('admin/internal-notifications') ?>"><?= l('admin_internal_notifications.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -203,7 +203,7 @@
             <div class="form-group" data-segment="filter">
                 <label for="filters_operating_systems"><i class="fas fa-fw fa-server fa-sm text-muted mr-1"></i> <?= l('admin_broadcasts.operating_systems') ?></label>
                 <select id="filters_operating_systems" name="filters_operating_systems[]" class="custom-select" multiple="multiple">
-                    <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                    <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                         <option value="<?= $os_name ?>" <?= in_array($os_name, $data->values['filters_operating_systems'] ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                     <?php endforeach ?>
                 </select>

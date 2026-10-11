@@ -31,27 +31,27 @@
     <div class="form-group">
         <label for="layout"><?= l('admin_settings.cookie_consent.layout') ?></label>
         <select id="layout" name="layout" class="custom-select">
-            <option value="cloud" <?= settings()->cookie_consent->layout == 'cloud' ? 'selected="selected"' : null ?>>Cloud</option>
-            <option value="box" <?= settings()->cookie_consent->layout == 'box' ? 'selected="selected"' : null ?>>Box</option>
-            <option value="bar" <?= settings()->cookie_consent->layout == 'bar' ? 'selected="selected"' : null ?>>Bar</option>
+            <option value="cloud" <?= settings()->cookie_consent->layout == 'cloud' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Cloud'), ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="box" <?= settings()->cookie_consent->layout == 'box' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Box'), ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="bar" <?= settings()->cookie_consent->layout == 'bar' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Bar'), ENT_QUOTES, 'UTF-8') ?></option>
         </select>
     </div>
 
     <div class="form-group">
         <label for="position_y"><?= l('admin_settings.cookie_consent.position_y') ?></label>
         <select id="position_y" name="position_y" class="custom-select">
-            <option value="top" <?= settings()->cookie_consent->position_y == 'top' ? 'selected="selected"' : null ?>>Top</option>
-            <option value="middle" <?= settings()->cookie_consent->position_y == 'middle' ? 'selected="selected"' : null ?>>Middle</option>
-            <option value="bottom" <?= settings()->cookie_consent->position_y == 'bottom' ? 'selected="selected"' : null ?>>Bottom</option>
+            <option value="top" <?= settings()->cookie_consent->position_y == 'top' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Top'), ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="middle" <?= settings()->cookie_consent->position_y == 'middle' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Middle'), ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="bottom" <?= settings()->cookie_consent->position_y == 'bottom' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Bottom'), ENT_QUOTES, 'UTF-8') ?></option>
         </select>
     </div>
 
     <div class="form-group">
         <label for="position_x"><?= l('admin_settings.cookie_consent.position_x') ?></label>
         <select id="position_x" name="position_x" class="custom-select">
-            <option value="left" <?= settings()->cookie_consent->position_x == 'left' ? 'selected="selected"' : null ?>>Left</option>
-            <option value="center" <?= settings()->cookie_consent->position_x == 'center' ? 'selected="selected"' : null ?>>Center</option>
-            <option value="right" <?= settings()->cookie_consent->position_x == 'right' ? 'selected="selected"' : null ?>>Right</option>
+            <option value="left" <?= settings()->cookie_consent->position_x == 'left' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Left'), ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="center" <?= settings()->cookie_consent->position_x == 'center' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Center'), ENT_QUOTES, 'UTF-8') ?></option>
+            <option value="right" <?= settings()->cookie_consent->position_x == 'right' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Right'), ENT_QUOTES, 'UTF-8') ?></option>
         </select>
     </div>
 

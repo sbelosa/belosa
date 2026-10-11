@@ -1,0 +1,1041 @@
+{
+  "version": "journey90-ui-6",
+  "tasks": {
+    "1": {
+      "mode": "social",
+      "label": "Razvoj",
+      "title": "Predstavi se i pokaži što ljudi mogu očekivati.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Uredio/la sam profil i objavio/la predstavljanje"
+      }
+    },
+    "2": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Pitaj ljude kako se snalaze s obrocima.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "3": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Javi se dvjema osobama i započni razgovor.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam dvije osobne poruke",
+        "conversation_reported": "Odradio/la sam dva razgovora",
+        "publication_reported": "Odgovorio/la sam na primjereno javno pitanje"
+      }
+    },
+    "4": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Nauči pokazati jedan proizvod.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "publication_reported": "Objavio/la sam objašnjenje proizvoda",
+        "message_sent": "Poslao/la sam traženo objašnjenje proizvoda"
+      }
+    },
+    "5": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Preporuči proizvod osobi koja te pitala za pomoć.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "6": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se osobi kojoj si već poslao preporuku.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "7": {
+      "mode": "social",
+      "label": "Regrutacija",
+      "title": "Pokaži jedan stvaran trenutak iz svog rada.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj",
+        "message_sent": "Poslao/la sam pripremljeni prikaz zainteresiranoj osobi"
+      }
+    },
+    "8": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pozovi osobu koju zanima dodatni posao.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "9": {
+      "mode": "mentor",
+      "label": "Razvoj",
+      "title": "Uključi sponzora u prvi poslovni razgovor.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "message_sent": "Poslao/la sam pitanje mentoru i pripremio/la uvod",
+        "conversation_reported": "Uvježbao/la sam uvod s mentorom"
+      }
+    },
+    "10": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Olakšaj zainteresiranoj osobi narudžbu.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "11": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Pomozi kupcu da počne koristiti proizvod.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "12": {
+      "mode": "video",
+      "label": "Produktivnost",
+      "title": "Snimi kratak video jednog proizvoda.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam video ili dva pripremljena kadra"
+      }
+    },
+    "13": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Odaberi osobu i preporuči joj jedan proizvod.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "14": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pozovi zainteresiranu osobu na webinar.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "15": {
+      "mode": "followup",
+      "label": "Razvoj",
+      "title": "Odgovori osobi kojoj još duguješ odgovor.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "16": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Objavi koristan odgovor za svoju publiku.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "17": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Pitaj kupca što mu je ostalo nejasno.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "18": {
+      "mode": "social",
+      "label": "Regrutacija",
+      "title": "Ispričaj zašto si počeo s Foreverom.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj",
+        "message_sent": "Poslao/la sam pripremljeni prikaz zainteresiranoj osobi"
+      }
+    },
+    "19": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Pokaži razliku između dvije opcije.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "20": {
+      "mode": "mentor",
+      "label": "Razvoj",
+      "title": "Uvježbaj razgovor o cijeni proizvoda.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "conversation_reported": "Prošao/la sam ovaj primjer s mentorom ili suradnikom",
+        "message_sent": "Poslao/la sam pripremljeni primjer i konkretno pitanje",
+        "publication_reported": "Objavio/la sam vodič iz predložene zamjene"
+      }
+    },
+    "21": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Pokreni malu trodnevnu temu.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "22": {
+      "mode": "video",
+      "label": "Produktivnost",
+      "title": "Pokaži drugi dio teme u praksi.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "23": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Odgovori na pitanje o proizvodu iz svoje objave.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "24": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pozovi osobu da vidi jedan dio Forever posla.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "25": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se nakon razgovora o poslu.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "26": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Pronađi proizvod koji se uklapa u nečiji budžet.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "27": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Napravi objavu koju vrijedi spremiti.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "28": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Zadovoljnom kupcu olakšaj osobnu preporuku.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "29": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Vodi prvi kratak poslovni razgovor.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "30": {
+      "mode": "followup",
+      "label": "Razvoj",
+      "title": "Popravi jednu svoju objavu ili preporuku.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "31": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Pitaj ljude što žele znati o dodacima prehrani.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "32": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Objavi jedan koristan detalj o proizvodu.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "33": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Razgovaraj s ljudima koje zanima tvoja tema.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "34": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Objasni kupcu dio upute koji mu nije jasan.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "35": {
+      "mode": "social",
+      "label": "Regrutacija",
+      "title": "Pokaži rad iza objava.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj",
+        "message_sent": "Poslao/la sam pripremljeni prikaz zainteresiranoj osobi"
+      }
+    },
+    "36": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pozovi dvije osobe na prikaz Forever posla.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "37": {
+      "mode": "mentor",
+      "label": "Razvoj",
+      "title": "Saslušaj osobu prije nego predložiš proizvod.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "conversation_reported": "Prošao/la sam ovaj primjer s mentorom ili suradnikom",
+        "message_sent": "Poslao/la sam pripremljeni primjer i konkretno pitanje",
+        "publication_reported": "Objavio/la sam vodič iz predložene zamjene"
+      }
+    },
+    "38": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se kupcu prema njegovoj rutini.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "39": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Provjeri treba li kupcu uopće još neki proizvod.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "40": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Razgovaraj o stvarnom početku i obvezama.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "41": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Objavi odgovor na pitanje o kupnji.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "42": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se osobi kojoj si preporučio proizvod.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "43": {
+      "mode": "mentor",
+      "label": "Razvoj",
+      "title": "Zamoli mentora da pogleda tvoju objavu.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "conversation_reported": "Prošao/la sam ovaj primjer s mentorom ili suradnikom",
+        "message_sent": "Poslao/la sam pripremljeni primjer i konkretno pitanje",
+        "publication_reported": "Objavio/la sam vodič iz predložene zamjene"
+      }
+    },
+    "44": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Novoj osobi olakšaj prvi korak.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "45": {
+      "mode": "followup",
+      "label": "Produktivnost",
+      "title": "Odgovori na preostalo pitanje iz svoje teme.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "46": {
+      "mode": "social",
+      "label": "Regrutacija",
+      "title": "Pokaži kako radiš i pozovi na razgovor.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj",
+        "message_sent": "Poslao/la sam pripremljeni prikaz zainteresiranoj osobi"
+      }
+    },
+    "47": {
+      "mode": "video",
+      "label": "Produktivnost",
+      "title": "Odgovori videom na jedno konkretno pitanje.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj",
+        "message_sent": "Poslao/la sam pripremljeni prikaz zainteresiranoj osobi"
+      }
+    },
+    "48": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Pomogni kupcu koji je zapeo s narudžbom ili proizvodom.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "49": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pokaži zainteresiranoj osobi što bi radila u Foreveru.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "50": {
+      "mode": "video",
+      "label": "Produktivnost",
+      "title": "Pokaži proizvod uživo ili u videopozivu.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj",
+        "conversation_reported": "Pokazao/la sam proizvod zainteresiranoj osobi uživo ili u videopozivu"
+      }
+    },
+    "51": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Kupcu pomozi da zna što napraviti nakon isporuke.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "52": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Usporedi dvije opcije za jednu osobu.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "53": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pokaži početniku kako bi izgledao njegov prvi tjedan.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "54": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Pomogni početniku napisati prvu poruku.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "55": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Zatraži stvaran dojam koji može pomoći drugima.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "56": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Objavi proizvod i ponudi detalje.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "57": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Poveži zainteresiranu osobu sa sponzorom.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "58": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Ponovnu narudžbu učini jednostavnom.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "59": {
+      "mode": "followup",
+      "label": "Razvoj",
+      "title": "Popravi jednu poruku koja nije bila jasna.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "60": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Pripremi preporuku i objasni kako se počinje s poslom.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "61": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Pokreni tri povezane objave o jednom proizvodu.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "62": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pomogni početniku objaviti prvo predstavljanje.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "63": {
+      "mode": "video",
+      "label": "Produktivnost",
+      "title": "Snimi drugi prikaz proizvoda iz svoje teme.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "64": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se dvjema osobama kojima si obećao pomoć.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "65": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Odgovori ljudima koji su pitali za tvoju objavu.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "66": {
+      "mode": "social",
+      "label": "Regrutacija",
+      "title": "Objavi što se u ovom poslu stvarno uči.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "67": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Uvježbaj preporuku proizvoda s novim suradnikom.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "68": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se kupcu prema stvarnom dogovoru.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "69": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Dogovori razgovor o početku Forever posla.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "70": {
+      "mode": "followup",
+      "label": "Produktivnost",
+      "title": "Odgovori na zadnje pitanje i spremi korisne objave.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "71": {
+      "mode": "followup",
+      "label": "Razvoj",
+      "title": "Pogledaj klikove i odradi jedan koristan potez.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "72": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Olakšaj zadovoljnom kupcu da te predstavi.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "73": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Objavi usporedbu koja olakšava izbor proizvoda.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "74": {
+      "mode": "followup",
+      "label": "Regrutacija",
+      "title": "Pitaj zainteresiranu osobu želi li napraviti prvi korak.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "75": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Pomogni suradniku uvježbati objavu ili poruku.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "76": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Ponovno obradi temu koja je potaknula pitanje.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "77": {
+      "mode": "social",
+      "label": "Zadržavanje",
+      "title": "Pripremi pomoć koju kupac lako pronađe.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "78": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "S novim suradnikom dovrši prvi razgovor.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "79": {
+      "mode": "mentor",
+      "label": "Razvoj",
+      "title": "Uvježbaj razgovor kada osoba ne želi nastaviti.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "conversation_reported": "Prošao/la sam ovaj primjer s mentorom ili suradnikom",
+        "message_sent": "Poslao/la sam pripremljeni primjer i konkretno pitanje",
+        "publication_reported": "Objavio/la sam vodič iz predložene zamjene"
+      }
+    },
+    "80": {
+      "mode": "message",
+      "label": "Produktivnost",
+      "title": "Samostalno preporuči proizvod i ponudi pomoć.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "81": {
+      "mode": "followup",
+      "label": "Zadržavanje",
+      "title": "Javi se kupcu koji je tražio podsjetnik za narudžbu.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "82": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Samostalno vodi razgovor o poslu.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "83": {
+      "mode": "message",
+      "label": "Razvoj",
+      "title": "Pomogni jednom suradniku riješiti konkretan zadatak.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "84": {
+      "mode": "social",
+      "label": "Produktivnost",
+      "title": "Objavi novi nastavak svoje prepoznatljive teme.",
+      "brief": "",
+      "primary": "Kopiraj tekst uz objavu",
+      "done": {
+        "publication_reported": "Objavio/la sam pripremljeni sadržaj"
+      }
+    },
+    "85": {
+      "mode": "message",
+      "label": "Zadržavanje",
+      "title": "Ponudi kupcu link koji može proslijediti.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "86": {
+      "mode": "message",
+      "label": "Regrutacija",
+      "title": "Pomogni početniku samostalno otvoriti i odraditi korak.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "87": {
+      "mode": "followup",
+      "label": "Produktivnost",
+      "title": "Odgovori ljudima kojima si obećao javljanje.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    },
+    "88": {
+      "mode": "mentor",
+      "label": "Razvoj",
+      "title": "Uvježbaj cijeli razgovor s kupcem.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "conversation_reported": "Prošao/la sam ovaj primjer s mentorom ili suradnikom",
+        "message_sent": "Poslao/la sam pripremljeni primjer i konkretno pitanje",
+        "publication_reported": "Objavio/la sam vodič iz predložene zamjene"
+      }
+    },
+    "89": {
+      "mode": "mentor",
+      "label": "Regrutacija",
+      "title": "Uvježbaj razgovor s novim suradnikom.",
+      "brief": "",
+      "primary": "Otvori poruku mentoru",
+      "done": {
+        "conversation_reported": "Prošao/la sam ovaj primjer s mentorom ili suradnikom",
+        "message_sent": "Poslao/la sam pripremljeni primjer i konkretno pitanje",
+        "publication_reported": "Objavio/la sam vodič iz predložene zamjene"
+      }
+    },
+    "90": {
+      "mode": "followup",
+      "label": "Razvoj",
+      "title": "Napravi prvu objavu ili razgovor za sljedeći tjedan.",
+      "brief": "",
+      "primary": "Otvori WhatsApp",
+      "done": {
+        "message_sent": "Poslao/la sam poruku za ovaj korak",
+        "conversation_reported": "Odradio/la sam razgovor ili pomoć",
+        "publication_reported": "Objavio/la sam predloženi javni prikaz"
+      }
+    }
+  }
+}

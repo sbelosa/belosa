@@ -1138,88 +1138,24 @@ function vip_funnel_get_product_language_codes(): array {
 
 function vip_funnel_get_product_catalog(string $preferred_language_code = ''): array {
     static $cache = [];
+    $preferred_language_code = trim($preferred_language_code) ?: (string) \Altum\Language::$default_code;
+    if(array_key_exists($preferred_language_code, $cache)) return $cache[$preferred_language_code];
 
-    $preferred_language_code = trim($preferred_language_code) !== '' ? trim($preferred_language_code) : (string) \Altum\Language::$default_code;
-
-    if(array_key_exists($preferred_language_code, $cache)) {
-        return $cache[$preferred_language_code];
+    $products = [];
+    foreach(fcc_product_catalog() as $slug => $translations) {
+        $available = [];
+        foreach($translations as $code => $entry) {
+            if(!empty(array_filter((array) json_decode((string) $entry->webshop_links)))) $available[$code] = $entry;
+        }
+        $entry = $available[$preferred_language_code] ?? $available['hr'] ?? $available['en'] ?? null;
+        if(!$entry) continue;
+        $product = (array) $entry;
+        $product['available_language_codes'] = array_keys($available);
+        $product['available_languages_label'] = implode(' / ', array_map('strtoupper', array_keys($available)));
+        $products[] = $product;
     }
-
-    $blog_products = [];
-    $blog_products_result = db()
-        ->where('is_published', 1)
-        ->orderBy('datetime', 'DESC')
-        ->get('blog_posts', 500, ['blog_post_id', 'title', 'description', 'url', 'image', 'language', 'webshop_links']);
-    $blog_products_index = [];
-
-    foreach((array) $blog_products_result as $blog_post) {
-        $translation_key = trim((string) ($blog_post->url ?? ''));
-
-        if($translation_key === '') {
-            continue;
-        }
-
-        $webshop_links = json_decode($blog_post->webshop_links ?? '{}');
-        if(empty(array_filter((array) $webshop_links, static function($value) {
-            return !empty($value);
-        }))) {
-            continue;
-        }
-
-        $language_code = null;
-        if(!empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])) {
-            $language_code = \Altum\Language::$active_languages[$blog_post->language];
-        }
-
-        $language_prefix = $language_code ? $language_code . '/' : '';
-        $product_row = [
-            'blog_post_id' => (int) $blog_post->blog_post_id,
-            'title' => (string) ($blog_post->title ?? ''),
-            'description' => mb_substr(trim(strip_tags((string) ($blog_post->description ?? ''))), 0, 220),
-            'blog_url' => SITE_URL . $language_prefix . 'blog/' . $translation_key,
-            'image_url' => !empty($blog_post->image) ? \Altum\Uploads::get_full_url('blog') . $blog_post->image : null,
-            'translation_key' => $translation_key,
-            'language_code' => $language_code ?: (string) \Altum\Language::$default_code,
-        ];
-
-        if(!isset($blog_products_index[$translation_key])) {
-            $blog_products_index[$translation_key] = [
-                'rows' => [],
-                'ordered_language_codes' => [],
-            ];
-        }
-
-        $blog_products_index[$translation_key]['rows'][$product_row['language_code']] = $product_row;
-
-        if(!in_array($product_row['language_code'], $blog_products_index[$translation_key]['ordered_language_codes'], true)) {
-            $blog_products_index[$translation_key]['ordered_language_codes'][] = $product_row['language_code'];
-        }
-    }
-
-    foreach($blog_products_index as $translation_key => $product_group) {
-        $preferred_product = $product_group['rows'][$preferred_language_code]
-            ?? $product_group['rows']['hr']
-            ?? $product_group['rows']['en']
-            ?? reset($product_group['rows']);
-
-        if(!$preferred_product) {
-            continue;
-        }
-
-        $preferred_product['translation_key'] = $translation_key;
-        $preferred_product['available_language_codes'] = array_values($product_group['ordered_language_codes']);
-        $preferred_product['available_languages_label'] = implode(' / ', array_map(static function($code) {
-            return mb_strtoupper((string) $code);
-        }, $preferred_product['available_language_codes']));
-
-        $blog_products[] = $preferred_product;
-    }
-
-    usort($blog_products, static function(array $a, array $b) {
-        return strcasecmp((string) ($a['title'] ?? ''), (string) ($b['title'] ?? ''));
-    });
-
-    return $cache[$preferred_language_code] = array_values($blog_products);
+    usort($products, static fn(array $a, array $b) => strcasecmp((string) $a['title'], (string) $b['title']));
+    return $cache[$preferred_language_code] = array_values($products);
 }
 
 function vip_funnel_get_product_translation_key_by_blog_post_id(int $blog_post_id = 0): string {
@@ -1241,98 +1177,11 @@ function vip_funnel_get_product_translation_key_by_blog_post_id(int $blog_post_i
 }
 
 function vip_funnel_resolve_product_catalog_entry(string $translation_key, string $target_language_code = '', string $fallback_language_code = ''): ?array {
-    static $cache = [];
-
-    $translation_key = trim($translation_key);
-    $target_language_code = trim($target_language_code);
-    $fallback_language_code = trim($fallback_language_code);
-
-    if($translation_key === '') {
-        return null;
+    foreach(array_unique([$target_language_code, $fallback_language_code]) as $code) {
+        $entry = $code !== '' ? fcc_product_resolve($translation_key, $code) : null;
+        if($entry && !empty(array_filter((array) json_decode((string) $entry->webshop_links)))) return (array) $entry;
     }
-
-    $cache_key = $translation_key . '|' . $target_language_code . '|' . $fallback_language_code;
-    if(array_key_exists($cache_key, $cache)) {
-        return $cache[$cache_key];
-    }
-
-    $language_names_by_code = array_flip((array) \Altum\Language::$active_languages);
-    $language_priority = array_values(array_filter(array_unique([
-        $target_language_code,
-        $fallback_language_code,
-    ])));
-
-    foreach($language_priority as $language_code) {
-        $language_name = $language_names_by_code[$language_code] ?? null;
-
-        if(!$language_name) {
-            continue;
-        }
-
-        $blog_post = db()
-            ->where('is_published', 1)
-            ->where('url', $translation_key)
-            ->where('language', $language_name)
-            ->getOne('blog_posts', ['blog_post_id', 'title', 'description', 'url', 'image', 'language', 'webshop_links']);
-
-        if(!$blog_post) {
-            continue;
-        }
-
-        $webshop_links = json_decode($blog_post->webshop_links ?? '{}');
-        if(empty(array_filter((array) $webshop_links, static function($value) {
-            return !empty($value);
-        }))) {
-            continue;
-        }
-
-        $language_prefix = !empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])
-            ? \Altum\Language::$active_languages[$blog_post->language] . '/'
-            : '';
-
-        return $cache[$cache_key] = [
-            'blog_post_id' => (int) ($blog_post->blog_post_id ?? 0),
-            'title' => (string) ($blog_post->title ?? ''),
-            'description' => mb_substr(trim(strip_tags((string) ($blog_post->description ?? ''))), 0, 220),
-            'blog_url' => SITE_URL . $language_prefix . 'blog/' . ($blog_post->url ?? ''),
-            'image_url' => !empty($blog_post->image) ? \Altum\Uploads::get_full_url('blog') . $blog_post->image : null,
-            'language_code' => $language_code,
-            'translation_key' => $translation_key,
-        ];
-    }
-
-    $fallback_post = db()
-        ->where('is_published', 1)
-        ->where('url', $translation_key)
-        ->getOne('blog_posts', ['blog_post_id', 'title', 'description', 'url', 'image', 'language', 'webshop_links']);
-
-    if(!$fallback_post) {
-        return $cache[$cache_key] = null;
-    }
-
-    $webshop_links = json_decode($fallback_post->webshop_links ?? '{}');
-    if(empty(array_filter((array) $webshop_links, static function($value) {
-        return !empty($value);
-    }))) {
-        return $cache[$cache_key] = null;
-    }
-
-    $resolved_language_code = !empty($fallback_post->language) && isset(\Altum\Language::$active_languages[$fallback_post->language])
-        ? \Altum\Language::$active_languages[$fallback_post->language]
-        : (string) \Altum\Language::$default_code;
-    $language_prefix = !empty($fallback_post->language) && isset(\Altum\Language::$active_languages[$fallback_post->language])
-        ? \Altum\Language::$active_languages[$fallback_post->language] . '/'
-        : '';
-
-    return $cache[$cache_key] = [
-        'blog_post_id' => (int) ($fallback_post->blog_post_id ?? 0),
-        'title' => (string) ($fallback_post->title ?? ''),
-        'description' => mb_substr(trim(strip_tags((string) ($fallback_post->description ?? ''))), 0, 220),
-        'blog_url' => SITE_URL . $language_prefix . 'blog/' . ($fallback_post->url ?? ''),
-        'image_url' => !empty($fallback_post->image) ? \Altum\Uploads::get_full_url('blog') . $fallback_post->image : null,
-        'language_code' => $resolved_language_code,
-        'translation_key' => $translation_key,
-    ];
+    return null;
 }
 
 function vip_funnel_get_user_referral_slug(int $user_id = 0): string {
@@ -1459,75 +1308,13 @@ function vip_funnel_get_geo_lookup_ip(): ?string {
 }
 
 function vip_funnel_get_forever_business_referral_url(int $owner_user_id = 0): string {
-    if($owner_user_id <= 0) {
-        return '';
-    }
-
-    $owner = db()
-        ->where('user_id', $owner_user_id)
-        ->where('status', 1)
-        ->getOne('users', ['user_id', 'preferences']);
-
-    if(!$owner) {
-        return '';
-    }
-
-    $preferences = vip_funnel_get_user_preferences($owner);
-    $meta = vip_funnel_normalize_object($preferences->meta ?? []);
-    $forever_id = trim((string) ($meta->foreverId ?? ''));
-    $business_links = settings()->links->forever_business_links ?? new \StdClass();
-    $available_country_codes = array_keys(array_filter((array) $business_links, static function($value) {
-        return !empty($value);
-    }));
-
-    if(empty($available_country_codes)) {
-        return '';
-    }
-
-    $accept_language_header = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? (string) $_SERVER['HTTP_ACCEPT_LANGUAGE'] : null;
-    $country_code = \Altum\Link::get_trusted_forever_request_country_code();
-    $country_code_is_trusted = (bool) $country_code;
-
-    if(!$country_code && vip_funnel_get_geo_lookup_ip() && is_file(APP_PATH . 'includes/GeoLite2-City.mmdb')) {
-        try {
-            $maxmind = (new \MaxMind\Db\Reader(APP_PATH . 'includes/GeoLite2-City.mmdb'))->get(vip_funnel_get_geo_lookup_ip());
-            $country_code = $maxmind['country']['iso_code'] ?? null;
-        } catch(\Exception $exception) {
-            $country_code = null;
-        }
-    }
-
-    if(!$country_code) {
-        $country_code = \Altum\Link::get_external_geo_country_code(vip_funnel_get_geo_lookup_ip());
-    }
-
-    $business_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
-        $country_code,
-        $available_country_codes,
-        $accept_language_header,
-        $country_code_is_trusted
-    );
-
-    $business_base_url = $business_country_code ? ($business_links->{$business_country_code} ?? null) : null;
-
-    if(!$business_base_url && !empty($business_links->us)) {
-        $business_country_code = 'us';
-        $business_base_url = $business_links->us;
-    }
-
-    if(!$business_base_url && !empty($business_links->gb)) {
-        $business_country_code = 'gb';
-        $business_base_url = $business_links->gb;
-    }
-
-    if(!$business_base_url) {
-        $business_country_code = (string) ($available_country_codes[0] ?? '');
-        $business_base_url = $business_country_code !== '' ? ($business_links->{$business_country_code} ?? null) : null;
-    }
-
-    $url = \Altum\Link::build_forever_destination_url($business_base_url, $forever_id, $business_country_code);
-
-    return is_string($url) ? $url : '';
+    if($owner_user_id <= 0) return '';
+    $owner = db()->where('user_id', $owner_user_id)->where('status', 1)->getOne('users', ['user_id', 'preferences']);
+    if(!$owner || fcc_forever_id($owner->preferences) === '') return '';
+    $ref = vip_funnel_get_user_referral_slug($owner_user_id);
+    $active_owner = $ref !== '' ? fcc_market_referral_owner($ref) : null;
+    if(!$active_owner || (int) $active_owner->user_id !== $owner_user_id) return '';
+    return fcc_forever_entry_url($ref, 'business');
 }
 
 function vip_funnel_get_start_package_question_message(string $language = 'hr'): string {
@@ -1763,10 +1550,10 @@ function vip_funnel_resolve_product_offer_render_data(array $block, int $owner_u
     $direct_shop_url = '';
 
     if($resolved_product) {
-        $blog_url = vip_funnel_append_url_query_param((string) ($resolved_product['blog_url'] ?? ''), 'ref', $referral_slug);
+        $blog_url = fcc_product_owned_url((string) ($resolved_product['blog_url'] ?? ''), $referral_slug);
 
         if($referral_slug !== '') {
-            $direct_shop_url = url('blog-click?blog_post_id=' . (int) ($resolved_product['blog_post_id'] ?? 0) . '&ref=' . rawurlencode($referral_slug));
+            $direct_shop_url = fcc_product_owned_url(url('blog-click?blog_post_id=' . (int) ($resolved_product['blog_post_id'] ?? 0)), $referral_slug);
         }
     }
 
@@ -10261,6 +10048,11 @@ function vip_funnel_get_public_hub_render_data(int $user_id = 0, $block_settings
     }));
     $first_step_id = $public_payload ? vip_funnel_get_public_entry_step_id($payload) : '';
     $primary_url = $public_payload && $first_step_id !== '' ? vip_funnel_get_public_funnel_url($user_id, (string) ($payload['funnel']['slug'] ?? 'vip-funnel-2-0')) : '';
+    $secondary_url = trim((string) ($block_settings['secondary_url'] ?? ''));
+    if(fcc_forever_owned_destination_recognized($secondary_url)) {
+        $owner_ref = vip_funnel_get_user_referral_slug($user_id);
+        $secondary_url = $owner_ref !== '' ? fcc_forever_owned_destination($secondary_url, $owner_ref) : '';
+    }
 
     return [
         'kicker' => trim((string) ($block_settings['kicker'] ?? ($payload['overview']['eyebrow'] ?? 'Funnel 2.0'))),
@@ -10269,7 +10061,7 @@ function vip_funnel_get_public_hub_render_data(int $user_id = 0, $block_settings
         'primary_cta_text' => trim((string) ($block_settings['primary_cta_text'] ?? ($payload['overview']['primary_cta'] ?? 'Otvori funnel'))),
         'primary_url' => $primary_url,
         'secondary_cta_text' => trim((string) ($block_settings['secondary_cta_text'] ?? ($payload['overview']['secondary_cta'] ?? ''))),
-        'secondary_url' => trim((string) ($block_settings['secondary_url'] ?? '')),
+        'secondary_url' => $secondary_url,
         'show_paths' => array_key_exists('show_paths', $block_settings) ? !empty($block_settings['show_paths']) : true,
         'paths' => array_slice($paths, 0, 3),
     ];

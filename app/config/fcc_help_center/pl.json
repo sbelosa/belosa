@@ -1,0 +1,855 @@
+{
+  "locale": "pl",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Pierwsze kroki w systemie FCC",
+      "summary": "Zaloguj się, sprawdź swoją kartę i znajdź działanie, od którego chcesz zacząć.",
+      "keywords": [
+        "początek",
+        "rejestracje",
+        "język",
+        "instalacja"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Co jest dostępne",
+          "paragraphs": [
+            "Używasz tego samego konta FCC na komputerze i telefonie. Pakiety Free i PRO oferują różne możliwości, a dostęp do programu Moja droga jest potwierdzany osobno."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Przygotuj swoje miejsce pracy",
+          "steps": [
+            "Zaloguj się przy użyciu dotychczasowego adresu e-mail i hasła. Nie twórz drugiego konta na potrzeby instalacji aplikacji.",
+            "Wybierz swój język na górnym pasku. Ten wybór nie zmienia kraju sklepu Forever.",
+            "Otwórz Moja karta i sprawdź swoje dane kontaktowe, Forever ID oraz publiczny podgląd karty.",
+            "Otwórz Dzisiaj, aby zobaczyć kolejny krok, albo Udostępnij, aby znaleźć produkt, prezentację biznesową lub zaproszenie.",
+            "W sekcji Więcej znajdziesz instrukcje dotyczące FCC, instalacji aplikacji, pakietu i pomocy technicznej."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Jeśli coś nie działa",
+          "questions": [
+            {
+              "question": "Dlaczego nie widzę osobistego zadania na dziś?",
+              "answer": "Sprawdź widok dostępu w Moja droga oraz swoje punkty. Brak potwierdzonych danych nie oznacza, że czegoś nie zrobiono. Pomoc techniczna może sprawdzić połączenie konta."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Dzisiaj i moja droga",
+      "summary": "Naucz się jednej rzeczy, zastosuj ją i dokładnie zapisz, co zostało zrobione.",
+      "keywords": [
+        "dzisiaj",
+        "moja droga",
+        "zadanie",
+        "4 Core",
+        "postęp"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Jeden połączony program",
+          "paragraphs": [
+            "Moja droga łączy Rekrutację, Utrzymanie, Produktywność i Rozwój. Dostępny krok, ćwiczenie i kryterium ukończenia są pokazane przy Twoim zadaniu. PRO zapewnia dodatkowo indywidualną pomoc Coacha."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Wykonaj swój krok",
+          "steps": [
+            "Otwórz Dzisiaj i przeczytaj cel oraz pokazane działania związane z Twoim krokiem.",
+            "Otwórz powiązane narzędzie lub materiał. W razie potrzeby poproś o prostsze wyjaśnienie.",
+            "Wykonaj działanie, którego chce dana osoba, albo wybierz proponowane ćwiczenie, jeśli nie masz odpowiedniej sytuacji.",
+            "Potwierdź wyłącznie rzeczywisty rezultat zgodny z kryterium kroku. Kliknięcie ani wersja robocza nie oznaczają, że rozmowa się odbyła.",
+            "W sekcji Mój postęp przejrzyj zapisy i napisz w podsumowaniu, co Ci pomogło lub co sprawiło trudność."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Dzisiejszy krok wymaga rozmowy z klientem. Jeśli nie masz odpowiedniej osoby, która chce porozmawiać, wykonaj proponowane ćwiczenie i oznacz je jako ćwiczenie."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Częste pytanie",
+          "questions": [
+            {
+              "question": "Czy ćwiczenie liczy się jako sprzedaż?",
+              "answer": "Nie. Ćwiczenie i zastosowanie w praktyce mają różne oznaczenia. Samo przeczytanie instrukcji nie kończy kroku ani nie potwierdza wyniku biznesowego."
+            },
+            {
+              "question": "Czy PRO automatycznie zapewnia dostęp do programu Moja droga?",
+              "answer": "Nie. Pakiet i zatwierdzony zapis do programu to osobne warunki. Otwórz widok dostępu lub poproś pomoc techniczną o sprawdzenie."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Edytuj i sprawdź swoją kartę",
+      "summary": "Połącz dane kontaktowe, treści i osobiste rekomendacje na udostępnianej karcie.",
+      "keywords": [
+        "karta",
+        "blok",
+        "edytuj",
+        "media społecznościowe"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Karta widoczna dla odwiedzających",
+          "paragraphs": [
+            "Moja karta zawiera Twoje karty i opcje ich edycji. Każdy blok edytuje się osobno, a Wygląd zmienia ogólny widok. Liczba kart i dostępne bloki zależą od pakietu."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Edytuj jedną część, a potem ją sprawdź",
+          "steps": [
+            "Otwórz Moja karta, wybierz swoją kartę i kliknij Edytuj.",
+            "W sekcji Treść kliknij Edytuj lub ikonę ołówka przy bloku, który chcesz zmienić.",
+            "Sprawdź imię i nazwisko, opis, telefon oraz kanały. Jeśli pole już wyświetla domenę, wpisz tylko wymaganą część adresu.",
+            "Aby dodać nową treść, wybierz Dodaj blok i uważnie przeczytaj opis jego przeznaczenia.",
+            "Zapisz zmiany, otwórz publiczny Podgląd i przetestuj link przed udostępnieniem."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktyczne pytanie",
+          "questions": [
+            {
+              "question": "Jak dodać krótki opis pod imieniem i nazwiskiem?",
+              "answer": "Dodaj osobny blok tekstowy i przenieś go pod blok nagłówka. Rozmiar całego nagłówka i opis to różne ustawienia."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop i rekomendacje według kraju",
+      "summary": "Twoja rekomendacja kieruje odwiedzających do odpowiedniej oferty Forever.",
+      "keywords": [
+        "sklep",
+        "sklep internetowy",
+        "Forever ID",
+        "kraj",
+        "Titan",
+        "BiH",
+        "Albania"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Jeden główny blok",
+          "paragraphs": [
+            "Główny blok sklepu Forever korzysta z powiązanego Forever ID i istniejącego systemu rekomendacji. Stary blok Titan może pozostać na wcześniej utworzonej karcie. Nie zmieniaj ani nie wymyślaj parametrów polecających."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Sprawdź rekomendację",
+          "steps": [
+            "W sekcji Moja karta otwórz edycję bloku Forever shop.",
+            "Sprawdź Forever ID powiązany z kontem. Jeśli jest nieprawidłowy, poproś pomoc techniczną o weryfikację.",
+            "Przeczytaj opis bloku i rozróżnij zamawianie produktów od rozpoczęcia współpracy biznesowej.",
+            "Zapisz zmiany i otwórz publiczny Podgląd karty.",
+            "Na stronie docelowej sprawdź kraj, dostępną ofertę i sposób wyświetlania rekomendacji przed złożeniem zamówienia."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "Język i kraj to różne ustawienia",
+          "paragraphs": [
+            "System wybiera stronę docelową na podstawie dostępnego wykrywania kraju i zasad sklepu. Większość rynków korzysta z Titan, a BiH i Albania z lokalnych sklepów z innym systemem rekomendacji. VPN i podróż mogą wpłynąć na wykrywanie kraju. Jeśli wybrany kraj nie jest oczekiwany, sprawdź go przed złożeniem zamówienia. Zmiana języka nie zmienia rynku."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Odwiedzający czyta kartę po chorwacku, ale chce złożyć zamówienie w Niemczech. Przed złożeniem zamówienia sprawdza niemiecką ofertę i rekomendację, nie zmieniając języka karty."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Częste pytanie",
+          "questions": [
+            {
+              "question": "Czy kliknięcie potwierdza zakup?",
+              "answer": "Nie. Kliknięcie prowadzące do sklepu i złożenie zamówienia to różne zdarzenia. FCC nie potwierdza zakupu tylko dlatego, że otwarto link."
+            },
+            {
+              "question": "Czy muszę ręcznie przygotować link dla każdego kraju?",
+              "answer": "Główny blok korzysta z istniejącego systemu wyboru strony docelowej według kraju. Sprawdź powiązany Forever ID i rzeczywistą stronę docelową. Jeśli rynek lub rekomendacja są nieprawidłowe, prześlij przykład do pomocy technicznej."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Poleć produkt lub artykuł",
+      "summary": "Znajdź odpowiednią treść i udostępnij ją za pomocą swojego osobistego linku.",
+      "keywords": [
+        "produkt",
+        "artykuł",
+        "udostępnij",
+        "rekomendacja",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Treść jako początek rozmowy",
+          "paragraphs": [
+            "Udostępnij łączy artykuł z Twoją rekomendacją. Produkty, ich dostępność i oficjalne instrukcje mogą się różnić w zależności od kraju. Artykuł nie zastępuje etykiety wybranego opakowania."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Przygotuj przydatną rekomendację",
+          "steps": [
+            "Otwórz Udostępnij i znajdź produkt, wpisując jego dokładną nazwę, albo wybierz odpowiedni artykuł.",
+            "Przeczytaj treść i sprawdź, czy odpowiada na rzeczywiste pytanie tej osoby.",
+            "Przygotuj swój link i dostosuj tekst. Nie wymyślaj osobistych doświadczeń ani działania produktu.",
+            "Skopiuj treść lub otwórz WhatsApp, a następnie wyślij wiadomość osobiście.",
+            "Jeśli dana osoba chce kontynuować, umów się na kolejny kontakt w sekcji Kontakty."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Przed złożeniem zamówienia",
+          "questions": [
+            {
+              "question": "Co zrobić, jeśli produkt nie jest dostępny w kraju kupującego?",
+              "answer": "Sprawdź oficjalną ofertę lokalną. Nie zamieniaj produktu automatycznie ani nie zakładaj, że inne opakowanie ma taki sam skład lub instrukcje."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Udostępnij prezentację biznesową",
+      "summary": "Przedstaw możliwości współpracy i śledź dobrowolne zapytania za pośrednictwem swojego konta.",
+      "keywords": [
+        "biznes",
+        "plan marketingowy",
+        "współpraca",
+        "pakiet startowy",
+        "prezentacja"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Osobisty link do rozmowy",
+          "paragraphs": [
+            "Prezentacja biznesowa jest oddzielona od webinaru. Dostępny widok i możliwość przygotowania osobistej prezentacji zależą od dostępu do konta i pakietu. Przejście do pakietu podstawowego nie potwierdza rejestracji."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Przygotuj się do rozmowy i śledź jej przebieg",
+          "steps": [
+            "W sekcji Udostępnij otwórz Plan marketingowy lub dostępną Prezentację biznesową.",
+            "Przeczytaj własne podsumowanie i sprawdź osobiste rekomendacje oraz kontakt.",
+            "Dostosuj zaproszenie do zainteresowań tej osoby, nie obiecując zarobków ani wyników.",
+            "Wyślij przygotowany link osobiście i umów się na rozmowę, gdy ta osoba będzie chciała.",
+            "Dobrowolnego zapytania szukaj w swoich Kontaktach i zanotuj ustalenia dotyczące kolejnego kontaktu."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Znaczenie wyników",
+          "questions": [
+            {
+              "question": "Czy kliknięcie pakietu podstawowego oznacza nową współpracę?",
+              "answer": "Nie. Zakup i rejestracja są finalizowane w oficjalnym serwisie Forever. W ewidencji FCC rozróżniaj kliknięcie, zapytanie kontaktowe i osobiście potwierdzony wynik."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Zaproś gościa i śledź rejestrację",
+      "summary": "Wybierz termin, wyślij zaproszenie, a po webinarze sprawdź rzeczywisty wynik.",
+      "keywords": [
+        "webinar",
+        "webinar",
+        "zaproszenie",
+        "Powiększenie",
+        "gość",
+        "rejestracje"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Twoje zaproszenie, Twoje kontakty",
+          "paragraphs": [
+            "Użytkownicy Free i PRO mogą korzystać ze standardowego zaproszenia na dostępny webinar. PRO zapewnia dodatkowo osobiste wprowadzenie i wideo. Gość rejestruje się przez Twój link, bez konta FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Od zaproszenia do ustaleń",
+          "steps": [
+            "Otwórz sekcję Udostępnij, wybierz Zaproszenie na webinar, a następnie Wybierz termin.",
+            "Sprawdź datę, godzinę i strefę czasową wybranego wydarzenia.",
+            "Dostosuj wiadomość, a następnie wyślij zaproszenie osobiście.",
+            "Rejestracje sprawdzisz w sekcji Rejestracje moich gości oraz w Kontaktach.",
+            "Sprawdź, czy gość zgodził się na kontakt, a po terminie zanotuj wynik."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Rejestracja nie potwierdza obecności",
+          "paragraphs": [
+            "Status Nieznane oznacza, że obecność nie została jeszcze sprawdzona. Nie oznacza, że gość nie przyszedł. Po rozmowie wybierz faktyczną obecność lub nieobecność. Przypomnienia dla gościa zależą od wybranego ustawienia i potwierdzonego adresu email. Rejestracja nie oznacza automatycznej zgody na wszystkie przyszłe wiadomości."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Zaproszenie na nowy termin",
+          "paragraphs": [
+            "Jeśli gość chce wybrać inny termin, przygotuj nowe zaproszenie w widoku gości lub podczas wyboru terminu. Gość potwierdza nową rejestrację. Istniejący kontakt jest używany tylko wtedy, gdy dane wskazują na tę samą osobę. Częściowe dopasowanie należy sprawdzić. Powtarzające się wydarzenie nie rejestruje automatycznie gościa na przyszłe terminy."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Marko się zarejestrował, ale jeszcze nie wiesz, czy uczestniczył. Pozostaw status Nieznane, zapytaj go za jego zgodą, a dopiero potem oznacz rzeczywisty wynik."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Częste pytanie",
+          "questions": [
+            {
+              "question": "Czy otwarcie WhatsAppa oznacza, że zaproszenie zostało wysłane?",
+              "answer": "Nie. Wiadomość wysyłasz osobiście w aplikacji WhatsApp. W FCC potwierdź wysłanie dopiero po faktycznym wysłaniu wiadomości."
+            },
+            {
+              "question": "Czy gość musi utworzyć konto FCC?",
+              "answer": "Nie. Gość otwiera Twoją stronę rejestracji i potwierdza wybrany termin. Jego rejestracja pozostaje powiązana z Tobą jako osobą zapraszającą."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Utwórz webinar osobisty lub zespołowy",
+      "summary": "Określ temat, termin, język i odbiorców, którzy mogą korzystać ze swoich zaproszeń.",
+      "keywords": [
+        "webinar",
+        "organizator",
+        "zespół",
+        "powtarzanie",
+        "Powiększenie",
+        "język"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Organizowanie z PRO",
+          "paragraphs": [
+            "Do tworzenia i edytowania własnego webinaru potrzebujesz PRO. Pokój Zoom lub inną salę przygotuj w odpowiedniej usłudze, a w FCC wprowadź pełny link dostępu HTTPS."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Przygotuj swoje wydarzenie",
+          "steps": [
+            "Otwórz sekcję Udostępnij, wybierz Zaproszenie na webinar, Moje webinary, a następnie formularz nowego webinaru.",
+            "Wpisz nazwę i informacje o tym, czego dowiedzą się goście. Wybierz, kto może zapraszać gości.",
+            "Wybierz język zaproszenia i powiadomień, datę, godzinę rozpoczęcia, czas trwania oraz strefę czasową.",
+            "Wpisz swój link dostępu i wybierz pojedynczy termin lub cotygodniowe powtarzanie.",
+            "Zapisz webinar i przed użyciem sprawdź przygotowane zaproszenie."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Kto widzi webinar zespołowy",
+          "paragraphs": [
+            "Mój cały zespół FCC obejmuje organizatora i potwierdzonych współpracowników w jego dolnej linii, także w jej dalszych gałęziach. Sponsorzy znajdujący się wyżej niż organizator i inne zespoły nie są automatycznie odbiorcami. Nadzór administratora nie oznacza przynależności do grona odbiorców. Każda osoba zapraszająca zachowuje swoje prywatne kontakty, a organizator widzi łączną liczbę rejestracji."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Powtarzanie, edytowanie i anulowanie",
+          "paragraphs": [
+            "Cotygodniowe powtarzanie zachowuje wybraną lokalną godzinę także podczas zmiany czasu na letni lub zimowy. Podczas edycji wybierz Tylko ten termin albo Ten i przyszłe terminy. Grono odbiorców istniejącej serii pozostaje bez zmian. Anulowanie zachowuje kontakty i historię, ale w przypadku anulowanych terminów rejestracje i przypomnienia o uczestnictwie zostają wyłączone."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Aby zorganizować niedzielne spotkanie po słoweńsku o 20:00, wybierz Slovenščina, Europe/Ljubljana i odpowiednie grono odbiorców. Wpisz link do swojego pokoju Zoom i sprawdź pierwszy termin oraz ustawienia powtarzania."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Język wydarzenia",
+          "questions": [
+            {
+              "question": "Czy słoweńskie zaproszenie zmienia język mojego konta?",
+              "answer": "Nie. Język wydarzenia określa język zaproszenia i powiadomień. Język konta i wybór rynku pozostają niezależne."
+            },
+            {
+              "question": "Czy współpracownicy Free mogą zapraszać na mój webinar zespołowy?",
+              "answer": "Tak, jeśli należą do potwierdzonego grona odbiorców, mogą korzystać ze standardowego osobistego zaproszenia. Tworzenie webinaru i dodatkowe osobiste wideo wymagają dostępu PRO."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Kontakty i zaplanowane rozmowy",
+      "summary": "Zapisuj zainteresowanie, zgodę na kontakt i ustalenia dotyczące kolejnej rozmowy, nie tracąc historii.",
+      "keywords": [
+        "kontakty",
+        "książka adresowa",
+        "kontakt",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Twój prywatny widok",
+          "paragraphs": [
+            "Kontakty służą do zapisywania Twojej osobistej współpracy z innymi osobami. Webinar i dobrowolne zapytanie biznesowe mogą powiązać rejestrację z kontaktem. Szanuj oznaczenie, że dana osoba nie chce dalszego kontaktu."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Edytuj i zaplanuj dalsze działania",
+          "steps": [
+            "Otwórz Kontakty i przed ręcznym dodaniem nowego wpisu sprawdź, czy dana osoba już istnieje.",
+            "Otwórz kontakt i sprawdź imię i nazwisko, numer telefonu, adres email oraz zgodę na kontakt.",
+            "Zapisz rzeczywiste zainteresowanie sprzedażą lub współpracą biznesową oraz uzgodnioną datę kolejnego kontaktu.",
+            "Zapisz zmiany i otwórz WhatsApp tylko wtedy, gdy dana osoba chce porozmawiać.",
+            "Aby dodać osobę do książki adresowej urządzenia, wybierz Zapisz kontakt i osobiście potwierdź import pobranego pliku."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Gość webinaru jest już w Kontaktach. Znajdź istniejący wpis i uzupełnij uzgodnioną datę, zamiast ręcznie dodawać kolejny kontakt."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktyczne pytanie",
+          "questions": [
+            {
+              "question": "Czy przycisk Zapisz kontakt automatycznie zapisuje wszystko w Google?",
+              "answer": "Nie. Przycisk przygotowuje plik kontaktu na podstawie wprowadzonych pól. Na telefonie potwierdź zapis, a na komputerze możesz osobiście zaimportować plik do Kontaktów Google."
+            },
+            {
+              "question": "Dlaczego rejestracja wymaga sprawdzenia częściowego dopasowania?",
+              "answer": "Niektóre dane mogą pasować do wcześniejszego kontaktu, a inne mogą się różnić. Przed połączeniem wpisów sprawdź tożsamość osoby. Samo podobieństwo imion nie wystarczy."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Osobisty kontakt ze współpracownikiem",
+      "summary": "Przygotuj wiadomość, potwierdź jej faktyczne wysłanie i zaplanuj sprawdzenie, jak przebiegła rozmowa.",
+      "keywords": [
+        "mój zespół",
+        "wiadomość",
+        "wersja robocza",
+        "wysyłanie",
+        "wsparcie"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Wsparcie członka zespołu z PRO",
+          "paragraphs": [
+            "Mój zespół i wiadomości zespołowe wymagają dostępu PRO. Otwórz profil współpracownika, któremu możesz zaoferować wsparcie. Coach korzysta z dostępnych postępów i danych CC, nie z prywatnych notatek CRM innych osób."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Od wersji roboczej do kontaktu",
+          "steps": [
+            "W sekcji Mój zespół otwórz profil współpracownika, a następnie Wsparcie i kontakt osobisty.",
+            "Wybierz powód kontaktu i dostosuj Treść Twojej wiadomości. W razie potrzeby wybierz Przygotuj z Coachem.",
+            "Zapisz wersję roboczą, wybierz Kopiuj wiadomość lub Otwórz WhatsApp.",
+            "Wyślij wiadomość osobiście, a następnie potwierdź wysłanie w systemie FCC.",
+            "Wybierz datę w sekcji Kiedy chcesz sprawdzić, jak poszło, a później zanotuj rzeczywiste ustalenia."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "Wysłanie potwierdzasz osobiście",
+          "paragraphs": [
+            "Otwarcie WhatsAppa i skopiowanie wiadomości tylko ją przygotowuje, ale nie potwierdza wysłania. Jeśli nie wysłałeś wiadomości, wybierz odpowiednie potwierdzenie albo pozostaw wersję roboczą. Nieprawidłowe potwierdzenie wysłania możesz poprawić we wpisie. Usunięcie wpisu nie usuwa wiadomości z WhatsAppa. Wersje robocze i usunięte wpisy nie tworzą przypomnienia o rozmowie."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Otworzyłeś WhatsAppa, ale zrezygnowałeś przed wysłaniem. Pozostaw wersję roboczą albo potwierdź, że wiadomość nie została wysłana. W ewidencji nie będzie wtedy informacji o faktycznie wysłanej wiadomości."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Brak potwierdzonego numeru",
+          "questions": [
+            {
+              "question": "Dlaczego nie mogę otworzyć WhatsAppa?",
+              "answer": "Współpracownik musi mieć potwierdzony numer służbowy. Możesz skopiować tekst i wysłać go za pomocą używanego już kanału, a następnie osobiście potwierdzić wysłanie."
+            },
+            {
+              "question": "Czy zapisana wersja robocza tworzy przypomnienie o rozmowie?",
+              "answer": "Nie. Przypomnienie jest powiązane ze statusem wiadomości. Wersje robocze i usunięte wpisy nie tworzą przypomnienia o rozmowie. Powiąż datę sprawdzenia z faktycznym kontaktem."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Jak poprosić Coacha o pomoc",
+      "summary": "Opisz konkretną sytuację i uzyskaj wyjaśnienie lub wersję roboczą, którą osobiście sprawdzisz.",
+      "keywords": [
+        "coach",
+        "AI",
+        "pytanie",
+        "wiadomość",
+        "instrukcja"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Indywidualna pomoc w ramach obecnego dostępu",
+          "paragraphs": [
+            "PRO Coach pomaga w zadaniach, wiadomościach i Twojej własnej pracy. Ma dostęp do dozwolonego kontekstu konta, ale nie widzi automatycznie Twojego ekranu ani nie potwierdza wysłania, zakupu czy rejestracji."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Zadaj przydatne pytanie",
+          "steps": [
+            "Otwórz Coach lub pomoc Coacha przy swoim zadaniu albo narzędziu.",
+            "Napisz, co chcesz zrobić, w której części aplikacji i co jest dla Ciebie niejasne.",
+            "Aby przygotować wersję roboczą wiadomości, opisz relację i rzeczywisty etap rozmowy, bez niepotrzebnych danych osobowych ani zdrowotnych.",
+            "Przeczytaj odpowiedź i sprawdź fakty oraz adresata, zanim jej użyjesz.",
+            "Dostosuj wersję roboczą, a następnie osobiście wyślij wiadomość. Coach nie wysyła jej za Ciebie."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Linki do sprawdzonych instrukcji",
+          "paragraphs": [
+            "Coach może zaproponować odpowiednią instrukcję z centrum i wskazać jej konkretną sekcję. Instrukcja otworzy się w języku ustawionym na koncie i nie przyznaje dodatkowych uprawnień do narzędzi. Jeśli wyjaśnienie nie wystarczy, napisz, co nadal jest niejasne, lub zadaj pytanie zespołowi pomocy."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Napisz: Chcę zaprosić gościa na nowy termin, gdzie mogę to zrobić? Coach może wyjaśnić, jakie kroki wykonać, i wskazać odpowiednią sekcję instrukcji, bez podawania imienia gościa."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Język odpowiedzi",
+          "questions": [
+            {
+              "question": "Czy mogę zmienić tylko język Coacha?",
+              "answer": "Możesz wyraźnie poprosić o odpowiedź w wybranym języku. Nie zmieni to kraju oferty Forever. Sprawdź, czy gotowa wiadomość jest w języku odpowiednim dla jej odbiorcy."
+            },
+            {
+              "question": "Czy mogę czytać instrukcje bez PRO Coacha?",
+              "answer": "Tak. Centrum jest dostępne dla zalogowanych współpracowników Free i PRO. Indywidualna odpowiedź AI zależy od obecnego dostępu do Coacha."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Powiadomienia i przypomnienia",
+      "summary": "Wybierz tematy, codzienne przypomnienie i urządzenie, na którym chcesz otrzymywać powiadomienia.",
+      "keywords": [
+        "powiadomienia push",
+        "powiadomienia",
+        "przypomnienie",
+        "dźwięk",
+        "urządzenie"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "System i urządzenie mają własne ustawienia",
+          "paragraphs": [
+            "Skrzynka odbiorcza i powiadomienia push to różne widoki. Powiadomienia push wymagają zgody na urządzeniu. Codzienne zadanie i uzgodnione wiadomości mogą być łączone, natomiast wydarzenia i konto mają osobne pory powiadomień."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Sprawdź dostawę",
+          "steps": [
+            "Otwórz Powiadomienia i przeczytaj tytuł, opis oraz godzinę wiadomości.",
+            "Otwórz Powiadomienia na urządzeniu i moje ustawienia, a następnie wybierz Włącz na tym urządzeniu.",
+            "Zezwól na powiadomienia w przeglądarce lub na urządzeniu i zapisz wybrane kategorie.",
+            "W sekcji Mój rytm wybierz porę codziennego przypomnienia.",
+            "W razie potrzeby włącz dźwięk i wyślij sobie testowe powiadomienie, jeśli ten przycisk jest dostępny."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Dźwięk i wygląd",
+          "questions": [
+            {
+              "question": "Czy dźwięk będzie taki sam na każdym urządzeniu?",
+              "answer": "Nie. Przeglądarka, system operacyjny i tryb cichy określają ostateczny dźwięk i wygląd powiadomień. Ustawienie FCC nie może ominąć blokady ani wyciszenia urządzenia."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Zrozum wyniki i punkty CC",
+      "summary": "Rozróżniaj kliknięcia, zarejestrowane działania i dostępne punkty Forever.",
+      "keywords": [
+        "wyniki",
+        "kliknięcia",
+        "DW",
+        "punkty",
+        "postęp"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Różne wskaźniki",
+          "paragraphs": [
+            "Wyniki FCC pokazują kwalifikujące się przejścia do sklepu. Mój postęp pokazuje zgłoszone kroki. Punkty CC pochodzą z dostępnego importu danych Forever i są sumą za dany okres."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Odczytaj wskaźnik w odpowiednim kontekście",
+          "steps": [
+            "Otwórz Wyniki FCC i sprawdź okres oraz zasady liczenia kliknięć.",
+            "W sekcji Mój postęp osobno sprawdź rzeczywiste zastosowanie i ćwiczenia.",
+            "W sekcji Mój Forever i punkty CC sprawdź okres oraz kompletność dostępnych danych.",
+            "Aby sprawdzić kwalifikacje lub oficjalny cel biznesowy, zapoznaj się z aktualnymi zasadami obowiązującymi na Twoim rynku i skonsultuj się ze sponsorem."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Częste błędne założenie",
+          "questions": [
+            {
+              "question": "Czy punkty CC potwierdzają, kto kupił konkretny produkt?",
+              "answer": "Nie. Łączna liczba punktów CC nie potwierdza konkretnego zakupu. Niekompletny lub brakujący import danych również nie oznacza potwierdzonego zera."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free i PRO, płatności i faktury",
+      "summary": "Sprawdź dostęp do pakietu i status subskrypcji, zanim zmienisz metodę płatności.",
+      "keywords": [
+        "pakiet",
+        "Bezpłatnie",
+        "PRO",
+        "Stripe",
+        "subskrypcja",
+        "rachunek"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Pakiet dotyczy tego samego konta",
+          "paragraphs": [
+            "Pakiety Free i PRO oferują różne korzyści, które są przedstawione w aktualnym porównaniu pakietów. PRO nie potwierdza zapisania się do Mojego rozwoju. Aktywacja płatności jest uzależniona od potwierdzenia przez system Stripe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Sprawdź swój pakiet",
+          "steps": [
+            "W sekcji Więcej otwórz pakiet Free i PRO lub Mój pakiet.",
+            "Przeczytaj informacje o dostępnych korzyściach, statusie subskrypcji i okresie dostępu.",
+            "Aby aktywować płatność, sprawdź podsumowanie wybranej metody przed przejściem do Stripe.",
+            "W sekcji Płatności i rachunki sprawdź faktyczne wpisy dotyczące płatności.",
+            "Aby zmienić kartę lub anulować subskrypcję, skorzystaj z dostępnych ustawień subskrypcji i przeczytaj potwierdzenie dotyczące końca okresu."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Jeśli płatność wymaga uwagi",
+          "questions": [
+            {
+              "question": "Co zrobić, jeśli płatność utknęła lub nie została potwierdzona?",
+              "answer": "Sprawdź istniejące konto i wiadomość dotyczącą Twojego pakietu. Skorzystaj z dostępnej opcji ponowienia płatności lub pomocy. Nie zakładaj, że płatność została pobrana tylko dlatego, że pakiet jest nadal aktywny, ani nie ponawiaj zamówień bez sprawdzenia."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Pobierz i dostosuj prezentację zespołową",
+      "summary": "Korzystaj z opublikowanej wersji, zmień wstęp dotyczący prezentera i sprawdź swój występ.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "prezentacja",
+        "slajdy",
+        "pobieranie"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Wspólna podstawa prezentacji",
+          "paragraphs": [
+            "Prezentacje w centrum są dostępne dla zalogowanych współpracowników. Korzystaj z pliku i języka, które są faktycznie dostępne. Data wydania pomaga odróżnić aktualną prezentację od starej kopii."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Przygotuj swoje wystąpienie",
+          "steps": [
+            "W sekcji Więcej otwórz Instrukcje FCC, a następnie temat Pobierz i dostosuj prezentację zespołową.",
+            "W sekcji pobierania wybierz język i Pobierz PPT. Aby pobrać pakiet ZIP ze wszystkimi tłumaczeniami, wybierz Pobierz wszystkie języki.",
+            "Otwórz PPT w programie PowerPoint lub zgodnej aplikacji.",
+            "Zmień przygotowany wstęp dotyczący prezentera i swoje zdjęcie.",
+            "Przejrzyj notatki i sprawdź cały widok przed webinarem."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Co dostosować",
+          "paragraphs": [
+            "Osobisty wstęp powinien zawierać tylko sprawdzone informacje i Twoje prawdziwe doświadczenia. Zachowaj wspólną strukturę i nie dodawaj obietnic zarobku ani leczenia czy prywatnych informacji o innych osobach. Przykłady przedstawiaj na danych demonstracyjnych."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "Język i wersja pliku",
+          "paragraphs": [
+            "Dostępne są pliki PPT we wszystkich dostępnych językach oraz pakiet ZIP ze wszystkimi tłumaczeniami. Przed pobraniem sprawdź oznaczenie języka i wydania. Obrazy interfejsu FCC mogą pozostać w języku oryginalnym, natomiast tekst i notatki są przetłumaczone. Od czasu do czasu sprawdź, czy jest dostępne nowsze wydanie."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Przykład z praktyki",
+          "paragraphs": [
+            "Pobierasz aktualny plik PPT, zmieniasz swój wstęp i zdjęcie, a następnie ćwiczysz jeden przykład udostępniania. W prezentacji używasz przykładowego kontaktu, a nie prywatnych danych klienta."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktyczne pytanie",
+          "questions": [
+            {
+              "question": "Czy mogę samodzielnie łączyć elementy prezentacji?",
+              "answer": "Dostosuj przygotowany wstęp i kolejność slajdów do swojego wystąpienia, dbając o zgodność informacji z prawdą i jasny cel. Przed prezentacją sprawdź slajdy, notatki oraz dostępność opisanych funkcji FCC."
+            },
+            {
+              "question": "Co zrobić, jeśli obraz w dostępnej prezentacji PPT pokazuje inny język?",
+              "answer": "Obrazy interfejsu mogą pozostać w języku oryginalnym. Korzystaj z przetłumaczonych notatek i instrukcji oraz nazw przycisków faktycznie widocznych w Twojej wersji FCC. Przed wystąpieniem sprawdź dostępny plik."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Zaawansowane narzędzia FCC",
+      "summary": "Otwórz dodatkowe narzędzie, gdy masz konkretną potrzebę, i sprawdź, czy masz do niego dostęp.",
+      "keywords": [
+        "QR",
+        "domeny",
+        "statystyki",
+        "Studio lejków sprzedażowych",
+        "zaawansowane narzędzia"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Dodatkowe wsparcie w Twojej pracy",
+          "paragraphs": [
+            "W sekcji Więcej znajdziesz dodatkowe linki, kody QR, statystyki i zaawansowane narzędzia. Dostęp do każdego narzędzia zależy od uprawnień Twojego pakietu. Na początek skorzystaj ze swojej karty, kontaktów i jednego jasnego działania."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Wybierz narzędzie odpowiednie do celu",
+          "steps": [
+            "Otwórz sekcję Więcej i zapoznaj się z opisami dostępnych narzędzi.",
+            "Zdecyduj, czy chcesz udostępnić kartę, śledzić odwiedziny czy przygotować specjalne treści.",
+            "Otwórz wybrane narzędzie i sprawdź jego instrukcje oraz wymagany pakiet.",
+            "Wypróbuj efekt w podglądzie, zanim zaczniesz korzystać z niego publicznie."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Jeśli ta opcja jest niedostępna",
+          "questions": [
+            {
+              "question": "Czy potrzebuję wszystkich zaawansowanych narzędzi na początek?",
+              "answer": "Nie. Najpierw przygotuj kartę i umówioną rozmowę. Wybierz dodatkowe narzędzie, gdy ułatwia konkretne działanie, a dostęp do niego sprawdź w aktualnym pakiecie."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Wyślij pytanie do pomocy technicznej",
+      "summary": "Opisz problem i kontynuuj tę samą rozmowę, aż otrzymasz przydatne rozwiązanie.",
+      "keywords": [
+        "wsparcie",
+        "pomoc",
+        "problem",
+        "prośba",
+        "błąd"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Pytanie, które śledzisz w jednym miejscu",
+          "paragraphs": [
+            "Pomoc techniczna służy do zgłaszania problemów technicznych, sugestii lub tematów webinarów. Coach może wyjaśnić procedurę, ale nie wyśle zgłoszenia za ciebie."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Przygotuj jasne zgłoszenie",
+          "steps": [
+            "Otwórz Pomoc i wsparcie, a następnie wybierz Nowa wiadomość do pomocy technicznej.",
+            "Wpisz krótki tytuł i wybierz kategorię pytania.",
+            "Napisz, w której części aplikacji pracujesz, co robisz i co się stało.",
+            "W razie potrzeby dodaj zrzut ekranu bez hasła, danych karty ani prywatnych danych innych osób.",
+            "Wyślij pytanie, a później otwórz tę samą rozmowę, aby sprawdzić odpowiedź lub dopytać."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Czekając na odpowiedź",
+          "questions": [
+            {
+              "question": "Czy w sprawie tego samego problemu mam wysłać kilka zgłoszeń?",
+              "answer": "Kontynuuj istniejącą rozmowę i dodaj nowe informacje. Podaj urządzenie i dokładny komunikat o błędzie. Dzięki temu pomoc techniczna będzie widzieć całą historię w jednym miejscu."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

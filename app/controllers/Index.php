@@ -58,6 +58,8 @@ class Index extends Controller {
     }
 
     public function index() {
+        // Members enter their workspace by default and can explicitly browse the public homepage.
+        if(is_logged_in() && fcc_partner_enabled() && ($_GET['view'] ?? '') !== 'public') redirect('partner');
 
         /* Custom index redirect if set */
         if(!empty(settings()->main->index_url)) {
@@ -174,8 +176,16 @@ class Index extends Controller {
                 ],
             ];
 
-        Title::set($homepage_semantics['title']);
-        Meta::set_description($homepage_semantics['description']);
+        $homepage_semantics = fcc_localize_copy($homepage_semantics);
+        $homepage_seo = match(fcc_locale()) {
+            'hr' => ['Forever Card Club | Alati za Forever partnere', 'FCC povezuje osobnu karticu, preporuke proizvoda, AI Coacha, edukaciju i kontakte. Upoznaj alate za svakodnevni rad Forever partnera.'],
+            'sl' => ['Forever Card Club | Orodja za Forever partnerje', 'FCC povezuje osebno kartico, priporočila izdelkov, AI Coacha, izobraževanje in stike. Spoznaj orodja za vsakodnevno delo Forever partnerjev.'],
+            'de' => ['Forever Card Club | Tools für Forever Partner', 'FCC verbindet persönliche Karten, Produktempfehlungen, AI Coach, Schulungen und Kontakte. Entdecke die Tools für deinen Alltag als Forever Partner.'],
+            'sr' => ['Forever Card Club | Alati za Forever saradnike', 'FCC povezuje ličnu karticu, preporuke proizvoda, AI Coacha, edukaciju i kontakte. Upoznaj alate za svakodnevni rad Forever saradnika.'],
+            default => ['Forever Card Club | Tools for Forever Partners', 'FCC brings together personal cards, product recommendations, an AI Coach, training and contacts. Explore tools for your daily work as a Forever partner.'],
+        };
+        Title::set($homepage_seo[0], true);
+        Meta::set_description($homepage_seo[1]);
         Meta::set_keywords($homepage_semantics['keywords']);
         Meta::set_canonical_url(url());
         Meta::set_robots('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
@@ -316,6 +326,7 @@ class Index extends Controller {
             /* Custom code: FC-2026-03-24: strengthen homepage SEO and AI semantics */
             'homepage_semantics' => $homepage_semantics,
             'recommended_sponsors' => $recommended_sponsors,
+            'featured_cards' => fcc_featured_get_catalog(['language'=>\Altum\Language::$code,'min_signal_30d'=>15,'limit'=>6]),
             /* /Custom code: FC-2026-03-24 */
         ]));
 

@@ -1,0 +1,812 @@
+{
+  "Explore the Forever business": {
+    "de": "Forever Geschäft kennenlernen",
+    "es": "Conoce el negocio Forever",
+    "sl": "Spoznaj poslovanje Forever"
+  },
+  "Personal presentation": {
+    "de": "Persönliche Präsentation",
+    "es": "Presentación personal",
+    "sl": "Osebna predstavitev"
+  },
+  "YOUR REQUEST": {
+    "de": "DEINE ANFRAGE",
+    "es": "TU CONSULTA",
+    "sl": "TVOJE POVPRAŠEVANJE"
+  },
+  "Your request data has been removed.": {
+    "de": "Die Daten deiner Anfrage wurden entfernt.",
+    "es": "Los datos de tu consulta se han eliminado.",
+    "sl": "Podatki tvojega povpraševanja so odstranjeni."
+  },
+  "Manage your request.": {
+    "de": "Deine Anfrage verwalten.",
+    "es": "Gestiona tu consulta.",
+    "sl": "Upravljaj svoje povpraševanje."
+  },
+  "Your request for a reply has been withdrawn.": {
+    "de": "Deine Bitte um eine Antwort wurde zurückgezogen.",
+    "es": "Has retirado tu solicitud de respuesta.",
+    "sl": "Tvoja zahteva za odgovor je umaknjena."
+  },
+  "You requested a reply about the business opportunity. You can withdraw that request or remove its data here.": {
+    "de": "Du hast um eine Antwort zur Geschäftsmöglichkeit gebeten. Hier kannst du die Anfrage zurückziehen oder ihre Daten entfernen.",
+    "es": "Has solicitado una respuesta sobre la oportunidad de negocio. Aquí puedes retirar la consulta o eliminar sus datos.",
+    "sl": "Zahteval/a si odgovor o poslovni priložnosti. Tukaj lahko zahtevo umakneš ali odstraniš njene podatke."
+  },
+  "Withdraw my request": {
+    "de": "Anfrage zurückziehen",
+    "es": "Retirar mi consulta",
+    "sl": "Umakni povpraševanje"
+  },
+  "Download request data": {
+    "de": "Anfragedaten herunterladen",
+    "es": "Descargar los datos de la consulta",
+    "sl": "Prenesi podatke povpraševanja"
+  },
+  "Remove this request’s data": {
+    "de": "Daten dieser Anfrage entfernen",
+    "es": "Eliminar los datos de esta consulta",
+    "sl": "Odstrani podatke tega povpraševanja"
+  },
+  "I want to remove this request’s data.": {
+    "de": "Ich möchte die Daten dieser Anfrage entfernen.",
+    "es": "Quiero eliminar los datos de esta consulta.",
+    "sl": "Želim odstraniti podatke tega povpraševanja."
+  },
+  "Separate earlier communication may remain in accordance with the Privacy Policy.": {
+    "de": "Frühere, unabhängige Kommunikation kann gemäß der Datenschutzerklärung erhalten bleiben.",
+    "es": "Las comunicaciones anteriores e independientes pueden conservarse conforme a la política de privacidad.",
+    "sl": "Prejšnja ločena komunikacija lahko ostane v skladu s politiko zasebnosti."
+  },
+  "Remove data": {
+    "de": "Daten entfernen",
+    "es": "Eliminar datos",
+    "sl": "Odstrani podatke"
+  },
+  "This presentation is no longer available.": {
+    "de": "Diese Präsentation ist nicht mehr verfügbar.",
+    "es": "Esta presentación ya no está disponible.",
+    "sl": "Ta predstavitev ni več na voljo."
+  },
+  "Please ask the person who shared this presentation for a new link.": {
+    "de": "Bitte die Person, die dir die Präsentation geschickt hat, um einen neuen Link.",
+    "es": "Pide un nuevo enlace a la persona que compartió esta presentación.",
+    "sl": "Za novo povezavo prosi osebo, ki ti je poslala predstavitev."
+  },
+  "THANK YOU FOR YOUR INTEREST": {
+    "de": "DANKE FÜR DEIN INTERESSE",
+    "es": "GRACIAS POR TU INTERÉS",
+    "sl": "HVALA ZA ZANIMANJE"
+  },
+  "Your request has been received.": {
+    "de": "Deine Anfrage ist eingegangen.",
+    "es": "Hemos recibido tu consulta.",
+    "sl": "Tvoje povpraševanje je prejeto."
+  },
+  "Your contact: ": {
+    "de": "Deine Kontaktperson: ",
+    "es": "Tu persona de contacto: ",
+    "sl": "Tvoja kontaktna oseba: "
+  },
+  "You requested a reply through your selected channel. If you provided an email, a confirmation with your contact’s details has also been prepared.": {
+    "de": "Du hast um eine Antwort über den ausgewählten Kontaktweg gebeten. Falls du eine Emailadresse angegeben hast, wurde auch eine Bestätigung mit den Kontaktdaten vorbereitet.",
+    "es": "Has solicitado una respuesta por el canal elegido. Si has indicado tu correo, también se ha preparado una confirmación con los datos de contacto.",
+    "sl": "Odgovor si zahteval/a po izbranem kanalu. Če si navedel/la email, je pripravljena tudi potrditev s podatki kontaktne osebe."
+  },
+  "Manage your request": {
+    "de": "Anfrage verwalten",
+    "es": "Gestionar tu consulta",
+    "sl": "Upravljaj povpraševanje"
+  },
+  "Explore the next step": {
+    "de": "Nächsten Schritt ansehen",
+    "es": "Ver el siguiente paso",
+    "sl": "Poglej naslednji korak"
+  },
+  "Presented by": {
+    "de": "Vorgestellt von",
+    "es": "Te lo presenta",
+    "sl": "Predstavlja ti"
+  },
+  "BUSINESS OPPORTUNITY": {
+    "de": "GESCHÄFTSMÖGLICHKEIT",
+    "es": "OPORTUNIDAD DE NEGOCIO",
+    "sl": "POSLOVNA PRILOŽNOST"
+  },
+  "Explore the Forever business and see if it fits you.": {
+    "de": "Lerne das Forever Geschäft kennen und prüfe, ob es zu dir passt.",
+    "es": "Conoce el negocio Forever y descubre si encaja contigo.",
+    "sl": "Spoznaj poslovanje Forever in preveri, ali ti ustreza."
+  },
+  "Discover how the business works, learn about our team’s support and choose your next step.": {
+    "de": "Erfahre, wie die Zusammenarbeit funktioniert, lerne die Unterstützung unseres Teams kennen und wähle deinen nächsten Schritt.",
+    "es": "Descubre cómo funciona la colaboración, conoce el apoyo de nuestro equipo y elige tu siguiente paso.",
+    "sl": "Spoznaj način sodelovanja, podporo naše ekipe in izberi svoj naslednji korak."
+  },
+  "Load video": {
+    "de": "Video laden",
+    "es": "Cargar vídeo",
+    "sl": "Naloži video"
+  },
+  "This loads content from ": {
+    "de": "Dabei werden Inhalte geladen von ",
+    "es": "Se carga contenido de ",
+    "sl": "S tem naložiš vsebino s platforme "
+  },
+  "Open on the video platform": {
+    "de": "Auf der Videoplattform öffnen",
+    "es": "Abrir en la plataforma de vídeo",
+    "sl": "Odpri na video platformi"
+  },
+  "I would like more information": {
+    "de": "Ich möchte mehr erfahren",
+    "es": "Quiero más información",
+    "sl": "Želim več informacij"
+  },
+  "Explore how to get started": {
+    "de": "Einstiegsmöglichkeiten ansehen",
+    "es": "Descubre cómo empezar",
+    "sl": "Poglej, kako začeti"
+  },
+  "How the business works": {
+    "de": "So funktioniert das Geschäft",
+    "es": "Cómo funciona el negocio",
+    "sl": "Kako poteka poslovanje"
+  },
+  "Learn about the products": {
+    "de": "Produkte kennenlernen",
+    "es": "Conoce los productos",
+    "sl": "Spoznaj izdelke"
+  },
+  "The work involves learning about products and their official information, then making appropriate recommendations to customers.": {
+    "de": "Zur Arbeit gehört, die Produkte und ihre offiziellen Informationen kennenzulernen und Kunden passende Empfehlungen zu geben.",
+    "es": "El trabajo consiste en conocer los productos y su información oficial para hacer recomendaciones adecuadas a los clientes.",
+    "sl": "Delo vključuje spoznavanje izdelkov in njihovih uradnih informacij ter ustrezno svetovanje kupcem."
+  },
+  "Develop your skills": {
+    "de": "Fähigkeiten entwickeln",
+    "es": "Desarrolla tus habilidades",
+    "sl": "Razvijaj svoje spretnosti"
+  },
+  "Learn to have useful conversations, answer questions and organise your activities. Results depend on your work and circumstances.": {
+    "de": "Lerne, hilfreiche Gespräche zu führen, Fragen zu beantworten und deine Aktivitäten zu organisieren. Ergebnisse hängen von deiner Arbeit und deinen Umständen ab.",
+    "es": "Aprende a mantener conversaciones útiles, responder preguntas y organizar tus actividades. Los resultados dependen de tu trabajo y tus circunstancias.",
+    "sl": "Nauči se koristnih pogovorov, odgovarjanja na vprašanja in organizacije dejavnosti. Rezultati so odvisni od tvojega dela in okoliščin."
+  },
+  "Ask your contact for support": {
+    "de": "Unterstützung anfragen",
+    "es": "Pide apoyo a tu contacto",
+    "sl": "Prosi kontaktno osebo za podporo"
+  },
+  "The person who invited you can explain the first steps and learning opportunities within our team.": {
+    "de": "Die Person, die dich eingeladen hat, kann dir die ersten Schritte und Lernmöglichkeiten in unserem Team erklären.",
+    "es": "La persona que te invitó puede explicarte los primeros pasos y las oportunidades de formación de nuestro equipo.",
+    "sl": "Oseba, ki te je povabila, ti lahko pojasni prve korake in možnosti učenja v naši ekipi."
+  },
+  "YOUR NEXT STEP": {
+    "de": "DEIN NÄCHSTER SCHRITT",
+    "es": "TU SIGUIENTE PASO",
+    "sl": "TVOJ NASLEDNJI KORAK"
+  },
+  "How can you start in your country?": {
+    "de": "Wie kannst du in deinem Land starten?",
+    "es": "¿Cómo puedes empezar en tu país?",
+    "sl": "Kako lahko začneš v svoji državi?"
+  },
+  "Choose your country of residence. Available offers and the official process depend on your country.": {
+    "de": "Wähle dein Wohnsitzland. Verfügbare Angebote und das offizielle Verfahren hängen von deinem Land ab.",
+    "es": "Elige tu país de residencia. Las ofertas y el procedimiento oficial dependen del país.",
+    "sl": "Izberi državo prebivališča. Ponudbe in uradni postopek so odvisni od države."
+  },
+  "Country of residence": {
+    "de": "Wohnsitzland",
+    "es": "País de residencia",
+    "sl": "Država prebivališča"
+  },
+  "Choose a country": {
+    "de": "Land auswählen",
+    "es": "Elige un país",
+    "sl": "Izberi državo"
+  },
+  "Show options": {
+    "de": "Möglichkeiten anzeigen",
+    "es": "Mostrar opciones",
+    "sl": "Prikaži možnosti"
+  },
+  "Your referral: ": {
+    "de": "Deine Empfehlung: ",
+    "es": "Tu recomendación: ",
+    "sl": "Tvoje priporočilo: "
+  },
+  "See the official website for current pricing, availability and terms.": {
+    "de": "Aktuelle Preise, Verfügbarkeit und Bedingungen findest du auf der offiziellen Website.",
+    "es": "Consulta los precios, la disponibilidad y las condiciones actuales en la página oficial.",
+    "sl": "Aktualne cene, razpoložljivost in pogoje preveri na uradni strani."
+  },
+  "Continue to official registration": {
+    "de": "Zur offiziellen Registrierung",
+    "es": "Continuar al registro oficial",
+    "sl": "Nadaljuj na uradno prijavo"
+  },
+  "View the pack in the official shop": {
+    "de": "Paket im offiziellen Shop ansehen",
+    "es": "Ver el paquete en la tienda oficial",
+    "sl": "Poglej paket v uradni trgovini"
+  },
+  "Before completing the official process, check your country and referral. Purchasing and joining the business programme depend on your market’s rules.": {
+    "de": "Prüfe vor dem Abschluss dein Land und deine Empfehlung. Kauf und Teilnahme am Geschäftsprogramm richten sich nach den Regeln deines Marktes.",
+    "es": "Antes de finalizar, comprueba el país y la recomendación. La compra y la incorporación al programa dependen de las normas de tu mercado.",
+    "sl": "Pred zaključkom preveri državo in priporočilo. Nakup in vključitev v poslovni program sta odvisna od pravil tvojega trga."
+  },
+  "Help getting started in your country": {
+    "de": "Hilfe beim Einstieg in deinem Land",
+    "es": "Ayuda para empezar en tu país",
+    "sl": "Pomoč za začetek v tvoji državi"
+  },
+  "Contact the person who invited you to check the appropriate starter offer and process.": {
+    "de": "Wende dich an die Person, die dich eingeladen hat, um ein passendes Einstiegsangebot und das Verfahren zu prüfen.",
+    "es": "Contacta con la persona que te invitó para comprobar la oferta inicial y el procedimiento adecuados.",
+    "sl": "Javi se osebi, ki te je povabila, da preverita ustrezno začetno ponudbo in postopek."
+  },
+  "Ask for help": {
+    "de": "Hilfe anfragen",
+    "es": "Pedir ayuda",
+    "sl": "Prosi za pomoč"
+  },
+  "START A CONVERSATION": {
+    "de": "KOMM INS GESPRÄCH",
+    "es": "INICIA UNA CONVERSACIÓN",
+    "sl": "ZAČNI POGOVOR"
+  },
+  "Would you like me to get in touch?": {
+    "de": "Möchtest du, dass ich mich bei dir melde?",
+    "es": "¿Quieres que me ponga en contacto contigo?",
+    "sl": "Želiš, da se ti javim?"
+  },
+  "Leave your contact details and choose how you would like a reply from ": {
+    "de": "Hinterlasse deine Kontaktdaten und wähle, wie du eine Antwort erhalten möchtest von ",
+    "es": "Deja tus datos y elige cómo quieres recibir una respuesta de ",
+    "sl": "Pusti kontakt in izberi, kako želiš odgovor od osebe "
+  },
+  "Send a WhatsApp message": {
+    "de": "WhatsApp Nachricht schreiben",
+    "es": "Enviar mensaje por WhatsApp",
+    "sl": "Pošlji sporočilo na WhatsApp"
+  },
+  "Or leave your details for a personal reply.": {
+    "de": "Oder hinterlasse deine Kontaktdaten für eine persönliche Antwort.",
+    "es": "O deja tus datos para recibir una respuesta personal.",
+    "sl": "Ali pusti kontakt za osebni odgovor."
+  },
+  "Name": {
+    "de": "Name",
+    "es": "Nombre",
+    "sl": "Ime"
+  },
+  "How would you like a reply?": {
+    "de": "Wie möchtest du eine Antwort erhalten?",
+    "es": "¿Cómo prefieres recibir la respuesta?",
+    "sl": "Kako želiš odgovor?"
+  },
+  "Phone / WhatsApp": {
+    "de": "Telefon / WhatsApp",
+    "es": "Teléfono / WhatsApp",
+    "sl": "Telefon / WhatsApp"
+  },
+  "Required for a WhatsApp reply.": {
+    "de": "Für eine Antwort über WhatsApp erforderlich.",
+    "es": "Necesario para responder por WhatsApp.",
+    "sl": "Obvezno za odgovor na WhatsApp."
+  },
+  "I would also like an email confirmation.": {
+    "de": "Ich möchte auch eine Bestätigung per Email.",
+    "es": "También quiero una confirmación por correo.",
+    "sl": "Želim tudi potrditev po emailu."
+  },
+  "Required for an email reply. Add it with WhatsApp to also receive a confirmation.": {
+    "de": "Für eine Antwort per Email erforderlich. Bei WhatsApp kannst du sie für eine Bestätigung ergänzen.",
+    "es": "Necesario para responder por correo. Si eliges WhatsApp, puedes añadirlo para recibir una confirmación.",
+    "sl": "Obvezno za odgovor po emailu. Pri WhatsAppu ga lahko dodaš za potrditev."
+  },
+  "What would you like to clarify?": {
+    "de": "Was möchtest du klären?",
+    "es": "¿Qué te gustaría aclarar?",
+    "sl": "Kaj želiš pojasniti?"
+  },
+  "What would you like to know? Optional.": {
+    "de": "Was möchtest du wissen? Freiwillig.",
+    "es": "¿Qué te gustaría saber? Opcional.",
+    "sl": "Kaj te zanima? Neobvezno."
+  },
+  "I request a personal reply about the business opportunity through my selected channel.": {
+    "de": "Ich bitte um eine persönliche Antwort zur Geschäftsmöglichkeit über den ausgewählten Kontaktweg.",
+    "es": "Solicito una respuesta personal sobre la oportunidad de negocio por el canal elegido.",
+    "sl": "Želim osebni odgovor o poslovni priložnosti po izbranem kanalu."
+  },
+  "FCC stores your request and shares it with ": {
+    "de": "FCC speichert deine Anfrage und gibt sie weiter an ",
+    "es": "FCC guarda tu consulta y la comparte con ",
+    "sl": "FCC shrani povpraševanje in ga posreduje osebi "
+  },
+  "Your contact receives a separate notification. This does not subscribe you to a newsletter.": {
+    "de": "Deine Kontaktperson erhält eine separate Benachrichtigung. Du wirst dadurch nicht für einen Newsletter angemeldet.",
+    "es": "Tu contacto recibe una notificación separada. Esto no te suscribe a un boletín.",
+    "sl": "Kontaktna oseba prejme ločeno obvestilo. S tem se ne prijaviš na novice."
+  },
+  "How we use your data": {
+    "de": "So verwenden wir deine Daten",
+    "es": "Cómo utilizamos tus datos",
+    "sl": "Kako uporabljamo tvoje podatke"
+  },
+  "Send request": {
+    "de": "Anfrage senden",
+    "es": "Enviar consulta",
+    "sl": "Pošlji povpraševanje"
+  },
+  "Before you decide": {
+    "de": "Bevor du dich entscheidest",
+    "es": "Antes de decidir",
+    "sl": "Preden se odločiš"
+  },
+  "Is this employment or independent business?": {
+    "de": "Ist das eine Anstellung oder selbstständige Zusammenarbeit?",
+    "es": "¿Es un empleo o una colaboración independiente?",
+    "sl": "Je to zaposlitev ali samostojno sodelovanje?"
+  },
+  "This is an independent business opportunity, with no promised salary or guaranteed income. Check the terms in the official process for your country.": {
+    "de": "Es handelt sich um eine selbstständige Geschäftsmöglichkeit ohne versprochenes Gehalt oder garantiertes Einkommen. Prüfe die Bedingungen im offiziellen Verfahren für dein Land.",
+    "es": "Es una oportunidad de colaboración independiente, sin salario prometido ni ingresos garantizados. Consulta las condiciones en el procedimiento oficial de tu país.",
+    "sl": "Gre za neodvisno poslovno priložnost brez obljubljene plače ali zagotovljenega dohodka. Pogoje preveri v uradnem postopku za svojo državo."
+  },
+  "Can I ask questions first?": {
+    "de": "Kann ich zuerst Fragen stellen?",
+    "es": "¿Puedo hacer preguntas primero?",
+    "sl": "Ali lahko najprej postavim vprašanja?"
+  },
+  "Yes. You can view the information and ask questions without ordering a pack or registering with FCC.": {
+    "de": "Ja. Du kannst die Informationen ansehen und Fragen stellen, ohne ein Paket zu bestellen oder dich bei FCC anzumelden.",
+    "es": "Sí. Puedes ver la información y hacer preguntas sin pedir un paquete ni registrarte en FCC.",
+    "sl": "Da. Vsebino si lahko ogledaš in postaviš vprašanja brez naročila paketa ali prijave v FCC."
+  },
+  "Official income disclosure": {
+    "de": "Offizielle Einkommensinformationen",
+    "es": "Información oficial sobre ingresos",
+    "sl": "Uradne informacije o dohodkih"
+  },
+  "FCC is an independent system used by our team. It is not Forever Living Products or its official website.": {
+    "de": "FCC ist ein unabhängiges System unseres Teams. Es ist weder Forever Living Products noch dessen offizielle Website.",
+    "es": "FCC es un sistema independiente de nuestro equipo. No es Forever Living Products ni su página oficial.",
+    "sl": "FCC je neodvisen sistem naše ekipe. Ni družba Forever Living Products niti njena uradna stran."
+  },
+  "Privacy policy": {
+    "de": "Datenschutzerklärung",
+    "es": "Política de privacidad",
+    "sl": "Politika zasebnosti"
+  },
+  "Terms of use": {
+    "de": "Nutzungsbedingungen",
+    "es": "Condiciones de uso",
+    "sl": "Pogoji uporabe"
+  },
+  "A LIVE INTRODUCTION": {
+    "de": "PERSÖNLICHE VORSTELLUNG ONLINE",
+    "es": "PRESENTACIÓN EN DIRECTO",
+    "sl": "PREDSTAVITEV V ŽIVO"
+  },
+  "Would you like to learn more at a webinar?": {
+    "de": "Möchtest du bei einem Webinar mehr erfahren?",
+    "es": "¿Quieres saber más en un webinar?",
+    "sl": "Želiš izvedeti več na webinarju?"
+  },
+  "Choose a date. On the next step, review your details and confirm your registration.": {
+    "de": "Wähle einen Termin. Prüfe im nächsten Schritt deine Daten und bestätige deine Anmeldung.",
+    "es": "Elige una fecha. En el siguiente paso, revisa tus datos y confirma la inscripción.",
+    "sl": "Izberi termin. V naslednjem koraku preveri podatke in potrdi prijavo."
+  },
+  "Open registration": {
+    "de": "Anmeldung öffnen",
+    "es": "Abrir inscripción",
+    "sl": "Odpri prijavo"
+  },
+  "Hello! I am interested in your Forever business presentation and would like to learn more about the first steps. Could you get in touch?": {
+    "de": "Hallo! Ich interessiere mich für deine Präsentation zum Forever Geschäft und möchte mehr über die ersten Schritte erfahren. Kannst du dich bei mir melden?",
+    "es": "¡Hola! Me interesa tu presentación del negocio Forever y quiero saber más sobre los primeros pasos. ¿Puedes contactar conmigo?",
+    "sl": "Pozdrav! Zanima me tvoja predstavitev poslovanja Forever in želim več informacij o prvih korakih. Se mi lahko javiš?"
+  },
+  " My country: ": {
+    "de": " Mein Land: ",
+    "es": " Mi país: ",
+    "sl": " Moja država: "
+  },
+  "How does the work look?": {
+    "de": "Wie sieht die Arbeit aus?",
+    "es": "¿Cómo es el trabajo?",
+    "sl": "Kako poteka delo?"
+  },
+  "How can I get started?": {
+    "de": "Wie kann ich starten?",
+    "es": "¿Cómo puedo empezar?",
+    "sl": "Kako lahko začnem?"
+  },
+  "I would like a conversation": {
+    "de": "Ich möchte ein Gespräch",
+    "es": "Quiero conversar",
+    "sl": "Želim pogovor"
+  },
+  "Text summary": {
+    "de": "Zusammenfassung",
+    "es": "Resumen",
+    "sl": "Besedilni povzetek"
+  },
+  "Presentation: ": {
+    "de": "Präsentation: ",
+    "es": "Presentación: ",
+    "sl": "Predstavitev: "
+  },
+  "Contact: ": {
+    "de": "Kontakt: ",
+    "es": "Contacto: ",
+    "sl": "Kontakt: "
+  },
+  "Requested reply channel: ": {
+    "de": "Gewünschter Kontaktweg: ",
+    "es": "Canal de respuesta elegido: ",
+    "sl": "Želeni način odgovora: "
+  },
+  "Manage your request: ": {
+    "de": "Deine Anfrage verwalten: ",
+    "es": "Gestiona tu consulta: ",
+    "sl": "Upravljaj svoje vprašanje: "
+  },
+  "Privacy: ": {
+    "de": "Datenschutz: ",
+    "es": "Privacidad: ",
+    "sl": "Zasebnost: "
+  },
+  "Thank you for your interest. Your request has been sent to ": {
+    "de": "Danke für dein Interesse. Deine Anfrage wurde gesendet an ",
+    "es": "Gracias por tu interés. Tu consulta se ha enviado a ",
+    "sl": "Hvala za zanimanje. Tvoje povpraševanje je poslano osebi "
+  },
+  "Please review your details and try again.": {
+    "de": "Bitte prüfe deine Angaben und versuche es erneut.",
+    "es": "Revisa tus datos e inténtalo de nuevo.",
+    "sl": "Preveri podatke in poskusi znova."
+  },
+  "Another country": {
+    "de": "Ein anderes Land",
+    "es": "Otro país",
+    "sl": "Druga država"
+  },
+  "Hi! Here is a short presentation about the Forever business. You can learn how it works and explore the first steps. If you have any questions, let me know so we can go through them together.": {
+    "de": "Hallo! Hier ist eine kurze Präsentation zum Forever Geschäft. Du erfährst, wie die Zusammenarbeit aussieht und welche ersten Schritte möglich sind. Wenn du Fragen hast, melde dich gern, damit wir sie gemeinsam besprechen können.",
+    "es": "¡Hola! Te envío una breve presentación sobre el negocio de Forever. Puedes conocer cómo funciona y cuáles son los primeros pasos. Si tienes preguntas, escríbeme y las vemos juntos.",
+    "sl": "Živjo! Pošiljam ti kratko predstavitev poslovanja Forever. Ogledaš si lahko, kako poteka sodelovanje in kateri so prvi koraki. Če imaš vprašanja, se mi oglasi, da jih skupaj pregledava."
+  },
+  "Hi! As agreed, here is the presentation about the Forever business. What would you like us to go through after you have had a look?": {
+    "de": "Hallo! Wie vereinbart sende ich dir die Präsentation zum Forever Geschäft. Was möchtest du danach gemeinsam besprechen?",
+    "es": "¡Hola! Como acordamos, te envío la presentación sobre el negocio de Forever. ¿Qué te gustaría que repasáramos después de verla?",
+    "sl": "Živjo! Kot dogovorjeno ti pošiljam predstavitev poslovanja Forever. Kaj želiš, da skupaj pregledava po ogledu?"
+  },
+  "Hi! Thank you for your interest. Here is an overview of the Forever business and the first steps. What would be most useful for you to clarify?": {
+    "de": "Hallo! Danke für dein Interesse. Hier findest du einen Überblick zum Forever Geschäft und zu den ersten Schritten. Was möchtest du gern genauer klären?",
+    "es": "¡Hola! Gracias por tu interés. Aquí tienes una presentación del negocio de Forever y de los primeros pasos. ¿Qué te sería más útil aclarar?",
+    "sl": "Živjo! Hvala za zanimanje. Tukaj lahko pogledaš, kako poteka poslovanje Forever in kateri so prvi koraki. Kaj bi ti bilo najbolj koristno pojasniti?"
+  },
+  "Thank you for your interest in the Forever business presentation. Your request has been sent to ": {
+    "de": "Danke für dein Interesse an der Forever Geschäftspräsentation. Deine Anfrage wurde weitergeleitet an ",
+    "es": "Gracias por tu interés en la presentación del negocio de Forever. Tu consulta se ha enviado a ",
+    "sl": "Hvala za zanimanje za predstavitev poslovanja Forever. Tvoje vprašanje je prejela oseba "
+  },
+  "Your request has been received": {
+    "de": "Deine Anfrage ist eingegangen",
+    "es": "Hemos recibido tu consulta",
+    "sl": "Tvoje vprašanje je prejeto"
+  },
+  "Skip to content": {
+    "de": "Zum Inhalt",
+    "es": "Ir al contenido",
+    "sl": "Preskoči na vsebino"
+  },
+  "Independent Forever business owners": {
+    "de": "Unabhängige Forever Geschäftspartner",
+    "es": "Distribuidores independientes de Forever",
+    "sl": "Neodvisni poslovni partnerji Forever"
+  },
+  "On this page": {
+    "de": "Auf dieser Seite",
+    "es": "En esta página",
+    "sl": "Na tej strani"
+  },
+  "About the business": {
+    "de": "Über die Zusammenarbeit",
+    "es": "Sobre el negocio",
+    "sl": "O sodelovanju"
+  },
+  "How to get started": {
+    "de": "So kannst du starten",
+    "es": "Cómo empezar",
+    "sl": "Kako začeti"
+  },
+  "Contact": {
+    "de": "Kontakt",
+    "es": "Contacto",
+    "sl": "Kontakt"
+  },
+  "Your enquiry is awaiting a personal reply through your chosen channel. If you would like to add anything, you can message your contact directly.": {
+    "de": "Deine Anfrage wartet auf eine persönliche Antwort über deinen gewählten Kontaktweg. Wenn du etwas ergänzen möchtest, kannst du deiner Kontaktperson direkt schreiben.",
+    "es": "Tu consulta está pendiente de una respuesta personal por el medio que has elegido. Si quieres añadir algo, puedes escribir directamente a tu persona de contacto.",
+    "sl": "Tvoje povpraševanje čaka na osebni odgovor po izbranem kanalu. Če želiš kaj dodati, lahko neposredno pišeš svoji kontaktni osebi."
+  },
+  "PRODUCTS. PEOPLE. BUSINESS.": {
+    "de": "PRODUKTE. MENSCHEN. ZUSAMMENARBEIT.",
+    "es": "PRODUCTOS. PERSONAS. NEGOCIO.",
+    "sl": "IZDELKI. LJUDJE. SODELOVANJE."
+  },
+  "Discover a business with Forever products.": {
+    "de": "Entdecke die Geschäftsmöglichkeit mit Forever Produkten.",
+    "es": "Descubre el negocio con productos Forever.",
+    "sl": "Spoznaj poslovanje z izdelki Forever."
+  },
+  "Explore independent business through product recommendations and sales, with learning opportunities and support from our team.": {
+    "de": "Erfahre, wie eine selbstständige Tätigkeit durch Produktempfehlungen und Verkauf aussieht, mit Lernmöglichkeiten und Unterstützung unseres Teams.",
+    "es": "Conoce una actividad independiente basada en recomendar y vender productos, con formación y apoyo de nuestro equipo.",
+    "sl": "Spoznaj samostojno poslovno sodelovanje s priporočanjem in prodajo izdelkov, ob učenju in podpori naše ekipe."
+  },
+  "A conversation with no obligation. The choice is yours.": {
+    "de": "Ein unverbindliches Gespräch. Du entscheidest.",
+    "es": "Una conversación sin compromiso. Tú decides.",
+    "sl": "Pogovor brez obveznosti. Odločitev je tvoja."
+  },
+  "VIDEO PRESENTATION": {
+    "de": "VIDEOPRÄSENTATION",
+    "es": "PRESENTACIÓN EN VÍDEO",
+    "sl": "VIDEO PREDSTAVITEV"
+  },
+  "Watch the video": {
+    "de": "Video ansehen",
+    "es": "Ver el vídeo",
+    "sl": "Oglej si video"
+  },
+  "About this video": {
+    "de": "Über dieses Video",
+    "es": "Sobre este vídeo",
+    "sl": "O tem videu"
+  },
+  "A GOOD PLACE TO START": {
+    "de": "EIN GUTER ANFANG",
+    "es": "UN BUEN COMIENZO",
+    "sl": "ZA DOBER ZAČETEK"
+  },
+  "Learn first. Decide next.": {
+    "de": "Erst informieren. Dann entscheiden.",
+    "es": "Primero infórmate. Después decide.",
+    "sl": "Najprej spoznaj. Nato se odloči."
+  },
+  "Explore the work, ask your questions and see whether this business fits your expectations.": {
+    "de": "Lerne die Tätigkeit kennen, stelle deine Fragen und prüfe, ob diese Zusammenarbeit deinen Erwartungen entspricht.",
+    "es": "Conoce la actividad, pregunta lo que necesites y comprueba si este negocio encaja con tus expectativas.",
+    "sl": "Spoznaj način dela, vprašaj, kar te zanima, in preveri, ali sodelovanje ustreza tvojim pričakovanjem."
+  },
+  "WHAT IT INVOLVES": {
+    "de": "WORUM ES GEHT",
+    "es": "EN QUÉ CONSISTE",
+    "sl": "ZA KAJ GRE"
+  },
+  "It starts with products. It grows through relationships.": {
+    "de": "Produkte sind der Anfang. Beziehungen sind wichtig.",
+    "es": "Todo empieza con los productos. Las relaciones importan.",
+    "sl": "Izdelki so začetek. Odnosi so pomembni."
+  },
+  "Recommendations and sales": {
+    "de": "Empfehlung und Verkauf",
+    "es": "Recomendación y venta",
+    "sl": "Priporočanje in prodaja"
+  },
+  "Learn about Forever products and help customers choose what suits their needs, using accurate product information.": {
+    "de": "Lerne Forever Produkte kennen und hilf Kunden mit korrekten Produktinformationen, das Passende für ihre Bedürfnisse auszuwählen.",
+    "es": "Conoce los productos Forever y ayuda a los clientes a elegir lo que se ajuste a sus necesidades, con información precisa sobre los productos.",
+    "sl": "Spoznavaš izdelke Forever in s točnimi informacijami pomagaš kupcem izbrati tisto, kar ustreza njihovim potrebam."
+  },
+  "Learning with support": {
+    "de": "Lernen mit Unterstützung",
+    "es": "Aprender con apoyo",
+    "sl": "Učenje s podporo"
+  },
+  "Our team uses training, webinars and personal conversations to learn about products, working with customers and organising everyday activities.": {
+    "de": "Unser Team nutzt Schulungen, Webinare und persönliche Gespräche, um Produkte kennenzulernen, mit Kunden zu arbeiten und tägliche Aktivitäten zu organisieren.",
+    "es": "Nuestro equipo utiliza formación, webinars y conversaciones personales para conocer los productos, trabajar con clientes y organizar las actividades diarias.",
+    "sl": "Naša ekipa uporablja izobraževanja, webinarje in osebne pogovore za spoznavanje izdelkov, delo s kupci in organizacijo vsakodnevnih dejavnosti."
+  },
+  "The option to build a team": {
+    "de": "Die Möglichkeit, ein Team aufzubauen",
+    "es": "La opción de crear un equipo",
+    "sl": "Možnost razvoja ekipe"
+  },
+  "If you want to build a team, you can introduce the business to other interested people and support their first steps.": {
+    "de": "Wenn du ein Team aufbauen möchtest, kannst du anderen Interessierten die Zusammenarbeit vorstellen und sie bei ihren ersten Schritten unterstützen.",
+    "es": "Si quieres crear un equipo, puedes presentar el negocio a otras personas interesadas y acompañarlas en sus primeros pasos.",
+    "sl": "Če želiš razvijati ekipo, lahko sodelovanje predstaviš drugim zainteresiranim osebam in jih podpreš pri prvih korakih."
+  },
+  "This is an independent business opportunity. It takes time, learning and working with people. Earnings are not guaranteed.": {
+    "de": "Es handelt sich um eine selbstständige Geschäftstätigkeit. Sie erfordert Zeit, Lernen und die Arbeit mit Menschen. Einkommen ist nicht garantiert.",
+    "es": "Es una oportunidad de negocio independiente. Requiere tiempo, aprendizaje y trabajo con personas. No se garantizan ingresos.",
+    "sl": "Gre za samostojno poslovno sodelovanje. Potrebni so čas, učenje in delo z ljudmi. Zaslužek ni zagotovljen."
+  },
+  "Have questions? Let’s start there.": {
+    "de": "Du hast Fragen? Fangen wir damit an.",
+    "es": "¿Tienes preguntas? Empecemos por ahí.",
+    "sl": "Imaš vprašanja? Začnimo pri njih."
+  },
+  "Wondering how the work looks, what you need to start or whether it suits you? Get in touch and ask before deciding.": {
+    "de": "Du möchtest wissen, wie die Tätigkeit aussieht, was du zum Start brauchst oder ob sie zu dir passt? Melde dich und kläre deine Fragen vor der Entscheidung.",
+    "es": "¿Quieres saber cómo es la actividad, qué necesitas para empezar o si encaja contigo? Escríbenos y aclara tus dudas antes de decidir.",
+    "sl": "Te zanima, kako poteka delo, kaj potrebuješ za začetek ali ali je to zate? Oglasi se in razjasni vprašanja pred odločitvijo."
+  },
+  "Your personal contact": {
+    "de": "Deine persönliche Kontaktperson",
+    "es": "Tu persona de contacto",
+    "sl": "Tvoja kontaktna oseba"
+  },
+  "Send a message directly or leave your details in the form. This does not place an order or enrol you as a business owner.": {
+    "de": "Schreibe direkt oder hinterlasse deine Kontaktdaten im Formular. Damit bestellst du nichts und meldest dich nicht als Geschäftspartner an.",
+    "es": "Envía un mensaje directamente o deja tus datos en el formulario. Esto no realiza ningún pedido ni te inscribe como distribuidor.",
+    "sl": "Pošlji sporočilo neposredno ali pusti kontakt v obrazcu. S tem ničesar ne naročiš in ne postaneš poslovni partner."
+  },
+  "Leave your details for a personal reply": {
+    "de": "Kontaktdaten für eine persönliche Antwort",
+    "es": "Deja tus datos para una respuesta personal",
+    "sl": "Pusti kontakt za osebni odgovor"
+  },
+  "Choose how you would like us to get in touch.": {
+    "de": "Wähle, wie wir dich kontaktieren sollen.",
+    "es": "Elige cómo quieres que contactemos contigo.",
+    "sl": "Izberi, kako želiš prejeti odgovor."
+  },
+  "Add a question or a topic": {
+    "de": "Frage oder Gesprächsthema ergänzen",
+    "es": "Añade una pregunta o un tema",
+    "sl": "Dodaj vprašanje ali temo pogovora"
+  },
+  "Optional": {
+    "de": "Optional",
+    "es": "Opcional",
+    "sl": "Neobvezno"
+  },
+  "Your request and contact details go to ": {
+    "de": "Deine Anfrage und Kontaktdaten erhält ",
+    "es": "Tu consulta y tus datos de contacto los recibe ",
+    "sl": "Tvoje povpraševanje in kontaktne podatke prejme "
+  },
+  "We will use them to respond to your enquiry. No newsletter subscription.": {
+    "de": "Wir verwenden sie zur Beantwortung deiner Anfrage. Keine Anmeldung zu einem Newsletter.",
+    "es": "Los utilizaremos para responder a tu consulta. Sin suscripción a boletines.",
+    "sl": "Uporabili jih bomo za odgovor na tvoje povpraševanje. Brez prijave na e novice."
+  },
+  "WHEN YOU ARE READY": {
+    "de": "WENN DU BEREIT BIST",
+    "es": "CUANDO QUIERAS EMPEZAR",
+    "sl": "KO SE ODLOČIŠ ZAČETI"
+  },
+  "Starter packs and joining": {
+    "de": "Starterpakete und Anmeldung",
+    "es": "Packs de inicio e inscripción",
+    "sl": "Začetni paketi in prijava"
+  },
+  "Choose where you live to see the options for your country. Complete any purchase or application on the official Forever website, with a referral from the person who shared this presentation.": {
+    "de": "Wähle dein Wohnsitzland, um die verfügbaren Möglichkeiten zu sehen. Kauf oder Anmeldung erfolgen auf der offiziellen Forever Website mit der Empfehlung der Person, die diese Präsentation geteilt hat.",
+    "es": "Elige tu país de residencia para ver las opciones disponibles. La compra o solicitud se completa en la web oficial de Forever, con la recomendación de quien compartió esta presentación.",
+    "sl": "Izberi državo prebivališča in preveri možnosti zanjo. Nakup ali prijavo zaključiš na uradni strani Forever s priporočilom osebe, ki ti je poslala predstavitev."
+  },
+  "Let’s check your options": {
+    "de": "Prüfen wir deine Möglichkeiten",
+    "es": "Veamos tus opciones",
+    "sl": "Preverimo tvoje možnosti"
+  },
+  "There is currently no direct link for getting started in your selected country on this page. Ask your contact about packs, pricing and joining.": {
+    "de": "Für dein gewähltes Land gibt es auf dieser Seite derzeit keinen direkten Link zum Einstieg. Frage deine Kontaktperson nach Paketen, Preisen und Anmeldung.",
+    "es": "En esta página todavía no hay un enlace directo para empezar en el país seleccionado. Consulta con tu persona de contacto sobre packs, precios e inscripción.",
+    "sl": "Na tej strani trenutno ni neposredne povezave za začetek v izbrani državi. Za informacije o paketih, cenah in prijavi vprašaj svojo kontaktno osebo."
+  },
+  "ANSWERS BEFORE YOU DECIDE": {
+    "de": "ANTWORTEN VOR DEINER ENTSCHEIDUNG",
+    "es": "RESPUESTAS ANTES DE DECIDIR",
+    "sl": "ODGOVORI PRED ODLOČITVIJO"
+  },
+  "Good to know.": {
+    "de": "Gut zu wissen.",
+    "es": "Conviene saberlo.",
+    "sl": "Dobro je vedeti."
+  },
+  "What does getting started cost?": {
+    "de": "Was kostet der Einstieg?",
+    "es": "¿Cuánto cuesta empezar?",
+    "sl": "Koliko stane začetek?"
+  },
+  "Packs, prices and terms vary by country. Select your country under Starter packs and joining, or ask your personal contact. Review the current terms before any purchase or application.": {
+    "de": "Pakete, Preise und Bedingungen unterscheiden sich je nach Land. Wähle dein Land unter Starterpakete und Anmeldung oder frage deine Kontaktperson. Prüfe die aktuellen Bedingungen vor Kauf oder Anmeldung.",
+    "es": "Los packs, precios y condiciones varían según el país. Selecciona tu país en Packs de inicio e inscripción o pregunta a tu persona de contacto. Revisa las condiciones vigentes antes de comprar o solicitar la inscripción.",
+    "sl": "Paketi, cene in pogoji se razlikujejo po državah. V razdelku Začetni paketi in prijava izberi svojo državo ali vprašaj kontaktno osebo. Pred nakupom ali prijavo preveri veljavne pogoje."
+  },
+  "Prefer a live introduction?": {
+    "de": "Lieber eine Livevorstellung?",
+    "es": "¿Prefieres una presentación en directo?",
+    "sl": "Raje poslušaš v živo?"
+  },
+  "Join an online introduction to the Forever business. Choose a date to open a short registration form with the event details.": {
+    "de": "Nimm an einer Onlinevorstellung des Forever Geschäfts teil. Wähle einen Termin, um eine kurze Anmeldung mit den Veranstaltungsdetails zu öffnen.",
+    "es": "Participa en una presentación online del negocio Forever. Elige una fecha para abrir un formulario breve con los detalles del encuentro.",
+    "sl": "Pridruži se spletni predstavitvi poslovanja Forever. Izberi termin in odpri kratko prijavo s podrobnostmi srečanja."
+  },
+  "View details and register": {
+    "de": "Details ansehen und anmelden",
+    "es": "Ver detalles e inscribirme",
+    "sl": "Poglej podrobnosti in se prijavi"
+  },
+  "The focus is on Forever drinks, supplements and personal care products. Learn about them and help customers choose what suits them, using accurate information.": {
+    "de": "Im Mittelpunkt stehen Forever Getränke, Nahrungsergänzungsmittel und Pflegeprodukte. Lerne sie kennen und hilf Kunden mit korrekten Informationen, das Passende auszuwählen.",
+    "es": "El centro son las bebidas, los complementos alimenticios y los productos de cuidado personal Forever. Conócelos y ayuda a los clientes a elegir lo que les conviene, con información precisa.",
+    "sl": "V središču so napitki Forever, prehranska dopolnila in izdelki za nego. Spoznavaš jih in s točnimi informacijami pomagaš kupcem izbrati tisto, kar jim ustreza."
+  },
+  "Ask your personal contact about starter packs, current prices and joining requirements for your selected country.": {
+    "de": "Frage deine Kontaktperson nach Starterpaketen, aktuellen Preisen und den Anmeldebedingungen für dein gewähltes Land.",
+    "es": "Consulta con tu persona de contacto los packs de inicio, los precios actuales y los requisitos de inscripción para el país seleccionado.",
+    "sl": "Za začetne pakete, aktualne cene in pogoje prijave v izbrani državi vprašaj svojo kontaktno osebo."
+  },
+  "Get to know Forever through a starter pack of products. Pack contents and getting started options vary by country.": {
+    "sl": "Spoznaj Forever z začetnim paketom izdelkov. Vsebina paketov in možnosti začetka se razlikujejo glede na državo.",
+    "de": "Lerne Forever mit einem Produktstarterpaket kennen. Paketinhalt und Einstiegsmöglichkeiten unterscheiden sich je nach Land.",
+    "es": "Conoce Forever con un paquete inicial de productos. El contenido y las opciones para empezar varían según el país."
+  },
+  "Referred by: ": {
+    "sl": "Po priporočilu: ",
+    "de": "Empfohlen von: ",
+    "es": "Recomendado por: "
+  },
+  "Explore starter packs at Forever": {
+    "sl": "Oglej si začetne pakete pri Foreverju",
+    "de": "Starterpakete bei Forever ansehen",
+    "es": "Ver paquetes iniciales en Forever"
+  },
+  "Choose your pack and check its current contents, price and terms on the official website for your country. The image shows an example pack.": {
+    "sl": "Na uradni strani za svojo državo izberi paket in preveri trenutno vsebino, ceno ter pogoje. Slika prikazuje primer paketa.",
+    "de": "Wähle dein Paket auf der offiziellen Website für dein Land und prüfe den aktuellen Inhalt, Preis und die Bedingungen. Das Bild zeigt ein Beispielpaket.",
+    "es": "Elige tu paquete y consulta su contenido, precio y condiciones actuales en la web oficial de tu país. La imagen muestra un paquete de ejemplo."
+  },
+  "We do not currently have an available starter pack link for this country. Ask your personal contact about getting started.": {
+    "sl": "Za to državo trenutno nimamo razpoložljive povezave do začetnega paketa. O možnostih začetka vprašaj svojo kontaktno osebo.",
+    "de": "Für dieses Land haben wir derzeit keinen verfügbaren Link zu einem Starterpaket. Frage deine Kontaktperson nach den Einstiegsmöglichkeiten.",
+    "es": "Actualmente no disponemos de un enlace al paquete inicial para este país. Pregunta a tu persona de contacto cómo empezar."
+  },
+  "Starter pack price": {
+    "sl": "Cena začetnega paketa",
+    "de": "Preis des Starterpakets",
+    "es": "Precio del paquete inicial"
+  },
+  "Checked": {
+    "sl": "Preverjeno",
+    "de": "Geprüft am",
+    "es": "Verificado"
+  },
+  "The current price for your country is shown when you select your pack at Forever.": {
+    "sl": "Aktualna cena za tvojo državo je prikazana ob izbiri paketa pri Foreverju.",
+    "de": "Der aktuelle Preis für dein Land wird bei der Paketauswahl bei Forever angezeigt.",
+    "es": "El precio actual para tu país aparece al elegir tu paquete en Forever."
+  },
+  "A special way to get started": {
+    "sl": "Posebna priložnost za začetek",
+    "de": "Eine besondere Möglichkeit für deinen Start",
+    "es": "Una oportunidad especial para empezar"
+  },
+  "You can buy the starter pack on these terms only once, before reaching Assistant Supervisor level.": {
+    "sl": "Začetni paket lahko pod temi pogoji kupiš samo enkrat, preden dosežeš raven Assistant Supervisor.",
+    "de": "Du kannst das Starterpaket zu diesen Bedingungen nur einmal kaufen, bevor du die Stufe Assistant Supervisor erreichst.",
+    "es": "Puedes comprar el paquete inicial con estas condiciones una sola vez, antes de alcanzar el nivel Assistant Supervisor."
+  },
+  "The pack gives you 2 CC towards qualification. After completing the official registration and opting into the business programme, you can start as a Forever Business Owner at Assistant Supervisor level.": {
+    "sl": "Z nakupom paketa pridobiš 2 CC za kvalifikacijo. Po zaključku uradne registracije in izbiri sodelovanja v poslovnem programu lahko začneš kot Foreverjev poslovni sodelavec na ravni Assistant Supervisor.",
+    "de": "Mit dem Paket erhältst du 2 CC für die Qualifikation. Nach der offiziellen Registrierung und der Entscheidung zur Teilnahme am Geschäftsprogramm kannst du als Forever Business Owner auf der Stufe Assistant Supervisor starten.",
+    "es": "El paquete aporta 2 CC para la cualificación. Tras completar el registro oficial y optar por participar en el programa de negocio, puedes empezar como Forever Business Owner en el nivel Assistant Supervisor."
+  }
+}

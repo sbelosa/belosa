@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
             <li class="active" aria-current="page"><?= l('tools.list_alphabetizer.name') ?></li>
@@ -41,8 +41,8 @@
                 <div class="form-group">
                     <label for="type"><i class="fas fa-fw fa-sm fa-fingerprint text-muted mr-1"></i> <?= l('global.type') ?></label>
                     <select id="type" name="type" class="custom-select" required="required">
-                        <option value="A-Z" <?= $data->values['type'] == 'A-Z' ? 'selected="selected"' : null ?>>A-Z</option>
-                        <option value="Z-A" <?= $data->values['type'] == 'Z-A' ? 'selected="selected"' : null ?>>Z-A</option>
+                        <option value="A-Z" <?= $data->values['type'] == 'A-Z' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('A-Z'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="Z-A" <?= $data->values['type'] == 'Z-A' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Z-A'), ENT_QUOTES, 'UTF-8') ?></option>
                     </select>
                 </div>
 

@@ -333,7 +333,7 @@ $fcc_qr_editor_steps = [
 
     <div class="d-print-none">
         <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-            <nav aria-label="breadcrumb">
+            <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
                 <ol class="custom-breadcrumbs small">
                     <li>
                         <a href="<?= url('qr-codes') ?>"><?= l('qr_codes.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -350,12 +350,13 @@ $fcc_qr_editor_steps = [
         </div>
 
         <div class="d-flex justify-content-between mb-4">
-            <h1 class="h4 text-truncate mb-0 mr-2"><i class="fas fa-fw fa-xs fa-qrcode mr-1"></i> <?= l('qr_code_update.header') ?></h1>
+            <h1 <?= fcc_partner_enabled() ? 'id="fcc_qr_editor_step_intro"' : '' ?> class="h4 text-truncate mb-0 mr-2"><i class="fas fa-fw fa-xs fa-qrcode mr-1"></i> <?= l('qr_code_update.header') ?></h1>
 
             <?= include_view(THEME_PATH . 'views/qr-codes/qr_code_dropdown_button.php', ['id' => $data->qr_code->qr_code_id, 'resource_name' => $data->qr_code->name]) ?>
         </div>
     </div>
 
+    <?php if(!fcc_partner_enabled()): ?>
     <section class="fcc-qr-editor-hero fcc-qr-tour-target" id="fcc_qr_editor_step_intro">
         <h2><?= l('qr_codes.editor.hero_title') ?></h2>
         <p><?= l('qr_codes.editor.hero_text') ?></p>
@@ -379,6 +380,7 @@ $fcc_qr_editor_steps = [
             </article>
         </div>
     </section>
+    <?php endif ?>
 
     <form id="form" action="" method="post" role="form" enctype="multipart/form-data">
         <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -561,8 +563,8 @@ $fcc_qr_editor_steps = [
                             <div class="form-group" data-type="wifi">
                                 <label for="wifi_encryption"><i class="fas fa-fw fa-user-shield fa-sm text-muted mr-1"></i> <?= l('qr_codes.input.wifi_encryption') ?></label>
                                 <select id="wifi_encryption" name="wifi_encryption" class="custom-select" data-reload-qr-code>
-                                    <option value="WEP" <?= $data->qr_code->settings->wifi_encryption == 'WEP' ? 'selected="selected"' : null ?>>WEP</option>
-                                    <option value="WPA/WPA2" <?= $data->qr_code->settings->wifi_encryption == 'WPA/WPA2' ? 'selected="selected"' : null ?>>WPA/WPA2</option>
+                                    <option value="WEP" <?= $data->qr_code->settings->wifi_encryption == 'WEP' ? 'selected="selected"' : null ?>><?= htmlspecialchars('WEP', ENT_QUOTES, 'UTF-8') ?></option>
+                                    <option value="WPA/WPA2" <?= $data->qr_code->settings->wifi_encryption == 'WPA/WPA2' ? 'selected="selected"' : null ?>><?= htmlspecialchars('WPA/WPA2', ENT_QUOTES, 'UTF-8') ?></option>
                                     <option value="nopass" <?= $data->qr_code->settings->wifi_encryption == 'nopass' ? 'selected="selected"' : null ?>><?= l('qr_codes.input.wifi_encryption_nopass') ?></option>
                                 </select>
                             </div>
@@ -1268,7 +1270,7 @@ $fcc_qr_editor_steps = [
                                 <div class="input-group">
                                     <input id="size" type="number" min="50" max="2000" name="size" class="form-control <?= \Altum\Alerts::has_field_errors('size') ? 'is-invalid' : null ?>" value="<?= $data->qr_code->settings->size ?>" data-reload-qr-code />
                                     <div class="input-group-append">
-                                        <span class="input-group-text">px</span>
+                                        <span class="input-group-text"><?= htmlspecialchars('px', ENT_QUOTES, 'UTF-8') ?></span>
                                     </div>
                                 </div>
                                 <?= \Altum\Alerts::output_field_error('size') ?>

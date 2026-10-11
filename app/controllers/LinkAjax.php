@@ -51,23 +51,21 @@ class LinkAjax extends Controller {
 	}
 
 	private function get_default_whatsapp_phone_for_current_user(): string {
-		$referrer_phone = '';
-		if(!empty($this->user->referred_by)) {
-			$referrer_user = db()->where('user_id', (int) $this->user->referred_by)->getOne('users', ['preferences']);
-			$referrer_phone = $this->extract_user_phone_from_preferences($referrer_user);
-		}
-
-		if($referrer_phone !== '') {
-			return $referrer_phone;
-		}
-
-		return $this->extract_user_phone_from_preferences($this->user);
-	}
+        return fc_get_user_default_whatsapp_phone($this->user);
+    }
 
 	public function index() {
 		\Altum\Authentication::guard();
 
 		if(!empty($_POST) && (\Altum\Csrf::check('token') || \Altum\Csrf::check('global_token')) && isset($_POST['request_type'])) {
+
+            // A different card must not take over the root address of an NFC domain.
+            if(in_array($_POST['request_type'], ['create', 'update'], true) && !empty($_POST['is_main_link']) && !empty($_POST['domain_id'])) {
+                $root_link_id = (int) db()->where('domain_id', (int) $_POST['domain_id'])->getValue('domains', 'link_id');
+                if($root_link_id && $root_link_id !== (int) ($_POST['link_id'] ?? 0) && fc_is_nfc_link($root_link_id)) {
+                    Response::json(l('link.settings.url_help_main_biolink_locked'), 'error');
+                }
+            }
 
 			$this->links_types = require APP_PATH . 'includes/links_types.php';
 
@@ -1085,7 +1083,7 @@ class LinkAjax extends Controller {
 				'picker_search' => 'WhatsApp',
 				'seed_settings' => [
 					'title' => 'Pošalji poruku na WhatsApp',
-					'message' => 'Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.',
+					'message' => fcc_t('Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.'),
 				],
 			]),
 		];
@@ -3794,6 +3792,7 @@ class LinkAjax extends Controller {
 
 			case 'custom_html_whatsapp':
 				$default_whatsapp_phone = mb_substr($this->get_default_whatsapp_phone_for_current_user(), 0, 256);
+				if($default_whatsapp_phone === '') return 0;
 				$whatsapp_title = $seed_settings['title'] ?? ($seed_settings['button_text'] ?? ($seed_settings['name'] ?? l('create_biolink_custom_html_whatsapp_modal.button')));
 				$whatsapp_message = $seed_settings['message'] ?? ($seed_settings['description'] ?? ($seed_settings['text'] ?? l('create_biolink_custom_html_whatsapp_modal.message')));
 				$settings = [
@@ -5280,6 +5279,7 @@ class LinkAjax extends Controller {
 			$biolink_blocks = db()->where('link_id', $biolink_template->link_id)->get('biolinks_blocks');
 
 			foreach($biolink_blocks as $biolink_block) {
+                if(in_array($biolink_block->type,['link_discount','link_forever_living_bih','link_forever_living_alb_kosovo'],true))continue;
 				$biolink_block->settings = json_decode($biolink_block->settings ?? '');
 
 				if(is_array($biolink_block->settings)) {
@@ -5381,6 +5381,7 @@ class LinkAjax extends Controller {
             ], signature: true);
         }
 
+		fc_ensure_factory_shop_block((int)$this->user->user_id, (int)$link_id);
 		Response::json(l('global.success_message.create2'), 'success', ['url' => url('link/' . $link_id . ($this->user->preferences->links_auto_copy_link ? '?auto_copy_link=true' : ''))]);
 	}
 
@@ -5897,6 +5898,17 @@ class LinkAjax extends Controller {
 		/* Check for possible errors */
 		if(!array_key_exists($_POST['type'], $this->links_types)) {
 			die();
+		}
+
+		$link = db()->where('link_id', (int) ($_POST['link_id'] ?? 0))->where('user_id', $this->user->user_id)->getOne('links');
+		if(!$link || $link->type !== $_POST['type']) {
+			Response::json(l('global.error_message.basic'), 'error');
+		}
+		if(fc_get_user_main_biolink_id((int) $this->user->user_id) === (int) $link->link_id) {
+			if((isset($_POST['url']) && (string) $_POST['url'] !== (string) $link->url)
+				|| (isset($_POST['domain_id']) && (int) $_POST['domain_id'] !== (int) $link->domain_id)) {
+				Response::json(l('link.settings.url_help_main_biolink_locked'), 'error');
+			}
 		}
 
 		$this->{'update_' . $_POST['type']}();
@@ -7209,6 +7221,7 @@ class LinkAjax extends Controller {
 
 		if($is_locked_main_biolink) {
 			$domain_id = (int) ($link->domain_id ?? 0);
+			$_POST['domain_id'] = $domain_id;
 			$_POST['url'] = (string) ($link->url ?? '');
 			$_POST['is_main_link'] = $domain_id
 				&& isset($domains[$domain_id])
@@ -7986,6 +7999,7 @@ class LinkAjax extends Controller {
 		$reset_debug_log('reset_biolink_factory:template_link_id=' . $template_biolink->link_id . ' blocks=' . count($biolink_blocks ?? []));
 
 		foreach($biolink_blocks as $biolink_block) {
+                if(in_array($biolink_block->type,['link_discount','link_forever_living_bih','link_forever_living_alb_kosovo'],true))continue;
 			$biolink_block->settings = json_decode($biolink_block->settings ?? '');
 
 			if(is_array($biolink_block->settings)) {
@@ -8058,6 +8072,7 @@ class LinkAjax extends Controller {
 		}
 
 		(new \Altum\Models\User())->hydrate_biolink_from_user_data($this->user->user_id, $link->link_id);
+        fc_ensure_factory_shop_block((int)$this->user->user_id,(int)$link->link_id);
 
 		cache()->deleteItem('biolink_blocks?link_id=' . $link->link_id);
 		cache()->deleteItem('link?link_id=' . $link->link_id);

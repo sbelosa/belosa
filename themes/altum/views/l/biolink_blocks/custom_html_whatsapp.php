@@ -3,6 +3,7 @@
 <?php
 $button = $data->link->settings->title ?? ($data->link->settings->button ?? 'WhatsApp');
 $phone = preg_replace('/[^\d]/', '', (string) ($data->link->settings->phone ?? ''));
+if(!preg_match('/^[1-9][0-9]{7,14}$/', $phone)) return;
 $message = trim((string) ($data->link->settings->message ?? ''));
 $whatsapp_query = ['phone' => $phone];
 

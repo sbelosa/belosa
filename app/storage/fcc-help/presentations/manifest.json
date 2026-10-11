@@ -1,0 +1,97 @@
+{
+  "en": {
+    "locale": "en",
+    "name": "English",
+    "sha256": "b8e8d6ae24196f564d90235d546e73644798c1a3af99287ab29f936d016046ae",
+    "bytes": 4255001,
+    "slides": 36
+  },
+  "hr": {
+    "locale": "hr",
+    "name": "Hrvatski",
+    "sha256": "0a40758ec86333daa684800b67331630d0bdcba92ac02159f0c55c73358a78e4",
+    "bytes": 4255821,
+    "slides": 36
+  },
+  "sl": {
+    "locale": "sl",
+    "name": "Slovenščina",
+    "sha256": "a011c7e69964bd656bcb6bb5cd960b9f0d4b39f3074647816a70d2cbc3967c69",
+    "bytes": 4256130,
+    "slides": 36
+  },
+  "de": {
+    "locale": "de",
+    "name": "Deutsch",
+    "sha256": "3462e2f640c7690918fb03ca9e868fb32685c68be5d18da7426ddecfb1c880da",
+    "bytes": 4257871,
+    "slides": 36
+  },
+  "es": {
+    "locale": "es",
+    "name": "Español",
+    "sha256": "a496388bcada388b935dcbc6b83182866f724f3474103109d8ebd7daac2a4567",
+    "bytes": 4195915,
+    "slides": 36
+  },
+  "sr": {
+    "locale": "sr",
+    "name": "Srpski",
+    "sha256": "15f8f27828639dbe401b172dccbc58e822b6c043b69eb66337169fb1585f58a7",
+    "bytes": 4256029,
+    "slides": 36
+  },
+  "sq": {
+    "locale": "sq",
+    "name": "Shqip",
+    "sha256": "fd89d09129f6e8e97c9d1596dcb4a20465443b3d784124c22a11f1ff493854bc",
+    "bytes": 4256881,
+    "slides": 36
+  },
+  "cnr": {
+    "locale": "cnr",
+    "name": "Crnogorski",
+    "sha256": "1fa1b4db7be965657058b06b9ab3200fa834f3fdef77543f13ae6e1e803c1873",
+    "bytes": 4256148,
+    "slides": 36
+  },
+  "fr": {
+    "locale": "fr",
+    "name": "Français",
+    "sha256": "b17b62880c275a13cde6f3c9451029f99538c1cc3c071308eea652cffe8c38db",
+    "bytes": 4257068,
+    "slides": 36
+  },
+  "bundle": {
+    "sha256": "b16109fbefa3a6f7aa918a030dc3945d59467df33fa49ee97f0294889d48a080",
+    "bytes": 54772945
+  },
+  "sv": {
+    "locale": "sv",
+    "name": "Svenska",
+    "sha256": "3f1f9cafe3d9245a611d1b3f12b9ba91ff91922c77946d2eb45e9fd8244758f4",
+    "bytes": 4198862,
+    "slides": 36
+  },
+  "hu": {
+    "locale": "hu",
+    "name": "Magyar",
+    "sha256": "f0eaf037d52405a8b9074e31affda43fae83ad1578d53b9ce5f4121e342dccc7",
+    "bytes": 4206158,
+    "slides": 36
+  },
+  "pl": {
+    "locale": "pl",
+    "name": "Polski",
+    "sha256": "8f11d7cf2ddd93c7246f17ba6d0c0977c191ba5810ea7244384da120375b3538",
+    "bytes": 4204090,
+    "slides": 36
+  },
+  "ro": {
+    "locale": "ro",
+    "name": "Română",
+    "sha256": "a33b8d9ae7b8ca1250ec9ab1235baf90cae8dc7df10e9053e9f8b1d8b14de4e6",
+    "bytes": 4198752,
+    "slides": 36
+  }
+}

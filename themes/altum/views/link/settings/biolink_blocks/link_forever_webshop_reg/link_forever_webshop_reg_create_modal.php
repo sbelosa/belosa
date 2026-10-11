@@ -25,12 +25,12 @@
 
                     <div class="alert alert-info">
                         <i class="fas fa-fw fa-info-circle mr-2"></i>
-                        <?= l('create_biolink_link_forever_webshop_reg_modal.info') ?>
+                        <?= htmlspecialchars(fcc_forever_copy('shop_help'),ENT_QUOTES,'UTF-8') ?>
                     </div>
 
                     <div class="form-group">
                         <label for="link_forever_webshop_reg_name"><i class="fa fa-fw fa-signature fa-sm text-muted mr-1"></i> <?= l('biolink_link.name') ?></label>
-                        <input id="link_forever_webshop_reg_name" type="text" name="name" maxlength="128" class="form-control" value="<?= l('create_biolink_link_modal.input.forever_webshop_registration') ?>" required="required" />
+                        <input id="link_forever_webshop_reg_name" type="text" name="name" maxlength="128" class="form-control" value="<?= htmlspecialchars(fcc_forever_copy('shop'),ENT_QUOTES,'UTF-8') ?>" required="required" />
                     </div>
 
                     <div class="text-center mt-4">

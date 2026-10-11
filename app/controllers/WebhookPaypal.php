@@ -35,6 +35,12 @@ class WebhookPaypal extends Controller {
             throw_404();
         }
 
+        // A retired gateway must not capture payments or restore plan access.
+        if(empty(settings()->paypal->is_enabled)) {
+            http_response_code(204);
+            return;
+        }
+
         /* Get the headers */
         $headers = getallheaders();
 

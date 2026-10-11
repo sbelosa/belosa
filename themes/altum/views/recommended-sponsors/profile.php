@@ -295,12 +295,12 @@ $profile_schema = [
         'image' => $sponsor['display_image_url'] ?: ($sponsor['default_image_url'] ?? ''),
         'worksFor' => [
             '@type' => 'Organization',
-            'name' => 'Forever Card Club',
+            'name' => fcc_t('Forever Card Club'),
             'url' => url(),
         ],
         'affiliation' => [
             '@type' => 'Organization',
-            'name' => 'Forever Card Club',
+            'name' => fcc_t('Forever Card Club'),
             'url' => url(),
         ],
         'knowsAbout' => array_values(array_filter(array_merge(
@@ -314,7 +314,7 @@ $profile_schema = [
             [
                 '@type' => 'ListItem',
                 'position' => 1,
-                'name' => $ui['hub_title'] ?? 'Recommended FCC Sponsors',
+                'name' => $ui['hub_title'] ?? fcc_t('Recommended FCC Sponsors'),
                 'item' => $data->hub_url ?? url('recommended-sponsors'),
             ],
             [

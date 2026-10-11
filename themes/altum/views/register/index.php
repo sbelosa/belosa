@@ -4,135 +4,11 @@
 
 <?php $contact_country_options = get_contact_phone_country_options_array(); ?>
 
-<?php ob_start() ?>
-<!-- Custom code: FC-2026-09-14: Give the registration form balanced spacing and a readable responsive layout -->
-<style>
-    .register-background {
-        min-height: 100vh;
-        background: radial-gradient(ellipse at 50% 0, #18312f 0, transparent 48rem), #0b1015;
-        background-attachment: fixed;
-    }
-    .register-background main { padding: 2.5rem 0 !important; }
-    .register-background .fcc-registration-layout { flex: 0 0 auto; width: 100%; max-width: 760px; }
-    .register-logo-wrap { margin-bottom: 1.5rem !important; }
-    .register-card {
-        border: 1px solid #26363b;
-        border-radius: 1.5rem !important;
-        background: #10171e;
-        box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .22);
-        overflow: hidden;
-    }
-    .register-card .card-body { padding: 2.25rem !important; }
-    .register-shell { color: #e8f0ef; }
-    .register-eyebrow {
-        margin-bottom: .75rem;
-        color: #83dcca;
-        font-size: .7rem;
-        font-weight: 700;
-        letter-spacing: .16em;
-        text-transform: uppercase;
-    }
-    .register-title { margin: 0; color: #f6faf9; font-size: 2rem; font-weight: 750; line-height: 1.2; letter-spacing: -.035em; }
-    .register-subtitle { display: block; margin-top: .45rem; color: #aabfbe; font-size: 1rem; font-weight: 400; line-height: 1.5; letter-spacing: 0; }
-    .register-note-card {
-        margin: 1.25rem 0 1.75rem;
-        padding: .2rem 0 .2rem 1rem;
-        border-left: 2px solid #3c8b7f;
-        color: #acbfbd;
-        font-size: .85rem;
-        line-height: 1.65;
-    }
-    .register-note-card strong { color: #dbece8; }
-    .register-form { margin-top: 0; }
-    .register-grid { display: grid; gap: 1.75rem; }
-    .register-section + .register-section { padding-top: 1.75rem; border-top: 1px solid #29363d; }
-    .register-section-title { display: flex; align-items: center; gap: .65rem; margin: 0 0 1.2rem; color: #edf5f2; font-size: .95rem; font-weight: 650; line-height: 1.4; }
-    .register-section-number { display: inline-flex; align-items: center; justify-content: center; width: 1.65rem; height: 1.65rem; border: 1px solid #36504e; border-radius: .5rem; color: #89daca; font-size: .7rem; font-weight: 600; }
-    .register-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem 1.25rem; }
-    .register-form-col { min-width: 0; }
-    .register-form-col-full { grid-column: 1 / -1; }
-    .register-shell .form-group { margin-bottom: 0; }
-    .register-shell label { margin-bottom: .5rem; color: #c9d7d6; font-size: .84rem; font-weight: 500; }
-    .register-shell .form-control,
-    .register-shell .custom-select {
-        height: 3rem;
-        min-height: 3rem;
-        border: 1px solid #35434c;
-        border-radius: .65rem;
-        background-color: #172129;
-        color: #f1f6f5;
-        font-size: .95rem;
-        box-shadow: none;
-        transition: border-color .15s ease, box-shadow .15s ease;
-    }
-    .register-shell .custom-select option { color: #eef5f3; background: #172129; }
-    .register-shell .form-control::placeholder { color: #8c9ea5; opacity: 1; }
-    .register-shell .form-control:focus,
-    .register-shell .custom-select:focus { border-color: #70d6c2; box-shadow: 0 0 0 3px rgba(112, 214, 194, .12); }
-    .register-shell .form-control.is-invalid { border-color: #ed939b; }
-    .register-shell .invalid-feedback { color: #f1a7ae; font-size: .8rem; line-height: 1.5; }
-    .register-shell .text-muted,
-    .register-shell .form-text { color: #9fafb5 !important; font-size: .78rem; line-height: 1.55; }
-    .register-shell .form-text { margin-top: .45rem; }
-    .register-shell .fcc-contact-capture { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: .75rem; }
-    .register-shell .fcc-contact-capture-row { min-width: 0; }
-    .register-phone-field { position: relative; }
-    .register-phone-field-icon { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: #88b9ad; pointer-events: none; }
-    .register-shell .register-phone-field .form-control { padding-left: 2.4rem; }
-    .register-captcha {
-        display: grid;
-        grid-template-columns: 176px minmax(0, 1fr);
-        gap: .75rem 1rem;
-        align-items: center;
-        margin-bottom: 1.25rem !important;
-        padding: 1rem;
-        border: 1px solid #2d4145;
-        border-radius: .8rem;
-        background: #141f25;
-    }
-    .register-captcha > img { display: block; max-width: 100%; height: auto; margin: 0 !important; border-radius: .45rem !important; }
-    .register-captcha > :not(img):not(input) { grid-column: 1 / -1; }
-    .register-captcha > input:not([type="hidden"]) { min-width: 0; }
-    .register-shell .custom-control-label { margin-bottom: 0; padding-top: .1rem; font-weight: 400; line-height: 1.6; }
-    .register-shell .custom-control-label a { color: #8adcca; font-weight: 500; }
-    .register-shell .custom-control-label::before { background-color: #18272d; border: 1px solid #72888b; border-radius: .25rem; }
-    .register-shell .custom-control-input:checked ~ .custom-control-label::before { background-color: #3b9c87; border-color: #70d6c2; }
-    .register-submit-wrap { margin-top: 1.4rem; }
-    .register-submit-btn { min-height: 3.15rem; border: 1px solid transparent; border-radius: .7rem; color: #092c25; background: #7ae0c8; font-size: .95rem; font-weight: 700; box-shadow: none; }
-    .register-submit-btn:hover { color: #092c25; background: #96ead7; }
-    .register-submit-btn:focus-visible { outline: 2px solid #c9fff0; outline-offset: 3px; }
-    .register-auth-divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0 1rem; color: #9fafb5; font-size: .8rem; }
-    .register-auth-divider::before, .register-auth-divider::after { content: ''; flex: 1; border-top: 1px solid #29363d; }
-    .register-social-btn { padding: .8rem; border: 1px solid #35434c; border-radius: .65rem; background: #172129; color: #edf5f2; }
-    .register-social-btn:hover, .register-social-btn:focus { background: #233039; color: #fff; }
-    .register-footer-link { margin-top: 1.5rem; text-align: center; color: #a7b8bd; font-size: .85rem; }
-    .register-footer-link a { margin-left: .2rem; color: #8adcca; }
-    @media (max-width: 575.98px) {
-        .register-background main { padding: 1.5rem 0 !important; }
-        .register-background .fcc-registration-layout { padding: 0; }
-        .register-logo-wrap { margin-bottom: 1rem !important; }
-        .register-card { border-radius: 1rem !important; }
-        .register-card .card-body { padding: 1.35rem !important; }
-        .register-title { font-size: 1.8rem; }
-        .register-note-card { margin-bottom: 1.5rem; }
-        .register-form-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-        .register-shell .form-control, .register-shell .custom-select { font-size: 1rem; }
-        .register-captcha { grid-template-columns: minmax(0, 1fr); padding: .85rem; }
-        .register-captcha > img { justify-self: center; }
-    }
-    @media (max-width: 399.98px) {
-        .register-shell .fcc-contact-capture { grid-template-columns: minmax(0, 1fr); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .register-shell .form-control, .register-shell .custom-select { transition: none; }
-    }
-</style>
-<!-- /Custom code: FC-2026-09-14 -->
-<?php \Altum\Event::add_content(ob_get_clean(), 'head', 'fcc_register_premium_styles') ?>
+
 
 <!-- Custom code: FC-2026-09-14: Consistent form grid and section headings -->
 <div class="register-shell">
-    <div class="register-eyebrow">Forever Card Club</div>
+    <div class="register-eyebrow"><?= htmlspecialchars(fcc_t('Forever Card Club'), ENT_QUOTES, 'UTF-8') ?></div>
 
     <h1 class="register-title">
         <?= l('register.hero_title') ?>
@@ -148,7 +24,7 @@
             <!-- Custom code: FC-2026-09-14: Session token and an off-screen bot trap -->
             <input type="hidden" name="registration_token" value="<?= \Altum\Csrf::get('registration_token') ?>" />
             <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
-                <label for="registration_website">Website</label>
+                <label for="registration_website"><?= htmlspecialchars(fcc_t('Website'), ENT_QUOTES, 'UTF-8') ?></label>
                 <input id="registration_website" type="text" name="registration_website" value="" tabindex="-1" autocomplete="off" />
             </div>
             <!-- /Custom code: FC-2026-09-14 -->
@@ -264,13 +140,13 @@
                     <!-- /Custom code: FC-2026-09-14 -->
 
                     <div class="custom-control custom-checkbox">
-                        <input type="checkbox" name="accept" class="custom-control-input" id="accept" required="required">
+                        <input type="checkbox" name="accept" class="custom-control-input" id="accept" value="1" required="required">
                         <label class="custom-control-label" for="accept">
                             <small class="text-muted">
                                 <?= sprintf(
                                     l('register.accept'),
-                                    '<a href="' . settings()->main->terms_and_conditions_url . '" target="_blank">' . l('global.terms_and_conditions') . '</a>',
-                                    '<a href="' . settings()->main->privacy_policy_url . '" target="_blank">' . l('global.privacy_policy') . '</a>'
+                                    '<a href="' . fcc_legal_url('terms') . '" target="_blank">' . l('global.terms_and_conditions') . '</a>',
+                                    '<a href="' . fcc_legal_url('privacy') . '" target="_blank">' . l('global.privacy_policy') . '</a>'
                                 ) ?>
                             </small>
                         </label>
@@ -295,7 +171,7 @@
         <?php endif ?>
 
         <?php if(settings()->facebook->is_enabled || settings()->google->is_enabled || settings()->twitter->is_enabled || settings()->discord->is_enabled || settings()->linkedin->is_enabled || settings()->microsoft->is_enabled): ?>
-            <div class="register-auth-divider"><span>ili nastavi s</span></div>
+            <div class="register-auth-divider"><span><?= htmlspecialchars(fcc_t('ili nastavi s'), ENT_QUOTES, 'UTF-8') ?></span></div>
 
             <div>
                 <?php if(settings()->facebook->is_enabled): ?>

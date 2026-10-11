@@ -118,7 +118,7 @@ function fcc_featured_get_case_study_feature_labels(int $link_id, ?string $langu
 
     $language = $language ?? \Altum\Language::$code;
 
-    $map = $language === 'hr'
+    $map = $language !== 'en'
         ? [
             'smart_links' => [
                 'label' => 'Pametni preporučni linkovi',
@@ -167,7 +167,7 @@ function fcc_featured_get_case_study_feature_labels(int $link_id, ?string $langu
     foreach($map as $group) {
         foreach($group['types'] as $type) {
             if(isset($available_types[$type])) {
-                $labels[] = $group['label'];
+                $labels[] = fcc_t($group['label'],[],$language);
                 break;
             }
         }
@@ -185,6 +185,9 @@ function fcc_featured_get_public_summary(string $stored_summary, array $feature_
     $feature_labels = array_values(array_filter(array_map('trim', $feature_labels)));
     $language = $language ?? \Altum\Language::$code;
 
+    if(fcc_new_locale($language)) return $feature_labels
+        ? fcc_t('Glavna Forever Card Aplikacija koristi {features} kao dio svakodnevnog Forever poslovanja.',['{features}'=>implode(', ',array_slice($feature_labels,0,3))],$language)
+        : fcc_t('Glavna Forever Card Aplikacija povezuje predstavljanje, preporuke i kontakt u jednom jasnom poslovnom toku.',[],$language);
     if(empty($feature_labels)) {
         return $language === 'hr'
             ? 'Glavna Forever Card Aplikacija povezuje predstavljanje, preporuke i kontakt u jednom jasnom poslovnom toku.'
@@ -207,6 +210,9 @@ function fcc_featured_get_public_use_case(string $stored_use_case, array $featur
     $feature_labels = array_values(array_filter(array_map('trim', $feature_labels)));
     $language = $language ?? \Altum\Language::$code;
 
+    if(fcc_new_locale($language)) return $feature_labels
+        ? fcc_t('Glavna FCC aplikacija za {features}',['{features}'=>mb_strtolower(implode(fcc_t(' i ',[],$language),array_slice($feature_labels,0,2)))],$language)
+        : fcc_t('Glavna Forever Card aplikacija za predstavljanje i preporuku',[],$language);
     if(empty($feature_labels)) {
         return $language === 'hr'
             ? 'Glavna Forever Card aplikacija za predstavljanje i preporuku'
@@ -430,7 +436,7 @@ function fcc_featured_get_user_public_profile_state($user, string $language = 'h
     $has_generated_profile = !empty($generated_profile);
     $opt_in_enabled = !empty($main_biolink->fcc_featured_opt_in);
     $is_approved = !empty($main_biolink->fcc_featured_is_approved);
-    $is_public_base_ready = $has_growth_pro && !empty($main_biolink->is_enabled) && $opt_in_enabled && $is_approved;
+    $is_public_base_ready = (int)($source->status ?? $user->status ?? 0) === 1 && $has_growth_pro && !empty($main_biolink->is_enabled) && $opt_in_enabled && $is_approved;
     $featured_list_ready = $is_public_base_ready && $public_signal_30d >= $qualified_target;
     $recommended_list_ready = $featured_list_ready && $public_signal_30d >= $top_target && !empty($sales_link_summary['has_valid_enabled_link']);
     $profile_slug = $main_biolink ? fcc_featured_build_profile_slug((string) ($main_biolink->name ?? ($user->name ?? '')), (int) ($main_biolink->link_id ?? 0)) : '';
@@ -528,55 +534,55 @@ function fcc_featured_build_signal_email_message(string $event_key, array $conte
     $sponsor_visibility_ready = $public_signal_30d >= $top_target && $sales_link_ready;
     $status_card = '<div style="padding:18px 20px;border-radius:16px;background:linear-gradient(135deg,#11253d 0%,#123b40 100%);border:1px solid rgba(101,225,201,0.24);margin:18px 0;color:#ffffff;line-height:1.75;">'
         . '<div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#9de7e0;margin-bottom:8px;">'
-        . ($is_english ? 'Current public FCC status' : 'Trenutačni javni FCC status')
+        . ($is_english ? 'Current public FCC status' : fcc_t('Trenutačni javni FCC status',[],$language))
         . '</div>'
-        . '<strong>' . ($is_english ? '30d public signal:' : 'Javni 30d signal:') . '</strong> ' . nr($public_signal_30d) . '<br />'
-        . '<strong>' . ($is_english ? '7d rhythm check:' : '7d provjera ritma:') . '</strong> ' . nr($public_signal_7d) . ' / ' . nr($weekly_check_target) . '<br />'
-        . '<strong>' . ($is_english ? 'Featured Apps threshold:' : 'Prag za Istaknute aplikacije:') . '</strong> ' . nr($qualified_target) . '+ / 30d<br />'
-        . '<strong>' . ($is_english ? 'Recommended sponsors threshold:' : 'Prag za preporučene sponzore:') . '</strong> ' . nr($top_target) . '+ / 30d'
+        . '<strong>' . ($is_english ? '30d public signal:' : fcc_t('Javni 30d signal:',[],$language)) . '</strong> ' . nr($public_signal_30d) . '<br />'
+        . '<strong>' . ($is_english ? '7d rhythm check:' : fcc_t('7d provjera ritma:',[],$language)) . '</strong> ' . nr($public_signal_7d) . ' / ' . nr($weekly_check_target) . '<br />'
+        . '<strong>' . ($is_english ? 'Featured Apps threshold:' : fcc_t('Prag za Istaknute aplikacije:',[],$language)) . '</strong> ' . nr($qualified_target) . '+ / 30d<br />'
+        . '<strong>' . ($is_english ? 'Recommended sponsors threshold:' : fcc_t('Prag za preporučene sponzore:',[],$language)) . '</strong> ' . nr($top_target) . '+ / 30d'
         . '</div>';
 
     $profile_line = $profile_ready
         ? ($is_english
             ? 'Your AI public profile is already generated and ready to support your public FCC visibility.'
-            : 'Tvoj AI javni profil je već generiran i spreman podržati tvoju javnu FCC vidljivost.')
+            : fcc_t('Tvoj AI javni profil je već generiran i spreman podržati tvoju javnu FCC vidljivost.',[],$language))
         : ($is_english
             ? 'Your AI public profile is not finished yet. Open it now and generate a calm, editorial profile for indexing and public sponsor visibility.'
-            : 'Tvoj AI javni profil još nije dovršen. Otvori ga sada i generiraj miran, urednički profil za indeksaciju i javnu sponsor vidljivost.');
+            : fcc_t('Tvoj AI javni profil još nije dovršen. Otvori ga sada i generiraj miran, urednički profil za indeksaciju i javnu sponsor vidljivost.',[],$language));
 
     $sales_link_line = $sales_link_ready
         ? ($is_english
             ? 'Your Forever sales link is active, so the public sponsor layer can use it as a valid recommendation path.'
-            : 'Tvoj Forever prodajni link je aktivan, pa ga javni sponsor sloj može koristiti kao valjan preporučni put.')
+            : fcc_t('Tvoj Forever prodajni link je aktivan, pa ga javni sponsor sloj može koristiti kao valjan preporučni put.',[],$language))
         : ($is_english
             ? 'Your Forever sales link still needs attention. Without a valid active link, the full recommended sponsor layer cannot work properly.'
-            : 'Tvoj Forever prodajni link još traži doradu. Bez valjanog aktivnog linka puni sloj preporučenih sponzora ne može raditi kako treba.');
+            : fcc_t('Tvoj Forever prodajni link još traži doradu. Bez valjanog aktivnog linka puni sloj preporučenih sponzora ne može raditi kako treba.',[],$language));
 
     $actions = [];
     $primary_url = $profile_edit_url;
-    $primary_label = $is_english ? 'Open AI profile' : 'Otvori AI profil';
+    $primary_label = $is_english ? 'Open AI profile' : fcc_t('Otvori AI profil',[],$language);
     $secondary_url = $featured_apps_url;
-    $secondary_label = $is_english ? 'View Featured Apps' : 'Pogledaj Istaknute aplikacije';
+    $secondary_label = $is_english ? 'View Featured Apps' : fcc_t('Pogledaj Istaknute aplikacije',[],$language);
     $notification_url = $profile_edit_url;
 
     if(in_array($event_key, ['top_unlocked', 'top_reminder'], true)) {
         if(!$sales_link_ready) {
             $primary_url = $sales_link_editor_url;
-            $primary_label = $is_english ? 'Fix sales link' : 'Popravi prodajni link';
+            $primary_label = $is_english ? 'Fix sales link' : fcc_t('Popravi prodajni link',[],$language);
             $notification_url = $sales_link_editor_url;
         } elseif($sponsor_profile_url !== '') {
             $secondary_url = $sponsor_profile_url;
-            $secondary_label = $is_english ? 'Open sponsor profile' : 'Otvori sponsor profil';
+            $secondary_label = $is_english ? 'Open sponsor profile' : fcc_t('Otvori sponsor profil',[],$language);
         } else {
             $secondary_url = $recommended_sponsors_url;
-            $secondary_label = $is_english ? 'View recommended sponsors' : 'Pogledaj preporučene sponzore';
+            $secondary_label = $is_english ? 'View recommended sponsors' : fcc_t('Pogledaj preporučene sponzore',[],$language);
         }
     }
 
     $actions[] = fcc_featured_build_email_button_html($primary_url, $primary_label, 'primary');
     $actions[] = fcc_featured_build_email_button_html($secondary_url, $secondary_label, 'secondary');
     if($public_app_url !== '' && $public_app_url !== $secondary_url) {
-        $actions[] = fcc_featured_build_email_button_html($public_app_url, $is_english ? 'Open main FCC app' : 'Otvori glavnu FCC aplikaciju', 'secondary');
+        $actions[] = fcc_featured_build_email_button_html($public_app_url, $is_english ? 'Open main FCC app' : fcc_t('Otvori glavnu FCC aplikaciju',[],$language), 'secondary');
     }
     $actions_html = '<div style="margin:22px 0 10px;display:flex;flex-wrap:wrap;gap:10px;">' . implode('', array_filter($actions)) . '</div>';
 
@@ -587,83 +593,83 @@ function fcc_featured_build_signal_email_message(string $event_key, array $conte
 
     switch($event_key) {
         case 'qualified_unlocked':
-            $subject = $is_english ? 'You unlocked Featured FCC Apps' : 'Otključao si Istaknute FCC aplikacije';
+            $subject = $is_english ? 'You unlocked Featured FCC Apps' : fcc_t('Otključao si Istaknute FCC aplikacije',[],$language);
             $notification_title = $subject;
             $notification_description = $profile_ready
                 ? ($is_english
                     ? 'Your main FCC app is now above 15+ / 30d. Stay on Featured Apps and keep building toward 50+ / 30d.'
-                    : 'Tvoja glavna FCC aplikacija sada je iznad 15+ / 30d. Ostani na Istaknutim aplikacijama i gradi dalje prema 50+ / 30d.')
+                    : fcc_t('Tvoja glavna FCC aplikacija sada je iznad 15+ / 30d. Ostani na Istaknutim aplikacijama i gradi dalje prema 50+ / 30d.',[],$language))
                 : ($is_english
                     ? 'Your main FCC app reached 15+ / 30d. Now finish the AI public profile so your public listing looks clear and strong.'
-                    : 'Tvoja glavna FCC aplikacija došla je na 15+ / 30d. Sada dovrši AI javni profil kako bi tvoj javni prikaz izgledao jasno i ozbiljno.');
-            $body = ($is_english ? 'Hello ' : 'Pozdrav ') . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : 'FCC suradniče'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
+                    : fcc_t('Tvoja glavna FCC aplikacija došla je na 15+ / 30d. Sada dovrši AI javni profil kako bi tvoj javni prikaz izgledao jasno i ozbiljno.',[],$language));
+            $body = ($is_english ? 'Hello ' : fcc_t('Pozdrav ',[],$language)) . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : fcc_t('FCC suradniče',[],$language)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
                 . ($is_english
                     ? 'your main FCC app now holds <strong>' . nr($public_signal_30d) . '</strong> qualified public clicks and contacts in the last 30 days. That puts you into the first public FCC visibility layer: <strong>Featured Apps</strong>.'
-                    : 'tvoja glavna FCC aplikacija sada drži <strong>' . nr($public_signal_30d) . '</strong> kvalificiranih javnih klikova i kontakata u zadnjih 30 dana. Time ulaziš u prvi javni FCC sloj vidljivosti: <strong>Istaknute aplikacije</strong>.')
+                    : fcc_t('tvoja glavna FCC aplikacija sada drži <strong>{count}</strong> kvalificiranih javnih klikova i kontakata u zadnjih 30 dana. Time ulaziš u prvi javni FCC sloj vidljivosti: <strong>Istaknute aplikacije</strong>.',['{count}'=>nr($public_signal_30d)],$language))
                 . '<br /><br />'
                 . ($is_english
                     ? 'This is the first public proof that you are actively using FCC in practice. The next main public goal is <strong>50+ / 30d</strong>, because that is the simplest way for FCC to promote you as an active recommended sponsor on the homepage and through a public sponsor profile.'
-                    : 'To je prvi javni dokaz da FCC koristiš aktivno u praksi. Sljedeći glavni javni cilj je <strong>50+ / 30d</strong>, jer je to najjednostavniji način da te FCC promovira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil.')
+                    : fcc_t('To je prvi javni dokaz da FCC koristiš aktivno u praksi. Sljedeći glavni javni cilj je <strong>50+ / 30d</strong>, jer je to najjednostavniji način da te FCC promovira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil.',[],$language))
                 . $status_card
                 . '<p style="margin:0 0 12px;">' . $profile_line . '</p>'
                 . '<p style="margin:0 0 12px;">' . $sales_link_line . '</p>'
                 . '<p style="margin:0 0 12px;">'
                 . ($is_english
                     ? 'Right now the best next move is simple: open your AI profile, refine how you use FCC, and make sure your public description explains who you help and how you work.'
-                    : 'Sada je najbolji sljedeći potez jednostavan: otvori svoj AI profil, doradi kako koristiš FCC i pobrini se da javni opis jasno objasni kome pomažeš i kako radiš.')
+                    : fcc_t('Sada je najbolji sljedeći potez jednostavan: otvori svoj AI profil, doradi kako koristiš FCC i pobrini se da javni opis jasno objasni kome pomažeš i kako radiš.',[],$language))
                 . '</p>'
                 . $actions_html
                 . '<p style="margin:18px 0 0;">'
                 . ($is_english
                     ? 'You are currently missing <strong>' . nr($missing_to_top) . '</strong> to reach the 50+ / 30d sponsor level.'
-                    : 'Trenutačno ti nedostaje još <strong>' . nr($missing_to_top) . '</strong> do 50+ / 30d sponsor razine.')
+                    : fcc_t('Trenutačno ti nedostaje još <strong>{count}</strong> do 50+ / 30d sponsor razine.',['{count}'=>nr($missing_to_top)],$language))
                 . '</p><br />'
-                . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : 'Lijep pozdrav,<br />{{WEBSITE_TITLE}}');
+                . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : fcc_t('Lijep pozdrav,<br />{{WEBSITE_TITLE}}',[],$language));
             break;
 
         case 'qualified_reminder':
-            $subject = $is_english ? 'Finish your AI profile while you are on 15+' : 'Dovrši AI profil dok si na 15+';
-            $notification_title = $is_english ? 'Finish your AI profile' : 'Dovrši AI profil';
+            $subject = $is_english ? 'Finish your AI profile while you are on 15+' : fcc_t('Dovrši AI profil dok si na 15+',[],$language);
+            $notification_title = $is_english ? 'Finish your AI profile' : fcc_t('Dovrši AI profil',[],$language);
             $notification_description = $is_english
                 ? 'You are already on the 15+ / 30d public FCC layer. Finishing the AI profile is the cleanest next move for Featured Apps visibility.'
-                : 'Već si na 15+ / 30d javnoj FCC razini. Dovršavanje AI profila je najčišći sljedeći potez za vidljivost na Istaknutim aplikacijama.';
-            $body = ($is_english ? 'Hello ' : 'Pozdrav ') . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : 'FCC suradniče'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
+                : fcc_t('Već si na 15+ / 30d javnoj FCC razini. Dovršavanje AI profila je najčišći sljedeći potez za vidljivost na Istaknutim aplikacijama.',[],$language);
+            $body = ($is_english ? 'Hello ' : fcc_t('Pozdrav ',[],$language)) . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : fcc_t('FCC suradniče',[],$language)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
                 . ($is_english
                     ? 'you are still holding the <strong>15+ / 30d</strong> public FCC signal, which means your main app can stay in the Featured Apps layer.'
-                    : 'još uvijek držiš <strong>15+ / 30d</strong> javni FCC signal, što znači da tvoja glavna aplikacija može ostati u sloju Istaknutih aplikacija.')
+                    : fcc_t('još uvijek držiš <strong>15+ / 30d</strong> javni FCC signal, što znači da tvoja glavna aplikacija može ostati u sloju Istaknutih aplikacija.',[],$language))
                 . '<br /><br />'
                 . ($is_english
                     ? 'The main thing still worth finishing is your AI profile for indexing. That profile helps your public FCC listing look calm, clear and relevant for both people and search systems.'
-                    : 'Glavna stvar koju sada još vrijedi dovršiti je tvoj AI profil za indeksaciju. Taj profil pomaže da tvoj javni FCC prikaz izgleda mirno, jasno i relevantno i ljudima i tražilicama.')
+                    : fcc_t('Glavna stvar koju sada još vrijedi dovršiti je tvoj AI profil za indeksaciju. Taj profil pomaže da tvoj javni FCC prikaz izgleda mirno, jasno i relevantno i ljudima i tražilicama.',[],$language))
                 . $status_card
                 . '<p style="margin:0 0 12px;">' . $profile_line . '</p>'
                 . '<p style="margin:0 0 12px;">'
                 . ($is_english
                     ? 'If you keep the profile unfinished, you still have the signal, but you are not using the full public value of it. A finished profile gives Featured Apps and future sponsor pages a much stronger public explanation of your work.'
-                    : 'Ako profil ostane nedovršen, signal postoji, ali ne koristiš njegovu punu javnu vrijednost. Dovršen profil daje Istaknutim aplikacijama i budućim sponsor stranicama puno jače javno objašnjenje tvog rada.')
+                    : fcc_t('Ako profil ostane nedovršen, signal postoji, ali ne koristiš njegovu punu javnu vrijednost. Dovršen profil daje Istaknutim aplikacijama i budućim sponsor stranicama puno jače javno objašnjenje tvog rada.',[],$language))
                 . '</p>'
                 . $actions_html
-                . '<br />' . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : 'Lijep pozdrav,<br />{{WEBSITE_TITLE}}');
+                . '<br />' . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : fcc_t('Lijep pozdrav,<br />{{WEBSITE_TITLE}}',[],$language));
             break;
 
         case 'top_unlocked':
-            $subject = $is_english ? 'You reached the 50+ sponsor signal' : 'Dosegao si 50+ sponsor signal';
-            $notification_title = $is_english ? 'You reached the 50+ sponsor signal' : 'Dosegao si 50+ sponsor signal';
+            $subject = $is_english ? 'You reached the 50+ sponsor signal' : fcc_t('Dosegao si 50+ sponsor signal',[],$language);
+            $notification_title = $is_english ? 'You reached the 50+ sponsor signal' : fcc_t('Dosegao si 50+ sponsor signal',[],$language);
             $notification_description = $sponsor_visibility_ready
                 ? ($is_english
                     ? 'FCC can now promote you more strongly as an active recommended sponsor. Check your sponsor profile and keep the rhythm healthy.'
-                    : 'FCC te sada može jače promovirati kao aktivnog preporučenog sponzora. Provjeri sponsor profil i drži ritam zdravim.')
+                    : fcc_t('FCC te sada može jače promovirati kao aktivnog preporučenog sponzora. Provjeri sponsor profil i drži ritam zdravim.',[],$language))
                 : ($is_english
                     ? 'You reached 50+, but one more setup step is still needed before the full recommended sponsor layer works at full strength.'
-                    : 'Dosegao si 50+, ali još je potreban jedan setup korak prije nego puni sloj preporučenih sponzora proradi punom snagom.');
-            $body = ($is_english ? 'Hello ' : 'Pozdrav ') . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : 'FCC suradniče'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
+                    : fcc_t('Dosegao si 50+, ali još je potreban jedan setup korak prije nego puni sloj preporučenih sponzora proradi punom snagom.',[],$language));
+            $body = ($is_english ? 'Hello ' : fcc_t('Pozdrav ',[],$language)) . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : fcc_t('FCC suradniče',[],$language)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
                 . ($is_english
                     ? 'your main FCC app has now reached <strong>' . nr($public_signal_30d) . '</strong> qualified public clicks and contacts in the last 30 days. The <strong>50+ / 30d</strong> level is the main public FCC sponsor signal.'
-                    : 'tvoja glavna FCC aplikacija sada je došla do <strong>' . nr($public_signal_30d) . '</strong> kvalificiranih javnih klikova i kontakata u zadnjih 30 dana. Razina <strong>50+ / 30d</strong> je glavni javni FCC sponsor signal.')
+                    : fcc_t('tvoja glavna FCC aplikacija sada je došla do <strong>{count}</strong> kvalificiranih javnih klikova i kontakata u zadnjih 30 dana. Razina <strong>50+ / 30d</strong> je glavni javni FCC sponsor signal.',['{count}'=>nr($public_signal_30d)],$language))
                 . '<br /><br />'
                 . ($is_english
                     ? 'That matters because it is the clearest way for FCC to position you as an active recommended sponsor on the homepage and through a public sponsor profile. It also gives Google and AI systems a stronger public signal about your sponsor relevance and the way you use FCC in practice.'
-                    : 'To je važno zato što je to najčišći način da te FCC pozicionira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil. Ujedno Googleu i AI sustavima daje jači javni signal o tvojoj sponsor relevantnosti i načinu na koji FCC koristiš u praksi.')
+                    : fcc_t('To je važno zato što je to najčišći način da te FCC pozicionira kao aktivnog preporučenog sponzora na naslovnici i kroz javni sponsor profil. Ujedno Googleu i AI sustavima daje jači javni signal o tvojoj sponsor relevantnosti i načinu na koji FCC koristiš u praksi.',[],$language))
                 . $status_card
                 . '<p style="margin:0 0 12px;">' . $profile_line . '</p>'
                 . '<p style="margin:0 0 12px;">' . $sales_link_line . '</p>'
@@ -671,44 +677,44 @@ function fcc_featured_build_signal_email_message(string $event_key, array $conte
                 . ($sponsor_visibility_ready
                     ? ($is_english
                         ? 'You already have the key public pieces in place. Now the smart move is to keep your sponsor profile polished and protect the weekly rhythm so this public visibility stays strong.'
-                        : 'Ključni javni dijelovi su ti već složeni. Sada je pametno držati sponsor profil urednim i čuvati tjedni ritam kako bi ta javna vidljivost ostala snažna.')
+                        : fcc_t('Ključni javni dijelovi su ti već složeni. Sada je pametno držati sponsor profil urednim i čuvati tjedni ritam kako bi ta javna vidljivost ostala snažna.',[],$language))
                     : ($is_english
                         ? 'You already have the result signal. Now finish the missing public setup piece so FCC can use that result more strongly on the sponsor layer.'
-                        : 'Signal rezultata već postoji. Sada dovrši nedostajući javni setup korak kako bi FCC taj rezultat mogao jače koristiti na sponsor sloju.'))
+                        : fcc_t('Signal rezultata već postoji. Sada dovrši nedostajući javni setup korak kako bi FCC taj rezultat mogao jače koristiti na sponsor sloju.',[],$language)))
                 . '</p>'
                 . $actions_html
-                . '<br />' . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : 'Lijep pozdrav,<br />{{WEBSITE_TITLE}}');
+                . '<br />' . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : fcc_t('Lijep pozdrav,<br />{{WEBSITE_TITLE}}',[],$language));
             break;
 
         case 'top_reminder':
         default:
-            $subject = $is_english ? 'Finish your sponsor setup for stronger visibility' : 'Dovrši sponsor setup za jaču vidljivost';
-            $notification_title = $is_english ? 'Finish your sponsor setup' : 'Dovrši sponsor setup';
+            $subject = $is_english ? 'Finish your sponsor setup for stronger visibility' : fcc_t('Dovrši sponsor setup za jaču vidljivost',[],$language);
+            $notification_title = $is_english ? 'Finish your sponsor setup' : fcc_t('Dovrši sponsor setup',[],$language);
             $notification_description = !$sales_link_ready
                 ? ($is_english
                     ? 'Your 50+ signal is already there, but the Forever sales link still needs to be fixed before the full sponsor layer works properly.'
-                    : 'Tvoj 50+ signal već postoji, ali Forever prodajni link još treba doradu prije nego puni sponsor sloj radi kako treba.')
+                    : fcc_t('Tvoj 50+ signal već postoji, ali Forever prodajni link još treba doradu prije nego puni sponsor sloj radi kako treba.',[],$language))
                 : ($is_english
                     ? 'Your 50+ signal is live. Now finish the AI sponsor profile so the public presentation is clear and useful.'
-                    : 'Tvoj 50+ signal je aktivan. Sada dovrši AI sponsor profil kako bi javni prikaz bio jasan i koristan.');
-            $body = ($is_english ? 'Hello ' : 'Pozdrav ') . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : 'FCC suradniče'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
+                    : fcc_t('Tvoj 50+ signal je aktivan. Sada dovrši AI sponsor profil kako bi javni prikaz bio jasan i koristan.',[],$language));
+            $body = ($is_english ? 'Hello ' : fcc_t('Pozdrav ',[],$language)) . htmlspecialchars($name !== '' ? $name : ($is_english ? 'FCC collaborator' : fcc_t('FCC suradniče',[],$language)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ', <br /><br />'
                 . ($is_english
                     ? 'you are already in the <strong>50+ / 30d</strong> public FCC zone, which is the main layer for recommended sponsors.'
-                    : 'već si u <strong>50+ / 30d</strong> javnoj FCC zoni, koja je glavni sloj za preporučene sponzore.')
+                    : fcc_t('već si u <strong>50+ / 30d</strong> javnoj FCC zoni, koja je glavni sloj za preporučene sponzore.',[],$language))
                 . '<br /><br />'
                 . ($is_english
                     ? 'To get the strongest value from that signal, make sure the public sponsor setup is complete: valid Forever sales link, clear AI profile, and a sponsor page that explains your work calmly and clearly.'
-                    : 'Kako bi iz tog signala izvukao najjaču vrijednost, pobrini se da je javni sponsor setup dovršen: valjani Forever prodajni link, jasan AI profil i sponsor stranica koja mirno i jasno objašnjava tvoj rad.')
+                    : fcc_t('Kako bi iz tog signala izvukao najjaču vrijednost, pobrini se da je javni sponsor setup dovršen: valjani Forever prodajni link, jasan AI profil i sponsor stranica koja mirno i jasno objašnjava tvoj rad.',[],$language))
                 . $status_card
                 . '<p style="margin:0 0 12px;">' . $profile_line . '</p>'
                 . '<p style="margin:0 0 12px;">' . $sales_link_line . '</p>'
                 . '<p style="margin:0 0 12px;">'
                 . ($is_english
                     ? 'This is worth finishing because FCC can then use your signal more cleanly for homepage placement, sponsor profile visibility and stronger Google / AI understanding of your brand.'
-                    : 'Ovo vrijedi dovršiti zato što FCC tada tvoj signal može čišće koristiti za pozicioniranje na naslovnici, vidljivost sponsor profila i jače Google / AI razumijevanje tvog branda.')
+                    : fcc_t('Ovo vrijedi dovršiti zato što FCC tada tvoj signal može čišće koristiti za pozicioniranje na naslovnici, vidljivost sponsor profila i jače Google / AI razumijevanje tvog branda.',[],$language))
                 . '</p>'
                 . $actions_html
-                . '<br />' . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : 'Lijep pozdrav,<br />{{WEBSITE_TITLE}}');
+                . '<br />' . ($is_english ? 'Best regards,<br />{{WEBSITE_TITLE}}' : fcc_t('Lijep pozdrav,<br />{{WEBSITE_TITLE}}',[],$language));
             break;
     }
 
@@ -729,7 +735,7 @@ function fcc_featured_send_signal_preview_emails(string $recipient_email, string
     $recipient_email = trim($recipient_email);
 
     if($recipient_email === '' || !filter_var($recipient_email, FILTER_VALIDATE_EMAIL)) {
-        throw new \InvalidArgumentException('Preview email adresa nije valjana.');
+        throw new \InvalidArgumentException(fcc_t('Preview email adresa nije valjana.'));
     }
 
     $language = fcc_ai_resolve_public_reply_language($language);
@@ -837,7 +843,7 @@ function fcc_featured_get_catalog(array $options = []): array {
     $only_user_id = max(0, (int) ($options['only_user_id'] ?? 0));
 
     $cache_key = 'fcc_featured_catalog?hash=' . md5(json_encode([
-        'version' => '2026-07-26-billing-grace-public-signal-v2',
+        'version' => '2026-09-24-qualified-clicks-v3',
         'language' => $language,
         'min_signal_30d' => $min_signal_30d,
         'experience_signal_target' => $experience_signal_target,
@@ -870,6 +876,7 @@ function fcc_featured_get_catalog(array $options = []): array {
             "`main_link`.`is_enabled` = 1",
             "`main_link`.`fcc_featured_opt_in` = 1",
             "`main_link`.`fcc_featured_is_approved` = 1",
+            "`users`.`status` = 1",
         ];
 
         if($only_link_id > 0) {

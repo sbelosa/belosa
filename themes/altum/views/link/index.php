@@ -617,8 +617,12 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 <?php endif ?>
 
-<div class="container">
+<div class="container <?= fcc_partner_enabled() && $fcc_is_biolink_editor ? 'fp-editor' : '' ?>">
     <?= \Altum\Alerts::output_alerts() ?>
+    <?php if(fcc_partner_enabled() && $fcc_is_biolink_editor): ?>
+        <?php require THEME_PATH.'views/partner/editor-header.php'; ?>
+        <div class="fp-legacy-editor-header" hidden>
+    <?php endif ?>
 
     <?php if($fcc_is_short_link_editor): ?>
     <div class="fcc-short-link-page-shell">
@@ -643,9 +647,9 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
     <?php endif ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
-                <li><a href="<?= url('links') ?>"><?= l('links.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
+                <li><a href="<?= url($data->link->type === 'link' ? 'links?type=link' : 'links') ?>"><?= l('links.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li class="active" aria-current="page">
                     <?= l('link.breadcrumb.' . $data->link->type) . ' ' . l('link.' . $data->method . '.breadcrumb') ?>
                 </li>
@@ -772,12 +776,12 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
         <div class="fcc-app-stats-guide-rail">
             <button type="button" class="fcc-app-stats-guide-trigger" id="fcc_app_stats_start_tour">
                 <i class="fas fa-fw fa-route"></i>
-                <span><?= fc_resolve_language_name(\Altum\Language::$name ?? '') === 'Hrvatski' || mb_strtolower((string) (\Altum\Language::$code ?? '')) === 'hr' ? 'Pokreni tutorijal' : 'Start tutorial' ?></span>
+                <span><?= fc_resolve_language_name(\Altum\Language::$name ?? '') === 'Hrvatski' || mb_strtolower((string) (\Altum\Language::$code ?? '')) === 'hr' ? fcc_t('Pokreni tutorijal') : fcc_t('Start tutorial') ?></span>
             </button>
         </div>
     <?php endif ?>
 
-    <?php if($data->link->type === 'biolink' && !empty($data->app_review_quality_payload) && !empty($data->is_main_biolink_app)): ?>
+    <?php if(!fcc_partner_enabled() && $data->link->type === 'biolink' && !empty($data->app_review_quality_payload) && !empty($data->is_main_biolink_app)): ?>
         <?php $quality = $data->app_review_quality_payload; ?>
         <div id="fcc_app_stats_tour_step_ai_block" class="card mb-4 border-0 fcc-biolink-tour-target fcc-app-review-teaser-card">
             <div class="card-body fcc-app-review-teaser-body">
@@ -874,6 +878,7 @@ $fcc_short_link_editor_steps = $fcc_is_short_link_editor ? [
         </div>
     <?php endif ?>
 
+    <?php if(fcc_partner_enabled() && $fcc_is_biolink_editor): ?></div><?php endif ?>
     <div id="links_auto_copy_link"></div>
 
     <?= $this->views['method'] ?>

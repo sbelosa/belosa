@@ -100,6 +100,16 @@ class Router {
         ],
 
         '' => [
+            'language' => ['controller'=>'LanguagePreference', 'settings'=>['has_view'=>false, 'no_browser_language_detection'=>true]],
+            'vip-edukacija' => ['controller' => 'TeamWebinar', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'no_authentication_check' => true, 'no_browser_language_detection' => true, 'allow_sessions' => false]],
+            'partner' => ['controller' => 'Partner', 'settings' => ['wrapper' => 'app_wrapper', 'allow_indexing' => false, 'allow_team_access' => false]],
+            'partner-webinar' => ['controller' => 'PartnerWebinar', 'settings' => ['wrapper' => 'app_wrapper', 'allow_indexing' => false, 'allow_team_access' => false]],
+            'partner-marketing' => ['controller' => 'PartnerMarketing', 'settings' => ['wrapper' => 'app_wrapper', 'allow_indexing' => false, 'allow_team_access' => false]],
+            'business' => ['controller' => 'BusinessPresentation', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
+            'business-request' => ['controller' => 'BusinessPresentation', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
+            'legal' => ['controller' => 'Legal', 'settings' => ['has_view' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
+            'webinar-invite' => ['controller' => 'WebinarInvite', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
+            'webinar-event' => ['controller' => 'WebinarEvent', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
             'dashboard' => [
                 'controller' => 'Dashboard',
                 'settings' => [
@@ -149,6 +159,16 @@ class Router {
             /* /Custom code: FC-2026-04-12 */
 
             /* Custom code: FC-2026-02-24: FCC core education page */
+            'fcc-product-education' => [
+                'controller' => 'FccProductEducation',
+                'settings' => [
+                    'wrapper' => 'app_wrapper',
+                    'authentication' => 'user',
+                    'allow_indexing' => false,
+                    'ads' => false,
+                ]
+            ],
+
             'fcc-education' => [
                 'controller' => 'FccEducation',
                 'settings' => [
@@ -216,6 +236,14 @@ class Router {
             /* /Custom code: FC-2026-04-01 */
 
             /* Custom code: FC-2026-03-31: tracked blog CTA redirect */
+            'forever-shop' => [
+                'controller' => 'ForeverShop',
+                'settings' => ['no_authentication_check' => true, 'has_view' => false, 'no_browser_language_detection' => true],
+            ],
+            'blog-offer' => [
+                'controller' => 'BlogOffer',
+                'settings' => ['no_authentication_check' => true, 'has_view' => false, 'no_browser_language_detection' => true],
+            ],
             'blog-click' => [
                 'controller' => 'BlogClick',
                 'settings' => [
@@ -1321,6 +1349,15 @@ class Router {
                 ]
             ],
 
+            'robots.txt' => [
+                'controller' => 'RobotsTxt',
+                'settings' => ['no_authentication_check'=>true, 'no_browser_language_detection'=>true, 'has_view'=>false, 'allow_sessions'=>false],
+            ],
+            'llms.txt' => [
+                'controller' => 'LlmsTxt',
+                'settings' => ['no_authentication_check'=>true, 'no_browser_language_detection'=>true, 'has_view'=>false, 'allow_sessions'=>false],
+            ],
+
             'sitemap' => [
                 'controller' => 'Sitemap',
                 'settings' => [
@@ -1545,6 +1582,9 @@ class Router {
         /* Admin Panel */
         'admin' => [
             /* Custom code: FC-2026-03-31: Leader Operating System admin routes */
+            'webinars' => ['controller' => 'AdminWebinars'],
+            'fcc-access' => ['controller' => 'AdminFccAccess'],
+                'marketing-plan' => ['controller' => 'AdminMarketingPlan'],
             'leader-operating-system' => [
                 'controller' => 'AdminLeaderOperatingSystem'
             ],
@@ -1961,7 +2001,6 @@ class Router {
                 'controller' => 'AdminFccPush',
             ],
             /* /Custom code: FC-2026-10-07 */
-
             'internal-notifications' => [
                 'controller' => 'AdminInternalNotifications',
             ],

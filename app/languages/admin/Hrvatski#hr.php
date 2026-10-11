@@ -2351,7 +2351,7 @@ return [
 	'admin_leader_operating_system.forever.kpi.qualified' => 'Dosegli ≥ 0,33 Personal CC u mjesecu',
 	'admin_leader_operating_system.forever.kpi.enrolled' => 'Uključeni u program',
 	'admin_leader_operating_system.forever.kpi.started' => 'Pokrenuli program',
-	'admin_leader_operating_system.forever.kpi.completed' => 'Dovršili 30 koraka',
+	'admin_leader_operating_system.forever.kpi.completed' => 'Dovršili 60 koraka',
 	'admin_leader_operating_system.forever.kpi.active' => 'Aktivni u prozoru',
 	'admin_leader_operating_system.forever.kpi.tasks' => 'Dovršeni zadaci',
 	'admin_leader_operating_system.forever.kpi.results' => 'Samoprijavljene radnje',

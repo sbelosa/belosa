@@ -985,6 +985,8 @@ class Billing extends Model {
         $extra->billing_grace_until = null;
         $extra->billing_next_retry_at = null;
         $extra->billing_stripe_status = $context['stripe_status'] ?? 'active';
+        // A confirmed payment supersedes the revocation from an earlier unpaid period.
+        $extra->billing_access_revoked_at = null;
         $extra->billing_recovered_at = $context['occurred_at'] ?? get_date();
         $extra->billing_last_success_at = $context['occurred_at'] ?? get_date();
         $extra->billing_last_invoice_id = $context['stripe_invoice_id'] ?? ($extra->billing_last_invoice_id ?? null);
@@ -1026,6 +1028,10 @@ class Billing extends Model {
         $extra->billing_next_retry_at = $context['next_retry_at'] ?? ($extra->billing_next_retry_at ?? null);
         $extra->billing_last_invoice_id = $context['stripe_invoice_id'] ?? ($extra->billing_last_invoice_id ?? null);
         $extra->billing_last_payment_intent_id = $context['stripe_payment_intent_id'] ?? ($extra->billing_last_payment_intent_id ?? null);
+
+        if(array_key_exists('cancel_at_period_end',$context)) {
+            $extra->billing_cancel_at_period_end=(bool)$context['cancel_at_period_end'];
+        }
 
         $stripe_status = $context['stripe_status'] ?? '';
         $started_past_due = $stripe_status === 'past_due'

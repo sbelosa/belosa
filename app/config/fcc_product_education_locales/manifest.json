@@ -1,0 +1,69 @@
+{
+  "schema": "fcc_product_education_locales_manifest_v1",
+  "source_locale": "hr",
+  "source_hash": "044c214a826aa693cfb550ef17f369e2e92beaa50bfc9cb7cf0ddfab5c787987",
+  "source_strings": 10392,
+  "languages": {
+    "en": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "de": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "fr": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "es": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "sl": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "sr": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "cnr": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "sq": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "hu": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "ro": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "pl": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    },
+    "sv": {
+      "strings": 10392,
+      "missing": 0,
+      "complete": true
+    }
+  },
+  "updated_at": "2026-10-08T12:40:55.491417+00:00"
+}

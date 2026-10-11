@@ -17,6 +17,8 @@ defined('ALTUMCODE') || die();
 /* Custom code: FC-2026-03-31: User AI plan phase 1-3 controller */
 class AiPlan extends Controller {
 
+    private array $partner_preferences_snapshot = [];
+
     private function normalize_ai_need_value(?string $value): string {
         $value = input_clean($value ?? '', 64);
 
@@ -72,7 +74,7 @@ class AiPlan extends Controller {
             'primary_goal' => ['product_sales', 'recruitment', 'brand_building', 'customer_activation', 'testing_new_angle'],
             'priority_offer' => ['single_product', 'product_category', 'business_opportunity', 'personal_brand', 'mixed_offer'],
             'active_channels' => ['instagram_story', 'instagram_reel', 'facebook_profile', 'facebook_group', 'tiktok', 'whatsapp', 'messenger', 'email', 'offline'],
-            'available_time' => ['15m_daily', '30m_daily', '60m_daily', 'three_posts_weekly', 'story_only', 'follow_up_only'],
+            'available_time' => ['10m_daily', '15m_daily', '20m_daily', '30m_daily', '45m_daily', '60m_daily', 'three_posts_weekly', 'story_only', 'follow_up_only'],
             'biggest_blocker' => ['no_traffic', 'no_clicks', 'no_leads', 'no_sales', 'no_content_ideas', 'follow_up_unclear', 'limited_time', 'low_confidence'],
             'communication_style' => ['educational', 'personal_story', 'testimonial', 'direct_sales', 'soft_brand', 'recruitment_focus'],
             'follow_up_readiness' => ['dm_ready', 'whatsapp_ready', 'email_ready', 'inbound_only', 'no_follow_up'],
@@ -1418,6 +1420,20 @@ class AiPlan extends Controller {
     private function persist_ai_plan_preferences(\stdClass $preferences): bool {
         $preferences = $this->trim_ai_plan_preferences_for_storage($preferences);
         $encoded = $this->encode_ai_plan_preferences_for_storage($preferences);
+
+        if(fcc_partner_enabled() && $encoded !== null) {
+            try {
+                $this->partner_preferences_snapshot = fcc_partner_merge_preferences(
+                    (int) $this->user->user_id,
+                    $this->partner_preferences_snapshot,
+                    json_decode($encoded, true) ?: []
+                );
+                return true;
+            } catch(\Throwable $exception) {
+                Alerts::add_error(fcc_t('Plan nije spremljen. Osvježi pregled: podatak je možda promijenjen na drugom uređaju.'));
+                return false;
+            }
+        }
 
         if($encoded === null) {
             \Altum\Logger::users($this->user->user_id, 'ai_plan.preferences_encode_failed');
@@ -9052,7 +9068,7 @@ class AiPlan extends Controller {
                 'picker_search' => 'WhatsApp',
                 'seed_settings' => [
                     'title' => 'Pošalji poruku na WhatsApp',
-                    'message' => 'Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.',
+                    'message' => fcc_t('Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.'),
                 ],
             ];
         }
@@ -9395,7 +9411,7 @@ class AiPlan extends Controller {
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'Pisi iskljucivo na hrvatskom. Ti si vrhunski mentor za FCC aplikacije. Tvoj posao nije komplicirati, nego pocetniku jednostavno reci sto da promijeni prvo, sto da ostavi i kako da aplikacija jasnije vodi prema sljedecem koraku. Pisi kratko, toplo, jasno i potpuno. Bez tehnickog jezika, bez marketinskog slenga, bez polurecenica. Vrati samo valjan JSON bez markdowna i bez dodatnih kljuceva.'
+                        'content' => fcc_ai_locale_instruction() . ' Ti si vrhunski mentor za FCC aplikacije. Tvoj posao nije komplicirati, nego pocetniku jednostavno reci sto da promijeni prvo, sto da ostavi i kako da aplikacija jasnije vodi prema sljedecem koraku. Pisi kratko, toplo, jasno i potpuno. Bez tehnickog jezika, bez marketinskog slenga, bez polurecenica. Vrati samo valjan JSON bez markdowna i bez dodatnih kljuceva.'
                     ],
                     [
                         'role' => 'user',
@@ -10652,7 +10668,7 @@ class AiPlan extends Controller {
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'Pisi iskljucivo na hrvatskom. Ti si elitni growth coach i strateg za Forever Card Club suradnike. Nisi motivacijski chatbot nego netko tko vidi gdje curi rezultat, reze visak i bira jedan potez s najvecim leverageom. Budi iskren, ostar kad treba, ali koristan i izvediv. Vrati samo valjan JSON bez markdowna i bez dodatnih kljuceva.'
+                        'content' => fcc_ai_locale_instruction() . ' Ti si elitni growth coach i strateg za Forever Card Club suradnike. Nisi motivacijski chatbot nego netko tko vidi gdje curi rezultat, reze visak i bira jedan potez s najvecim leverageom. Budi iskren, ostar kad treba, ali koristan i izvediv. Vrati samo valjan JSON bez markdowna i bez dodatnih kljuceva.'
                     ],
                     [
                         'role' => 'user',
@@ -10705,6 +10721,11 @@ class AiPlan extends Controller {
 
     public function index() {
         \Altum\Authentication::guard();
+        if(fcc_journey_enabled() && (\Altum\Router::$controller_key ?? '') !== 'ai-app-review') {
+            $view=match((string)($_GET['section']??'')) {'profile'=>'goal','weekly'=>'review','app_review'=>'card',default=>'history'};
+            redirect($view==='card'?'ai-app-review':'partner?view='.$view);
+        }
+        $this->partner_preferences_snapshot = json_decode(json_encode($this->get_preferences_object()), true) ?: [];
 
         if(vip_funnel_demo_render_locked_route($this, $this->user, 'ai_plan', [
             'back_url' => url('dashboard'),
@@ -10980,9 +11001,9 @@ class AiPlan extends Controller {
                         'phase' => 1,
                     ];
 
-                    db()->where('user_id', $this->user->user_id)->update('users', [
-                        'preferences' => json_encode($preferences),
-                    ]);
+                    if(!$this->persist_ai_plan_preferences($preferences)) {
+                        redirect('ai-plan');
+                    }
 
                     cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
                     cache()->deleteItem('user?user_id=' . $this->user->user_id);
@@ -11031,7 +11052,7 @@ class AiPlan extends Controller {
                 }
 
                 if($latest_pending_outcome_plan) {
-                    Alerts::add_error('Prvo zatvori prethodni tjedan i spremi rezultat prije novog tjednog unosa.');
+                    Alerts::add_error(fcc_t('Prvo zatvori prethodni tjedan i spremi rezultat prije novog tjednog unosa.'));
                 }
 
                 if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
@@ -11276,9 +11297,9 @@ class AiPlan extends Controller {
                     $weekly_outcomes = array_slice($weekly_outcomes, 0, 12);
                     $preferences->leader_ai_weekly_outcomes = $weekly_outcomes;
 
-                    db()->where('user_id', $this->user->user_id)->update('users', [
-                        'preferences' => json_encode($preferences),
-                    ]);
+                    if(!$this->persist_ai_plan_preferences($preferences)) {
+                        redirect('ai-plan');
+                    }
 
                     cache()->deleteItemsByTag('user_id=' . $this->user->user_id);
                     cache()->deleteItem('user?user_id=' . $this->user->user_id);

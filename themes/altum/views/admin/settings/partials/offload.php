@@ -11,30 +11,30 @@
             <div class="collapse" data-parent="#offload" id="offload_container">
                 <div class="form-group">
                     <label for="uploads_url"><?= l('admin_settings.offload.uploads_url') ?></label>
-                    <input id="uploads_url" type="url" name="uploads_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->uploads_url : null ?>" placeholder="https://example.com/uploads/" />
+                    <input id="uploads_url" type="url" name="uploads_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->uploads_url : null ?>" placeholder="<?= htmlspecialchars('https://example.com/uploads/', ENT_QUOTES, 'UTF-8') ?>" />
                     <small class="form-text text-muted"><?= l('admin_settings.offload.uploads_url_help') ?></small>
                 </div>
 
                 <div class="form-group">
                     <label for="assets_url"><?= l('admin_settings.offload.assets_url') ?></label>
-                    <input id="assets_url" type="url" name="assets_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->assets_url : null ?>" placeholder="https://example.com/assets/" />
+                    <input id="assets_url" type="url" name="assets_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->assets_url : null ?>" placeholder="<?= htmlspecialchars('https://example.com/assets/', ENT_QUOTES, 'UTF-8') ?>" />
                     <small class="form-text text-muted"><?= l('admin_settings.offload.assets_url_help') ?></small>
                 </div>
 
                 <div class="form-group">
                     <label for="provider"><?= l('admin_settings.offload.provider') ?></label>
                     <select id="provider" name="provider" class="custom-select">
-                        <option value="aws-s3" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'aws-s3' ? 'selected="selected"' : null ?>>AWS S3</option>
-                        <option value="digitalocean-spaces" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'digitalocean-spaces' ? 'selected="selected"' : null ?>>DigitalOcean Spaces</option>
-                        <option value="vultr-objects" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'vultr-objects' ? 'selected="selected"' : null ?>>Vultr Objects</option>
-                        <option value="wasabi" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'wasabi' ? 'selected="selected"' : null ?>>Wasabi</option>
-                        <option value="other-s3" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'other-s3' ? 'selected="selected"' : null ?>>Other - S3 compatible storage</option>
+                        <option value="aws-s3" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'aws-s3' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('AWS S3'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="digitalocean-spaces" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'digitalocean-spaces' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('DigitalOcean Spaces'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="vultr-objects" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'vultr-objects' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Vultr Objects'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="wasabi" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'wasabi' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Wasabi'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="other-s3" <?= \Altum\Plugin::is_active('offload') && settings()->offload->provider == 'other-s3' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Other - S3 compatible storage'), ENT_QUOTES, 'UTF-8') ?></option>
                     </select>
                 </div>
 
                 <div id="provider_others" class="form-group">
                     <label for="endpoint_url"><?= l('admin_settings.offload.endpoint_url') ?></label>
-                    <input id="endpoint_url" type="url" name="endpoint_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->endpoint_url : null ?>" placeholder="https://example.com" />
+                    <input id="endpoint_url" type="url" name="endpoint_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->endpoint_url : null ?>" placeholder="<?= htmlspecialchars('https://example.com', ENT_QUOTES, 'UTF-8') ?>" />
                 </div>
 
                 <div class="form-group custom-control custom-switch">
@@ -55,12 +55,12 @@
 
                 <div class="form-group">
                     <label for="storage_name"><?= l('admin_settings.offload.storage_name') ?></label>
-                    <input id="storage_name" type="text" name="storage_name" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->storage_name : null ?>" placeholder="my-bucket-name" />
+                    <input id="storage_name" type="text" name="storage_name" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->storage_name : null ?>" placeholder="<?= htmlspecialchars(fcc_t('my-bucket-name'), ENT_QUOTES, 'UTF-8') ?>" />
                 </div>
 
                 <div class="form-group">
                     <label for="region"><?= l('admin_settings.offload.region') ?></label>
-                    <input id="region" type="text" name="region" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->region : null ?>" placeholder="us-east-1" />
+                    <input id="region" type="text" name="region" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->region : null ?>" placeholder="<?= htmlspecialchars(fcc_t('us-east-1'), ENT_QUOTES, 'UTF-8') ?>" />
                 </div>
             </div>
 
@@ -71,13 +71,13 @@
             <div class="collapse" data-parent="#offload" id="cdn_container">
                 <div class="form-group">
                     <label for="cdn_uploads_url"><?= l('admin_settings.offload.cdn_uploads_url') ?></label>
-                    <input id="cdn_uploads_url" type="url" name="cdn_uploads_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->cdn_uploads_url : null ?>" placeholder="https://example.com/uploads/" />
+                    <input id="cdn_uploads_url" type="url" name="cdn_uploads_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->cdn_uploads_url : null ?>" placeholder="<?= htmlspecialchars('https://example.com/uploads/', ENT_QUOTES, 'UTF-8') ?>" />
                     <small class="form-text text-muted"><?= l('admin_settings.offload.cdn_url_help') ?></small>
                 </div>
 
                 <div class="form-group">
                     <label for="cdn_assets_url"><?= l('admin_settings.offload.cdn_assets_url') ?></label>
-                    <input id="cdn_assets_url" type="url" name="cdn_assets_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->cdn_assets_url : null ?>" placeholder="https://example.com/assets/" />
+                    <input id="cdn_assets_url" type="url" name="cdn_assets_url" class="form-control" value="<?= \Altum\Plugin::is_active('offload') ? settings()->offload->cdn_assets_url : null ?>" placeholder="<?= htmlspecialchars('https://example.com/assets/', ENT_QUOTES, 'UTF-8') ?>" />
                     <small class="form-text text-muted"><?= l('admin_settings.offload.cdn_url_help') ?></small>
                 </div>
 

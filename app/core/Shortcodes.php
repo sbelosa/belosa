@@ -4,6 +4,7 @@ namespace Altum;
 /* Custom code */
 class Shortcodes {
 	private function should_use_default_shortcodes_fallback($referral_key = null) {
+        if($referral_key || \Altum\Authentication::check())return false;
 		/* Custom code: FC-2026-02-26: explicit default shortcode fallback trigger */
 		$legacy_referral_slug = 'wpebe1grqr';
 		$has_ref_query = isset($_GET['ref']) && trim((string) $_GET['ref']) !== '';
@@ -76,6 +77,9 @@ class Shortcodes {
 	}
 
 	private function get_referral_user($referral_key = null) {
+        if(!$referral_key && \Altum\Authentication::check()) {
+            return db()->where('user_id',(int)\Altum\Authentication::$user_id)->where('status',1)->getOne('users');
+        }
 		/* Custom code: FC-2026-02-26: robust referral user resolution for shortcodes */
 		$legacy_referral_slug = 'wpebe1grqr';
 		$referral_candidates = [];

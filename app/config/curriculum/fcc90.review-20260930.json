@@ -1,0 +1,210 @@
+{
+  "revision": "20261011-task12-presentation-1",
+  "group_url": "https://chat.whatsapp.com/K5RLPUd6XTPD9ZwCGETSpE?mode=gi_t",
+  "tasks": {
+    "1": {
+      "example": "Bok! Krećem s edukacijom i dobro bi mi došlo da zajedno dogovorimo prve korake. Kada imaš malo vremena da se čujemo?"
+    },
+    "2": {
+      "example": "Bok! Možeš li sa mnom pogledati moju FCC karticu i pomoći mi posložiti što još nedostaje? Kada ti odgovara da se čujemo ili nađemo na Zoomu?"
+    },
+    "5": {
+      "example": "Evo i jednog mog novog početka. Učim o Forever proizvodima i upoznajem kako izgleda rad s njima. Ovdje ću povremeno pokazati što radim i što sam naučio. Ako te nešto zanima, slobodno mi piši, rado ću ti objasniti ono što znam.",
+      "actions": [
+        "Odaberi mrežu na kojoj želiš objaviti, kome se obraćaš i što želiš reći. Prednost daj svojem prvom kratkom videu, od 20 do 40 sekundi, u kojem se predstaviš svojim riječima.",
+        "Snimi i objavi video uz kratak opis. Ako ti snimanje još ne odgovara, kreni fotografijom i tekstom. PRO Coach može iz tvoje ideje predložiti format, što izgovoriti i tekst za kopiranje.",
+        "Pridruži se WhatsApp grupi za razmjenu sadržaja i podršku pa ondje podijeli poveznicu na objavu. I buduće objave podijeli u grupi, a ljudima koji ti se jave odgovori osobno."
+      ],
+      "why": "Najlakše te upoznaju kada vide i čuju tebe. Prvi video ne mora biti savršen: reci tko si, zašto počinješ i što želiš podijeliti.",
+      "completion": "Objavio/la si svoje predstavljanje i podijelio/la poveznicu u grupi za podršku. Ako čekaš odobrenje za grupu, poveznicu podijeli nakon ulaska.",
+      "practice": "Snimi probni video od 20 do 40 sekundi samo za sebe. Preslušaj ga i zamoli sponzora za jednu konkretnu sugestiju. Vježbu označi kao vježbu, a objavu tek nakon stvarnog objavljivanja."
+    },
+    "7": {
+      "example": "Hej! Ovih dana učim više o poslu s Foreverom. Ako ti je zanimljivo vidjeti kako to izgleda, možemo zajedno pogledati {event}. Kako ti to zvuči?\n\n{link}",
+      "actions": [
+        "Odaberi dvije osobe koje poznaješ i razmisli što bi njima moglo biti zanimljivo u predstavljanju Forever posla.",
+        "Odaberi sljedeći termin. Prilagodi kratak poziv svojem odnosu s osobom, bez pritiska i bez pretpostavke da je već zainteresirana. PRO Coach ti može pomoći iz opisa situacije.",
+        "Pregledaj poruku s osobnom poveznicom pa je otvori u WhatsAppu. Pošalji je osobno i zabilježi samo ono što si stvarno napravio/la."
+      ]
+    },
+    "8": {
+      "example": "Hej, baš me zanima kako ti gledaš na rad preko interneta. Što ti u tome zvuči dobro, a prema čemu imaš zadršku?",
+      "title": "Otvori prirodan razgovor i pitaj za mišljenje",
+      "why": "Dobar razgovor počinje zanimanjem za drugu osobu. Pitaj je za mišljenje, saslušaj odgovor i nemoj odmah prelaziti na ponudu.",
+      "actions": [
+        "Odaberi dvije osobe s kojima već imaš dobru komunikaciju i jednu temu koja vam ima smisla, primjerice rad online, dodatni posao ili svakodnevne navike.",
+        "Pošalji kratko pitanje za mišljenje. PRO Coachu opiši odnos, temu i što želiš saznati kako bi predložio poruku koja zvuči kao ti.",
+        "Saslušaj odgovor i nastavi razgovor o onome što osoba kaže. Ako se prirodno otvori interes, jasno reci čime se baviš i pitaj želi li više informacija."
+      ],
+      "completion": "Pokrenuo/la si dva razgovora i saslušao/la mišljenje ljudi. Prodaja ili prijava nisu uvjet dovršetka.",
+      "practice": "Sa sponzorom odigraj kratak razgovor: on neka bude poznanik, a ti postavi jedno pitanje za mišljenje. Nastavi prema njegovu odgovoru, bez žurbe na ponudu. Zapiši pitanje koje ti zvuči prirodno."
+    },
+    "9": {
+      "example": "Šaljem ti opis za {title}, da možeš pogledati namjenu i način korištenja. Bi li ti takvo nešto odgovaralo za ono što tražiš?\n\n{link}",
+      "actions": [
+        "Odaberi osobu koja je izrazila konkretnu potrebu ili zatražila preporuku.",
+        "Pronađi odgovarajući proizvod i provjeri njegov opis. U poruci se osloni samo na ono što ti je osoba stvarno rekla, bez obećavanja rezultata.",
+        "Pošalji kratak osobni prijedlog s poveznicom i jednim pitanjem. Ako trebaš pomoć, opiši situaciju PRO Coachu, a završni tekst pregledaj prije slanja."
+      ]
+    },
+    "10": {
+      "example": "Šaljem ti kratko predstavljanje Forever posla. Pogledaj kad ti bude zgodno pa mi reci što ti je zanimljivo ili nejasno. Koji dio želiš da zajedno prođemo?"
+    },
+    "11": {
+      "example": "Hej, javljam se za ono što smo zadnji put spomenuli. Jesi li stigao pogledati ili ti sada nije zgodno?"
+    },
+    "12": {
+      "example": "Bok! U ovom zadatku želim razumjeti predstavljanje poslovne prilike i marketing plana očima novog gosta. Možemo li kratko proći što je jasno, a za što treba dodatno objašnjenje?",
+      "actions": [
+        "Pogledaj timsko predstavljanje poslovne prilike i marketing plana Forever Living Products, uživo na webinaru ili kroz snimku. Ako ne znaš gdje ga pronaći, zatraži poveznicu od sponzora.",
+        "U svoju bilješku zapiši što bi novoj osobi bilo jasno i što bi je moglo zbuniti. Izdvoji najviše dva pitanja, primjerice: „Kako se počinje?” ili „Kako se ostvaruje zarada?”.",
+        "Dopuni pripremljenu poruku svojim pitanjima i pošalji je sponzoru kako biste dogovorili kratak razgovor."
+      ],
+      "recipient": "sponsor",
+      "coach": false,
+      "why": "Ovdje se prvenstveno misli na predstavljanje poslovne prilike i marketing plana Forever Living Products, kakvo gledaju gosti koje pozivaš. Promatraj ga kao netko tko prvi put upoznaje taj posao: što ti je jasno, što ti je zanimljivo i što te zbunjuje?",
+      "completion": "Pogledao/la si predstavljanje poslovne prilike i marketing plana, zapisao/la što je jasno i koja pitanja želiš razjasniti te poslao/la poruku sponzoru.",
+      "practice": "Sa sponzorom prođi dio snimke predstavljanja poslovne prilike i marketing plana. Ti glumi novog gosta: svojim riječima reci što razumiješ i postavi jedno pitanje o dijelu koji ti nije jasan."
+    },
+    "13": {
+      "example": "Hej! Evo podsjetnika za naš susret: [dan] u [vrijeme]. Poveznica za ulaz je [pristup]. Ako zapne sa spajanjem, samo mi se javi."
+    },
+    "14": {
+      "example": "Hej, javljam se za ono predstavljanje. Jesi li ga stigao pogledati i kakav ti je prvi dojam?"
+    },
+    "15": {
+      "example": "Bok! Možemo li pogledati kako mi je prošlo prvih 15 koraka? Želim ti pokazati što mi ide i pitati te za ono gdje sam zapeo. Kada ti odgovara?"
+    },
+    "17": {
+      "example": "Hej! Šaljem ti poziv za {event}. Tamo se objašnjava kako izgleda posao s Foreverom. Ako te to zanima, možemo pogledati zajedno. Odgovara li ti termin?\n\n{link}"
+    },
+    "19": {
+      "example": "Hej! Kako ti ide s proizvodom? Je li ti jasno kako ga koristiti ili želiš da zajedno pogledamo uputu?"
+    },
+    "25": {
+      "example": "Hej, kako ti ide s korištenjem proizvoda? Zanima me odgovara li ti i imaš li kakvo pitanje."
+    },
+    "26": {
+      "example": "Hej! Imam poziv za {event}, predstavljanje Forever posla. Možeš ovdje pogledati o čemu je riječ. Bi li ti bilo zanimljivo pridružiti se?\n\n{link}"
+    },
+    "28": {
+      "example": "Hej, što ti je još ostalo nejasno oko proizvoda? Možemo to proći, a ti onda odluči odgovara li ti."
+    },
+    "30": {
+      "example": "Bok! Prošao mi je prvi mjesec edukacije. Možemo li se čuti i pogledati što mi je bilo korisno, a gdje još trebam pomoć?"
+    },
+    "34": {
+      "example": "Hej, hvala ti na reakciji na objavu. Je li ti nešto posebno zapelo za oko ili te zanima više o temi?"
+    },
+    "36": {
+      "example": "Hej, kako si? Što ima novo kod tebe?"
+    },
+    "37": {
+      "example": "Mali pogled u ono što danas radim. Pripremam svoje predstavljanje i učim kako jednostavno objasniti Forever posao. Još učim, pa mi je važno čuti i što drugima nije jasno. Što bi tebe prvo zanimalo?"
+    },
+    "38": {
+      "example": "Hej! Učim o poslu s Foreverom i šaljem ti poziv da vidiš kako to izgleda: {event}. Ako ti je tema zanimljiva, možemo pogledati zajedno. Bi li ti to odgovaralo?\n\n{link}"
+    },
+    "39": {
+      "example": "Hej, htio sam se vratiti na naš zadnji razgovor. Je li ti ta tema još zanimljiva ili da je zasad ostavimo?"
+    },
+    "40": {
+      "example": "Ako želiš, možemo se kratko čuti i s mojim sponzorom. Ima više iskustva pa može odgovoriti na pitanja koja ja još učim. Bi li ti to odgovaralo?"
+    },
+    "41": {
+      "example": "Hej! Kako ti ide s proizvodom? Imaš li neko pitanje koje još nismo prošli?"
+    },
+    "44": {
+      "example": "Kako ti je zasad s proizvodom i mojom pomoći? Slobodno mi reci i ako bi nešto volio drugačije."
+    },
+    "45": {
+      "example": "Bok! Imam jedan razgovor koji mi nije išao baš glatko. Možemo li ga kratko proći i vidjeti što mogu napraviti bolje?"
+    },
+    "47": {
+      "example": "Drago mi je da krećemo zajedno. Za početak ćemo posložiti tvoju karticu i dogovoriti prvi mali korak. Kada ti odgovara da se čujemo?"
+    },
+    "49": {
+      "example": "Hej! Ako te zanima kako izgleda posao s Foreverom, ovdje je poziv za {event}. Možemo pogledati zajedno pa poslije proći pitanja. Kako ti to zvuči?\n\n{link}"
+    },
+    "51": {
+      "example": "Hej, kako ti ide ovaj tjedan? Ako si negdje zapeo, možemo zajedno proći taj korak. Što bi ti sad najviše pomoglo?"
+    },
+    "52": {
+      "example": "Hej, kako je prošlo ono što smo dogovorili? Treba li ti pomoć oko nastavka?"
+    },
+    "54": {
+      "example": "Pomozi mi nastaviti razgovor prirodno. Opišem ti kako poznajem osobu, o čemu smo razgovarali i što mi je odgovorila. Predloži kratku poruku s jednim smislenim pitanjem, bez prodajnog tona.",
+      "actions": [
+        "Opiši o čemu razgovaraš s osobom i što želiš bolje objasniti.",
+        "Sa sponzorom ili PRO Coachem pripremi dvije kratke verzije poruke i odaberi onu koja ti je bliža.",
+        "Doradi je svojim riječima i upotrijebi u razgovoru."
+      ],
+      "title": "Doradi poruku za stvaran razgovor",
+      "why": "Drugo mišljenje pomaže ti jasnije reći ono što želiš. Sa sponzorom ili PRO Coachem doradi poruku, a završne riječi odaberi samostalno.",
+      "practice": "Pripremi jednu poruku za stvarnu situaciju i pročitaj je sponzoru. Zajedno skrati dio koji ne zvuči kao ti i vježbu sačuvaj u bilješci."
+    },
+    "55": {
+      "example": "Hej, kako si? Javljam se da vidim kako ti ide i trebaš li još kakvu pomoć oko proizvoda."
+    },
+    "56": {
+      "example": "Evo poveznice za {title}, ako želiš ponovno naručiti. Javi mi ako zapne s narudžbom.\n\n{link}"
+    },
+    "63": {
+      "example": "Hej, dugo se nismo čuli. Kako si i što ima novo kod tebe?"
+    },
+    "65": {
+      "example": "Ako te netko pita za proizvod ili moj kontakt, možeš mu proslijediti ovu karticu. Tako mi se može javiti direktno. Hvala ti!\n\n[kartica]"
+    },
+    "68": {
+      "example": "Hej! Kako ti ide s proizvodom? Ako imaš kakvu nedoumicu, možemo je zajedno provjeriti."
+    },
+    "70": {
+      "example": "Hej! Pripremamo mali susret o [tema]. Ako ti je to zanimljivo, ovdje možeš pogledati termin i detalje: [pozivnica]. Bi li ti odgovaralo doći?"
+    },
+    "72": {
+      "example": "Hej, javljam se za naš susret. Jesi li uspio pogledati i što ti je ostalo nejasno?"
+    },
+    "74": {
+      "example": "Hej! Evo poziva za {event}. Možemo pogledati zajedno pa mi poslije kažeš što misliš. Odgovara li ti termin?\n\n{link}"
+    },
+    "79": {
+      "example": "Bok! Želim s tobom provjeriti kako ide suradniku iz tvoje linije i treba li mu podrška. Kada se možemo kratko čuti?"
+    },
+    "80": {
+      "example": "Evo moje kartice, da imaš moj kontakt i možeš pogledati čime se bavim. Slobodno mi piši ako te nešto zanima."
+    },
+    "84": {
+      "example": "Hej, vidim da si odradio [konkretan korak]. Baš mi je drago! Kako ti je bilo?"
+    },
+    "87": {
+      "example": "Hej, ostao nam je jedan dogovor od prošlog puta. Kada ti odgovara da se čujemo i završimo to?"
+    },
+    "89": {
+      "example": "Bok! Želim ti pokazati dokle sam došao i čuti tvoje mišljenje o sljedećem koraku. Kada se možemo kratko čuti?"
+    },
+    "90": {
+      "example": "Bok! Stigao sam do kraja ovih 90 koraka. Možemo li zajedno pogledati što mi je najviše pomoglo i dogovoriti kako dalje?"
+    },
+    "27": {
+      "actions": [
+        "Odaberi pitanje koje se ponavlja, primjerice o primjeni, pakiranju ili cijeni.",
+        "Pronađi odgovor u opisu proizvoda i sažmi ga svojim riječima. Ako trebaš pomoć, pitaj sponzora ili PRO Coacha.",
+        "Izgovori ga naglas pa ga upotrijebi u razgovoru ili objavi."
+      ]
+    },
+    "29": {
+      "actions": [
+        "Otvori svoje aktivnosti, pozivnice i rezultate u FCC-u.",
+        "Izdvoji poruku koja je pokrenula dobar razgovor i jednu na koju želiš bolji odgovor.",
+        "Sa sponzorom ili PRO Coachem doradi tu drugu poruku i primijeni je u sljedećem razgovoru."
+      ]
+    },
+    "50": {
+      "actions": [
+        "U Edukaciji pronađi temu povezanu s razgovorom koji vodiš.",
+        "Pogledaj sadržaj i izdvoji jednu praktičnu ideju.",
+        "Složi jednostavno objašnjenje i ispričaj ga sponzoru svojim riječima. Ako imaš PRO, Coach ti može pomoći u pripremi."
+      ]
+    }
+  }
+}

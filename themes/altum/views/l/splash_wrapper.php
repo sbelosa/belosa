@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 <!DOCTYPE html>
 <html lang="<?= \Altum\Language::$code ?>" class="link-html" dir="<?= l('direction') ?>">
-    <head>
+    <head><?php fcc_i18n_assets(); ?>
         <title><?= \Altum\Title::get() ?></title>
         <base href="<?= SITE_URL; ?>">
         <meta charset="UTF-8">

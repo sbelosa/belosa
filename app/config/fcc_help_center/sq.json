@@ -1,0 +1,854 @@
+{
+  "locale": "sq",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Hapat e parë në FCC",
+      "summary": "Hyr në llogari, kontrollo kartën dhe zgjidh një veprim të dobishëm.",
+      "keywords": [
+        "fillimi",
+        "hyrja",
+        "gjuha",
+        "instalimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Përdor të njëjtën llogari FCC në kompjuter dhe telefon. Free dhe PRO kanë mundësi të ndryshme. Qasja në programin Udhëtimi im konfirmohet veçmas."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hyr me emailin dhe fjalëkalimin ekzistues. Instalimi i aplikacionit nuk kërkon llogari tjetër.",
+            "Zgjidh gjuhën në shiritin sipër. Kjo nuk ndryshon shtetin e dyqanit Forever.",
+            "Hap kartën tënde dhe kontrollo kontaktin, Forever ID dhe pamjen publike.",
+            "Hap Sot për hapin tjetër ose Ndaj për produkt, prezantim biznesi dhe ftesë.",
+            "Te Më shumë gjej udhëzimet FCC, instalimin, paketën dhe mbështetjen."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "Pse nuk shoh detyrë personale ditore?",
+              "answer": "Kontrollo qasjen në program dhe pikët. Të dhënat e pakonfirmuara nuk provojnë se nuk ke kryer një veprim. Mbështetja mund të kontrollojë lidhjen e llogarisë."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Sot dhe Udhëtimi im",
+      "summary": "Mëso një gjë, zbatoje dhe regjistro saktësisht çfarë ke bërë.",
+      "keywords": [
+        "sot",
+        "udhëtimi im",
+        "detyra",
+        "4 Core",
+        "përparimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Programi lidh Rekrutimin, Mbajtjen, Produktivitetin dhe Zhvillimin. Detyra tregon hapin e disponueshëm, ushtrimin dhe kriterin e përfundimit. PRO shton ndihmën personale të Coach."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Sot dhe lexo qëllimin e hapit dhe veprimet e paraqitura.",
+            "Hap mjetin ose materialin e lidhur. Kërko shpjegim më të thjeshtë kur duhet.",
+            "Kryej veprimin që dëshiron personi ose zgjidh ushtrimin e ofruar kur nuk ka situatë të përshtatshme.",
+            "Konfirmo vetëm rezultatin real sipas kriterit. Klikimi ose drafti nuk është mesazh i dërguar.",
+            "Shiko regjistrimet te përparimi yt dhe shkruaj çfarë ndihmoi ose ku pate vështirësi."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Hapi i sotëm kërkon bisedë me klientin. Nëse nuk ke person të përshtatshëm që dëshiron bisedë, kryej ushtrimin e ofruar dhe shënoje si ushtrim."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A llogaritet ushtrimi si shitje?",
+              "answer": "Jo. Ushtrimi dhe zbatimi real kanë shenja të ndryshme. Leximi i udhëzimit nuk përfundon vetvetiu hapin dhe nuk konfirmon rezultat biznesi."
+            },
+            {
+              "question": "A jep PRO qasje automatike në program?",
+              "answer": "Jo. Paketa dhe regjistrimi i konfirmuar në program janë kushte të ndara. Shiko qasjen ose kërko kontroll nga mbështetja."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Redakto dhe kontrollo kartën tënde",
+      "summary": "Lidh kontaktin, përmbajtjen dhe rekomandimin personal në kartën që ndan.",
+      "keywords": [
+        "karta",
+        "blloku",
+        "redaktimi",
+        "rrjetet sociale"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Karta jote hap kartat dhe redaktimin e tyre. Çdo bllok redaktohet veçmas, ndërsa pamja përcakton dizajnin e përgjithshëm. Numri i kartave dhe blloqet varen nga paketa."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap kartën tënde, zgjidh kartën dhe Redakto.",
+            "Te Përmbajtja, hap Redakto ose lapsin pranë bllokut.",
+            "Kontrollo emrin, përshkrimin, telefonin dhe kanalet. Nëse fusha tregon domenin, shkruaj vetëm pjesën e kërkuar.",
+            "Për përmbajtje të re zgjidh Shto bllok dhe lexo qëllimin e tij.",
+            "Ruaj ndryshimin, hap pamjen publike dhe provo lidhjen para ndarjes."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "Si shtoj përshkrim poshtë emrit?",
+              "answer": "Shto një bllok teksti të veçantë dhe vendose poshtë titullit. Madhësia e titullit dhe përshkrimi janë cilësime të ndryshme."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop dhe rekomandimet sipas shtetit",
+      "summary": "Rekomandimi yt lidh vizitorin me ofertën përkatëse Forever.",
+      "keywords": [
+        "shop",
+        "dyqani",
+        "Forever ID",
+        "shteti",
+        "Titan",
+        "Bosnja",
+        "Shqipëria"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Blloku kryesor Forever shop përdor Forever ID të lidhur dhe sistemin ekzistues të rekomandimeve. Karta e vjetër mund të ruajë bllokun Titan. Mos ndrysho dhe mos shpik parametrat e rekomandimit."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Te karta jote, hap redaktimin e bllokut Forever shop.",
+            "Kontrollo Forever ID të llogarisë. Kërko kontroll nga mbështetja nëse nuk është i saktë.",
+            "Lexo përshkrimin dhe dallo porositjen e produkteve nga fillimi i bashkëpunimit.",
+            "Ruaj dhe hap pamjen publike të kartës.",
+            "Para porositjes, kontrollo shtetin, ofertën dhe rekomandimin në faqen e destinacionit."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "Gjuha dhe shteti janë zgjedhje të veçanta",
+          "paragraphs": [
+            "Sistemi zgjedh destinacionin sipas zbulimit të disponueshëm të shtetit dhe rregullave të dyqanit. Shumica e tregjeve përdor Titan, ndërsa Bosnja dhe Hercegovina dhe Shqipëria përdorin dyqane lokale me rekomandim tjetër. VPN dhe udhëtimi mund të ndikojnë zbulimin. Kontrollo shtetin e papritur para porositjes; ndryshimi i gjuhës nuk ndryshon tregun."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Vizitori lexon kartën në kroatisht, por dëshiron të porosisë në Gjermani. Para porosisë kontrollon ofertën gjermane dhe rekomandimin pa ndryshuar gjuhën e kartës."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A provon klikimi një blerje?",
+              "answer": "Jo. Klikimi drejt dyqanit dhe porosia janë ngjarje të ndryshme. FCC nuk konfirmon blerje vetëm sepse është hapur një lidhje."
+            },
+            {
+              "question": "A duhet të krijoj lidhje për çdo shtet?",
+              "answer": "Blloku kryesor përdor sistemin ekzistues të destinacioneve sipas shtetit. Kontrollo Forever ID dhe destinacionin real. Dërgo shembull te mbështetja nëse tregu ose rekomandimi është i gabuar."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Rekomando produkt ose artikull",
+      "summary": "Gjej përmbajtje të dobishme dhe ndaje me lidhjen personale.",
+      "keywords": [
+        "produkti",
+        "artikulli",
+        "ndarja",
+        "rekomandimi",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Ndaj lidh artikullin me rekomandimin tënd. Produktet, disponueshmëria dhe udhëzimet zyrtare mund të ndryshojnë sipas shtetit. Artikulli nuk zëvendëson etiketën e paketimit të zgjedhur."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Ndaj dhe kërko emrin e saktë të produktit ose artikullin përkatës.",
+            "Lexo përmbajtjen dhe kontrollo nëse i përgjigjet pyetjes reale të personit.",
+            "Përgatit lidhjen dhe përshtat mesazhin. Mos shpik përvojë personale ose efekte produkti.",
+            "Kopjo përmbajtjen ose hap WhatsApp dhe dërgo mesazhin personalisht.",
+            "Cakto kontaktin tjetër te Kontaktet nëse personi dëshiron të vazhdojë."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "Po nëse produkti mungon në shtetin e klientit?",
+              "answer": "Kontrollo ofertën zyrtare lokale. Mos zëvendëso automatikisht produktin dhe mos supozo se paketimi tjetër ka të njëjtën përbërje ose udhëzime."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Ndaj prezantimin e biznesit",
+      "summary": "Paraqit bashkëpunimin dhe ndiq pyetjet vullnetare përmes llogarisë sate.",
+      "keywords": [
+        "biznesi",
+        "plani i marketingut",
+        "bashkëpunimi",
+        "paketa fillestare",
+        "prezantimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Prezantimi i biznesit është i ndarë nga webinari. Pamja dhe përgatitja personale varen nga qasja dhe paketa. Hapja e paketës fillestare nuk konfirmon regjistrim."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Te Ndaj, hap Planin e marketingut ose prezantimin e biznesit të disponueshëm.",
+            "Lexo pamjen tënde dhe kontrollo rekomandimin dhe kontaktin.",
+            "Përshtat ftesën me interesin e personit pa premtime fitimi ose rezultatesh.",
+            "Dërgo lidhjen personalisht dhe cakto bisedën nëse personi e dëshiron.",
+            "Gjej pyetjen vullnetare te Kontaktet dhe regjistro marrëveshjen tjetër."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A është klikimi i paketës fillestare bashkëpunim i ri?",
+              "answer": "Jo. Blerja dhe regjistrimi përfundojnë në destinacionin zyrtar Forever. Në FCC dallo klikimin, kërkesën për kontakt dhe rezultatin e konfirmuar personalisht."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Fto një person dhe ndiq regjistrimin",
+      "summary": "Zgjidh datën, dërgo ftesën dhe kontrollo rezultatin real pas webinarit.",
+      "keywords": [
+        "webinari",
+        "ftesa",
+        "Zoom",
+        "mysafiri",
+        "regjistrimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Free dhe PRO mund të përdorin ftesë standarde për webinar të disponueshëm. PRO shton hyrje personale dhe video. Personi regjistrohet përmes lidhjes sate pa llogari FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Ndaje, Ftesë për webinar dhe Zgjidh një veprimtari.",
+            "Kontrollo datën, orën dhe zonën kohore të ngjarjes.",
+            "Përshtat mesazhin dhe dërgo ftesën tënde personalisht.",
+            "Shiko Regjistrimet e të ftuarve të mi dhe Kontaktet.",
+            "Kontrollo lejen për kontakt dhe regjistro rezultatin pas ngjarjes."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Regjistrimi nuk provon pjesëmarrje",
+          "paragraphs": [
+            "E panjohur do të thotë se pjesëmarrja nuk është kontrolluar ende. Nuk do të thotë se personi mungoi. Pas kontrollit regjistro pjesëmarrjen ose mungesën. Kujtesat varen nga zgjedhja dhe emaili i verifikuar. Regjistrimi nuk jep automatikisht leje për të gjitha mesazhet e ardhshme."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Ftesë për datë të re",
+          "paragraphs": [
+            "Nëse personi dëshiron datë tjetër, përgatit ftesë të re te pamja e mysafirëve ose zgjedhja e ngjarjes. Personi konfirmon regjistrim të ri. Kontakti ekzistues ripërdoret vetëm kur identiteti përputhet; përputhja e pjesshme kërkon kontroll. Përsëritja nuk regjistron automatikisht për datat e ardhshme."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Marko u regjistrua, por nuk e ke kontrolluar pjesëmarrjen. Lëre E panjohur, pyete me leje dhe shëno vetëm pastaj rezultatin real."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A do të thotë hapja e WhatsApp se ftesa është dërguar?",
+              "answer": "Jo. Mesazhin e dërgon personalisht në WhatsApp. Konfirmo dërgimin në FCC vetëm pasi ta kesh bërë vërtet."
+            },
+            {
+              "question": "A i duhet mysafirit llogari FCC?",
+              "answer": "Jo. Hap faqen tënde të regjistrimit dhe konfirmon datën e zgjedhur. Regjistrimi mbetet i lidhur me ty si ftues."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Krijo webinar personal ose për ekipin",
+      "summary": "Përcakto temën, datën, gjuhën dhe publikun që mund të përdorë ftesat personale.",
+      "keywords": [
+        "webinari",
+        "organizatori",
+        "ekipi",
+        "përsëritja",
+        "Zoom",
+        "gjuha"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Krijimi dhe redaktimi i webinarit tënd kërkon PRO. Krijo dhomën Zoom ose tjetër në shërbimin përkatës dhe shkruaj në FCC lidhjen e plotë HTTPS për hyrje."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Ndaje, Ftesë për webinar, Webinarët e mi dhe formularin për webinar të ri.",
+            "Shkruaj titullin dhe çfarë do të mësojnë mysafirët. Zgjidh kush mund të ftojë.",
+            "Zgjidh gjuhën e ftesës dhe njoftimeve, datën, fillimin, kohëzgjatjen dhe zonën kohore.",
+            "Shkruaj lidhjen e hyrjes dhe zgjidh një datë ose përsëritje javore.",
+            "Ruaj webinarin dhe kontrollo ftesën para përdorimit."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Kush e sheh webinarin e ekipit",
+          "paragraphs": [
+            "I gjithë ekipi FCC përfshin organizatorin dhe bashkëpunëtorët e konfirmuar në linjën e tij poshtë, përfshirë degët më të thella. Sponsorët sipër organizatorit dhe ekipet e tjera nuk janë automatikisht publik. Mbikëqyrja administrative nuk nënkupton anëtarësi në publik. Çdo ftues ruan kontaktet private; organizatori sheh numrin total të regjistrimeve."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Përsëritja, ndryshimi dhe anulimi",
+          "paragraphs": [
+            "Përsëritja javore ruan orën lokale edhe gjatë ndryshimit të orës verore. Redaktimi ofron vetëm këtë datë ose këtë dhe datat e ardhshme. Publiku i serisë ekzistuese mbetet i njëjtë. Anulimi ruan kontaktet dhe historikun, por ndal regjistrimet dhe kujtesat e pjesëmarrjes për datat e anuluara."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Për ngjarje të dielën në sllovenisht në 20:00, zgjidh Slovenščina, Europe/Ljubljana dhe publikun. Shkruaj dhomën Zoom dhe kontrollo datën e parë e përsëritjen."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A ndryshon ftesa sllovene gjuhën e llogarisë?",
+              "answer": "Jo. Gjuha e ngjarjes përcakton ftesën dhe njoftimet e saj. Gjuha e llogarisë dhe tregu mbeten të ndarë."
+            },
+            {
+              "question": "A mund të ftojnë anëtarët Free në webinarin tim të ekipit?",
+              "answer": "Po, si pjesë e publikut të konfirmuar përdorin ftesën personale standarde. Krijimi i webinarëve dhe video personale varen nga qasja PRO."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Kontaktet dhe ndjekja e dakordësuar",
+      "summary": "Regjistro interesin, lejen për kontakt dhe marrëveshjen tjetër duke ruajtur historikun.",
+      "keywords": [
+        "kontaktet",
+        "adresari",
+        "ndjekja",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Kontaktet ruajnë punën tënde personale me njerëzit. Regjistrimet në webinar dhe pyetjet vullnetare të biznesit mund të lidhen me një kontakt. Respekto dëshirën për të mos u kontaktuar më."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Kontaktet dhe kërko personin para se të shtosh një regjistrim tjetër manualisht.",
+            "Hap kontaktin dhe kontrollo emrin, telefonin, emailin dhe lejen për komunikim.",
+            "Regjistro interesin real për produkt ose biznes dhe datën e dakordësuar të vazhdimit.",
+            "Ruaj ndryshimet dhe hap WhatsApp vetëm nëse personi dëshiron bisedë.",
+            "Zgjidh Ruaj kontaktin dhe konfirmo personalisht importin e skedarit të shkarkuar në kontaktet e pajisjes."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Mysafiri i webinarit ekziston në Kontakte. Gjej atë regjistrim dhe plotëso datën e dakordësuar në vend të krijimit manual të një kontakti tjetër."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A e ruan Ruaj kontaktin gjithçka automatikisht në Google?",
+              "answer": "Jo. Butoni përgatit skedar nga fushat e plotësuara. Konfirmo ruajtjen në telefon ose importoje personalisht në Google Contacts në kompjuter."
+            },
+            {
+              "question": "Pse duhet kontrolluar përputhja e pjesshme?",
+              "answer": "Disa të dhëna mund të përputhen me kontaktin e mëparshëm dhe të tjerat të ndryshojnë. Kontrollo identitetin para bashkimit; emri i ngjashëm nuk mjafton."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Kontakto personalisht një bashkëpunëtor",
+      "summary": "Përgatit mesazhin, konfirmo dërgimin real dhe cakto kontrollin e bisedës.",
+      "keywords": [
+        "ekipi im",
+        "mesazhi",
+        "drafti",
+        "dërguar",
+        "mbështetja"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Ekipi im dhe mesazhet e ekipit varen nga qasja PRO. Hap bashkëpunëtorin që ke të drejtë të mbështetësh. Coach përdor përparimin dhe CC të disponueshme pa shënime private CRM të të tjerëve."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Te Ekipi im hap profilin dhe Mbështetje dhe kontakt personal.",
+            "Zgjidh arsyen dhe përshtat mesazhin. Përdor ndihmën e Coach kur nevojitet.",
+            "Zgjidh Ruaj si draft, Kopjo mesazhin ose Hap WhatsApp.",
+            "Dërgo personalisht dhe pastaj konfirmo dërgimin në FCC.",
+            "Zgjidh datën për të kontrolluar si shkoi dhe regjistro më pas marrëveshjen reale."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "Dërgimin e konfirmon personalisht",
+          "paragraphs": [
+            "Hapja e WhatsApp dhe kopjimi përgatisin mesazh, nuk provojnë dërgim. Nëse nuk e dërgove, zgjidh konfirmimin përkatës ose lër draftin. Konfirmimi i gabuar korrigjohet në regjistrim. Heqja e regjistrimit nuk fshin mesazhin në WhatsApp. Draftet dhe regjistrimet e hequra nuk krijojnë kujtesë për bisedë."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Hape WhatsApp por ndalove para dërgimit. Lër draftin ose konfirmo se nuk u dërgua. Regjistri atëherë nuk përmban bisedë realisht të dërguar."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "Pse nuk hap dot WhatsApp?",
+              "answer": "Bashkëpunëtori duhet të ketë numër biznesi të konfirmuar. Kopjo tekstin dhe përdor kanalin ekzistues, pastaj konfirmo personalisht dërgimin."
+            },
+            {
+              "question": "A krijon drafti i ruajtur kujtesë për bisedë?",
+              "answer": "Jo. Kujtesa ndjek statusin e mesazhit. Draftet dhe regjistrimet e hequra nuk krijojnë kujtesa. Lidh datën e kontrollit me kontaktin real."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Si të kërkosh ndihmën e Coach",
+      "summary": "Përshkruaj situatën konkrete dhe kontrollo personalisht shpjegimin ose draftin.",
+      "keywords": [
+        "coach",
+        "AI",
+        "pyetja",
+        "mesazhi",
+        "udhëzimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "PRO Coach ndihmon me detyrat, mesazhet dhe punën tënde. Merr kontekstin e lejuar të llogarisë, por nuk sheh automatikisht ekranin dhe nuk konfirmon dërgim, blerje ose regjistrim."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Coach ose ndihmën e tij pranë detyrës ose mjetit.",
+            "Shkruaj çfarë dëshiron të bësh, ku në aplikacion dhe çfarë nuk kupton.",
+            "Për draft mesazhi, përshkruaj marrëdhënien dhe fazën reale të bisedës pa të dhëna personale ose shëndetësore të panevojshme.",
+            "Lexo përgjigjen dhe kontrollo faktet e destinacionin para përdorimit.",
+            "Përshtat draftin dhe dërgo personalisht. Coach nuk dërgon në vendin tënd."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Lidhje me udhëzime të verifikuara",
+          "paragraphs": [
+            "Coach mund të ofrojë udhëzim përkatës dhe pjesën konkrete të tij. Hapet në gjuhën e llogarisë dhe nuk jep të drejta shtesë. Nëse nuk mjafton, shpjego çfarë mbetet e paqartë ose kontakto mbështetjen."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Pyet: Dua të ftoj një mysafir për datë të re, ku bëhet kjo? Coach shpjegon hapin dhe lidh pjesën konkrete pa emrin e mysafirit."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A mund të ndryshoj vetëm gjuhën e Coach?",
+              "answer": "Mund të kërkosh shprehimisht gjuhën e përgjigjes. Kjo nuk ndryshon tregun Forever. Kontrollo gjuhën e mesazhit për marrësin."
+            },
+            {
+              "question": "A mund të lexoj udhëzimet pa PRO Coach?",
+              "answer": "Po. Qendra është për anëtarët Free dhe PRO të identifikuar. Përgjigjja personale AI ndjek qasjen ekzistuese të Coach."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Njoftimet dhe kujtesat",
+      "summary": "Zgjidh temat, kujtesën ditore dhe pajisjen për marrjen e njoftimeve.",
+      "keywords": [
+        "push",
+        "njoftimet",
+        "kujtesa",
+        "tingulli",
+        "pajisja"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Kutia e mesazheve dhe push janë pamje të ndryshme. Push kërkon lejen e pajisjes. Detyrat ditore dhe ndjekjet mund të bashkohen; ngjarjet dhe llogaria kanë orare të veçanta."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Njoftimet dhe lexo titullin, përshkrimin dhe orën.",
+            "Hap Njoftimet e pajisjes dhe cilësimet e mia dhe zgjidh Aktivizo në këtë pajisje.",
+            "Lejo njoftimet në shfletues ose pajisje dhe ruaj kategoritë e zgjedhura.",
+            "Te Ritmi im zgjidh orën e kujtesës ditore.",
+            "Sipas dëshirës aktivizo tingullin dhe dërgo njoftim prove kur butoni është i disponueshëm."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A është tingulli i njëjtë në çdo pajisje?",
+              "answer": "Jo. Shfletuesi, sistemi operativ dhe modaliteti i heshtur përcaktojnë tingullin dhe pamjen. FCC nuk mund të anashkalojë bllokimin ose heshtjen e pajisjes."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Kupto rezultatet dhe pikët CC",
+      "summary": "Dallo klikimet, veprimtaritë e regjistruara dhe pikët Forever të disponueshme.",
+      "keywords": [
+        "rezultatet",
+        "klikimet",
+        "CC",
+        "pikët",
+        "përparimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Rezultatet FCC tregojnë vizitat e kualifikuara drejt dyqanit. Përparimi yt tregon hapat e raportuar. CC nga importet Forever të disponueshme janë shuma për periudhën."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Rezultatet FCC dhe lexo periudhën dhe rregullat e numërimit të klikimeve.",
+            "Te Përparimi im shiko veçmas zbatimin real dhe ushtrimet.",
+            "Te Pikët e mia Forever dhe CC kontrollo periudhën dhe plotësinë e të dhënave.",
+            "Për kualifikim ose qëllim zyrtar, kontrollo rregullat aktuale të tregut me sponsorin."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A provojnë CC kush bleu produktin konkret?",
+              "answer": "Jo. CC e përgjithshme nuk provojnë blerje individuale. Importi i paplotë ose i munguar nuk është as zero e konfirmuar."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free dhe PRO, pagesat dhe faturat",
+      "summary": "Kontrollo qasjen dhe abonimin para se të ndryshosh pagesën.",
+      "keywords": [
+        "paketa",
+        "Free",
+        "PRO",
+        "Stripe",
+        "abonimi",
+        "fatura"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Përfitimet Free dhe PRO janë në krahasimin aktual të paketave. PRO nuk konfirmon regjistrimin në program. Aktivizimi i pagesës ndjek konfirmimin Stripe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Te Më shumë, hap Paketat Free dhe PRO ose paketën tënde.",
+            "Lexo përfitimet, statusin e abonimit dhe periudhën e qasjes.",
+            "Për aktivizim, kontrollo përmbledhjen e pagesës para kalimit në Stripe.",
+            "Te pagesat dhe faturat shiko regjistrimet reale.",
+            "Për kartën ose anulimin përdor cilësimet e ofruara dhe lexo fundin e konfirmuar të periudhës."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "Çfarë bëj nëse pagesa ngec ose nuk konfirmohet?",
+              "answer": "Kontrollo faturën ekzistuese dhe mesazhin e paketës. Përdor rikuperimin e ofruar ose mbështetjen. Kohëzgjatja e paketës nuk provon pagesë; mos krijo porosi të përsëritura pa kontroll."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Shkarko dhe përshtat prezantimin e ekipit",
+      "summary": "Përdor versionin e publikuar, përshtat hyrjen dhe përgatit paraqitjen.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "prezantimi",
+        "diapozitivat",
+        "shkarkimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Prezantimet e qendrës janë për bashkëpunëtorët e identifikuar. Përdor skedarin dhe gjuhën që ofrohen vërtet. Data e botimit dallon prezantimin aktual nga kopja e vjetër."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Te Më shumë hap Udhëzime për FCC dhe temën Shkarko dhe përshtat prezantimin e ekipit.",
+            "Te seksioni i shkarkimeve zgjidh gjuhën dhe Shkarko PPT. Për ZIP me të gjitha përkthimet zgjidh Shkarko të gjitha gjuhët.",
+            "Hap PPT në PowerPoint ose aplikacion të përputhshëm.",
+            "Ndrysho hyrjen e parashikuar për folësin dhe fotografinë tënde.",
+            "Lexo shënimet dhe kontrollo gjithë pamjen para webinarit."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Çfarë të përshtatësh",
+          "paragraphs": [
+            "Hyrja duhet të përmbajë të dhëna të verifikueshme dhe përvojën tënde reale. Ruaj strukturën e përbashkët pa premtime fitimi, shërimi ose të dhëna private të të tjerëve. Përdor të dhëna shembull për demonstrime."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "Gjuha dhe versioni i skedarit",
+          "paragraphs": [
+            "Këtu gjenden skedarët PPT në të gjitha gjuhët e disponueshme dhe ZIP me të gjitha përkthimet. Kontrollo gjuhën dhe versionin para shkarkimit. Pamjet e ndërfaqes FCC mund të ruajnë gjuhën origjinale, ndërsa teksti dhe shënimet janë të përkthyera. Kontrollo herë pas here për version të ri."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Shembull praktik",
+          "paragraphs": [
+            "Shkarko PPT aktual, ndrysho hyrjen dhe fotografinë dhe ushtro një shembull ndarjeje. Përdor kontakt shembull, jo të dhënat private të klientit."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A mund ta kombinoj vetë prezantimin?",
+              "answer": "Përshtat hyrjen dhe rendin për paraqitjen tënde, me fakte të sakta dhe qëllim të qartë. Kontrollo diapozitivat, shënimet dhe funksionet FCC të përshkruara para paraqitjes."
+            },
+            {
+              "question": "Po nëse një pamje PPT është në gjuhë tjetër?",
+              "answer": "Pamjet e ndërfaqes mund të ruajnë gjuhën origjinale. Ndiq shënimet dhe udhëzimet e përkthyera dhe butonat realë në FCC. Kontrollo skedarin para paraqitjes."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Mjetet e përparuara FCC",
+      "summary": "Hap mjetin shtesë për një nevojë konkrete dhe kontrollo qasjen.",
+      "keywords": [
+        "QR",
+        "domenet",
+        "statistikat",
+        "Funnel studio",
+        "mjetet e përparuara"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Më shumë përmban lidhje, kode QR, statistika dhe mjete të përparuara. Çdo mjet kontrollon të drejtat e paketës. Fillo me kartën, kontaktet dhe një veprim të qartë."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Më shumë dhe lexo përshkrimet e mjeteve.",
+            "Përcakto nëse dëshiron të ndash kartë, të ndjekësh vizita apo të përgatitësh përmbajtje të veçantë.",
+            "Hap mjetin dhe kontrollo udhëzimet dhe qasjen e paketës.",
+            "Provo rezultatin në pamjen paraprake para përdorimit publik."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A më duhen të gjitha mjetet për të filluar?",
+              "answer": "Jo. Përgatit fillimisht kartën dhe një bisedë të dakordësuar. Zgjidh mjetin shtesë kur ndihmon një veprim real dhe kontrollo qasjen aktuale."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Dërgo pyetje te mbështetja",
+      "summary": "Përshkruaj problemin dhe vazhdo të njëjtën bisedë për përgjigje të dobishme.",
+      "keywords": [
+        "mbështetja",
+        "ndihma",
+        "problemi",
+        "kërkesa",
+        "gabimi"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Para se të fillosh",
+          "paragraphs": [
+            "Ndihmë dhe mbështetje trajton probleme teknike, sugjerime dhe tema webinarësh. Coach shpjegon procedurën por nuk dërgon kërkesë në vendin tënd."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Hapat e veprimit",
+          "steps": [
+            "Hap Ndihmë dhe mbështetje dhe Mesazh i ri për mbështetjen.",
+            "Shkruaj titull të shkurtër dhe zgjidh kategorinë.",
+            "Shpjego ku po punon, çfarë bëre dhe çfarë ndodhi.",
+            "Nëse duhet, shto pamje ekrani pa fjalëkalime, të dhëna karte ose informacione private të të tjerëve.",
+            "Dërgo pyetjen dhe kthehu te e njëjta bisedë për përgjigje ose sqarime."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Pyetje të shpeshta",
+          "questions": [
+            {
+              "question": "A duhet të dërgoj disa kërkesa për të njëjtin problem?",
+              "answer": "Vazhdo bisedën ekzistuese dhe shto informacion të ri. Trego pajisjen dhe mesazhin e saktë të gabimit që mbështetja të shohë gjithë rrjedhën në një vend."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

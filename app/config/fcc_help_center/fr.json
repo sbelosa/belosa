@@ -1,0 +1,854 @@
+{
+  "locale": "fr",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Tes premiers pas dans FCC",
+      "summary": "Accède à ton compte, vérifie ta carte et choisis une première action utile.",
+      "keywords": [
+        "début",
+        "connexion",
+        "langue",
+        "installation"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Utilise le même compte FCC sur ordinateur et téléphone. Free et PRO proposent des fonctions différentes. L’accès à Mon parcours est confirmé séparément."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Utilise ton email et ton mot de passe habituels. L’installation de l’application ne nécessite pas un autre compte.",
+            "Choisis ta langue dans la barre supérieure. Cela ne change pas le pays de la boutique Forever.",
+            "Ouvre Ma carte et vérifie le contact, Forever ID et la vue publique.",
+            "Ouvre Aujourd’hui pour ton prochain pas ou Partager pour un produit, une présentation ou une invitation.",
+            "Dans Plus, retrouve les guides FCC, l’installation, ton offre et l’assistance."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Pourquoi aucune tâche quotidienne personnelle n’apparaît ?",
+              "answer": "Vérifie l’accès dans Mon parcours et tes points. Des données non confirmées ne prouvent pas une action manquante. L’assistance peut vérifier la liaison du compte."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Aujourd’hui et Mon parcours",
+      "summary": "Apprends une chose, applique tes connaissances et enregistre exactement ton action.",
+      "keywords": [
+        "aujourd’hui",
+        "mon parcours",
+        "tâche",
+        "4 Core",
+        "progression"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Mon parcours relie Recrutement, Fidélisation, Productivité et Développement. La tâche présente l’étape disponible, l’exercice et le critère de validation. PRO ajoute l’aide personnelle de Coach."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Aujourd’hui et lis l’objectif et les actions affichées.",
+            "Ouvre l’outil ou le document associé. Demande une explication plus simple si nécessaire.",
+            "Réalise l’action souhaitée par la personne ou choisis l’exercice proposé en l’absence de situation adaptée.",
+            "Confirme uniquement le résultat réel selon le critère. Un clic ou brouillon n’est pas un message envoyé.",
+            "Consulte Ma progression et précise ce qui a aidé ou posé une difficulté."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "L’étape du jour demande un échange avec un client. Si aucune personne adaptée ne souhaite cet échange, réalise l’exercice proposé et indique un exercice."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Un exercice compte comme une vente ?",
+              "answer": "Non. Exercice et application réelle ont des indications différentes. Lire un guide ne valide pas à lui seul une étape ou un résultat commercial."
+            },
+            {
+              "question": "PRO donne un accès automatique à Mon parcours ?",
+              "answer": "Non. Offre et inscription confirmée au programme sont des conditions distinctes. Vérifie l’accès ou demande un contrôle à l’assistance."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Modifier et vérifier ta carte",
+      "summary": "Relie contact, contenu et recommandation personnelle sur la carte partagée.",
+      "keywords": [
+        "carte",
+        "bloc",
+        "modifier",
+        "réseaux sociaux"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Ma carte ouvre tes cartes et leur édition. Chaque bloc se modifie séparément ; Apparence gère le design global. Le nombre de cartes et les blocs dépendent de l’offre."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Ma carte, choisis ta carte et Modifier.",
+            "Dans Contenu, utilise Modifier ou le crayon près du bloc concerné.",
+            "Vérifie nom, description, téléphone et canaux. Si le domaine est déjà affiché, saisis uniquement la partie demandée.",
+            "Choisis Ajouter un bloc pour un nouveau contenu et lis sa fonction.",
+            "Enregistre, ouvre la Vue d’ensemble publique et teste le lien avant de partager."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Comment ajouter une courte description sous mon nom ?",
+              "answer": "Ajoute un bloc de texte séparé et déplace ce bloc sous le titre. Taille du titre et description sont des réglages distincts."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop et recommandations par pays",
+      "summary": "Ta recommandation relie le visiteur à l’offre Forever appropriée.",
+      "keywords": [
+        "shop",
+        "boutique",
+        "Forever ID",
+        "pays",
+        "Titan",
+        "Bosnie",
+        "Albanie"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Le bloc principal Forever shop utilise ton Forever ID lié et le système de recommandation existant. Une ancienne carte peut conserver son bloc Titan. Ne change et n’invente aucun paramètre de recommandation."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Dans Ma carte, ouvre la modification du bloc Forever shop.",
+            "Vérifie le Forever ID lié au compte. Demande une vérification à l’assistance s’il est incorrect.",
+            "Lis la description et distingue commande de produits et début de collaboration commerciale.",
+            "Enregistre et ouvre la Vue d’ensemble publique de la carte.",
+            "Avant de commander, vérifie pays, offre et recommandation sur la destination."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "La langue et le pays sont distincts",
+          "paragraphs": [
+            "Le système choisit la destination selon la détection disponible du pays et les règles de la boutique. La plupart des marchés utilisent Titan ; la Bosnie et Herzégovine et l’Albanie utilisent des boutiques locales avec une recommandation différente. VPN et voyage peuvent modifier la détection. Vérifie un pays inattendu avant de commander. Changer de langue ne change pas le marché."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "Le visiteur lit la carte en croate mais veut commander en Allemagne. Il vérifie l’offre allemande et la recommandation sans changer la langue de la carte."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Un clic prouve un achat ?",
+              "answer": "Non. Un clic vers la boutique et une commande sont des événements différents. FCC ne confirme pas un achat parce qu’un lien a été ouvert."
+            },
+            {
+              "question": "Un lien distinct est nécessaire pour chaque pays ?",
+              "answer": "Le bloc principal utilise le système existant de destinations par pays. Vérifie Forever ID et destination réelle. Transmets un exemple à l’assistance si marché ou recommandation sont incorrects."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Recommander un produit ou un article",
+      "summary": "Trouve un contenu utile et partage ton lien personnel.",
+      "keywords": [
+        "produit",
+        "article",
+        "partager",
+        "recommandation",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Partager relie l’article à ta recommandation. Produits, disponibilité et instructions officielles peuvent varier selon le pays. L’article ne remplace pas l’étiquette de l’emballage choisi."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Partager et cherche le nom exact du produit ou un article pertinent.",
+            "Lis le contenu et vérifie qu’il répond à la vraie question de la personne.",
+            "Prépare ton lien et adapte le message sans inventer d’expérience ou d’effet du produit.",
+            "Copie le contenu ou ouvre WhatsApp et envoie personnellement le message.",
+            "Prévois le prochain contact dans Contacts si la personne souhaite continuer."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Que faire si le produit n’est pas disponible dans le pays du client ?",
+              "answer": "Vérifie l’offre officielle locale. Ne remplace pas automatiquement le produit et ne suppose pas qu’un autre emballage possède la même composition ou les mêmes instructions."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Partager une présentation commerciale",
+      "summary": "Présente la collaboration et suis les demandes volontaires depuis ton compte.",
+      "keywords": [
+        "activité",
+        "plan marketing",
+        "collaboration",
+        "pack de démarrage",
+        "présentation"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "La présentation commerciale est indépendante du webinaire. L’affichage et la préparation personnelle dépendent de l’accès et de l’offre du compte. Ouvrir un pack de démarrage ne confirme pas une inscription."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Dans Partager, ouvre le Plan marketing ou la Présentation commerciale disponible.",
+            "Lis ton aperçu et vérifie recommandation personnelle et contact.",
+            "Adapte l’invitation à l’intérêt de la personne sans promettre revenus ou résultats.",
+            "Envoie personnellement le lien et propose une conversation si la personne la souhaite.",
+            "Trouve la demande volontaire dans tes Contacts et note le prochain accord."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Un clic sur le pack de démarrage signifie une nouvelle collaboration ?",
+              "answer": "Non. Achat et inscription se terminent sur la destination officielle Forever. Distingue clic, demande de contact et résultat personnellement confirmé dans FCC."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Inviter une personne et suivre son inscription",
+      "summary": "Choisis une date, envoie ton invitation et vérifie le résultat réel après le webinaire.",
+      "keywords": [
+        "webinaire",
+        "invitation",
+        "Zoom",
+        "invité",
+        "inscription"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Free et PRO peuvent utiliser l’invitation standard d’un webinaire disponible. PRO ajoute introduction personnelle et vidéo. La personne s’inscrit via ton lien sans compte FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Partager, Invitation à un webinaire et Choisir un événement.",
+            "Vérifie date, heure et fuseau horaire de l’événement choisi.",
+            "Adapte le message et envoie personnellement ta propre invitation.",
+            "Consulte les Inscriptions de mes invités et Contacts.",
+            "Vérifie l’autorisation de contacter et note le résultat après l’événement."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "L’inscription ne prouve pas la présence",
+          "paragraphs": [
+            "Inconnu signifie que la présence n’a pas encore été vérifiée. Cela ne signifie pas une absence. Après vérification, note présence ou absence. Les rappels dépendent du choix et de l’email vérifié de la personne. L’inscription n’autorise pas automatiquement tous les futurs messages."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Invitation à une nouvelle date",
+          "paragraphs": [
+            "Si la personne souhaite une autre date, prépare une nouvelle invitation dans la vue des invités ou le choix d’événement. Elle confirme une nouvelle inscription. Un contact existant est réutilisé seulement si l’identité correspond ; les correspondances partielles nécessitent une vérification. La répétition n’inscrit pas automatiquement aux futures dates."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "Marko est inscrit, mais sa présence n’a pas été vérifiée. Laisse Inconnu, vérifie avec son accord et note ensuite le résultat réel."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Ouvrir WhatsApp signifie que l’invitation est envoyée ?",
+              "answer": "Non. Tu envoies personnellement dans WhatsApp. Confirme l’envoi dans FCC uniquement après l’avoir réellement effectué."
+            },
+            {
+              "question": "Un compte FCC est nécessaire pour l’invité ?",
+              "answer": "Non. Il ouvre ta page d’inscription et confirme la date choisie. Son inscription reste liée à toi comme personne invitante."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Créer un webinaire personnel ou d’équipe",
+      "summary": "Définis sujet, date, langue et public pouvant utiliser ses propres invitations.",
+      "keywords": [
+        "webinaire",
+        "organisateur",
+        "équipe",
+        "répétition",
+        "Zoom",
+        "langue"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Créer et modifier ton propre webinaire nécessite PRO. Crée la salle Zoom ou autre dans le service concerné, puis saisis le lien HTTPS complet d’accès dans FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Partager, Invitation à un webinaire, Mes webinaires et le formulaire de nouveau webinaire.",
+            "Saisis le titre et ce que les invités découvriront. Choisis qui peut inviter.",
+            "Sélectionne langue des invitations et avis, date, début, durée et fuseau horaire.",
+            "Saisis le lien d’accès et choisis une date unique ou une répétition hebdomadaire.",
+            "Enregistre et vérifie l’invitation avant utilisation."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Qui voit le webinaire d’équipe",
+          "paragraphs": [
+            "Toute mon équipe FCC comprend l’organisateur et les collaborateurs confirmés de sa lignée descendante, branches plus profondes comprises. Parrains supérieurs et autres équipes ne font pas automatiquement partie du public. Le contrôle administratif ne signifie pas appartenir au public. Chaque personne invitante garde ses contacts privés ; l’organisateur voit le total des inscriptions."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Répétition, modification et annulation",
+          "paragraphs": [
+            "La répétition hebdomadaire conserve l’heure locale choisie lors du changement d’heure saisonnier. La modification propose cette date uniquement ou cette date et les suivantes. Le public d’une série existante reste identique. L’annulation garde contacts et historique et arrête inscriptions et rappels de participation des dates annulées."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "Pour un événement dominical en slovène à 20:00, choisis Slovenščina, Europe/Ljubljana et le public. Saisis ta salle Zoom et vérifie première date et répétition."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Une invitation slovène change la langue de mon compte ?",
+              "answer": "Non. La langue de l’événement détermine l’invitation et ses avis. Langue du compte et marché restent distincts."
+            },
+            {
+              "question": "Les membres Free peuvent inviter à mon webinaire d’équipe ?",
+              "answer": "Oui. Dans le public confirmé, ils peuvent utiliser l’invitation personnelle standard. Création de webinaires et vidéo personnelle suivent l’accès PRO."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Contacts et suivis convenus",
+      "summary": "Note intérêt, permission de contact et prochain accord en conservant l’historique.",
+      "keywords": [
+        "contacts",
+        "carnet",
+        "suivi",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Contacts garde ton travail personnel avec les personnes. Les inscriptions aux webinaires et demandes commerciales volontaires peuvent être reliées à un contact. Respecte le refus de nouveaux contacts."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Contacts et cherche la personne avant de créer manuellement une autre fiche.",
+            "Ouvre le contact et vérifie nom, téléphone, email et permission de contact.",
+            "Note l’intérêt réel pour les produits ou l’activité et la date convenue de reprise.",
+            "Enregistre les changements et ouvre WhatsApp uniquement si la personne souhaite échanger.",
+            "Choisis Enregistrer le contact et confirme personnellement l’import du fichier téléchargé dans ton carnet."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "L’invité du webinaire existe déjà dans Contacts. Ouvre cette fiche et modifie la date convenue au lieu de créer manuellement un autre contact."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Enregistrer le contact sauvegarde automatiquement tout dans Google ?",
+              "answer": "Non. Le bouton crée un fichier à partir des champs saisis. Confirme la sauvegarde sur téléphone ou importe personnellement le fichier dans Google Contacts sur ordinateur."
+            },
+            {
+              "question": "Pourquoi vérifier une correspondance partielle ?",
+              "answer": "Certaines données peuvent correspondre à un ancien contact et d’autres différer. Vérifie l’identité avant fusion ; un nom similaire seul ne suffit pas."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Contacter personnellement un collaborateur",
+      "summary": "Prépare le message, confirme l’envoi réel et organise le suivi de l’échange.",
+      "keywords": [
+        "mon équipe",
+        "message",
+        "brouillon",
+        "envoyé",
+        "aide"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Mon équipe et les messages d’équipe suivent l’accès PRO. Ouvre un collaborateur que tu peux accompagner. Coach utilise progression et données CC disponibles sans notes CRM privées d’une autre personne."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Dans Mon équipe, ouvre le profil et Accompagnement et prise de contact personnelle.",
+            "Choisis le motif et adapte Ton message. Utilise l’aide de Coach si utile.",
+            "Choisis Enregistrer le brouillon, Copier le message ou Ouvrir WhatsApp.",
+            "Envoie personnellement et confirme ensuite l’envoi dans FCC.",
+            "Choisis une date pour vérifier l’échange et note ensuite l’accord réel."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "Tu confirmes personnellement l’envoi",
+          "paragraphs": [
+            "Ouvrir WhatsApp ou copier prépare le message sans prouver l’envoi. Si tu n’as pas envoyé, choisis la confirmation adaptée ou laisse le brouillon. Une confirmation erronée se corrige dans la fiche. Supprimer la fiche ne supprime pas le message WhatsApp. Brouillons et fiches supprimées ne créent pas de rappel de conversation."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "Tu as ouvert WhatsApp mais arrêté avant l’envoi. Garde le brouillon ou confirme l’absence d’envoi. La fiche ne contient alors aucun échange réellement envoyé."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Pourquoi WhatsApp ne s’ouvre pas ?",
+              "answer": "Le collaborateur a besoin d’un numéro professionnel confirmé. Copie le texte et utilise ton canal habituel, puis confirme personnellement l’envoi."
+            },
+            {
+              "question": "Un brouillon enregistré crée un rappel de conversation ?",
+              "answer": "Non. Les rappels suivent le statut du message. Brouillons et fiches supprimées ne créent aucun rappel. Relie la date de suivi à un contact réel."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Demander de l’aide à Coach",
+      "summary": "Décris une situation concrète et vérifie personnellement la réponse ou le brouillon.",
+      "keywords": [
+        "coach",
+        "IA",
+        "question",
+        "message",
+        "guide"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "PRO Coach aide avec tâches, messages et ton travail. Il reçoit le contexte autorisé du compte, mais ne voit pas automatiquement ton écran et ne confirme ni envoi, achat ou inscription."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Coach ou son aide près de ta tâche ou de l’outil.",
+            "Explique ton objectif, la partie de l’application et ce qui n’est pas clair.",
+            "Pour un brouillon, décris la relation et la vraie phase du dialogue sans données personnelles ou médicales inutiles.",
+            "Lis la réponse et vérifie faits et destination avant utilisation.",
+            "Adapte le brouillon et envoie personnellement. Coach n’envoie pas à ta place."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Liens vers des guides vérifiés",
+          "paragraphs": [
+            "Coach peut proposer un guide pertinent et sa section précise. Le guide s’ouvre dans la langue du compte et n’accorde aucun droit supplémentaire. Si cela ne suffit pas, précise ta difficulté ou contacte l’assistance."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "Demande : Je veux inviter une personne à une nouvelle date, où faire cela ? Coach explique le pas et relie la section précise sans le nom de l’invité."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Comment changer uniquement la langue de Coach ?",
+              "answer": "Tu peux demander explicitement la langue de réponse. Cela ne change pas le marché Forever. Vérifie la langue du message final pour son destinataire."
+            },
+            {
+              "question": "Les guides sont accessibles sans PRO Coach ?",
+              "answer": "Oui. Le centre est disponible aux membres Free et PRO connectés. La réponse personnelle de l’IA suit l’accès Coach existant."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Notifications et rappels",
+      "summary": "Choisis sujets, rappel quotidien et appareil de réception.",
+      "keywords": [
+        "push",
+        "notification",
+        "rappel",
+        "son",
+        "appareil"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "La boîte de réception et push sont des affichages distincts. Push nécessite la permission de l’appareil. Les tâches et suivis peuvent être regroupés ; événements et compte ont des horaires séparés."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Notifications et lis titre, description et heure.",
+            "Ouvre Notifications de l’appareil et mes paramètres et sélectionne Activer sur cet appareil.",
+            "Autorise les notifications dans le navigateur ou l’appareil et enregistre les catégories.",
+            "Dans Mon rythme, choisis l’heure du rappel quotidien.",
+            "Active le son si souhaité et envoie une notification de test lorsque le bouton est disponible."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Le son sera identique sur tous les appareils ?",
+              "answer": "Non. Navigateur, système et mode silencieux déterminent le son et l’apparence finaux. FCC ne peut pas contourner le blocage ou le silence de l’appareil."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Comprendre les résultats et points CC",
+      "summary": "Distingue clics, actions enregistrées et points Forever disponibles.",
+      "keywords": [
+        "résultats",
+        "clics",
+        "CC",
+        "points",
+        "progression"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Résultats FCC affiche les visites admissibles vers la boutique. Ma progression montre les étapes déclarées. Les CC importés depuis les données Forever disponibles sont des totaux pour une période."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Résultats FCC et lis période et règles de comptage.",
+            "Dans Ma progression, examine séparément application réelle et exercices.",
+            "Dans Mes points Forever et CC, vérifie la période et l’exhaustivité des données.",
+            "Pour une qualification ou un objectif officiel, vérifie les règles actuelles de ton marché avec ton parrain."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Les CC prouvent qui a acheté un produit précis ?",
+              "answer": "Non. Les CC agrégés ne prouvent pas un achat individuel. Un import incomplet ou absent ne confirme pas non plus une activité nulle."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free et PRO, paiements et factures",
+      "summary": "Vérifie accès et abonnement avant de changer le paiement.",
+      "keywords": [
+        "offre",
+        "Free",
+        "PRO",
+        "Stripe",
+        "abonnement",
+        "facture"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Les avantages Free et PRO figurent dans la comparaison actuelle. PRO ne confirme pas l’inscription à Mon parcours. L’activation du paiement suit la confirmation Stripe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Dans Plus, ouvre Offres Free et PRO ou ton offre.",
+            "Lis avantages, statut de l’abonnement et période d’accès.",
+            "Pour activer, vérifie le récapitulatif avant de continuer vers Stripe.",
+            "Consulte les paiements réels dans Paiements et factures.",
+            "Utilise les réglages proposés pour carte ou annulation et lis la fin de période confirmée."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Que faire si le paiement bloque ou reste non confirmé ?",
+              "answer": "Vérifie la facture existante et le message de ton offre. Utilise la reprise proposée ou l’assistance. La durée de l’offre ne prouve pas un paiement ; ne crée pas plusieurs commandes sans vérifier."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Télécharger et adapter la présentation d’équipe",
+      "summary": "Utilise une version publiée, personnalise l’introduction et prépare ton intervention.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "présentation",
+        "diapositives",
+        "téléchargement"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Les présentations du centre sont disponibles aux collaborateurs connectés. Utilise les fichiers et langues réellement proposés. La date d’édition distingue une version actuelle d’une ancienne copie."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Dans Plus, ouvre Guides FCC et le sujet Télécharger et adapter la présentation d’équipe.",
+            "Dans la section des téléchargements, choisis la langue et Télécharger le PPT. Pour le ZIP de toutes les traductions, choisis Télécharger toutes les langues.",
+            "Ouvre le PPT dans PowerPoint ou une application compatible.",
+            "Modifie l’introduction prévue du présentateur et ta photo.",
+            "Lis les notes et vérifie toute la présentation avant le webinaire."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Que personnaliser",
+          "paragraphs": [
+            "L’introduction doit contenir des données vérifiables et ton expérience réelle. Garde la structure commune sans promesses de revenus, guérison ou données privées d’autrui. Utilise des données fictives pour les exemples."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "Langue et version du fichier",
+          "paragraphs": [
+            "Cette section propose les fichiers PPT dans toutes les langues disponibles et un ZIP de toutes les traductions. Vérifie langue et édition avant de télécharger. Les images de FCC peuvent garder leur langue d’origine, tandis que texte et notes sont traduits. Vérifie régulièrement les nouvelles éditions."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Un exemple concret",
+          "paragraphs": [
+            "Télécharge le PPT actuel, change introduction et photo et répète un exemple de partage. Utilise un contact fictif sans données privées de client."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Je peux combiner personnellement la présentation ?",
+              "answer": "Adapte introduction prévue et ordre à ton intervention avec des faits exacts et un objectif clair. Vérifie diapositives, notes et disponibilité des fonctions FCC avant de présenter."
+            },
+            {
+              "question": "Que faire si une image PPT montre une autre langue ?",
+              "answer": "Les images peuvent garder leur langue d’origine. Suis les notes et guides traduits et les vrais boutons de ta vue FCC. Vérifie le fichier avant la présentation."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Outils FCC avancés",
+      "summary": "Choisis un outil supplémentaire pour un besoin concret et vérifie l’accès.",
+      "keywords": [
+        "QR",
+        "domaines",
+        "statistiques",
+        "Funnel studio",
+        "outils avancés"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Plus contient liens, codes QR, statistiques et outils avancés. Chaque outil vérifie les droits de l’offre. Commence avec carte, contacts et une action claire."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Plus et lis les descriptions des outils disponibles.",
+            "Décide si tu veux partager une carte, suivre les visites ou préparer un contenu particulier.",
+            "Ouvre l’outil choisi et vérifie instructions et droits de l’offre.",
+            "Teste le résultat en aperçu avant utilisation publique."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Tous les outils avancés sont nécessaires pour commencer ?",
+              "answer": "Non. Prépare d’abord ta carte et une conversation convenue. Choisis un outil supplémentaire quand il facilite une action réelle et vérifie l’accès de ton offre actuelle."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Envoyer une question à l’assistance",
+      "summary": "Décris le problème et continue le même échange pour obtenir une aide utile.",
+      "keywords": [
+        "assistance",
+        "aide",
+        "problème",
+        "demande",
+        "erreur"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Avant de commencer",
+          "paragraphs": [
+            "Aide et assistance traite problèmes techniques, propositions et thèmes de webinaires. Coach explique le processus mais ne soumet pas de demande à ta place."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Les étapes",
+          "steps": [
+            "Ouvre Aide et assistance puis Nouveau message au support.",
+            "Saisis un sujet court et choisis la catégorie.",
+            "Décris la partie utilisée, ton action et ce qui s’est passé.",
+            "Ajoute si besoin une capture sans mot de passe, données de carte ou informations privées d’autrui.",
+            "Envoie ta question et reviens au même échange pour réponses ou précisions."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Questions fréquentes",
+          "questions": [
+            {
+              "question": "Plusieurs demandes sont nécessaires pour le même problème ?",
+              "answer": "Poursuis l’échange existant et ajoute les informations nouvelles. Indique appareil et message d’erreur exact pour que l’assistance voie tout le déroulement au même endroit."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

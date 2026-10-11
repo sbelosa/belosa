@@ -294,43 +294,43 @@ if($admin_last_replied_at !== '' && in_array($ticket_status, ['answered', 'close
     <div class="fcc-support-card fcc-support-hero">
         <div>
             <div class="d-flex flex-wrap mb-3" style="gap:.6rem;">
-                <span class="fcc-support-pill">Razgovor podrške</span>
+                <span class="fcc-support-pill"><?= htmlspecialchars(fcc_t('Razgovor podrške'), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php if(!empty($data->feedback_ticket->is_webinar_topic_suggestion)): ?>
-                    <span class="fcc-support-pill">Webinar prijedlog</span>
+                    <span class="fcc-support-pill"><?= htmlspecialchars(fcc_t('Webinar prijedlog'), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php endif ?>
             </div>
 
             <div class="fcc-support-title">#<?= (int) $data->feedback_ticket->feedback_ticket_id ?> · <?= htmlspecialchars((string) $data->feedback_ticket->subject, ENT_QUOTES, 'UTF-8') ?></div>
             <div class="fcc-support-hero-copy">
-                Ovdje pratiš cijeli razgovor s podrškom, vidiš zadnji smjer admina i možeš odmah nastaviti razgovor ako nešto treba dodatno pojasniti.
+                <?= htmlspecialchars(fcc_t('Ovdje pratiš cijeli razgovor s podrškom, vidiš zadnji smjer admina i možeš odmah nastaviti razgovor ako nešto treba dodatno pojasniti.'), ENT_QUOTES, 'UTF-8') ?>
             </div>
         </div>
 
         <div class="fcc-support-aside">
-            <div class="fcc-support-eyebrow">Status razgovora</div>
+            <div class="fcc-support-eyebrow"><?= htmlspecialchars(fcc_t('Status razgovora'), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Status</span>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Status'), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php $status_class = $ticket_status === 'open' ? 'is-open' : ($ticket_status === 'answered' ? 'is-answered' : 'is-closed') ?>
                 <span class="fcc-support-badge <?= $status_class ?>"><?= htmlspecialchars((string) ($feedback_statuses[$data->feedback_ticket->status] ?? $data->feedback_ticket->status), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Kategorija</span>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Kategorija'), ENT_QUOTES, 'UTF-8') ?></span>
                 <strong><?= htmlspecialchars((string) ($feedback_categories[$data->feedback_ticket->category] ?? $data->feedback_ticket->category), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Zadnje ažuriranje</span>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Zadnje ažuriranje'), ENT_QUOTES, 'UTF-8') ?></span>
                 <strong><?= \Altum\Date::get($data->feedback_ticket->last_datetime, 2) ?></strong>
             </div>
             <?php if($has_unread_admin_update): ?>
                 <div class="fcc-support-aside-row">
-                    <span class="text-muted">Novi admin odgovor</span>
-                    <span class="fcc-support-badge is-unread">Nepročitano</span>
+                    <span class="text-muted"><?= htmlspecialchars(fcc_t('Novi admin odgovor'), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="fcc-support-badge is-unread"><?= htmlspecialchars(fcc_t('Nepročitano'), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
             <?php endif ?>
             <?php if(!empty($data->feedback_ticket->is_webinar_topic_suggestion)): ?>
                 <div class="fcc-support-aside-row">
-                    <span class="text-muted">Webinar signal</span>
-                    <span class="fcc-support-badge is-webinar">Predložena tema</span>
+                    <span class="text-muted"><?= htmlspecialchars(fcc_t('Webinar signal'), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="fcc-support-badge is-webinar"><?= htmlspecialchars(fcc_t('Predložena tema'), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
             <?php endif ?>
         </div>
@@ -341,10 +341,10 @@ if($admin_last_replied_at !== '' && in_array($ticket_status, ['answered', 'close
             <div class="fcc-support-card mb-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap:.75rem;">
                     <div>
-                        <div class="fcc-support-eyebrow">Konverzacija</div>
-                        <div class="fcc-support-section-title mb-0">Cijeli tijek razgovora</div>
+                        <div class="fcc-support-eyebrow"><?= htmlspecialchars(fcc_t('Konverzacija'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="fcc-support-section-title mb-0"><?= htmlspecialchars(fcc_t('Cijeli tijek razgovora'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
-                    <a href="<?= url('feedback-tickets') ?>" class="fcc-support-secondary">Natrag na podršku</a>
+                    <a href="<?= url('feedback-tickets') ?>" class="fcc-support-secondary"><?= htmlspecialchars(fcc_t('Natrag na podršku'), ENT_QUOTES, 'UTF-8') ?></a>
                 </div>
 
                 <div class="fcc-support-message-list">
@@ -358,7 +358,7 @@ if($admin_last_replied_at !== '' && in_array($ticket_status, ['answered', 'close
                             <div class="fcc-support-message-copy"><?= htmlspecialchars((string) $message->message, ENT_QUOTES, 'UTF-8') ?></div>
 
                             <?php if($message->attachment): ?>
-                                <a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') . $message->attachment ?>" target="_blank" class="d-inline-block mt-3 text-white-50">Otvori privitak</a>
+                                <a href="<?= \Altum\Uploads::get_full_url('feedback_tickets') . $message->attachment ?>" target="_blank" class="d-inline-block mt-3 text-white-50"><?= htmlspecialchars(fcc_t('Otvori privitak'), ENT_QUOTES, 'UTF-8') ?></a>
                             <?php endif ?>
                         </div>
                     <?php endforeach ?>
@@ -367,9 +367,9 @@ if($admin_last_replied_at !== '' && in_array($ticket_status, ['answered', 'close
 
             <?php if($data->feedback_ticket->status != 'closed'): ?>
                 <div class="fcc-support-card">
-                    <div class="fcc-support-eyebrow">Nastavi razgovor</div>
-                    <div class="fcc-support-section-title">Pošalji dodatno pojašnjenje ili novo pitanje</div>
-                    <div class="text-muted mb-4">Ako treba još detalja, slobodno nastavi isti razgovor kako bi sve ostalo povezano i pregledno.</div>
+                    <div class="fcc-support-eyebrow"><?= htmlspecialchars(fcc_t('Nastavi razgovor'), ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="fcc-support-section-title"><?= htmlspecialchars(fcc_t('Pošalji dodatno pojašnjenje ili novo pitanje'), ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="text-muted mb-4"><?= htmlspecialchars(fcc_t('Ako treba još detalja, slobodno nastavi isti razgovor kako bi sve ostalo povezano i pregledno.'), ENT_QUOTES, 'UTF-8') ?></div>
 
                     <form action="" method="post" enctype="multipart/form-data" role="form">
                         <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
@@ -392,38 +392,38 @@ if($admin_last_replied_at !== '' && in_array($ticket_status, ['answered', 'close
             <?php else: ?>
                 <div class="fcc-support-card">
                     <div class="fcc-support-note">
-                        Ovaj razgovor je označen kao riješen. Ako ti ipak treba dodatna pomoć, možeš otvoriti novu poruku podršci i nastaviti s novim kontekstom.
+                        <?= htmlspecialchars(fcc_t('Ovaj razgovor je označen kao riješen. Ako ti ipak treba dodatna pomoć, možeš otvoriti novu poruku podršci i nastaviti s novim kontekstom.'), ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 </div>
             <?php endif ?>
         </div>
 
         <div class="fcc-support-card">
-            <div class="fcc-support-eyebrow">Što sada</div>
-            <div class="fcc-support-section-title">Brzi pregled</div>
+            <div class="fcc-support-eyebrow"><?= htmlspecialchars(fcc_t('Što sada'), ENT_QUOTES, 'UTF-8') ?></div>
+            <div class="fcc-support-section-title"><?= htmlspecialchars(fcc_t('Brzi pregled'), ENT_QUOTES, 'UTF-8') ?></div>
 
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Glavni status</span>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Glavni status'), ENT_QUOTES, 'UTF-8') ?></span>
                 <strong><?= htmlspecialchars((string) ($feedback_statuses[$data->feedback_ticket->status] ?? $data->feedback_ticket->status), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Ako je odgovor spreman</span>
-                <strong>Provjeri smjer i odluči treba li nastavak</strong>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Ako je odgovor spreman'), ENT_QUOTES, 'UTF-8') ?></span>
+                <strong><?= htmlspecialchars(fcc_t('Provjeri smjer i odluči treba li nastavak'), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Ako je riješeno</span>
-                <strong>Razgovor ostaje spremljen za kasniji pregled</strong>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Ako je riješeno'), ENT_QUOTES, 'UTF-8') ?></span>
+                <strong><?= htmlspecialchars(fcc_t('Razgovor ostaje spremljen za kasniji pregled'), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             <div class="fcc-support-aside-row">
-                <span class="text-muted">Ako trebaš novu temu</span>
-                <strong>Pošalji novu poruku kroz podršku</strong>
+                <span class="text-muted"><?= htmlspecialchars(fcc_t('Ako trebaš novu temu'), ENT_QUOTES, 'UTF-8') ?></span>
+                <strong><?= htmlspecialchars(fcc_t('Pošalji novu poruku kroz podršku'), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
             <?php if($data->feedback_ticket->status != 'closed'): ?>
                 <form action="" method="post" class="mt-4">
                     <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
                     <input type="hidden" name="action_type" value="close" />
-                    <button type="submit" class="fcc-support-secondary">Označi kao riješeno</button>
+                    <button type="submit" class="fcc-support-secondary"><?= htmlspecialchars(fcc_t('Označi kao riješeno'), ENT_QUOTES, 'UTF-8') ?></button>
                 </form>
             <?php endif ?>
         </div>

@@ -72,7 +72,7 @@
                     <input id="screenshot_image_border_radius" name="screenshot_image_border_radius" type="number" min="0" max="40" class="form-control" value="<?= settings()->dynamic_og_images->screenshot_image_border_radius ?? 30 ?>" />
                     <div class="input-group-append">
                         <span class="input-group-text">
-                            px
+                            <?= htmlspecialchars('px', ENT_QUOTES, 'UTF-8') ?>
                         </span>
                     </div>
                 </div>

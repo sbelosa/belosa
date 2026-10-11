@@ -7,9 +7,9 @@
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . basename($data->qr_code) . '"');
-        header('Expires: 0');
+        header(fcc_t('Expires: 0'));
         header('Cache-Control: must-revalidate');
-        header('Pragma: public');
+        header(fcc_t('Pragma: public'));
         header('Content-Length: ' . filesize($data->qr_code));
         flush();
         readfile($data->qr_code);        

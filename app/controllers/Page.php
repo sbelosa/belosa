@@ -43,7 +43,7 @@ class Page extends Controller {
     }
 
     private function get_logged_in_referral_biolink_url(): ?string {
-        $user_id = \Altum\Authentication::check();
+        $user_id = \Altum\Authentication::check() ? (int)\Altum\Authentication::$user_id : 0;
 
         if(!$user_id) {
             return null;
@@ -95,6 +95,7 @@ class Page extends Controller {
     }
 
     private function resolve_contact_page_main_biolink(?string $collaborator_aff_url = null, ?string $collaborator_email = null): ?object {
+        if(\Altum\Authentication::check())return $this->get_main_biolink_for_user_id((int)\Altum\Authentication::$user_id);
         $legacy_referral_slug = 'wpebe1grqr';
         $referral_candidates = [];
 
@@ -1089,12 +1090,17 @@ class Page extends Controller {
         }
         /* /Custom code: FC-2026-02-26 */
 
+        // Localize application-owned editorial copy before metadata and structured data are rendered.
+        foreach(['foreverclub_semantics','page_meta_override','foreverclub_pathways','foreverclub_workflow','foreverclub_use_cases','page_schema_about_entity'] as $copy_name) {
+            if(is_array($$copy_name)) $$copy_name = fcc_localize_copy($$copy_name);
+        }
+
         /* Prepare the view */
         $data = [
             'page'  => $page,
             'pages_category' => $pages_category,
             'collaborator_contact' => $collaborator_contact,
-            'share_url' => $this->append_referral_to_url($page_url, $this->get_logged_in_referral_biolink_url()),
+            'share_url' => $this->append_referral_to_url($page_url, $this->get_logged_in_referral_biolink_url() ?? ($main_biolink->url ?? null)),
             /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
             'is_foreverclub_page' => $is_foreverclub_page,
             'foreverclub_semantics' => $foreverclub_semantics,
@@ -1117,7 +1123,8 @@ class Page extends Controller {
 
         /* Set a custom title */
         /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
-        Title::set($page_meta_override['title'] ?? $page->title);
+        $page_title = $page_meta_override['title'] ?? $page->title;
+        Title::set($page_title, stripos($page_title, 'Forever Card Club') !== false);
         /* /Custom code: FC-2026-03-24 */
 
         /* Meta */
@@ -1125,7 +1132,12 @@ class Page extends Controller {
         /* Custom code: FC-2026-03-24: strengthen foreverclub page hub SEO and internal linking */
         $meta_description = $page_meta_override['description'] ?? $page->description ?? (!empty($foreverclub_semantics['summary']) ? $foreverclub_semantics['summary'] : null);
 
-        Meta::set_description(string_truncate($meta_description, 160));
+        if($is_contact_page && !trim((string) $meta_description)) {
+            $meta_description = \Altum\Language::$code === 'hr'
+                ? 'Kontaktiraj svog FCC suradnika za informacije o Forever proizvodima, osobnoj aplikaciji i sljedećem koraku u poslovanju.'
+                : 'Contact your FCC partner for information about Forever products, your personal app and the next step in your business.';
+        }
+        Meta::set_description(string_truncate(fcc_t((string)$meta_description), 160));
         Meta::set_keywords(string_truncate($page_meta_override['keywords'] ?? $page->keywords, 255));
         Meta::set_canonical_url($page_url);
         if($has_personalized_contact_referral_context) {
@@ -1147,6 +1159,21 @@ class Page extends Controller {
             }
         }
         /* /Custom code: FC-2026-02-25 */
+
+        /* Link only actual published public translations, using canonical URLs. */
+        $translations = db()->where('url', $page->url)->where('is_published', 1)->get('pages', null, ['language','plans_ids']);
+        $alternates = [];
+        foreach($translations as $translation) {
+            if(!empty(json_decode($translation->plans_ids ?? '', true))) continue;
+            $name = fc_resolve_language_name($translation->language);
+            $code = \Altum\Language::$active_languages[$name] ?? null;
+            if(!$code) continue;
+            $alternates[$code] = fc_get_internal_page_url($page->url, $name);
+            if($name === settings()->main->default_language) $alternates['x-default'] = $alternates[$code];
+        }
+        foreach($alternates as $code=>$alternate_url) {
+            \Altum\Event::add_content('<link rel="alternate" hreflang="'.htmlspecialchars(fcc_language_tag($code), ENT_QUOTES).'" href="'.htmlspecialchars($alternate_url, ENT_QUOTES).'">', 'head');
+        }
 
         /* Disable automated link language alternate */
         Meta::set_link_alternate(false);

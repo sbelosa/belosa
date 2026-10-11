@@ -17,8 +17,8 @@
         <div class="form-group">
             <label for="mode"><?= l('admin_settings.payment.mode') ?></label>
             <select id="mode" name="mode" class="custom-select">
-                <option value="live" <?= settings()->revolut->mode == 'live' ? 'selected="selected"' : null ?>>live</option>
-                <option value="sandbox" <?= settings()->revolut->mode == 'sandbox' ? 'selected="selected"' : null ?>>sandbox</option>
+                <option value="live" <?= settings()->revolut->mode == 'live' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('live'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="sandbox" <?= settings()->revolut->mode == 'sandbox' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('sandbox'), ENT_QUOTES, 'UTF-8') ?></option>
             </select>
         </div>
 

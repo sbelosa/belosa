@@ -75,7 +75,7 @@ $contact_channel_options = [
 
                     <div class="fcc-contact-capture">
                         <div class="fcc-contact-capture-row">
-                            <select class="custom-select" name="phone_country_code" required="required" aria-label="Država i pozivni broj">
+                            <select class="custom-select" name="phone_country_code" required="required" aria-label="<?= htmlspecialchars(fcc_t('Država i pozivni broj'), ENT_QUOTES, 'UTF-8') ?>">
                                 <?php foreach($contact_country_options as $country_code => $country_label): ?>
                                     <option value="<?= $country_code ?>" <?= $country_code == 'HR' ? 'selected="selected"' : null ?>><?= $country_label ?></option>
                                 <?php endforeach ?>
@@ -90,7 +90,7 @@ $contact_channel_options = [
                             </div>
                         </div>
                         <div class="fcc-contact-capture-row">
-                            <div class="fcc-contact-capture-channels" role="radiogroup" aria-label="Najbrži kanal kontakta">
+                            <div class="fcc-contact-capture-channels" role="radiogroup" aria-label="<?= htmlspecialchars(fcc_t('Najbrži kanal kontakta'), ENT_QUOTES, 'UTF-8') ?>">
                                 <?php foreach($contact_channel_options as $channel_key => $channel_label): ?>
                                     <label class="mb-0">
                                         <input type="radio" class="fcc-contact-capture-radio" name="preferred_contact_channel" value="<?= $channel_key ?>" <?= $channel_key == 'whatsapp' ? 'checked="checked"' : null ?> />

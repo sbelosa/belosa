@@ -43,6 +43,10 @@ class AdminDomainUpdate extends Controller {
             $_POST['custom_not_found_url'] = get_url($_POST['custom_not_found_url'], 256);
             $_POST['is_enabled'] = (int) isset($_POST['is_enabled']);
 
+            if(fc_nfc_domain_change_is_blocked($domain, $_POST)) {
+                Alerts::add_error(l('link.settings.url_help_main_biolink_locked'));
+            }
+
             //ALTUMCODE:DEMO if(DEMO) Alerts::add_error('This command is blocked on the demo.');
 
             /* Check for any errors */

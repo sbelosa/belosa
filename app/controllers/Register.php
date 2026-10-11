@@ -119,6 +119,10 @@ class Register extends Controller {
             }
             /* /Custom code: FC-2026-09-14 */
 
+            if(!is_string($_POST['accept'] ?? null) || !in_array($_POST['accept'], ['1', 'on'], true)) {
+                Alerts::add_error(\Altum\Language::$code === 'hr' ? 'Za izradu računa prihvati uvjete korištenja.' : 'Please accept the terms of use to create an account.');
+            }
+
             /* Clean some posted variables */
             $_POST['name'] = input_clean_name($_POST['name'], 64);
             $_POST['email'] = input_clean_email($_POST['email'] ?? '');
@@ -263,6 +267,10 @@ class Register extends Controller {
                 $plan_id                    = 2;
                 $plan_settings              = json_encode((new \Altum\Models\Plan())->get_plan_by_id(2)->settings ?? '');
                 $plan_expiration_date       = date( 'Y-m-d H:i:s', strtotime( ' + 10 years' ) );
+                if(function_exists('fcc_partner_enabled') && fcc_partner_enabled()) {
+                    $plan_id = 'free';
+                    $plan_settings = json_encode(settings()->plan_free->settings);
+                }
 
                 /* Custom code: FC-2026-10-07: Only new explicit requests enter automatic verification. */
                 $_POST['meta']['fcc_access_requested_at'] = get_date();
@@ -286,7 +294,18 @@ class Register extends Controller {
                     $_POST['meta'],                    
                 );
 
+                // Record the accepted terms version separately from optional marketing consent.
+                fcc_partner_query("UPDATE users SET preferences=JSON_SET(preferences,'$.legal_acceptance',JSON_EXTRACT(?, '$')) WHERE user_id=?", [
+                    json_encode(['terms_version'=>fcc_legal_config()['version'],'privacy_notice_version'=>fcc_legal_config()['version'],'accepted_at'=>gmdate('c'),'source'=>'registration']),
+                    (int)$registered_user['user_id'],
+                ]);
+
                 $create_links = (new \Altum\Models\User())->create_links($registered_user['user_id']);
+                if(function_exists('fcc_partner_enabled') && fcc_partner_enabled()) {
+                    (new \Altum\Models\User())->sync_links_with_plan($registered_user['user_id']);
+                    // FCC redirects to the homepage below; its legacy welcome branch is unreachable.
+                    fcc_partner_send_registration_receipt($_POST['email'], $_POST['name']);
+                }
                 /* /Custom code */
 
                 /* Log the action */
@@ -312,7 +331,7 @@ class Register extends Controller {
                                 '{{URL}}' => url(),
                                 '{{DASHBOARD_LINK}}' => url('dashboard'),
                             ],
-                            l('global.emails.user_welcome.body')
+                            l('global.emails.user_welcome.body') . fcc_partner_install_email_content()
                         );
 
                         send_mail($_POST['email'], $email_template->subject, $email_template->body);
@@ -402,7 +421,7 @@ class Register extends Controller {
                             '{{ACTIVATION_LINK}}' => url('activate-user?email=' . md5($_POST['email']) . '&email_activation_code=' . $email_code . '&type=user_activation' . '&redirect=' . $redirect),
                             '{{NAME}}' => str_replace('.', '. ', $_POST['name']),
                         ],
-                        l('global.emails.user_activation.body')
+                        l('global.emails.user_activation.body') . fcc_partner_install_email_content()
                     );
 
                     send_mail($_POST['email'], $email_template->subject, $email_template->body);

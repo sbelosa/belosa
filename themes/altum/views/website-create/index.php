@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li>
                     <a href="<?= url('websites') ?>"><?= l('websites.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -34,8 +34,8 @@
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <select name="scheme" class="appearance-none custom-select custom-select-lg form-control input-group-text">
-                                <option value="https://" <?= $data->values['scheme'] == 'https://' ? 'selected="selected"' : null ?>>https://</option>
-                                <option value="http://" <?= $data->values['scheme'] == 'http://' ? 'selected="selected"' : null ?>>http://</option>
+                                <option value="https://" <?= $data->values['scheme'] == 'https://' ? 'selected="selected"' : null ?>><?= htmlspecialchars('https://', ENT_QUOTES, 'UTF-8') ?></option>
+                                <option value="http://" <?= $data->values['scheme'] == 'http://' ? 'selected="selected"' : null ?>><?= htmlspecialchars('http://', ENT_QUOTES, 'UTF-8') ?></option>
                             </select>
                         </div>
 

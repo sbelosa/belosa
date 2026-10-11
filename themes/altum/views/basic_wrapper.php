@@ -1,7 +1,14 @@
-<?php defined('ALTUMCODE') || die() ?>
+<?php defined('ALTUMCODE') || die();
+require_once APP_PATH . 'helpers/fcc_mobile_navigation.php';
+fcc_mobile_nav_assets();
+// Authentication uses the same request-local light palette as the public FCC.
+\Altum\ThemeStyle::$workspace_light = true;
+fcc_public_assets();
+?>
 <!DOCTYPE html>
-<html lang="<?= \Altum\Language::$code ?>" dir="<?= l('direction') ?>" class="h-100">
+<html lang="<?= fcc_language_tag() ?>" dir="<?= l('direction') ?>" class="h-100">
 <head>
+    <?php fcc_i18n_assets(); ?>
     <title><?= \Altum\Title::get() ?></title>
     <base href="<?= SITE_URL; ?>">
     <meta charset="UTF-8">
@@ -22,16 +29,16 @@
         <?php endif ?>
 
     <?php if(\Altum\Meta::$description): ?>
-        <meta name="description" content="<?= \Altum\Meta::$description ?>" />
+        <meta name="description" content="<?= htmlspecialchars((string) \Altum\Meta::$description, ENT_QUOTES, 'UTF-8') ?>" />
     <?php endif ?>
     <?php if(\Altum\Meta::$keywords): ?>
-        <meta name="keywords" content="<?= \Altum\Meta::$keywords ?>" />
+        <meta name="keywords" content="<?= htmlspecialchars((string) \Altum\Meta::$keywords, ENT_QUOTES, 'UTF-8') ?>" />
     <?php endif ?>
 
     <?php \Altum\Meta::output() ?>
 
     <?php if(\Altum\Meta::$canonical): ?>
-        <link rel="canonical" href="<?= \Altum\Meta::$canonical ?>" />
+        <link rel="canonical" href="<?= htmlspecialchars((string) \Altum\Meta::$canonical, ENT_QUOTES, 'UTF-8') ?>" />
     <?php endif ?>
 
     <?php if(\Altum\Meta::$robots): ?>
@@ -41,9 +48,7 @@
     <link rel="alternate" href="<?= SITE_URL . \Altum\Router::$original_request ?>" hreflang="x-default" />
     <?php if(count(\Altum\Language::$active_languages) > 1): ?>
         <?php foreach(\Altum\Language::$active_languages as $language_name => $language_code): ?>
-            <?php if(settings()->main->default_language != $language_name): ?>
-                <link rel="alternate" href="<?= SITE_URL . $language_code . '/' . \Altum\Router::$original_request ?>" hreflang="<?= $language_code ?>" />
-            <?php endif ?>
+                <link rel="alternate" href="<?= htmlspecialchars(SITE_URL . (settings()->main->default_language === $language_name ? '' : $language_code . '/') . \Altum\Router::$original_request, ENT_QUOTES, 'UTF-8') ?>" hreflang="<?= fcc_language_tag($language_code) ?>" />
         <?php endforeach ?>
     <?php endif ?>
 
@@ -72,9 +77,10 @@
     <?php if(!empty(settings()->custom->head_css)): ?>
         <style><?= settings()->custom->head_css ?></style>
     <?php endif ?>
+<link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-auth.css?v=<?= filemtime(ASSETS_PATH . 'css/fcc-auth.css') ?>">
 </head>
 
-<body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> bg-gray-50 <?= in_array(\Altum\Router::$controller_key, ['login', 'register']) ? \Altum\Router::$controller_key . '-background' : null ?> <?= \Altum\ThemeStyle::get() == 'dark' ? 'cc--darkmode' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
+<body class="fcc-public-mode fcc-auth-mode <?= l('direction') == 'rtl' ? 'rtl' : '' ?>" data-theme-style="light" data-fcc-auth-design="20261001">
 <?php if(!empty(settings()->custom->body_content)): ?>
     <?= settings()->custom->body_content ?>
 <?php endif ?>
@@ -85,36 +91,24 @@
 <?php require THEME_PATH . 'views/partials/cookie_consent.php' ?>
 <?php if(settings()->main->admin_spotlight_is_enabled || settings()->main->user_spotlight_is_enabled) require THEME_PATH . 'views/partials/spotlight.php' ?>
 
-<main class="altum-animate altum-animate-fill-none altum-animate-fade-in py-6">
-    <div class="container">
-        <div class="d-flex flex-column align-items-center">
-            <!-- Custom code: FC-2026-09-14: Widen only the registration layout -->
-            <div class="col-xs-12 col-md-10 col-lg-7 col-xl-6 <?= \Altum\Router::$controller_key === 'register' ? 'fcc-registration-layout' : '' ?>">
-            <!-- /Custom code: FC-2026-09-14 -->
-
-                <!-- Custom code: FC-2026-02-25: register logo wrapper -->
-                <div class="mb-5 text-center register-logo-wrap">
-                    <a href="<?= url() ?>" class="text-decoration-none text-dark">
-                        <?php if(settings()->main->{'logo_' . \Altum\ThemeStyle::get()} != ''): ?>
-                            <img src="<?= settings()->main->{'logo_' . \Altum\ThemeStyle::get() . '_full_url'} ?>" class="img-fluid navbar-logo" alt="<?= l('global.accessibility.logo_alt') ?>" />
-                        <?php else: ?>
-                            <span class="h3"><?= settings()->main->title ?></span>
-                        <?php endif ?>
-                    </a>
-                </div>
-                <!-- /Custom code: FC-2026-02-25 -->
-
-                <!-- Custom code: FC-2026-02-25: register card hook -->
-                <div class="card rounded-2x register-card">
-                    <div class="card-body p-5">
-                        <?= $this->views['content'] ?>
-                    </div>
-                </div>
-                <!-- /Custom code: FC-2026-02-25 -->
-
-            </div>
-        </div>
+<a class="fcw-skip" href="<?= e('/' . ltrim((string) ($_SERVER['REQUEST_URI'] ?? '/'), '/')) ?>#fcc-auth-main"><?= e(fcc_public_copy('skip')) ?></a>
+<header class="fcc-auth-header">
+    <a class="fcw-brand" href="<?= e(fcc_public_url()) ?>" aria-label="Forever Card Club">
+        <img src="<?= e(settings()->main->logo_light_full_url ?: settings()->main->logo_dark_full_url) ?>" width="208" height="64" alt="Forever Card Club">
+    </a>
+    <?php fcc_language_selector('auth'); ?>
+</header>
+<?php fcc_mobile_nav_render(null, 'auth'); ?>
+<main id="fcc-auth-main" class="fcc-auth-main" tabindex="-1">
+    <div class="fcc-auth-card <?= \Altum\Router::$controller_key === 'register' ? 'fcc-auth-card-wide' : '' ?>">
+        <?= $this->views['content'] ?>
     </div>
+    <footer class="fcc-auth-footer">
+        <a href="<?= e(fcc_public_url()) ?>"><?= e(fcc_public_copy('home')) ?></a>
+        <span aria-hidden="true">·</span>
+        <a href="<?= e(fcc_public_url('page/contact')) ?>"><?= e(fcc_public_copy('contact')) ?></a>
+        <small>© <?= date('Y') ?> Forever Card Club</small>
+    </footer>
 </main>
 
 <?= \Altum\Event::get_content('modals') ?>
@@ -129,7 +123,7 @@
 <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user)): ?>
     <?php $fcc_internal_coach_ui = fcc_ai_get_internal_coach_ui_payload($this->user, \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'); ?>
     <?php $fcc_internal_coach_ui_copy = []; ?>
-    <?php foreach(['hr', 'en', 'sl', 'bg'] as $fcc_internal_coach_ui_language): ?>
+    <?php foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','pl','ro'] as $fcc_internal_coach_ui_language): ?>
         <?php $fcc_internal_coach_ui_copy[$fcc_internal_coach_ui_language] = fcc_ai_get_internal_coach_ui_payload($this->user, $fcc_internal_coach_ui_language); ?>
     <?php endforeach ?>
     <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
@@ -138,12 +132,12 @@
             'scope' => 'internal_coach',
             'owner_name' => (string) ($this->user->name ?? ''),
             'language_code' => \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr',
-            'source_context' => 'FCC Coach basic page popup',
+            'source_context' => fcc_t('FCC Coach basic page popup'),
             'hide_without_context' => false,
             'dom_id' => 'fcc-coach-chat-extreme-basic',
-            'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? 'FCC Coach'),
-            'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? 'FCC Coach'),
-            'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? 'FCC Coach'),
+            'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? fcc_t('FCC Coach')),
+            'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? fcc_t('FCC Coach')),
+            'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? fcc_t('FCC Coach')),
             'coach_badge' => (string) ($fcc_internal_coach_ui['coach_badge'] ?? ''),
             'coach_notice' => (string) ($fcc_internal_coach_ui['coach_notice'] ?? ''),
             'coach_mode_key' => (string) ($fcc_internal_coach_ui['coach_mode_key'] ?? ''),

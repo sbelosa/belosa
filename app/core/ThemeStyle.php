@@ -30,8 +30,16 @@ class ThemeStyle {
         ],
     ];
     public static $theme = 'light';
+    /* Request-local workspace palette, independent of public card design. */
+    public static bool $workspace_light = false;
 
     public static function get() {
+        // The new admin workspace has one light palette. Keep the saved legacy
+        // preference intact for old workspaces and independently styled cards.
+        if(self::$workspace_light || (\Altum\Router::$path === 'admin' && function_exists('fcc_partner_enabled') && fcc_partner_enabled())) {
+            return 'light';
+        }
+
         if(isset($_COOKIE['theme_style']) && array_key_exists($_COOKIE['theme_style'], self::$themes)) {
             self::$theme = input_clean($_COOKIE['theme_style']);
         }

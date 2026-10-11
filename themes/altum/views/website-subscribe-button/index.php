@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li>
                     <a href="<?= url('websites') ?>"><?= l('websites.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -267,7 +267,7 @@
                     <div class="form-group">
                         <label for="display_operating_systems"><i class="fas fa-fw fa-server fa-sm text-muted mr-1"></i> <?= l('website_subscribe_widget.input.display_operating_systems') ?></label>
                         <select id="display_operating_systems" name="display_operating_systems[]" class="custom-select" multiple="multiple">
-                            <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                            <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                                 <option value="<?= $os_name ?>" <?= in_array($os_name, $data->website->button->display_operating_systems ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                             <?php endforeach ?>
                         </select>
@@ -413,7 +413,7 @@
                                 </label>
                             </div>
 
-                            <?php foreach(['Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS', 'Times New Roman', 'Georgia', 'Courier New', 'Monaco', 'Comic Sans MS', 'Courier', 'Impact', 'Futura', 'Luminari', 'Baskerville', 'Papyrus', 'Brush Script MT'] as $font): ?>
+                            <?php foreach(['Arial', 'Verdana', 'Helvetica', 'Tahoma', fcc_t('Trebuchet MS'), fcc_t('Times New Roman'), 'Georgia', fcc_t('Courier New'), 'Monaco', fcc_t('Comic Sans MS'), 'Courier', 'Impact', 'Futura', 'Luminari', 'Baskerville', 'Papyrus', fcc_t('Brush Script MT')] as $font): ?>
                                 <div class="p-2 col-6 col-lg-4 h-100">
                                     <label class="btn btn-gray-200 btn-block font-size-small mb-0 text-truncate <?= ($data->website->button->font ?? 'inherit') == $font ? 'active"' : null?>" style="font-family: <?= $font ?> !important;">
                                         <input type="radio" name="font" value="<?= $font ?>" class="custom-control-input" <?= ($data->website->button->font ?? 'inherit') == $font ? 'checked="checked"' : null?> required="required" />

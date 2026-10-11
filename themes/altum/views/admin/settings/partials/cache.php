@@ -19,7 +19,7 @@
             <input id="size" name="size" type="text" class="form-control" value="<?= cache()->getStats()->getSize() / 1000 / 1000 ?>" readonly="readonly" />
             <div class="input-group-append">
                 <span class="input-group-text">
-                    MB
+                    <?= htmlspecialchars(fcc_t('MB'), ENT_QUOTES, 'UTF-8') ?>
                 </span>
             </div>
         </div>

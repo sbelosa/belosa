@@ -91,15 +91,15 @@ $meta_pixel_event_map = [
 $meta_pixel_step_event = $meta_pixel_event_map[$meta_pixel_page_key] ?? 'VIPFunnelStepView';
 $meta_pixel_step_parameters = [
     'content_category' => 'vip_funnel',
-    'content_name' => (string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')),
+    'content_name' => (string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? fcc_t('VIP Funnel 2.0'))),
     'funnel_id' => (int) ($state['funnel_id'] ?? 0),
-    'funnel_name' => (string) ($payload['funnel']['name'] ?? 'VIP Funnel 2.0'),
+    'funnel_name' => (string) ($payload['funnel']['name'] ?? fcc_t('VIP Funnel 2.0')),
     'funnel_slug' => (string) ($state['slug'] ?? ($payload['funnel']['slug'] ?? '')),
     'owner_user_id' => (int) ($state['user_id'] ?? ($payload['defaults']['owner_user_id'] ?? 0)),
     'page_key' => $meta_pixel_page_key,
     'page_role' => (string) ($state['page_role'] ?? 'landing'),
     'step_id' => (string) ($state['current_step_id'] ?? ''),
-    'step_title' => (string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')),
+    'step_title' => (string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? fcc_t('VIP Funnel 2.0'))),
     'path_title' => (string) ($state['path_title'] ?? ''),
     'variant' => strtoupper((string) ($state['variant_key'] ?? 'a')),
 ];
@@ -112,7 +112,7 @@ $background_image_css_url = $background_image_css_value !== '' ? json_encode($ba
 $surface_color = $surface['surface_color'] ?? '#152132';
 $text_color = $surface['text_color'] ?? '#eef4ff';
 $accent_color = $surface['accent_color'] ?? '#67d8c9';
-$title = trim((string) ($active['title'] ?? ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')));
+$title = trim((string) ($active['title'] ?? ($payload['funnel']['name'] ?? fcc_t('VIP Funnel 2.0'))));
 $subtitle = trim((string) ($active['summary'] ?? ($payload['overview']['subheadline'] ?? '')));
 $max_width = $surface['max_width'] ?? 'wide';
 $canvas_max_width = $max_width === 'narrow' ? '680px' : ($max_width === 'regular' ? '860px' : '100%');
@@ -195,7 +195,7 @@ $fallback_progress_total = (int) ($state['total_steps'] ?? 0);
 $progress_current = $surface_progress_current > 0 ? $surface_progress_current : $fallback_progress_current;
 $progress_total = $surface_progress_total > 0 ? $surface_progress_total : $fallback_progress_total;
 $progress_percent = $progress_total > 0 ? max(0, min(100, (int) round(($progress_current / max(1, $progress_total)) * 100))) : 0;
-$progress_label = $surface_progress_label !== '' ? $surface_progress_label : (($state['page_role'] ?? 'landing') === 'landing' && $surface_progress_current <= 0 ? 'Prvi dojam' : ('Korak ' . max(1, $progress_current) . ' od ' . max(1, $progress_total)));
+$progress_label = $surface_progress_label !== '' ? $surface_progress_label : (($state['page_role'] ?? 'landing') === 'landing' && $surface_progress_current <= 0 ? fcc_t('Prvi dojam') : (fcc_t('Korak ') . max(1, $progress_current) . ' od ' . max(1, $progress_total)));
 $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
 ?>
 
@@ -1069,10 +1069,10 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                     $ai_block_can_render = $ai_public_access_enabled && $ai_owner_link_id > 0 && function_exists('fcc_ai_get_assistant_type');
 
                                     if($ai_block_can_render && !$ai_widget_registered) {
-                                        $ai_intro_label = trim((string) ($block['ai_intro_label'] ?? 'Tvoj osobni vodič')) ?: 'Tvoj osobni vodič';
-                                        $ai_launcher_label = trim((string) ($block['ai_launcher_label'] ?? 'Moja preporuka')) ?: 'Moja preporuka';
-                                        $ai_input_placeholder = trim((string) ($block['ai_input_placeholder'] ?? 'Napiši cilj ili pitanje...')) ?: 'Napiši cilj ili pitanje...';
-                                        $ai_source_context = 'VIP Funnel pametna preporuka - ' . trim((string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? 'VIP Funnel 2.0')));
+                                        $ai_intro_label = trim((string) ($block['ai_intro_label'] ?? fcc_t('Tvoj osobni vodič'))) ?: fcc_t('Tvoj osobni vodič');
+                                        $ai_launcher_label = trim((string) ($block['ai_launcher_label'] ?? fcc_t('Moja preporuka'))) ?: fcc_t('Moja preporuka');
+                                        $ai_input_placeholder = trim((string) ($block['ai_input_placeholder'] ?? fcc_t('Napiši cilj ili pitanje...'))) ?: fcc_t('Napiši cilj ili pitanje...');
+                                        $ai_source_context = fcc_t('VIP Funnel pametna preporuka - ') . trim((string) (($active['title'] ?? '') ?: ($payload['funnel']['name'] ?? fcc_t('VIP Funnel 2.0'))));
 
                                         ob_start();
                                         echo include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
@@ -1125,12 +1125,12 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                         $product = is_array($block['product_resolved'] ?? null) ? $block['product_resolved'] : [];
                                         $primary_mode = (string) ($block['product_primary_mode'] ?? 'blog_guide');
                                         $secondary_mode = (string) ($block['product_secondary_mode'] ?? 'direct_shop');
-                                        $primary_mode_label = (string) ($block['product_primary_mode_label'] ?? ($primary_mode === 'direct_shop' ? 'Vodi direktno na službeni shop' : 'Vodi na blog vodič'));
-                                        $secondary_mode_label = (string) ($block['product_secondary_mode_label'] ?? ($secondary_mode === 'direct_shop' ? 'Vodi direktno na službeni shop' : 'Vodi na blog vodič'));
+                                        $primary_mode_label = (string) ($block['product_primary_mode_label'] ?? ($primary_mode === 'direct_shop' ? fcc_t('Vodi direktno na službeni shop') : fcc_t('Vodi na blog vodič')));
+                                        $secondary_mode_label = (string) ($block['product_secondary_mode_label'] ?? ($secondary_mode === 'direct_shop' ? fcc_t('Vodi direktno na službeni shop') : fcc_t('Vodi na blog vodič')));
                                         $primary_url = trim((string) ($block['product_primary_url'] ?? ''));
                                         $secondary_url = trim((string) ($block['product_secondary_url'] ?? ''));
-                                        $primary_cta_text = trim((string) ($block['product_primary_cta_text'] ?? 'Pogledaj vodič proizvoda'));
-                                        $secondary_cta_text = trim((string) ($block['product_secondary_cta_text'] ?? 'Idi na službeni shop'));
+                                        $primary_cta_text = trim((string) ($block['product_primary_cta_text'] ?? fcc_t('Pogledaj vodič proizvoda')));
+                                        $secondary_cta_text = trim((string) ($block['product_secondary_cta_text'] ?? fcc_t('Idi na službeni shop')));
                                         $secondary_enabled = !empty($block['product_secondary_enabled']) && $secondary_url !== '';
                                         $resolved_language_code = mb_strtoupper((string) (($product['language_code'] ?? '') ?: ($block['product_language_code'] ?? \Altum\Language::$code)));
                                         $product_source_mode = (string) ($block['product_source_mode'] ?? 'manual');
@@ -1146,17 +1146,17 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                     <?php endif ?>
                                                     <div class="vip-funnel-public__product-content">
                                                         <div class="vip-funnel-public__product-meta">
-                                                            <span class="vip-funnel-public__product-chip"><?= $e($product_source_mode === 'dynamic' ? 'Dinamički proizvod' : 'Zadani proizvod') ?></span>
+                                                            <span class="vip-funnel-public__product-chip"><?= $e($product_source_mode === 'dynamic' ? fcc_t('Dinamički proizvod') : fcc_t('Zadani proizvod')) ?></span>
                                                             <span class="vip-funnel-public__product-chip"><?= $e($primary_mode_label) ?></span>
-                                                            <span class="vip-funnel-public__product-chip"><?= $e(($block['product_language_mode'] ?? 'page') === 'manual' ? 'Ručni jezik' : 'Jezik stranice') ?></span>
+                                                            <span class="vip-funnel-public__product-chip"><?= $e(($block['product_language_mode'] ?? 'page') === 'manual' ? fcc_t('Ručni jezik') : fcc_t('Jezik stranice')) ?></span>
                                                             <?php if($resolved_language_code !== ''): ?>
                                                                 <span class="vip-funnel-public__product-chip"><?= $e($resolved_language_code) ?></span>
                                                             <?php endif ?>
                                                         </div>
                                                         <?php if($product_source_mode === 'dynamic' && !empty($matched_mapping['match_value'])): ?>
-                                                            <div class="vip-funnel-public__product-description" style="margin-bottom:.5rem;color:rgba(236,243,255,0.72);">Preporuka je prilagođena odgovoru: <strong><?= $e($matched_mapping['match_value']) ?></strong></div>
+                                                            <div class="vip-funnel-public__product-description" style="margin-bottom:.5rem;color:rgba(236,243,255,0.72);"><?= htmlspecialchars(fcc_t('Preporuka je prilagođena odgovoru:'), ENT_QUOTES, 'UTF-8') ?> <strong><?= $e($matched_mapping['match_value']) ?></strong></div>
                                                         <?php endif ?>
-                                                        <div class="vip-funnel-public__product-name"><?= $e($product['title'] ?? 'Odabrani proizvod') ?></div>
+                                                        <div class="vip-funnel-public__product-name"><?= $e($product['title'] ?? fcc_t('Odabrani proizvod')) ?></div>
                                                         <?php if(!empty($product['description'])): ?>
                                                             <div class="vip-funnel-public__product-description"><?= $e($product['description']) ?></div>
                                                         <?php endif ?>
@@ -1199,28 +1199,28 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                     </div>
                                                 </div>
                                             <?php else: ?>
-                                                <div class="vip-funnel-public__product-empty">Ovaj produktni blok još nema odabran proizvod. Vrati se u VIP Funnel Studio i poveži ga s proizvodom iz blog kataloga.</div>
+                                                <div class="vip-funnel-public__product-empty"><?= htmlspecialchars(fcc_t('Ovaj produktni blok još nema odabran proizvod. Vrati se u VIP Funnel Studio i poveži ga s proizvodom iz blog kataloga.'), ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php endif ?>
                                         </div>
                                     <?php endif ?>
 
                                     <?php if($block_type === 'ai_product_advisor'): ?>
                                         <?php
-                                        $ai_button_label = trim((string) ($block['ai_button_label'] ?? 'Započni moju preporuku')) ?: 'Započni moju preporuku';
-                                        $ai_intro_label_public = trim((string) ($block['ai_intro_label'] ?? 'Tvoj osobni vodič')) ?: 'Tvoj osobni vodič';
+                                        $ai_button_label = trim((string) ($block['ai_button_label'] ?? fcc_t('Započni moju preporuku'))) ?: fcc_t('Započni moju preporuku');
+                                        $ai_intro_label_public = trim((string) ($block['ai_intro_label'] ?? fcc_t('Tvoj osobni vodič'))) ?: fcc_t('Tvoj osobni vodič');
                                         $ai_lead_enabled_public = !isset($block['ai_lead_capture_enabled']) || !empty($block['ai_lead_capture_enabled']);
                                         ?>
                                         <div class="vip-funnel-public__ai-card" style="border-color: <?= $e($hex_alpha($accent_color, '33')) ?>; background: linear-gradient(135deg, <?= $e($hex_alpha($accent_color, '24')) ?>, rgba(255,255,255,0.04));">
                                             <div class="vip-funnel-public__ai-head">
-                                                <div class="vip-funnel-public__ai-mark">AI</div>
+                                                <div class="vip-funnel-public__ai-mark"><?= htmlspecialchars(fcc_t('AI'), ENT_QUOTES, 'UTF-8') ?></div>
                                                 <div class="vip-funnel-public__ai-copy">
                                                     <div class="vip-funnel-public__ai-title" style="font-size: <?= $e(max(16, min(32, $text_size + 1))) ?>px; font-weight: <?= $e(max(700, $title_weight)) ?>; font-family: <?= $e($font_family) ?>; color: <?= $e($title_color) ?>;"><?= $e($ai_intro_label_public) ?></div>
-                                                    <div class="vip-funnel-public__ai-text">Odgovori prirodno, bez traženja po katalogu. Savjetnik pomaže složiti preporuku prema tvojem cilju.</div>
+                                                    <div class="vip-funnel-public__ai-text"><?= htmlspecialchars(fcc_t('Odgovori prirodno, bez traženja po katalogu. Savjetnik pomaže složiti preporuku prema tvojem cilju.'), ENT_QUOTES, 'UTF-8') ?></div>
                                                 </div>
                                             </div>
                                             <div class="vip-funnel-public__ai-chips">
-                                                <span class="vip-funnel-public__ai-chip">Preporuka po tvojem cilju</span>
-                                                <span class="vip-funnel-public__ai-chip"><?= $e($ai_lead_enabled_public ? 'Moguć osobni nastavak' : 'Bez kontakt forme') ?></span>
+                                                <span class="vip-funnel-public__ai-chip"><?= htmlspecialchars(fcc_t('Preporuka po tvojem cilju'), ENT_QUOTES, 'UTF-8') ?></span>
+                                                <span class="vip-funnel-public__ai-chip"><?= $e($ai_lead_enabled_public ? fcc_t('Moguć osobni nastavak') : fcc_t('Bez kontakt forme')) ?></span>
                                             </div>
                                             <?php if($ai_block_can_render): ?>
                                                 <div class="vip-funnel-public__actions" style="margin-top:0;">
@@ -1242,7 +1242,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                     ><?= $e($ai_button_label) ?></button>
                                                 </div>
                                             <?php else: ?>
-                                                <div class="vip-funnel-public__product-empty">AI savjetnik trenutno nije dostupan za ovu stranicu.</div>
+                                                <div class="vip-funnel-public__product-empty"><?= htmlspecialchars(fcc_t('AI savjetnik trenutno nije dostupan za ovu stranicu.'), ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php endif ?>
                                         </div>
                                     <?php endif ?>
@@ -1267,11 +1267,11 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                             <source src="<?= $e($block['media_url']) ?>">
                                                         </video>
                                                     <?php else: ?>
-                                                        <div>Video URL<br><?= $e($block['media_url']) ?></div>
+                                                        <div><?= htmlspecialchars(fcc_t('Video URL'), ENT_QUOTES, 'UTF-8') ?><br><?= $e($block['media_url']) ?></div>
                                                     <?php endif ?>
                                                 <?php endif ?>
                                             <?php else: ?>
-                                                <div><?= $e($block_type === 'image' ? 'Ovdje ide slika' : 'Ovdje ide video') ?></div>
+                                                <div><?= $e($block_type === 'image' ? fcc_t('Ovdje ide slika') : fcc_t('Ovdje ide video')) ?></div>
                                             <?php endif ?>
                                         </div>
                                     <?php endif ?>
@@ -1334,7 +1334,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                                         <?php
                                                         $option_hint = trim((string) ($option['hint'] ?? ''));
                                                         if($option_hint === '') {
-                                                            $option_hint = !empty($block['route_on_submit']) ? 'Ovaj odgovor mi pomaže da te bolje usmjerim.' : 'Ovaj odgovor pomaže da dobiješ jasniji sljedeći korak.';
+                                                            $option_hint = !empty($block['route_on_submit']) ? fcc_t('Ovaj odgovor mi pomaže da te bolje usmjerim.') : fcc_t('Ovaj odgovor pomaže da dobiješ jasniji sljedeći korak.');
                                                         }
                                                         ?>
                                                         <span class="vip-funnel-public__radio-hint"><?= $e($option_hint) ?></span>
@@ -1373,7 +1373,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                             data-vf-weekly-day="<?= $e($countdown_weekly_day) ?>"
                                             data-vf-weekly-time="<?= $e($countdown_weekly_time) ?>"
                                             data-vf-weekly-timezone="<?= $e($countdown_timezone) ?>"
-                                            data-vf-expired="<?= $e((string) ($block['completion_text'] ?? 'Vrijeme je isteklo.')) ?>"
+                                            data-vf-expired="<?= $e((string) ($block['completion_text'] ?? fcc_t('Vrijeme je isteklo.'))) ?>"
                                             data-vf-number-size="<?= $e($countdown_number_size) ?>"
                                             data-vf-number-color="<?= $e($countdown_number_color) ?>"
                                             style="--vf-countdown-border: <?= $e($hex_alpha($accent_color, '33')) ?>; --vf-countdown-surface: <?= $e($hex_alpha($accent_color, '1A')) ?>; --vf-countdown-glass-a: <?= $e($hex_alpha($accent_color, '29')) ?>; --vf-countdown-glass-b: rgba(255,255,255,0.03); --vf-countdown-glass-item: rgba(11,17,27,0.35);"
@@ -1497,7 +1497,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
 
                             <?php if(($page_has_capture_fields || $page_has_deferred_survey) && !$page_has_submit_action): ?>
                                 <div class="vip-funnel-public__block" data-vf-span="full">
-                                    <div class="vip-funnel-public__block-text" style="margin-bottom:.75rem;"><?= $e($page_has_deferred_survey && !$page_has_capture_fields ? 'Ovaj upitnik još nema završni submit CTA pa je uključen sigurnosni gumb za nastavak.' : 'Ova forma ili upitnik još nema poseban submit CTA pa je uključen sigurnosni gumb za slanje i nastavak.') ?></div>
+                                    <div class="vip-funnel-public__block-text" style="margin-bottom:.75rem;"><?= $e($page_has_deferred_survey && !$page_has_capture_fields ? fcc_t('Ovaj upitnik još nema završni submit CTA pa je uključen sigurnosni gumb za nastavak.') : fcc_t('Ova forma ili upitnik još nema poseban submit CTA pa je uključen sigurnosni gumb za slanje i nastavak.')) ?></div>
                                     <div class="vip-funnel-public__actions">
                                         <button
                                             type="submit"
@@ -1512,14 +1512,14 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
                                             data-vf-label="Pošalji i nastavi"
                                             data-vf-event-key="submit_fallback"
                                             data-is-ajax
-                                        >Pošalji i nastavi</button>
+                                        ><?= htmlspecialchars(fcc_t('Pošalji i nastavi'), ENT_QUOTES, 'UTF-8') ?></button>
                                     </div>
                                 </div>
                             <?php endif ?>
                         </div>
 
                         <?php if($sticky_cta): ?>
-                            <div class="vip-funnel-public__sticky-cta" aria-label="Glavna akcija">
+                            <div class="vip-funnel-public__sticky-cta" aria-label="<?= htmlspecialchars(fcc_t('Glavna akcija'), ENT_QUOTES, 'UTF-8') ?>">
                                 <div class="vip-funnel-public__sticky-cta-inner">
                                     <?php if(!empty($sticky_cta['is_submit'])): ?>
                                         <button
@@ -1743,7 +1743,7 @@ $show_progress_bar = !empty($surface['show_progress']) && $progress_total > 0;
         const viewerKey = node.getAttribute('data-vf-viewer') || 'guest';
         const pageKey = node.getAttribute('data-vf-page') || 'landing';
         const mode = node.getAttribute('data-vf-mode') || 'fixed';
-        const expiredText = node.getAttribute('data-vf-expired') || 'Vrijeme je isteklo.';
+        const expiredText = node.getAttribute('data-vf-expired') || window.fccT('Vrijeme je isteklo.');
         const storageKey = `vf_countdown_${viewerKey}_${pageKey}_${node.dataset.vfMode || mode}`;
         const unitSecondsMap = {days: 86400, hours: 3600, minutes: 60, seconds: 1};
         const unitNodes = [...node.querySelectorAll('[data-vf-countdown-value]')].map(item => ({

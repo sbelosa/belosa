@@ -49,21 +49,7 @@ class Link extends Controller {
     }
 
     private function get_default_whatsapp_phone_for_user($user) {
-        if(!$user) {
-            return '';
-        }
-
-        $referrer_phone = '';
-        if(!empty($user->referred_by)) {
-            $referrer_user = db()->where('user_id', (int) $user->referred_by)->getOne('users', ['preferences']);
-            $referrer_phone = $this->extract_user_phone_from_preferences($referrer_user);
-        }
-
-        if($referrer_phone) {
-            return $referrer_phone;
-        }
-
-        return $this->extract_user_phone_from_preferences($user);
+        return fc_get_user_default_whatsapp_phone($user);
     }
 
     private function get_ai_profile_values($preferences): array {
@@ -836,7 +822,7 @@ class Link extends Controller {
                 'picker_search' => 'WhatsApp',
                 'seed_settings' => [
                     'title' => 'Pošalji poruku na WhatsApp',
-                    'message' => 'Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.',
+                    'message' => fcc_t('Javi se ako želiš kratko pojašnjenje prije sljedećeg koraka.'),
                 ],
             ]),
         ];
@@ -3579,71 +3565,9 @@ class Link extends Controller {
                 if($this->link->type == 'biolink') {
 					$default_whatsapp_phone = $this->get_default_whatsapp_phone_for_user($this->user);
 
-                    /* Custom code: FC-2026-03-09: provide blog product options for Forever product biolink block */
-                    $blog_products = [];
-                    $blog_products_result = db()
-                        ->where('is_published', 1)
-                        ->orderBy('datetime', 'DESC')
-                        ->get('blog_posts', 300, ['blog_post_id', 'title', 'description', 'url', 'image', 'language']);
-                    $blog_products_index = [];
-                    $app_language_code = $this->link->settings->language_code ?? \Altum\Language::$default_code;
-
-                    foreach($blog_products_result as $blog_post) {
-                        $translation_key = trim((string) ($blog_post->url ?? ''));
-
-                        if($translation_key === '') {
-                            continue;
-                        }
-
-                        $language_code = null;
-                        if(!empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])) {
-                            $language_code = \Altum\Language::$active_languages[$blog_post->language];
-                        }
-
-                        $language_prefix = $language_code ? $language_code . '/' : null;
-                        $product_row = (object) [
-                            'blog_post_id' => (int) $blog_post->blog_post_id,
-                            'title' => (string) $blog_post->title,
-                            'description' => mb_substr(trim(strip_tags((string) ($blog_post->description ?? ''))), 0, 220),
-                            'blog_url' => SITE_URL . $language_prefix . 'blog/' . $blog_post->url,
-                            'image_url' => !empty($blog_post->image) ? \Altum\Uploads::get_full_url('blog') . $blog_post->image : null,
-                            'translation_key' => $translation_key,
-                            'language_code' => $language_code ?: \Altum\Language::$default_code,
-                        ];
-
-                        if(!isset($blog_products_index[$translation_key])) {
-                            $blog_products_index[$translation_key] = [
-                                'rows' => [],
-                                'ordered_language_codes' => [],
-                            ];
-                        }
-
-                        $blog_products_index[$translation_key]['rows'][$product_row->language_code] = $product_row;
-
-                        if(!in_array($product_row->language_code, $blog_products_index[$translation_key]['ordered_language_codes'], true)) {
-                            $blog_products_index[$translation_key]['ordered_language_codes'][] = $product_row->language_code;
-                        }
-                    }
-
-                    foreach($blog_products_index as $translation_key => $product_group) {
-                        $preferred_product = $product_group['rows'][$app_language_code]
-                            ?? $product_group['rows']['hr']
-                            ?? $product_group['rows']['en']
-                            ?? reset($product_group['rows']);
-
-                        if(!$preferred_product) {
-                            continue;
-                        }
-
-                        $preferred_product->translation_key = $translation_key;
-                        $preferred_product->available_language_codes = array_values($product_group['ordered_language_codes']);
-                        $preferred_product->available_languages_label = implode(' / ', array_map(static function($code) {
-                            return mb_strtoupper((string) $code);
-                        }, $preferred_product->available_language_codes));
-
-                        $blog_products[] = $preferred_product;
-                    }
-                    /* /Custom code: FC-2026-03-09 */
+                    /* Complete language families, attributed to this card owner. */
+                    $app_language_code = $this->link->settings->language_code ?? \Altum\Language::$default_code ?? 'en';
+                    $blog_products = fcc_product_picker_catalog((string) $app_language_code, (string) $this->link->url);
 
                     /* Get available themes */
                     $biolinks_themes = (new BiolinksThemes())->get_biolinks_themes();

@@ -1,0 +1,13 @@
+body.fcc-partner-mode{margin:0;background:#f3f7f4;font-family:system-ui;color:#173f34}
+.install-shell{max-width:720px;padding:36px 24px calc(32px + env(safe-area-inset-bottom));margin:auto}
+.install-back{display:inline-block;margin-bottom:30px;color:#155e51}
+.install-header{display:flex;align-items:center;gap:18px}.install-header img{flex:0 0 72px;border-radius:19px;box-shadow:0 6px 20px #173f3415}
+.install-shell h1{font-size:clamp(27px,5vw,38px);line-height:1.15;margin:8px 0 0;letter-spacing:-.035em}
+.install-shell .fp-lead{margin:24px 0;font-size:17px;line-height:1.7}
+.install-shell h2{font-size:22px;margin:8px 0 16px}.install-shell p{line-height:1.7}
+.install-shell .fp-panel{padding:26px;margin:18px 0;border:1px solid #d8e5dd;border-radius:22px;background:#fff}
+.install-shell ol{padding-left:22px;line-height:1.7;color:#395b50}.install-shell li{padding-left:5px;margin:14px 0}
+.install-shell .fp-actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+.install-source{color:#155e51;font-size:13px}.install-address>a{display:block;overflow-wrap:anywhere;color:#155e51;margin:14px 0}.install-address .fp-button{margin-top:6px}
+.install-shell summary{cursor:pointer;font-weight:600;padding:8px 0}.install-other .fp-panel{border:0;padding:16px 0 0;margin:0;box-shadow:none}.install-shell [hidden]{display:none!important}
+@media(max-width:480px){.install-shell{padding:24px 18px calc(28px + env(safe-area-inset-bottom))}.install-shell .fp-panel{padding:21px}.install-header{gap:14px}.install-header img{width:60px;height:60px;flex-basis:60px}.install-actions .fp-button{width:100%;text-align:center;justify-content:center}}

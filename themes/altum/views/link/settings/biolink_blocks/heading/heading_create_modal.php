@@ -24,12 +24,12 @@
                     <div class="form-group">
                         <label for="heading_heading_type"><i class="fas fa-fw fa-heading fa-sm text-muted mr-1"></i> <?= l('global.type') ?></label>
                         <select id="heading_heading_type" name="heading_type" class="custom-select">
-                            <option value="h1">H1</option>
-                            <option value="h2">H2</option>
-                            <option value="h3">H3</option>
-                            <option value="h4">H4</option>
-                            <option value="h5">H5</option>
-                            <option value="h6">H6</option>
+                            <option value="h1"><?= htmlspecialchars(fcc_t('H1'), ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="h2"><?= htmlspecialchars(fcc_t('H2'), ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="h3"><?= htmlspecialchars(fcc_t('H3'), ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="h4"><?= htmlspecialchars(fcc_t('H4'), ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="h5"><?= htmlspecialchars(fcc_t('H5'), ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="h6"><?= htmlspecialchars(fcc_t('H6'), ENT_QUOTES, 'UTF-8') ?></option>
                         </select>
                     </div>
 

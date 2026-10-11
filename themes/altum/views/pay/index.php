@@ -3,7 +3,7 @@
 <?php
 $selected_currency = settings()->payment->currencies->{currency()};
 $currency_decimals = $selected_currency->currency_decimals ?? 2;
-$is_fcc_premium_checkout = isset($data->plan_id) && is_numeric($data->plan_id) && (int) $data->plan_id === 5;
+$is_fcc_premium_checkout = fcc_partner_enabled();
 
 $get_pay_plan_translation_value = static function($plan, string $field): string {
     if(!$plan) {
@@ -23,7 +23,7 @@ $normalize_pay_plan_description = static function(string $description): string {
     $description = trim($description);
 
     if($description === 'For Offline Forever Business + Physical Forever Business Club Card') {
-        return 'For Offline Forever Business';
+        return fcc_t('For Offline Forever Business');
     }
 
     return $description;
@@ -136,14 +136,14 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('plan') ?>"><?= l('plan.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <?php if(settings()->payment->taxes_and_billing_is_enabled): ?>
                     <li><a href="<?= url('pay-billing/' . $data->plan_id) ?>"><?= l('pay_billing.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <?php endif ?>
-                <li class="active" aria-current="page"><?= sprintf(l('pay.breadcrumb'), $data->plan->translations->{\Altum\Language::$name}->name ?? $data->plan->name) ?></li>
+                <li class="active" aria-current="page"><?= sprintf(l('pay.breadcrumb'), $pay_plan_name) ?></li>
             </ol>
         </nav>
     <?php endif ?>
@@ -153,48 +153,16 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
             <div class="fcc-pay-hero__content">
                 <div class="fcc-pay-eyebrow"><?= l('pay.premium.eyebrow') ?></div>
                 <h1 class="fcc-pay-title"><?= sprintf(l('pay.custom_plan.header'), $pay_plan_name) ?></h1>
-                <p class="fcc-pay-subtitle"><?= l('pay.premium.subtitle') ?></p>
+                <p class="fcc-pay-subtitle"><?= htmlspecialchars(fcc_t('Odaberi razdoblje i način plaćanja. Prije nastavka provjeri sažetak.'), ENT_QUOTES, 'UTF-8') ?></p>
 
-                <div class="fcc-pay-badges">
-                    <span class="fcc-pay-badge is-plan"><?= $pay_plan_name ?></span>
-                    <?php if($pay_trial_available): ?>
-                        <span class="fcc-pay-badge is-trial"><?= sprintf(l('account_plan.premium.trial_cta'), (int) $data->plan->trial_days) ?></span>
-                    <?php endif ?>
-                    <span class="fcc-pay-badge is-gift"><?= l('account_plan.premium.trial_note') ?></span>
-                </div>
-
-                <?php if(!empty($pay_plan_highlights)): ?>
-                    <div class="fcc-pay-feature-chips">
-                        <?php foreach($pay_plan_highlights as $pay_highlight): ?>
-                            <span class="fcc-pay-feature-chip"><?= $pay_highlight ?></span>
-                        <?php endforeach ?>
-                    </div>
-                <?php endif ?>
             </div>
-
-            <div class="fcc-pay-hero__aside">
-                <?php if($pay_primary_price): ?>
-                    <div class="fcc-pay-price-panel">
-                        <div class="fcc-pay-price-overline"><?= l('account_plan.premium.from') ?></div>
-                        <div class="fcc-pay-price-main"><?= $pay_primary_price['amount'] ?></div>
-                        <div class="fcc-pay-price-label"><?= $pay_primary_price['label'] ?></div>
-                    </div>
-                <?php endif ?>
-
-                <?php if(!empty($pay_secondary_prices)): ?>
-                    <div class="fcc-pay-price-variants">
-                        <?php foreach($pay_secondary_prices as $price_variant): ?>
-                            <span class="fcc-pay-price-variant"><?= $price_variant['label'] ?>: <?= $price_variant['amount'] ?></span>
-                        <?php endforeach ?>
-                    </div>
-                <?php endif ?>
-            </div>
+            <a class="fp-button fp-button-outline" href="<?= url('account-plan') ?>"><?= htmlspecialchars(fcc_t('Moj paket'), ENT_QUOTES, 'UTF-8') ?></a>
         </section>
     <?php endif ?>
 
     <?php if(!settings()->payment->trial_require_card && $data->plan->trial_days && !$this->user->plan_trial_done && !isset($_GET['trial_skip'])): ?>
         <div class="d-flex align-items-center mb-5 <?= $is_fcc_premium_checkout ? 'fcc-pay-heading' : '' ?>">
-            <h1 class="h3 m-0"><?= sprintf(l('pay.trial.header'), $data->plan->translations->{\Altum\Language::$name}->name ?? $data->plan->name) ?></h1>
+            <h1 class="h3 m-0"><?= sprintf(l('pay.trial.header'), $pay_plan_name) ?></h1>
 
             <div class="ml-2">
                 <span data-toggle="tooltip" title="<?= l('pay.trial.subheader') ?>">
@@ -215,8 +183,8 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
                         <small>
                             <?= sprintf(
                                     l('pay.accept'),
-                                    '<a href="' . settings()->main->terms_and_conditions_url . '" target="_blank">' . l('global.terms_and_conditions') . '</a>',
-                                    '<a href="' . settings()->main->privacy_policy_url . '" target="_blank">' . l('global.privacy_policy') . '</a>'
+                                    '<a href="' . (trim((string)settings()->main->terms_and_conditions_url) ?: url('legal/terms')) . '" target="_blank">' . l('global.terms_and_conditions') . '</a>',
+                                    '<a href="' . (trim((string)settings()->main->privacy_policy_url) ?: url('legal/privacy')) . '" target="_blank">' . l('global.privacy_policy') . '</a>'
                             ) ?>
                         </small>
                     </div>
@@ -247,7 +215,7 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
 
         <?php if(!$is_fcc_premium_checkout): ?>
         <div class="d-flex align-items-center mb-5">
-            <h1 class="h3 m-0"><?= sprintf(l('pay.custom_plan.header'), $data->plan->translations->{\Altum\Language::$name}->name ?? $data->plan->name) ?></h1>
+            <h1 class="h3 m-0"><?= sprintf(l('pay.custom_plan.header'), $pay_plan_name) ?></h1>
 
             <div class="ml-2">
                 <span data-toggle="tooltip" title="<?= l('pay.custom_plan.subheader') ?>">
@@ -270,7 +238,7 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
                 <div class="col-12 col-xl-8 <?= $is_fcc_premium_checkout ? 'fcc-pay-main-column' : '' ?>">
 
                     <div class="d-flex justify-content-between">
-                        <h2 class="h5 mb-4"><i class="fas fa-fw fa-sm fa-shopping-bag mr-2"></i> <?= l('pay.custom_plan.payment_frequency') ?></h2>
+                        <h2 class="h5 mb-4"><i class="fas fa-fw fa-sm fa-shopping-bag mr-2"></i> <?= fcc_t('Učestalost plaćanja') ?></h2>
 
                         <div id="price_discount_case_wrapper" class="text-muted text-right d-none">
                             <div class="badge badge-primary mr-1">
@@ -663,18 +631,6 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
                 </div>
 
                 <div class="mt-5 mt-xl-0 col-12 col-xl-4 <?= $is_fcc_premium_checkout ? 'fcc-pay-sidebar-column' : '' ?>">
-                    <div class="mb-5">
-                        <h2 class="h6 mb-4">
-                            <i class="fas fa-fw fa-sm fa-hand-holding-heart mr-2"></i> <?= l('pay.plan_details') ?>
-                        </h2>
-
-                        <div class="card">
-                            <div class="card-body">
-                                <?= (new \Altum\View('partials/plan_features'))->run(['plan_settings' => $data->plan->settings]) ?>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="sticky">
                         <h2 class="h6 mb-4">
                             <i class="fas fa-fw fa-sm fa-file-invoice mr-2"></i> <?= l('pay.custom_plan.summary.header') ?>
@@ -690,7 +646,7 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
                                         </span>
 
                                         <span>
-                                            <?= $data->plan->translations->{\Altum\Language::$name}->name ?? $data->plan->name ?>
+                                            <?= $pay_plan_name ?>
                                         </span>
                                     </div>
 
@@ -757,7 +713,7 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
 
                                     <div class="d-flex justify-content-between mb-3">
                                         <span class="text-muted">
-                                            <?= l('pay.custom_plan.summary.payment_type') ?>
+                                            <?= fcc_t('Vrsta plaćanja') ?>
                                         </span>
 
                                         <div id="summary_payment_type_one_time" style="display: none;">
@@ -785,7 +741,7 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
 
                                     <div class="d-flex justify-content-between mb-3">
                                         <span class="text-muted">
-                                            <?= l('pay.custom_plan.summary.payment_processor') ?>
+                                            <?= fcc_t('Način plaćanja') ?>
                                         </span>
 
                                         <?php foreach($data->payment_processors as $key => $value): ?>
@@ -1055,14 +1011,10 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
                             </div>
 
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
+            <div class="fcc-pay-submit">
                 <div class="col-12">
 
-                    <div class="mt-5">
+                    <div class="mt-4">
                         <button type="submit" name="submit" class="btn btn-lg btn-block btn-primary">
                             <span id="submit_default_text"><?= l('pay.custom_plan.pay') ?></span>
                             <span id="submit_text" class="d-none"><?= l('pay.custom_plan.pay') ?></span>
@@ -1074,383 +1026,29 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
                         <small>
                             <?= sprintf(
                                     l('pay.accept'),
-                                    '<a href="' . settings()->main->terms_and_conditions_url . '" target="_blank">' . l('global.terms_and_conditions') . '</a>',
-                                    '<a href="' . settings()->main->privacy_policy_url . '" target="_blank">' . l('global.privacy_policy') . '</a>'
+                                    '<a href="' . (trim((string)settings()->main->terms_and_conditions_url) ?: url('legal/terms')) . '" target="_blank">' . l('global.terms_and_conditions') . '</a>',
+                                    '<a href="' . (trim((string)settings()->main->privacy_policy_url) ?: url('legal/privacy')) . '" target="_blank">' . l('global.privacy_policy') . '</a>'
                             ) ?>
                         </small>
                     </div>
 
                 </div>
             </div>
+                    <details class="fcc-pay-features"><summary><?= l('pay.plan_details') ?></summary>
+                     <div><?= (new \Altum\View('partials/plan_features'))->run(['plan_settings' => $data->plan->settings]) ?></div>
+                    </details>
+                    </div>
+                </div>
+            </div>
+
         </form>
 
     <?php endif ?>
 
-    <div class="mt-8 row">
-        <div class="col-12 col-lg-4 p-3" data-aos="fade-up" data-aos-delay="100">
-            <div class="card mb-md-0 h-100 up-animation">
-                <div class="card-body icon-zoom-animation">
-                    <div class="index-icon-container mb-3">
-                        <i class="fas fa-fw fa-lock text-primary"></i>
-                    </div>
 
-                    <h2 class="h6 mb-1"><?= l('pay.widget.ssl.header') ?></h2>
-
-                    <small class="text-muted m-0"><?= l('pay.widget.ssl.subheader') ?></small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-lg-4 p-3" data-aos="fade-up" data-aos-delay="200">
-            <div class="card mb-md-0 h-100 up-animation">
-                <div class="card-body icon-zoom-animation">
-                    <div class="index-icon-container mb-3">
-                        <i class="fas fa-fw fa-user-shield text-primary"></i>
-                    </div>
-
-                    <h2 class="h6 mb-1"><?= l('pay.widget.guarantee.header') ?></h2>
-
-                    <small class="text-muted m-0"><?= l('pay.widget.guarantee.subheader') ?></small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-lg-4 p-3" data-aos="fade-up" data-aos-delay="300">
-            <div class="card mb-md-0 h-100 up-animation">
-                <div class="card-body icon-zoom-animation">
-                    <div class="index-icon-container mb-3">
-                        <i class="fas fa-fw fa-star text-primary"></i>
-                    </div>
-
-                    <h2 class="h6 mb-1"><?= l('pay.widget.trusted.header') ?></h2>
-
-                    <small class="text-muted m-0"><?= sprintf(l('pay.widget.trusted.subheader'), $data->total_users) ?></small>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<?php if($is_fcc_premium_checkout): ?>
-<style>
-    .fcc-pay-page {
-        padding-bottom: 3rem;
-    }
-
-    .fcc-pay-page--premium .custom-breadcrumbs a,
-    .fcc-pay-page--premium .custom-breadcrumbs li,
-    .fcc-pay-page--premium .custom-breadcrumbs i {
-        color: rgba(208, 224, 243, 0.72);
-    }
-
-    .fcc-pay-hero,
-    .fcc-pay-page--premium .card,
-    .fcc-pay-page--premium .index-icon-container,
-    .fcc-pay-page--premium .fcc-pay-trust-card {
-        position: relative;
-        overflow: hidden;
-        border-radius: 28px;
-        border: 1px solid rgba(110, 142, 196, 0.16);
-        background:
-            radial-gradient(circle at top right, rgba(72, 230, 210, 0.12), transparent 26%),
-            radial-gradient(circle at bottom left, rgba(76, 132, 255, 0.1), transparent 30%),
-            linear-gradient(180deg, rgba(14, 24, 45, 0.98), rgba(10, 17, 32, 0.98));
-        box-shadow: 0 24px 64px rgba(3, 10, 24, 0.34);
-        color: #ecf7ff;
-    }
-
-    .fcc-pay-hero::before,
-    .fcc-pay-page--premium .card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent 26%);
-        pointer-events: none;
-    }
-
-    .fcc-pay-hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1.4fr) minmax(280px, .88fr);
-        gap: 1.5rem;
-        padding: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .fcc-pay-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        font-size: .76rem;
-        text-transform: uppercase;
-        letter-spacing: .16em;
-        font-weight: 800;
-        color: #8ceee2;
-        margin-bottom: .95rem;
-    }
-
-    .fcc-pay-title {
-        font-size: clamp(2rem, 4.2vw, 3.3rem);
-        line-height: .98;
-        letter-spacing: -.05em;
-        margin-bottom: .95rem;
-        color: #f7fbff;
-    }
-
-    .fcc-pay-subtitle,
-    .fcc-pay-page--premium .text-muted,
-    .fcc-pay-page--premium small.text-muted,
-    .fcc-pay-page--premium .form-text.text-muted,
-    .fcc-pay-page--premium .card-subtitle,
-    .fcc-pay-page--premium .card-title + small {
-        color: rgba(214, 228, 245, 0.76) !important;
-    }
-
-    .fcc-pay-subtitle {
-        max-width: 62ch;
-        font-size: 1.02rem;
-        line-height: 1.7;
-        margin-bottom: 1.2rem;
-    }
-
-    .fcc-pay-badges,
-    .fcc-pay-feature-chips,
-    .fcc-pay-price-variants {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .75rem;
-    }
-
-    .fcc-pay-badge,
-    .fcc-pay-feature-chip,
-    .fcc-pay-price-variant {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        padding: .72rem 1rem;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(153, 183, 225, 0.18);
-        color: #f3fbff;
-        font-size: .92rem;
-        line-height: 1.2;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-
-    .fcc-pay-badge.is-trial,
-    .fcc-pay-badge.is-gift,
-    .fcc-pay-feature-chip,
-    .fcc-pay-price-variant {
-        background: linear-gradient(135deg, rgba(255, 214, 110, 0.16), rgba(81, 226, 209, 0.16));
-        border-color: rgba(255, 225, 138, 0.24);
-    }
-
-    .fcc-pay-price-panel {
-        min-width: 100%;
-        padding: 1rem 1.05rem;
-        border-radius: 24px;
-        text-align: right;
-        background: linear-gradient(180deg, rgba(255, 232, 168, 0.12), rgba(79, 215, 203, 0.08));
-        border: 1px solid rgba(255, 225, 138, 0.2);
-    }
-
-    .fcc-pay-price-overline {
-        font-size: .72rem;
-        text-transform: uppercase;
-        letter-spacing: .16em;
-        font-weight: 800;
-        color: rgba(255, 244, 201, 0.82);
-        margin-bottom: .2rem;
-    }
-
-    .fcc-pay-price-main {
-        font-size: clamp(1.75rem, 3vw, 2.6rem);
-        line-height: 1;
-        letter-spacing: -.06em;
-        font-weight: 900;
-        color: #ffffff;
-    }
-
-    .fcc-pay-price-label {
-        margin-top: .35rem;
-        color: rgba(220, 235, 249, 0.78);
-        font-weight: 700;
-    }
-
-    .fcc-pay-page--premium h1,
-    .fcc-pay-page--premium h2,
-    .fcc-pay-page--premium h3,
-    .fcc-pay-page--premium h4,
-    .fcc-pay-page--premium h5,
-    .fcc-pay-page--premium h6,
-    .fcc-pay-page--premium label,
-    .fcc-pay-page--premium .card-title,
-    .fcc-pay-page--premium .card-body,
-    .fcc-pay-page--premium .card-footer,
-    .fcc-pay-page--premium .valid-feedback {
-        color: #ecf7ff;
-    }
-
-    .fcc-pay-page--premium .card {
-        background:
-            radial-gradient(circle at top right, rgba(72, 230, 210, 0.08), transparent 24%),
-            linear-gradient(180deg, rgba(16, 26, 47, 0.98), rgba(11, 18, 34, 0.98));
-    }
-
-    .fcc-pay-page--premium .card-body,
-    .fcc-pay-page--premium .card-footer {
-        position: relative;
-        z-index: 1;
-        background: transparent !important;
-        border-color: rgba(163, 192, 234, 0.1);
-    }
-
-    .fcc-pay-page--premium .custom-radio-box .card,
-    .fcc-pay-page--premium .sticky .card,
-    .fcc-pay-page--premium #offline_payment_processor_wrapper .card,
-    .fcc-pay-page--premium #plisio_processor_wrapper .card,
-    .fcc-pay-page--premium #plisio_whitelabel_processor_wrapper .card {
-        border-radius: 22px;
-    }
-
-    .fcc-pay-page--premium .custom-radio-box .card {
-        border-color: rgba(153, 183, 225, 0.14);
-        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
-    }
-
-    .fcc-pay-page--premium .custom-radio-box:hover .card {
-        transform: translateY(-2px);
-        border-color: rgba(126, 232, 220, 0.26);
-        box-shadow: 0 18px 34px rgba(2, 10, 24, 0.24);
-    }
-
-    .fcc-pay-page--premium .custom-radio-box input:checked ~ .card {
-        border-color: rgba(126, 232, 220, 0.42);
-        background:
-            radial-gradient(circle at top right, rgba(72, 230, 210, 0.13), transparent 24%),
-            linear-gradient(180deg, rgba(18, 35, 55, 0.99), rgba(11, 21, 37, 0.99));
-        box-shadow: 0 20px 38px rgba(12, 33, 58, 0.26);
-    }
-
-    .fcc-pay-page--premium .custom-radio-box-main-text {
-        font-size: 1.25rem;
-        font-weight: 900;
-        letter-spacing: -.03em;
-        color: #ffffff;
-    }
-
-    .fcc-pay-page--premium .badge-primary,
-    .fcc-pay-page--premium .badge-success {
-        border-radius: 999px;
-        padding: .42rem .62rem;
-    }
-
-    .fcc-pay-page--premium .badge-primary {
-        background: linear-gradient(135deg, #62f2df 0%, #4fd7cb 40%, #7ad0ff 100%);
-        color: #062322;
-    }
-
-    .fcc-pay-page--premium .badge-success {
-        background: rgba(89, 232, 203, 0.14);
-        color: #bfffee;
-        border: 1px solid rgba(89, 232, 203, 0.18);
-    }
-
-    .fcc-pay-page--premium .btn-primary {
-        border: 0;
-        color: #062322;
-        background: linear-gradient(135deg, #62f2df 0%, #4fd7cb 40%, #7ad0ff 100%);
-        box-shadow: 0 18px 32px rgba(79, 215, 203, 0.22);
-    }
-
-    .fcc-pay-page--premium .btn-primary:hover,
-    .fcc-pay-page--premium .btn-primary:focus {
-        color: #04191c;
-        transform: translateY(-1px);
-        box-shadow: 0 22px 38px rgba(79, 215, 203, 0.28);
-    }
-
-    .fcc-pay-page--premium .btn-light,
-    .fcc-pay-page--premium .btn-outline-secondary {
-        background: rgba(255,255,255,0.04);
-        color: #eef9ff;
-        border-color: rgba(181, 213, 248, 0.18);
-    }
-
-    .fcc-pay-page--premium .btn-light:hover,
-    .fcc-pay-page--premium .btn-outline-secondary:hover {
-        background: rgba(255,255,255,0.08);
-        color: #fff;
-        border-color: rgba(181, 213, 248, 0.28);
-    }
-
-    .fcc-pay-page--premium .form-control,
-    .fcc-pay-page--premium .form-control:focus,
-    .fcc-pay-page--premium .form-control-file,
-    .fcc-pay-page--premium .custom-select {
-        background: rgba(255,255,255,0.05);
-        border-color: rgba(163, 192, 234, 0.14);
-        color: #eef8ff;
-    }
-
-    .fcc-pay-page--premium .form-control::placeholder {
-        color: rgba(214, 228, 245, 0.42);
-    }
-
-    .fcc-pay-page--premium #code_help.valid-feedback,
-    .fcc-pay-page--premium #code_help.invalid-feedback {
-        display: block;
-    }
-
-    .fcc-pay-page--premium .card-footer.bg-white {
-        background: rgba(255,255,255,0.03) !important;
-    }
-
-    .fcc-pay-page--premium .index-icon-container {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 64px;
-        height: 64px;
-        border-radius: 20px;
-        background: linear-gradient(135deg, rgba(98, 242, 223, 0.2), rgba(122, 208, 255, 0.14));
-        border: 1px solid rgba(126, 232, 220, 0.18);
-        box-shadow: none;
-    }
-
-    .fcc-pay-page--premium .index-icon-container i {
-        color: #8ceee2 !important;
-    }
-
-    .fcc-pay-page--premium .up-animation.card,
-    .fcc-pay-page--premium .up-animation {
-        border-radius: 24px;
-    }
-
-    .fcc-pay-page--premium .mt-8.row .card {
-        height: 100%;
-    }
-
-    .fcc-pay-page--premium a:not(.btn) {
-        color: #8ceee2;
-    }
-
-    @media (max-width: 1199.98px) {
-        .fcc-pay-hero {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 767.98px) {
-        .fcc-pay-hero {
-            padding: 1.25rem;
-            border-radius: 24px;
-        }
-
-        .fcc-pay-price-panel {
-            text-align: left;
-        }
-    }
-</style>
-<?php endif ?>
+<?php if($is_fcc_premium_checkout) \Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-billing.css?v='.filemtime(ASSETS_PATH.'css/fcc-billing.css').'">','fcc_styles'); ?>
 
 <?php ob_start() ?>
 <script>
@@ -1787,6 +1385,4 @@ $pay_trial_available = !empty($data->plan->trial_days) && empty($this->user->pla
     <?= include_view(THEME_PATH . 'views/pay/plisio_whitelabel_modal.php', ['payment_extra_data' => $data->payment_extra_data]) ?>
 <?php endif ?>
 
-<?php ob_start() ?>
-<link href="<?= ASSETS_FULL_URL . 'css/index-custom.css?v=' . PRODUCT_CODE ?>" rel="stylesheet" media="screen,print">
-<?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+

@@ -89,7 +89,7 @@ $account_billing_locked = !empty($this->user->payment_subscription_id);
 
         <section class="fcc-account-section">
             <div class="fcc-account-section-header d-flex align-items-center mb-3">
-                <h1 class="h4 m-0"><?= l('account.settings.header') ?></h1>
+                <h2 class="h4 m-0"><?= l('account.settings.header') ?></h2>
 
                 <div class="ml-2">
                     <span data-toggle="tooltip" title="<?= l('account.settings.subheader') ?>">
@@ -195,7 +195,7 @@ $account_billing_locked = !empty($this->user->payment_subscription_id);
 
         <section class="fcc-account-section" id="billing" style="<?= !settings()->payment->is_enabled || !settings()->payment->taxes_and_billing_is_enabled ? 'display: none;' : null ?>">
             <div class="fcc-account-section-header d-flex align-items-center mb-3">
-                <h1 class="h4 m-0"><?= l('account.billing.header') ?></h1>
+                <h2 class="h4 m-0"><?= l('account.billing.header') ?></h2>
 
                 <div class="ml-2">
                     <span data-toggle="tooltip" title="<?= l('account.billing.subheader') ?>">
@@ -395,7 +395,7 @@ $account_billing_locked = !empty($this->user->payment_subscription_id);
 
         <section class="fcc-account-section">
             <div class="fcc-account-section-header d-flex align-items-center mb-3">
-                <h1 class="h4 m-0"><?= l('account.twofa.header') ?></h1>
+                <h2 class="h4 m-0"><?= l('account.twofa.header') ?></h2>
 
                 <div class="ml-2">
                     <span data-toggle="tooltip" title="<?= l('account.twofa.subheader') ?>">
@@ -464,7 +464,7 @@ $account_billing_locked = !empty($this->user->payment_subscription_id);
 
         <section class="fcc-account-section">
             <div class="fcc-account-section-header d-flex align-items-center mb-3">
-                <h1 class="h4 m-0"><?= l('account.change_password.header') ?></h1>
+                <h2 class="h4 m-0"><?= l('account.change_password.header') ?></h2>
 
                 <div class="ml-2">
                     <span data-toggle="tooltip" title="<?= l('account.change_password.subheader') ?>">

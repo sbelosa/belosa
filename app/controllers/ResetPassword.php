@@ -37,7 +37,7 @@ class ResetPassword extends Controller {
         if(!$md5email || !$lost_password_code || mb_strlen($lost_password_code) < 1) throw_404();
 
         /* Check if the lost password code is correct */
-        $user = db()->where('lost_password_code', $lost_password_code)->getOne('users', ['user_id', 'email', 'name', 'password']);
+        $user = db()->where('lost_password_code', $lost_password_code)->getOne('users', ['user_id', 'email', 'name', 'password', 'status']);
 
         if(!$user) {
             throw_404();
@@ -83,6 +83,13 @@ class ResetPassword extends Controller {
 
                 /* Set a nice success message */
                 Alerts::add_success(l('reset_password.success_message'));
+
+                /* Resetting a password does not approve a pending/suspended FCC account. */
+                if((int) $user->status !== 1) {
+                    cache()->deleteItemsByTag('user_id=' . $user->user_id);
+                    Alerts::add_info(l((int) $user->status === 0 ? 'login.error_message.pending_admin_approval' : 'login.error_message.user_not_active'));
+                    redirect('login');
+                }
 
                 /* Log the user in */
                 session_set('user_id', $user->user_id);

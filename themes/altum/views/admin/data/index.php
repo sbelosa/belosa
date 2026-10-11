@@ -174,10 +174,16 @@
                         </div>
                     </td>
 
-                    <td class="text-nowrap">
-                        <div class="d-flex flex-column small">
-                            <?php foreach($row->data as $key => $value): ?>
-                                <div><span class="font-weight-bold"><?= $key ?>:</span> <?= $value ?></div>
+                    <td>
+                        <div class="d-flex flex-column small" style="min-width:16rem;max-width:32rem;overflow-wrap:anywhere;white-space:normal">
+                            <?php foreach((array)($row->data ?? []) as $key => $value): ?>
+                                <?php
+                                // Funnel answers can contain nested objects and arrays, not only text.
+                                $display_value = is_scalar($value) && !is_bool($value)
+                                    ? (string)$value
+                                    : (json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) ?: '');
+                                ?>
+                                <div><span class="font-weight-bold"><?= htmlspecialchars((string)$key, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>:</span> <?= htmlspecialchars($display_value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
                             <?php endforeach ?>
                         </div>
                     </td>
@@ -188,7 +194,7 @@
 
                     <td class="text-nowrap">
                         <span class="badge badge-light">
-                            <i class="<?= $data->biolink_blocks[$row->type]['icon'] ?> fa-fw fa-sm mr-1"></i>
+                            <i class="<?= $data->biolink_blocks[$row->type]['icon'] ?? 'fas fa-database' ?> fa-fw fa-sm mr-1"></i>
                             <?= l('link.biolink.blocks.' . $row->type) ?>
                         </span>
                     </td>

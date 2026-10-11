@@ -730,7 +730,7 @@ function fc_ensure_forever_click_qualification_schema(): void {
         return;
     }
     $lock = database()->query("SELECT GET_LOCK('fcc_click_qualification_v1', 30) AS acquired")->fetch_assoc();
-    if((int) ($lock['acquired'] ?? 0) !== 1) throw new \RuntimeException('Click qualification migration is busy');
+    if((int) ($lock['acquired'] ?? 0) !== 1) throw new \RuntimeException(fcc_t('Click qualification migration is busy'));
     try {
         fc_ensure_forever_click_integrity_tables();
         fc_ensure_track_links_visitor_key_schema();
@@ -742,11 +742,11 @@ function fc_ensure_forever_click_qualification_schema(): void {
                 ADD `fcc_parent_link_id` INT UNSIGNED NULL DEFAULT NULL,
                 ADD `fcc_integrity_accept_id` BIGINT UNSIGNED NULL DEFAULT NULL,
                 ADD INDEX `fcc_integrity_accept` (`fcc_integrity_accept_id`)
-            ")) throw new \RuntimeException('Could not add click qualification snapshot');
+            ")) throw new \RuntimeException(fcc_t('Could not add click qualification snapshot'));
         }
         $index = database()->query("SHOW INDEX FROM `forever_click_integrity_accepts` WHERE Key_name = 'fcc_track_match'");
         if(!$index->num_rows && !database()->query("ALTER TABLE `forever_click_integrity_accepts` ADD INDEX `fcc_track_match` (`user_id`, `accepted_datetime`, `biolink_block_id`, `link_id`)")) {
-            throw new \RuntimeException('Could not index historical click reconciliation');
+            throw new \RuntimeException(fcc_t('Could not index historical click reconciliation'));
         }
         $valid_destination = \Altum\Link::get_forever_destination_condition_sql('a.destination_url');
         $legacy_types = "'" . implode("','", \Altum\Link::get_fcc_results_qualified_block_types()) . "'";
@@ -771,11 +771,11 @@ function fc_ensure_forever_click_qualification_schema(): void {
                 t.fcc_parent_link_id = b.link_id,
                 t.fcc_integrity_accept_id = a.integrity_accept_id
             WHERE t.fcc_click_kind IS NULL";
-        if(!database()->query($sql)) throw new \RuntimeException('Could not reconcile historical clicks');
+        if(!database()->query($sql)) throw new \RuntimeException(fcc_t('Could not reconcile historical clicks'));
         /* This default is also the durable migration-complete marker. New non-Forever
            events are unqualified even if their caller supplies a forged UTM medium. */
         if(!database()->query("ALTER TABLE `track_links` MODIFY `fcc_click_kind` VARCHAR(32) NULL DEFAULT 'none'")) {
-            throw new \RuntimeException('Could not finalize click qualification migration');
+            throw new \RuntimeException(fcc_t('Could not finalize click qualification migration'));
         }
         $ready = true;
     } finally {
@@ -843,7 +843,7 @@ function fc_process_monitored_forever_click(array $payload): array {
     try {
         db()->startTransaction();
         $result = fc_record_monitored_forever_click($payload);
-        if(!db()->commit()) throw new \RuntimeException('Could not commit qualified click');
+        if(!db()->commit()) throw new \RuntimeException(fcc_t('Could not commit qualified click'));
         return $result;
     } catch(\Throwable $exception) {
         db()->rollback();
@@ -1010,7 +1010,7 @@ function fc_record_monitored_forever_click(array $payload): array {
         'last_attempt_datetime' => $now_datetime,
     ]);
 
-    if(!$accept_id) throw new \RuntimeException('Could not persist click acceptance');
+    if(!$accept_id) throw new \RuntimeException(fcc_t('Could not persist click acceptance'));
     $parent_link_id = $biolink_block_id ? db()->where('biolink_block_id', $biolink_block_id)->getValue('biolinks_blocks', 'link_id') : null;
     $track_id = db()->insert('track_links', [
         'fcc_click_kind' => \Altum\Link::get_forever_click_kind($source_type, $click_type),
@@ -1037,7 +1037,7 @@ function fc_record_monitored_forever_click(array $payload): array {
         'datetime' => $now_datetime,
     ]);
 
-    if(!$track_id) throw new \RuntimeException('Could not persist qualified click');
+    if(!$track_id) throw new \RuntimeException(fcc_t('Could not persist qualified click'));
 
     if($biolink_block_id) {
         db()->where('biolink_block_id', $biolink_block_id)->update('biolinks_blocks', ['clicks' => db()->inc()]);
@@ -1443,6 +1443,7 @@ function fc_is_valid_forever_sales_link_url($url): bool {
 }
 
 function fc_get_missing_sales_link_segment_users(): array {
+    return []; // Factory shop buttons replace the retired manual Link Builder setup reminder.
     $users = db()
         ->where('type', 0)
         ->where('status', 1)
@@ -1520,6 +1521,7 @@ function fc_is_user_in_automation_segment(string $segment, int $user_id, $automa
 
     switch($segment) {
         case 'missing_forever_sales_link':
+            return false; // Retired setup reminder, including pending enrollments.
             $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'type', 'status']);
 
             if(!$user || (int) $user->type !== 0 || (int) $user->status !== 1) {

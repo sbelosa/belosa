@@ -43,7 +43,7 @@
                     <div class="mail-studio-hero__stats">
                         <div class="mail-studio-stat">
                             <span class="mail-studio-stat__label"><?= l('admin_automation_create.stat_segment') ?></span>
-                            <strong class="mail-studio-stat__value">Live segment</strong>
+                            <strong class="mail-studio-stat__value"><?= htmlspecialchars(fcc_t('Live segment'), ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                         <div class="mail-studio-stat">
                             <span class="mail-studio-stat__label"><?= l('admin_automation_create.stat_steps') ?></span>
@@ -620,7 +620,7 @@
             }
         });
 
-        quill.root.innerHTML = target.value || '<p></p>';
+        quill.clipboard.dangerouslyPasteHTML(target.value || '<p></p>', 'silent');
         editors[target.id] = quill;
         element.dataset.initialized = 'true';
     };

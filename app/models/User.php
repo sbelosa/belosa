@@ -175,7 +175,6 @@ class User extends Model {
     /* Custom code: FC-2026-06-12: protect recurring Stripe members from expiry fallback when the local subscription link is temporarily missing */
     public function has_expired_plan_downgrade_protection($user): bool {
         $extra = $this->decode_extra($user->extra ?? null);
-        $billing_state = (string) ($extra->billing_state ?? '');
         $stripe_status = (string) ($extra->billing_stripe_status ?? '');
         $has_known_stripe_customer = !empty($extra->stripe_customer_id);
         $payment_processor = trim((string) ($user->payment_processor ?? ''));
@@ -192,14 +191,9 @@ class User extends Model {
             return $has_known_stripe_customer && $this->is_downgrade_protected_stripe_status($stripe_status);
         }
 
-        if($subscription_id !== '') {
-            return true;
-        }
-
-        if(in_array($billing_state, [Billing::STATE_PAST_DUE, Billing::STATE_PAST_DUE_CRITICAL], true)) {
-            return true;
-        }
-
+        // A retired processor's subscription reference is history, not an
+        // entitlement. Paid time is checked before this method is called.
+        // Grace and recurring recovery belong only to the Stripe branch above.
         return false;
     }
 
@@ -387,7 +381,9 @@ class User extends Model {
                     $status_changed = true;
                 }
 
-                if(!$was_auto_disabled) {
+                // Remember only blocks actually disabled by this downgrade.
+                // A member's manually hidden block must remain hidden after upgrade.
+                if($is_enabled && !$was_auto_disabled) {
                     $settings->plan_auto_disabled = true;
                     $settings_changed = true;
                 }
@@ -692,10 +688,16 @@ class User extends Model {
 
         if(!$this->has_expired_plan_downgrade_protection($user)) {
 
+            // Resolve the plan before starting the user update query: db() is shared.
+            $fallback_plan = (new \Altum\Models\Plan())->get_plan_by_id(2);
+            if(!$fallback_plan) {
+                throw new \RuntimeException('Beginner plan is unavailable.');
+            }
+
             /* Switch the user to the default plan */
             db()->where('user_id', $user->user_id)->update('users', [
                 'plan_id' => 2, /* Custom code */
-                'plan_settings' => json_encode( (new \Altum\Models\Plan())->get_plan_by_id(2)->settings),  /* Custom code */
+                'plan_settings' => json_encode($fallback_plan->settings),
                 'plan_expiration_date' => date( 'Y-m-d H:i:s', strtotime( ' + 10 years' ) ),  /* Custom code */
                 'payment_subscription_id' => '',
                 'payment_processor' => '',
@@ -739,8 +741,15 @@ class User extends Model {
         /* Run potential hooks */
         \Altum\CustomHooks::user_delete(['user' => $user]);
 
-        /* Delete the record from the database */
-        db()->where('user_id', $user_id)->delete('users');
+        /* Remove webinar capabilities and guest data before the account disappears. */
+        if(function_exists('fcc_webinar_delete_user_data') && fcc_webinar_schema()) {
+            fcc_webinar_atomic((int)$user_id, function() use ($user_id) {
+                fcc_webinar_delete_user_data((int)$user_id);
+                fcc_partner_query('DELETE FROM users WHERE user_id=?', [(int)$user_id]);
+            });
+        } else {
+            db()->where('user_id', $user_id)->delete('users');
+        }
 
         /* Clear the cache */
         cache()->deleteItemsByTag('user_id=' . $user_id);
@@ -1202,6 +1211,16 @@ class User extends Model {
             }
 
             switch($biolink_block->type) {
+                case 'link_forever_webshop_reg':
+                    $biolink_block->settings->factory_shop = true;
+                    // Reset copied targeting and referral fields; the public renderer uses the new owner.
+                    unset($biolink_block->settings->forever_id, $biolink_block->settings->foreverId, $biolink_block->settings->ref);
+                    foreach(['countries','continents','cities','devices','languages','operating_systems','browsers'] as $target) $biolink_block->settings->{'display_' . $target} = [];
+                    db()->where('biolink_block_id', $biolink_block->biolink_block_id)->where('user_id', $user->user_id)->update('biolinks_blocks', [
+                        'location_url'=>'https://foreverliving.com/', 'settings'=>json_encode($biolink_block->settings),
+                        'is_enabled'=>1, 'start_date'=>null, 'end_date'=>null,
+                    ]);
+                    break;
                 case 'heading':
                     $biolink_block->settings->text = $user->name;
 
@@ -1255,11 +1274,21 @@ class User extends Model {
                     ]);
                     break;
 
+                case 'custom_html_whatsapp':
+                    /* New/reset template: discard the author's recipient. */
+                    if(!is_object($biolink_block->settings)) $biolink_block->settings = (object) [];
+                    $biolink_block->settings->phone = fc_get_user_default_whatsapp_phone($user);
+                    $biolink_block->settings->display_countries = [];
+                    db()->where('biolink_block_id', $biolink_block->biolink_block_id)->where('user_id', $user->user_id)->update('biolinks_blocks', [
+                        'settings' => json_encode($biolink_block->settings),
+                        'is_enabled' => $biolink_block->settings->phone !== '' ? 1 : 0,
+                    ]);
+                    break;
+
                 case 'link':
                 case 'link_forever_shop':
                 case 'link_discount':
                 case 'custom_html_chatbot':
-                case 'custom_html_whatsapp':
                 case 'link_homescreen_android':
                 case 'link_homescreen_ios':
                 case 'link_save_contact':
@@ -1473,6 +1502,7 @@ class User extends Model {
             $biolink_blocks = db()->where('link_id', $biolink_template->link_id)->get('biolinks_blocks');
 
             foreach($biolink_blocks as $biolink_block) {
+                if(in_array($biolink_block->type,['link_discount','link_forever_living_bih','link_forever_living_alb_kosovo'],true))continue;
                 $biolink_block->settings = json_decode($biolink_block->settings);
 
                 if(is_array($biolink_block->settings)) {
@@ -1519,10 +1549,13 @@ class User extends Model {
             }
         }
 
+        fc_ensure_factory_shop_block((int)$user->user_id, (int)$link_id);
         $this->hydrate_biolink_from_user_data($user->user_id, $link_id, $vcard_url);
 
         $qr_code_settings = require APP_PATH . 'includes/qr_codes.php';
         $available_qr_codes = require APP_PATH . 'includes/enabled_qr_codes.php';
+        // The registration card always needs a URL QR, even if the QR editor is disabled.
+        $available_qr_codes['url'] = $qr_code_settings['url'];
 
         $settings = [
             'style' => 'square',
@@ -2135,6 +2168,11 @@ class User extends Model {
             exec(escapeshellarg($magick_binary) . ' convert -density 300x300 -background none ' . escapeshellarg($svg) . ' ' . escapeshellarg($png));
         } elseif($convert_binary) {
             exec(escapeshellarg($convert_binary) . ' -density 300x300 -background none ' . escapeshellarg($svg) . ' ' . escapeshellarg($png));
+        } else {
+            // Bundled SVG + GD keep registration available without ImageMagick.
+            $qr_image = \SVG\SVG::fromFile($svg)->toRasterImage(600, 600, '#ffffff');
+            imagepng($qr_image, $png);
+            imagedestroy($qr_image);
         }
 
         $pdf = new \TCPDF('L', 'mm', ['85.51', '54.02'], true, 'UTF-8');

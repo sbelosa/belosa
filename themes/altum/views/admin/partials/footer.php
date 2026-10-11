@@ -4,7 +4,7 @@
     <div class="mb-3 mb-lg-0">
         <div class="mb-2"><?= sprintf(l('global.footer.copyright'), date('Y'), settings()->main->title) ?></div>
 
-        <div>Powered by <img src="<?= ASSETS_FULL_URL . 'images/altumcode.svg' ?>" class="icon-favicon" alt="AltumCode logo" /> <a href="https://altumcode.com/" target="_blank">AltumCode</a>.</div>
+        <div><?= htmlspecialchars(fcc_t('Powered by'), ENT_QUOTES, 'UTF-8') ?> <img src="<?= ASSETS_FULL_URL . 'images/altumcode.svg' ?>" class="icon-favicon" alt="<?= htmlspecialchars(fcc_t('AltumCode logo'), ENT_QUOTES, 'UTF-8') ?>" /> <a href="https://altumcode.com/" target="_blank"><?= htmlspecialchars(fcc_t('AltumCode'), ENT_QUOTES, 'UTF-8') ?></a>.</div>
     </div>
 
     <div class="d-flex flex-row flex-truncate">
@@ -84,7 +84,7 @@
             </div>
         <?php endif ?>
 
-        <?php if(settings()->main->theme_style_change_is_enabled): ?>
+        <?php if(settings()->main->theme_style_change_is_enabled && !fcc_partner_enabled()): ?>
             <div class="ml-lg-3">
                 <button type="button" id="switch_theme_style" class="btn btn-link text-decoration-none p-0" data-toggle="tooltip" title="<?= sprintf(l('global.theme_style'), (\Altum\ThemeStyle::get() == 'light' ? l('global.theme_style_dark') : l('global.theme_style_light'))) ?>" aria-label="<?= sprintf(l('global.theme_style'), (\Altum\ThemeStyle::get() == 'light' ? l('global.theme_style_dark') : l('global.theme_style_light'))) ?>" data-title-theme-style-light="<?= sprintf(l('global.theme_style'), l('global.theme_style_light')) ?>" data-title-theme-style-dark="<?= sprintf(l('global.theme_style'), l('global.theme_style_dark')) ?>">
                     <span data-theme-style="light" class="<?= \Altum\ThemeStyle::get() == 'light' ? null : 'd-none' ?>"><i class="fas fa-fw fa-sm fa-sun text-warning"></i></span>

@@ -2,12 +2,12 @@
 <?php
 $fcc_discount_tutorial_copy = \Altum\Language::$code === 'hr'
     ? [
-        'note' => 'Prije aktivacije ovog bloka zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici. Ovaj se tok sada komunicira kao službeno naručivanje bez registracije, bez uključivanja u poslovanje i bez minimalne narudžbe. Klikovi na ovaj blok ulaze u 15+ / 30d signal za Istaknute aplikacije i pomažu graditi 50+ / 30d status preporučenog sponzora za naslovnicu.',
-        'video' => 'Pogledaj video uputu'
+        'note' => fcc_t('Prije aktivacije ovog bloka zalijepi link izrađen u Forever Link Builderu na Foreverliving.com stranici. Ovaj se tok sada komunicira kao službeno naručivanje bez registracije, bez uključivanja u poslovanje i bez minimalne narudžbe. Klikovi na ovaj blok ulaze u 15+ / 30d signal za Istaknute aplikacije i pomažu graditi 50+ / 30d status preporučenog sponzora za naslovnicu.'),
+        'video' => fcc_t('Pogledaj video uputu')
     ]
     : [
-        'note' => 'Before activating this block, paste the link created in Forever Link Builder on the Foreverliving.com website. This is now communicated as the official ordering path without registration, without joining the business and without a minimum order. Clicks on this block count toward the 15+ / 30d Featured Apps signal and help build the 50+ / 30d recommended sponsor status for the homepage.',
-        'video' => 'Watch the video guide'
+        'note' => fcc_t('Before activating this block, paste the link created in Forever Link Builder on the Foreverliving.com website. This is now communicated as the official ordering path without registration, without joining the business and without a minimum order. Clicks on this block count toward the 15+ / 30d Featured Apps signal and help build the 50+ / 30d recommended sponsor status for the homepage.'),
+        'video' => fcc_t('Watch the video guide')
     ];
 ?>
 <!-- Custom code -->
@@ -18,6 +18,7 @@ $fcc_discount_tutorial_copy = \Altum\Language::$code === 'hr'
     <input type="hidden" name="biolink_block_id" value="<?= $row->biolink_block_id ?>" />
 
     <div class="notification-container"></div>
+    <p class="alert alert-info"><?= htmlspecialchars(fcc_forever_copy('legacy_help'),ENT_QUOTES,'UTF-8') ?></p>
 
     <div class="alert alert-primary">
         <i class="fas fa-fw fa-info-circle mr-2"></i>
@@ -29,7 +30,7 @@ $fcc_discount_tutorial_copy = \Altum\Language::$code === 'hr'
 
     <div class="form-group">
         <label for="<?= 'link_location_url_' . $row->biolink_block_id ?>"><i class="fa fa-fw fa-link fa-sm text-muted mr-1"></i> <?= l('biolink_link.location_url') ?></label>
-        <input id="<?= 'link_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $row->location_url ?>" maxlength="2048" placeholder="https://thealoeveraco.shop/xxxxxxxx" required="required" />
+        <input id="<?= 'link_location_url_' . $row->biolink_block_id ?>" type="text" class="form-control" name="location_url" value="<?= $row->location_url ?>" maxlength="2048" placeholder="<?= htmlspecialchars('https://thealoeveraco.shop/xxxxxxxx', ENT_QUOTES, 'UTF-8') ?>" required="required" />
     </div>
 
     <div class="form-group">
@@ -340,7 +341,7 @@ $fcc_discount_tutorial_copy = \Altum\Language::$code === 'hr'
         <div class="form-group">
             <label for="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-server fa-sm text-muted mr-1"></i> <?= l('biolink_link.display_operating_systems') ?></label>
             <select id="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>" name="display_operating_systems[]" class="custom-select" multiple="multiple">
-                <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                     <option value="<?= $os_name ?>" <?= in_array($os_name, $row->settings->display_operating_systems ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                 <?php endforeach ?>
             </select>

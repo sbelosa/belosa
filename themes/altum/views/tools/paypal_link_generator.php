@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
             <li class="active" aria-current="page"><?= l('tools.paypal_link_generator.name') ?></li>
@@ -65,7 +65,7 @@
                     <div class="col-lg-4">
                         <div class="form-group">
                             <label for="currency"><i class="fas fa-fw fa-euro-sign fa-sm text-muted mr-1"></i> <?= l('tools.paypal_link_generator.currency') ?></label>
-                            <input type="text" id="currency" name="currency" class="form-control <?= \Altum\Alerts::has_field_errors('currency') ? 'is-invalid' : null ?>" placeholder="USD" maxlength="8" />
+                            <input type="text" id="currency" name="currency" class="form-control <?= \Altum\Alerts::has_field_errors('currency') ? 'is-invalid' : null ?>" placeholder="<?= htmlspecialchars(fcc_t('USD'), ENT_QUOTES, 'UTF-8') ?>" maxlength="8" />
                             <?= \Altum\Alerts::output_field_error('currency') ?>
                         </div>
                     </div>

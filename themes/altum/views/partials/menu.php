@@ -1,4 +1,6 @@
 <?php defined('ALTUMCODE') || die() ?>
+<?php if((\Altum\Router::$controller_settings['wrapper'] ?? '') === 'wrapper'): require THEME_PATH.'views/public/menu.php'; return; endif ?>
+
 
 <?php
 /* Custom code: FC-2026-02-26: localized fixed menu labels */
@@ -81,6 +83,8 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                 <?= settings()->main->title ?>
             <?php endif ?>
         </a>
+
+        <?php fcc_language_selector("public"); ?>
 
         <button class="btn navbar-custom-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#main_navbar" aria-controls="main_navbar" aria-expanded="false" aria-label="<?= l('global.accessibility.toggle_navigation') ?>">
             <i class="fas fa-fw fa-bars"></i>
@@ -425,7 +429,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                     <?php if(settings()->users->register_is_enabled): ?>
                         <li class="nav-item d-flex align-items-center ml-lg-1">
                             <!-- Custom code: FC-2026-02-27: register button label update -->
-                            <a class="btn btn-sm btn-primary" href="<?= url('register') ?>"><i class="fas fa-fw fa-sm fa-user-plus"></i> Registracija</a>
+                            <a class="btn btn-sm btn-primary" href="<?= url('register') ?>"><i class="fas fa-fw fa-sm fa-user-plus"></i> <?= htmlspecialchars(fcc_t('Registracija'), ENT_QUOTES, 'UTF-8') ?></a>
                             <!-- /Custom code: FC-2026-02-27 -->
                         </li>
                     <?php endif ?>
@@ -445,9 +449,9 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
     <div class="fcc-navbar-share-row" id="fcc_tour_blog_share_row">
         <div class="fcc-navbar-share-row__inner">
             <div class="fcc-navbar-share-row__copy">
-                <span class="fcc-navbar-share-row__pill">FCC</span>
+                <span class="fcc-navbar-share-row__pill"><?= htmlspecialchars(fcc_t('FCC'), ENT_QUOTES, 'UTF-8') ?></span>
                 <div class="fcc-navbar-share-row__text-wrap">
-                    <div class="fcc-navbar-share-row__title"><?= $fcc_is_hr_language ? 'Podijelite ovu stranicu s vašom preporukom.' : 'Share this page with your recommendation.' ?></div>
+                    <div class="fcc-navbar-share-row__title"><?= $fcc_is_hr_language ? fcc_t('Podijelite ovu stranicu s vašom preporukom.') : fcc_t('Share this page with your recommendation.') ?></div>
                     <button
                         type="button"
                         id="fcc_tour_blog_share_info"
@@ -458,7 +462,7 @@ if(is_logged_in() && in_array($fcc_share_route, ['index', 'blog', 'page'], true)
                         aria-controls="fcc-navbar-share-details"
                     >
                         <i class="fas fa-fw fa-info-circle mr-1"></i>
-                        <?= $fcc_is_hr_language ? 'Kako ovo radi' : 'How this works' ?>
+                        <?= $fcc_is_hr_language ? fcc_t('Kako ovo radi') : fcc_t('How this works') ?>
                     </button>
                 </div>
             </div>

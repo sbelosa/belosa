@@ -28,8 +28,9 @@
                     </div>
                     <div class="form-group">
                         <label for="custom_html_whatsapp_phone"><i class="fa fa-fw fa-mobile fa-sm text-muted mr-1"></i> <?= l('account.billing.phone') ?></label>
-                        <input id="custom_html_whatsapp_phone" name="phone" value="<?= $default_whatsapp_phone ?>" class="form-control" required="required" maxlength="256" placeholder="385911234567">
+                        <input id="custom_html_whatsapp_phone" name="phone" value="<?= htmlspecialchars($default_whatsapp_phone, ENT_QUOTES, 'UTF-8') ?>" class="form-control" required="required" maxlength="256" placeholder="385911234567">
                         <small class="form-text text-muted"><?= l('create_biolink_custom_html_whatsapp_modal.phone_help') ?></small>
+                        <small class="form-text text-muted"><?php if((\Altum\Language::$code ?? 'hr') === 'hr'): ?><?= $default_whatsapp_phone !== '' ? fcc_t('Broj je preuzet iz tvog profila. Za ovu karticu možeš ga izmijeniti.') : fcc_t('U profilu nema valjanog međunarodnog broja. Upiši svoj broj s pozivnim brojem države.') ?><?php else: ?><?= $default_whatsapp_phone !== '' ? fcc_t('This is your profile number. You can change it for this card.') : fcc_t('Your profile has no valid international number. Enter your own number including the country code.') ?><?php endif ?></small>
                     </div>
                     <div class="form-group">
                         <label for="custom_html_whatsapp_message"><i class="fa fa-fw fa-comment fa-sm text-muted mr-1"></i> <?= l('create_biolink_custom_html_whatsapp_modal.html') ?></label>

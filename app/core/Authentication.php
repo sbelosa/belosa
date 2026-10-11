@@ -414,42 +414,35 @@ class Authentication {
             return self::$user_id;
         }
 
-        /* Check the cookies first */
-        if(
-            isset($_COOKIE['user_id'])
-            && isset($_COOKIE['token_code'])
-            && mb_strlen($_COOKIE['token_code']) > 0
-            && $user = (new User())->get_user_by_user_id($_COOKIE['user_id'])
-        ) {
-           if($user->token_code == $_COOKIE['token_code'] && isset($_COOKIE['user_password_hash']) && $_COOKIE['user_password_hash'] == md5($user->password)) {
-               $user = self::maybe_restore_stripe_plan_access($user);
-               self::$is_logged_in = true;
-               self::$user_id = $user->user_id;
-
-               self::$user = $user;
-
-               return true;
-           }
+        /* The current session wins over cookies left by another account. */
+        if(session_has('user_id') && $user=(new User())->get_user_by_user_id(session_get('user_id'))) {
+            if((int)$user->status===1 && session_has('user_password_hash') && hash_equals(md5($user->password ?? ''),(string)session_get('user_password_hash'))) {
+                self::$user=self::maybe_restore_stripe_plan_access($user);
+                self::$is_logged_in=true; self::$user_id=$user->user_id;
+                if(!session_get('admin_user_id') && !empty($_COOKIE['token_code']) && hash_equals((string)$user->token_code,(string)$_COOKIE['token_code']))self::remember($user,(string)$user->token_code,false);
+                return self::$user_id;
+            }
         }
-
-        /* Check the Session */
-        if(
-            session_has('user_id')
-            && !empty(session_get('user_id'))
-            && $user = (new User())->get_user_by_user_id(session_get('user_id'))
-        ) {
-            if(session_has('user_password_hash') && session_get('user_password_hash') == md5($user->password ?? '')) {
-                $user = self::maybe_restore_stripe_plan_access($user);
-                self::$is_logged_in = true;
-                self::$user_id = $user->user_id;
-
-                self::$user = $user;
-
-                return true;
+        if(!session_get('admin_user_id') && isset($_COOKIE['user_id'],$_COOKIE['token_code'],$_COOKIE['user_password_hash']) && $_COOKIE['token_code']!=='' && $user=(new User())->get_user_by_user_id($_COOKIE['user_id'])) {
+            if((int)$user->status===1 && hash_equals((string)$user->token_code,(string)$_COOKIE['token_code']) && hash_equals(md5($user->password),(string)$_COOKIE['user_password_hash'])) {
+                self::$user=self::maybe_restore_stripe_plan_access($user);
+                self::$is_logged_in=true; self::$user_id=$user->user_id;
+                session_set('user_id',$user->user_id);session_set('user_password_hash',md5($user->password));
+                self::remember($user,(string)$user->token_code,false);
+                return self::$user_id;
             }
         }
 
         return false;
+    }
+
+    /** Sliding remembered login, renewed once a day. Logout and password changes revoke it. */
+    public static function remember($user,string $token,bool $force=true): void {
+        if(session_get('admin_user_id') || $token==='' || headers_sent())return;
+        $stamp=(int)($_COOKIE['fcc_login_renewed']??0);
+        if(!$force && $stamp<=time() && $stamp>time()-86400)return;
+        $options=['expires'=>time()+31536000,'path'=>COOKIE_PATH,'secure'=>str_starts_with(SITE_URL,'https://'),'httponly'=>true,'samesite'=>'Lax'];
+        foreach(['user_id'=>(string)$user->user_id,'token_code'=>$token,'user_password_hash'=>md5($user->password),'fcc_login_renewed'=>(string)time()] as $key=>$value)setcookie($key,$value,$options);
     }
 
     /* Custom code */
@@ -488,7 +481,7 @@ class Authentication {
         return !empty($value);
     }
 
-    private static function extract_fcc_completed_from_preferences($preferences): bool {
+    public static function extract_fcc_completed_from_preferences($preferences): bool {
         if(is_string($preferences)) {
             $preferences = json_decode($preferences ?? '{}');
         }
@@ -641,6 +634,14 @@ class Authentication {
     }
 
     public static function can_use_biolinks_without_fcc_completion() {
+        // The new workspace has its own education cycle. Its approved members
+        // must not depend on completion flags from the retired curriculum.
+        if(self::check() && (int) (self::$user->status ?? 0) === 1
+            && function_exists('fcc_partner_enabled')
+            && fcc_partner_enabled((int) self::$user_id)) {
+            return true;
+        }
+
         return self::is_fcc_core_completed() || self::is_fcc_core_gate_exempt();
     }
 
@@ -687,35 +688,7 @@ class Authentication {
     }
 
     private static function apply_forever_sales_link_notice() {
-        if(self::$forever_sales_link_notice_applied) {
-            return;
-        }
-
-        if(!self::check() || !isset(self::$user_id)) {
-            return;
-        }
-
-        if(self::$user->type != 0) {
-            return;
-        }
-
-        if(self::has_valid_forever_sales_link()) {
-            return;
-        }
-
-        if(Alerts::has_infos('forever_sales_link_notice')) {
-            self::$forever_sales_link_notice_applied = true;
-            return;
-        }
-
-        Alerts::add_info(sprintf(
-            l('forever_sales_link.notice_message'),
-            '<a href="' . url('links?type=biolink') . '" class="alert-link">',
-            '</a>',
-            '<a href="https://youtu.be/8tBJiDu1EWc?si=sULJ5FOvBZMY-7jJ" target="_blank" rel="noopener noreferrer" class="alert-link">',
-            '</a>'
-        ), 'forever_sales_link_notice');
-
+        // Retired: the account factory provisions the shop automatically.
         self::$forever_sales_link_notice_applied = true;
     }
 
@@ -725,6 +698,21 @@ class Authentication {
         }
 
         if(self::$user->type != 0) {
+            return;
+        }
+
+        if((int) (self::$user->status ?? 0) === 1
+            && function_exists('fcc_partner_enabled')
+            && fcc_partner_enabled((int) self::$user_id)) {
+            // Repair a protected main card previously disabled by the old gate.
+            // Existing plan limits and manually unpublished extra cards remain
+            // under the same plan reconciliation used by payment activation.
+            $main_id = fc_get_user_main_biolink_id((int) self::$user_id, false);
+            if($main_id > 0 && db()->where('link_id', $main_id)
+                ->where('user_id', self::$user_id)->where('type', 'biolink')
+                ->where('is_enabled', 0)->has('links')) {
+                (new User())->sync_links_with_plan((int) self::$user_id);
+            }
             return;
         }
 
@@ -818,6 +806,12 @@ class Authentication {
 
 
     public static function logout($page = '') {
+        if(getenv('FCC_PARTNER_ENABLED')==='1' && self::check() && is_string($_COOKIE['fcc_partner_device']??null)) {
+            try { fcc_partner_push_detach((int)self::$user_id,$_COOKIE['fcc_partner_device']); }
+            catch(\Throwable $e) { error_log('Partner push logout cleanup unavailable.'); }
+            setcookie('fcc_partner_device','',['expires'=>time()-30,'path'=>'/','httponly'=>true,'samesite'=>'Lax']);
+        }
+
 
         if(self::check()) {
             db()->where('user_id', self::$user_id)->update('users', ['token_code' => '']);
@@ -830,6 +824,7 @@ class Authentication {
         setcookie('user_id', '', time()-30, COOKIE_PATH);
         setcookie('token_code', '', time()-30, COOKIE_PATH);
         setcookie('user_password_hash', '', time()-30, COOKIE_PATH);
+        setcookie('fcc_login_renewed', '', time()-30, COOKIE_PATH);
         setcookie('spotlight_has_results', '', time()-30, COOKIE_PATH);
 
         if($page !== false) {

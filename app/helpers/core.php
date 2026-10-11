@@ -692,7 +692,7 @@ function fc_blog_resolve_language_code($language = null): string {
 
     $normalized_language = mb_strtolower(trim((string) $language));
 
-    if(in_array($normalized_language, ['hr', 'en'], true)) {
+    if(in_array($normalized_language, ['hr', 'en', 'sl', 'de', 'sr', 'es', 'sq', 'cnr', 'fr','sv','hu','pl','ro'], true)) {
         return $normalized_language;
     }
 
@@ -704,6 +704,7 @@ function fc_blog_resolve_language_code($language = null): string {
 
     return match($normalized_language) {
         'croatian', 'hrvatski' => 'hr',
+        'deutsch', 'german', 'de-de', 'de-at', 'de-ch' => 'de',
         default => 'en',
     };
 }
@@ -970,6 +971,10 @@ function fc_blog_get_category_intent_bundle($category, ?string $language_code = 
         ],
     ];
 
+    if(!isset($intent_map[$language_code])) {
+        $intent_map[$language_code] = fcc_localize_copy($intent_map['en'], $language_code);
+    }
+
     $bundle = $intent_map[$language_code][$slug_key] ?? [];
 
     if(!$bundle) {
@@ -980,7 +985,7 @@ function fc_blog_get_category_intent_bundle($category, ?string $language_code = 
             'product_title_suffix' => $category_title ?: settings()->main->title,
             'product_description_suffix' => $language_code === 'hr'
                 ? 'Saznajte više o proizvodu i pogledajte ključne informacije prije odabira.'
-                : 'Learn more about the product and review the key details before choosing.',
+                : fcc_t('Learn more about the product and review the key details before choosing.', [], $language_code),
             'keywords' => array_filter([$category_title]),
         ];
     }
@@ -995,6 +1000,7 @@ function fc_build_blog_post_public_bundle($blog_post, $category = null, $shop_co
 
     $shop_context = fc_blog_shop_context_normalize($shop_context);
     $language_code = fc_blog_resolve_language_code($language_code ?? ($blog_post->language ?? null));
+    $shop_context = fcc_localize_copy($shop_context, $language_code);
     $is_croatian = $language_code === 'hr';
     $title = trim((string) ($blog_post->title ?? ''));
     $title_stem = fc_blog_extract_title_stem($title);
@@ -1013,12 +1019,12 @@ function fc_build_blog_post_public_bundle($blog_post, $category = null, $shop_co
         if($is_business_start) {
             $meta_title = $is_croatian
                 ? 'Start paket | Forever suradnja, registracija i 30% popusta'
-                : 'Start Your Journey | Forever sign-up, starter pack and 30% discount';
+                : fcc_t('Start Your Journey | Forever sign-up, starter pack and 30% discount', [], $language_code);
         } elseif($is_business_context) {
             $meta_title = sprintf(
                 '%s | %s',
                 $title_stem ?: $title,
-                $is_croatian ? 'Forever Card Club i suradnja' : 'Forever Card Club and business'
+                $is_croatian ? 'Forever Card Club i suradnja' : fcc_t('Forever Card Club and business', [], $language_code)
             );
         } elseif(!empty($category_intent['product_title_suffix'])) {
             $meta_title = sprintf('%s | %s', $title_stem ?: $title, $category_intent['product_title_suffix']);
@@ -1035,7 +1041,7 @@ function fc_build_blog_post_public_bundle($blog_post, $category = null, $shop_co
         if($is_business_start) {
             $meta_description = $is_croatian
                 ? 'Start paket je glavni korak za registraciju u Forever, aktivaciju Forever ID-a, početak suradnje i put prema 30% popusta uz FCC benefite.'
-                : 'The Start Package is the main step for Forever sign-up, Forever ID activation, business partnership, and the path toward a 30% discount with FCC benefits.';
+                : fcc_t('The Start Package is the main step for Forever sign-up, Forever ID activation, business partnership, and the path toward a 30% discount with FCC benefits.', [], $language_code);
         } else {
             $description_suffix = trim((string) ($category_intent['product_description_suffix'] ?? ''));
 
@@ -1048,7 +1054,7 @@ function fc_build_blog_post_public_bundle($blog_post, $category = null, $shop_co
             if($meta_description === '') {
                 $meta_description = $is_croatian
                     ? sprintf('Saznajte više o proizvodu %s, pogledajte ključne informacije i otvorite vodič za lakši odabir.', $title_stem ?: $title)
-                    : sprintf('Learn more about %s, review the key details, and open the guide for an easier product decision.', $title_stem ?: $title);
+                    : sprintf(fcc_t('Learn more about %s, review the key details, and open the guide for an easier product decision.', [], $language_code), $title_stem ?: $title);
             }
         }
     }
@@ -1066,7 +1072,7 @@ function fc_build_blog_post_public_bundle($blog_post, $category = null, $shop_co
         if($is_business_start) {
             $keyword_candidates = array_merge($keyword_candidates, $is_croatian
                 ? ['Start paket', 'Forever suradnja', 'Forever registracija', '30% popusta', 'Forever ID']
-                : ['Start package', 'Forever sign up', 'Forever business', '30% discount', 'Forever ID']
+                : array_map(static fn($text)=>fcc_t($text,[],$language_code), ['Start package', 'Forever sign up', 'Forever business', '30% discount', 'Forever ID'])
             );
         }
 
@@ -1203,6 +1209,7 @@ function fc_build_blog_category_indexing_bundle($category): array {
 function fc_build_blog_category_public_bundle($category, array $posts = [], array $child_categories = [], $shop_context = null, ?string $language_code = null): array {
     $shop_context = fc_blog_category_shop_context_normalize($shop_context);
     $language_code = fc_blog_resolve_language_code($language_code ?? ($category->language ?? null));
+    $shop_context = fcc_localize_copy($shop_context, $language_code);
     $is_croatian = $language_code === 'hr';
     $category_title = trim((string) ($category->title ?? ''));
     $category_description = trim(html_entity_decode(strip_tags((string) ($category->description ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
@@ -1230,19 +1237,19 @@ function fc_build_blog_category_public_bundle($category, array $posts = [], arra
         } elseif($is_shop_hub) {
             $public_subtitle = $is_croatian
                 ? sprintf('Pregledajte proizvode u kategoriji %s, usporedite ključne informacije i otvorite vodič koji vam najviše odgovara.', $category_title)
-                : sprintf('Browse products in %s, compare the key details, and open the guide that fits you best.', $category_title);
+                : sprintf(fcc_t('Browse products in %s, compare the key details, and open the guide that fits you best.', [], $language_code), $category_title);
         } elseif($posts_count > 0 && $child_titles_snippet !== '') {
             $public_subtitle = $is_croatian
                 ? sprintf('U kategoriji %s možete pregledati %s vodiča i brzo otvoriti povezane podkategorije poput %s.', $category_title, $posts_count_label, $child_titles_snippet)
-                : sprintf('In %s you can explore %s guides and quickly jump into related categories such as %s.', $category_title, $posts_count_label, $child_titles_snippet);
+                : sprintf(fcc_t('In %s you can explore %s guides and quickly jump into related categories such as %s.', [], $language_code), $category_title, $posts_count_label, $child_titles_snippet);
         } elseif($posts_count > 0) {
             $public_subtitle = $is_croatian
                 ? sprintf('Pregledajte %s vodiča u kategoriji %s i otvorite ono što vas najviše zanima.', $posts_count_label, $category_title)
-                : sprintf('Browse %s guides in %s and open what matters most to you.', $posts_count_label, $category_title);
+                : sprintf(fcc_t('Browse %s guides in %s and open what matters most to you.', [], $language_code), $posts_count_label, $category_title);
         } else {
             $public_subtitle = $is_croatian
                 ? sprintf('Pregledajte kategoriju %s i pronađite sadržaj koji vam najviše odgovara.', $category_title)
-                : sprintf('Explore %s and find the content that fits you best.', $category_title);
+                : sprintf(fcc_t('Explore %s and find the content that fits you best.', [], $language_code), $category_title);
         }
     }
 
@@ -1254,15 +1261,15 @@ function fc_build_blog_category_public_bundle($category, array $posts = [], arra
         } elseif($is_shop_hub) {
             $meta_title = $is_croatian
                 ? sprintf('%s | Forever proizvodi i vodiči za odabir', $category_title)
-                : sprintf('%s | Forever products and buying guides', $category_title);
+                : sprintf(fcc_t('%s | Forever products and buying guides', [], $language_code), $category_title);
         } elseif($posts_count > 0) {
             $meta_title = $is_croatian
                 ? sprintf('%s | Vodiči i preporuke', $category_title)
-                : sprintf('%s | Guides and recommendations', $category_title);
+                : sprintf(fcc_t('%s | Guides and recommendations', [], $language_code), $category_title);
         } else {
             $meta_title = $is_croatian
                 ? sprintf('%s | Blog kategorija', $category_title)
-                : sprintf('%s | Blog category', $category_title);
+                : sprintf(fcc_t('%s | Blog category', [], $language_code), $category_title);
         }
     }
 
@@ -1294,7 +1301,7 @@ function fc_build_blog_category_public_bundle($category, array $posts = [], arra
 
     $subcategories_title = trim((string) ($shop_context['subcategories_title'] ?? ''));
     if($subcategories_title === '') {
-        $subcategories_title = $is_croatian ? 'Povezane podkategorije' : 'Related categories';
+        $subcategories_title = $is_croatian ? 'Povezane podkategorije' : fcc_t('Related categories', [], $language_code);
     }
 
     return [
@@ -1332,7 +1339,7 @@ function fc_get_internal_page_url($slug, $language = null): string {
     $language = fc_resolve_language_name($language);
     $language_prefix = null;
 
-    if($language && isset(\Altum\Language::$active_languages[$language])) {
+    if($language && $language !== settings()->main->default_language && isset(\Altum\Language::$active_languages[$language])) {
         $language_prefix = \Altum\Language::$active_languages[$language] . '/';
     }
 
@@ -1449,7 +1456,6 @@ function fc_get_user_main_biolink_id(int $user_id, bool $repair_mapping = true):
         $fallback_biolink = db()
             ->where('user_id', $user_id)
             ->where('type', 'biolink')
-            ->orderBy('is_enabled', 'DESC')
             ->orderBy('datetime', 'ASC')
             ->orderBy('link_id', 'ASC')
             ->getOne('links', ['link_id']);
@@ -1475,6 +1481,31 @@ function fc_get_user_main_biolink_id(int $user_id, bool $repair_mapping = true):
     return $resolved_biolink_id;
 }
 
+/** NFC identity belongs to the original mapped card, regardless of its enabled state. */
+function fc_is_nfc_link(int $link_id): bool {
+    $link = db()->where('link_id', $link_id)->getOne('links', ['link_id', 'user_id', 'type']);
+    return $link && $link->type === 'biolink'
+        && fc_get_user_main_biolink_id((int) $link->user_id) === $link_id;
+}
+
+function fc_domain_has_nfc_link(int $domain_id): bool {
+    if($domain_id <= 0) return false;
+    $links = db()->where('domain_id', $domain_id)->where('type', 'biolink')->get('links', null, ['link_id', 'user_id']);
+    foreach($links as $link) {
+        if(fc_get_user_main_biolink_id((int) $link->user_id) === (int) $link->link_id) return true;
+    }
+    return false;
+}
+
+function fc_nfc_domain_change_is_blocked(object $domain, array $changes): bool {
+    foreach(['host', 'scheme', 'user_id', 'link_id', 'is_enabled'] as $field) {
+        if(array_key_exists($field, $changes) && (string) $changes[$field] !== (string) ($domain->$field ?? '')) {
+            return fc_domain_has_nfc_link((int) $domain->domain_id);
+        }
+    }
+    return false;
+}
+
 /* Custom code: FC-2026-03-22: normalize legacy language aliases */
 function fc_resolve_language_name($language = null) {
     if(!$language) {
@@ -1496,19 +1527,10 @@ function fc_resolve_language_name($language = null) {
 
 /* Custom code: FC-2026-03-24: force Croatian translations for outbound emails */
 function fc_resolve_email_language_name($language = null) {
-    $language = fc_resolve_language_name($language);
-
-    if($language === null || $language === '') {
-        return 'Hrvatski';
-    }
-
-    $normalized_language = mb_strtolower(trim((string) $language));
-
-    if(in_array($normalized_language, ['english', 'en', 'croatian', 'hrvatski', 'hr'], true)) {
-        return 'Hrvatski';
-    }
-
-    return $language;
+    $resolved = fc_resolve_language_name($language);
+    if($resolved && isset(\Altum\Language::$active_languages[$resolved])) return $resolved;
+    $name = fcc_language_name(fcc_locale(is_string($language) ? $language : null));
+    return $name ?? \Altum\Language::$default_name ?? 'english';
 }
 /* /Custom code: FC-2026-03-24 */
 

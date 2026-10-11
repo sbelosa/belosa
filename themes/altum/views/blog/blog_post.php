@@ -1,4 +1,5 @@
 <?php defined('ALTUMCODE') || die() ?>
+<?php if(fcc_library_pilot_enabled() && fcc_library_pilot_product((string)$data->blog_post->url)): require THEME_PATH.'views/blog/pilot-post.php'; return; endif ?>
 
 <?php
 /* Custom code: FC-2026-02-26: EN/HR widget titles */
@@ -36,11 +37,14 @@ $fcc_webshop_markets = array_values(array_filter(array_keys($fcc_webshop_links),
 $fcc_market_count = count($fcc_webshop_markets);
 $fcc_uses_global_market_display = $fcc_is_product_context && !$fcc_is_start_package_context;
 $fcc_global_market_display_value = $fcc_uses_global_market_display ? '151+' : null;
-$fcc_global_market_display_chip = \Altum\Language::$code === 'hr' ? '151+ tržišta' : '151+ markets';
-$fcc_global_market_display_detail = \Altum\Language::$code === 'hr' ? '151+ tržišta svijeta' : '151+ countries worldwide';
+$fcc_global_market_display_chip = \Altum\Language::$code === 'hr' ? fcc_t('151+ tržišta') : fcc_t('151+ markets');
+$fcc_global_market_display_detail = \Altum\Language::$code === 'hr' ? fcc_t('151+ tržišta svijeta') : fcc_t('151+ countries worldwide');
 $fcc_related_blog_posts = !empty($data->related_blog_posts) ? array_values($data->related_blog_posts) : [];
 
 $fcc_rendered_blog_content = (new \Altum\Shortcodes)->display_shortcodes($data->blog_post->content, $data->referral ?? null);
+$fcc_rendered_blog_content=fcc_market_article_content($fcc_rendered_blog_content,$data->blog_post,$data->resolved_market_country_code??null,(string)($data->referral??''));
+// The article title is the single page H1; preserve imported body headings as H2.
+$fcc_rendered_blog_content = preg_replace('~<(\/?)(h1)(\b[^>]*)>~i', '<$1h2$3>', $fcc_rendered_blog_content);
 if(!$fcc_is_start_package_context && function_exists('fc_forever_ordering_copy_text')) {
     $fcc_rendered_blog_content = fc_forever_ordering_copy_text($fcc_rendered_blog_content);
 }
@@ -107,127 +111,127 @@ $fcc_post_alternate_urls = is_array($data->alternate_urls ?? null) ? $data->alte
 $fcc_blog_toc_current_url = $_SERVER['REQUEST_URI'] ?? $fcc_blog_post_url;
 $fcc_blog_microcopy = \Altum\Language::$code === 'hr'
     ? [
-        'summary_label' => 'Što dobivate',
-        'summary_value' => 'Sažetak proizvoda i praktičan vodič',
-        'trust_note' => 'Na ovoj stranici brzo možete vidjeti čemu je proizvod namijenjen, što ga izdvaja i koji vam sljedeći koraci mogu pomoći pri odabiru prije narudžbe.',
-        'related_eyebrow' => 'Možda bi vas moglo zanimati',
-        'related_title' => 'Još proizvoda koji bi vam mogli odgovarati',
-        'card_eyebrow_product' => 'Forever proizvod',
-        'card_eyebrow_guide' => 'Praktičan vodič',
-        'card_available_badge' => 'Dostupno za narudžbu',
-        'card_market_singular' => 'tržište',
-        'card_market_plural' => 'tržišta',
+        'summary_label' => fcc_t('Što dobivate'),
+        'summary_value' => fcc_t('Sažetak proizvoda i praktičan vodič'),
+        'trust_note' => fcc_t('Na ovoj stranici brzo možete vidjeti čemu je proizvod namijenjen, što ga izdvaja i koji vam sljedeći koraci mogu pomoći pri odabiru prije narudžbe.'),
+        'related_eyebrow' => fcc_t('Možda bi vas moglo zanimati'),
+        'related_title' => fcc_t('Još proizvoda koji bi vam mogli odgovarati'),
+        'card_eyebrow_product' => fcc_t('Forever proizvod'),
+        'card_eyebrow_guide' => fcc_t('Praktičan vodič'),
+        'card_available_badge' => fcc_t('Dostupno za narudžbu'),
+        'card_market_singular' => fcc_t('tržište'),
+        'card_market_plural' => fcc_t('tržišta'),
         'card_cta' => 'Pogledaj detalje',
-        'decision_eyebrow' => 'Brži odabir',
-        'decision_title' => 'Kome je ovaj vodič najkorisniji',
-        'checks_eyebrow' => 'Na brzinu provjerite',
-        'checks_title' => 'Najvažnije informacije prije sljedećeg koraka',
-        'action_title' => 'Želite odmah prijeći na sljedeći korak?',
-        'action_subtitle' => 'Glavni gumb vodi na službeni Forever webshop za vašu zemlju, gdje možete naručiti ovaj proizvod, ili prvo usporedite slične Forever proizvode.',
-        'action_primary' => 'Otvori Forever webshop i naruči',
-        'action_compare' => 'Usporedi slične proizvode',
-        'action_faq' => 'Skrolaj na česta pitanja',
-        'action_guide' => 'Preskoči na vodič',
-        'decision_point_1' => 'Ako želite prije odluke brzo razumjeti čemu je %s namijenjen.',
-        'decision_point_2' => 'Ako vam je važno provjeriti osnovne informacije bez dugog traženja kroz više stranica.',
-        'decision_point_3' => 'Ako uspoređujete više Forever proizvoda i želite lakše suziti izbor.',
-        'decision_point_3_single' => 'Ako želite jasan pregled prije nego odlučite je li ovo pravi proizvod za vas.',
-        'check_markets' => 'Dostupnost: %s',
-        'check_sku' => 'SKU oznaka: %s',
-        'check_category' => 'Kategorija: %s',
-        'check_section' => 'Tema vodiča: %s',
+        'decision_eyebrow' => fcc_t('Brži odabir'),
+        'decision_title' => fcc_t('Kome je ovaj vodič najkorisniji'),
+        'checks_eyebrow' => fcc_t('Na brzinu provjerite'),
+        'checks_title' => fcc_t('Najvažnije informacije prije sljedećeg koraka'),
+        'action_title' => fcc_t('Želite odmah prijeći na sljedeći korak?'),
+        'action_subtitle' => fcc_t('Glavni gumb vodi na službeni Forever webshop za vašu zemlju, gdje možete naručiti ovaj proizvod, ili prvo usporedite slične Forever proizvode.'),
+        'action_primary' => fcc_t('Otvori Forever webshop i naruči'),
+        'action_compare' => fcc_t('Usporedi slične proizvode'),
+        'action_faq' => fcc_t('Skrolaj na česta pitanja'),
+        'action_guide' => fcc_t('Preskoči na vodič'),
+        'decision_point_1' => fcc_t('Ako želite prije odluke brzo razumjeti čemu je %s namijenjen.'),
+        'decision_point_2' => fcc_t('Ako vam je važno provjeriti osnovne informacije bez dugog traženja kroz više stranica.'),
+        'decision_point_3' => fcc_t('Ako uspoređujete više Forever proizvoda i želite lakše suziti izbor.'),
+        'decision_point_3_single' => fcc_t('Ako želite jasan pregled prije nego odlučite je li ovo pravi proizvod za vas.'),
+        'check_markets' => fcc_t('Dostupnost: %s'),
+        'check_sku' => fcc_t('SKU oznaka: %s'),
+        'check_category' => fcc_t('Kategorija: %s'),
+        'check_section' => fcc_t('Tema vodiča: %s'),
         'comparison_eyebrow' => 'Usporedba',
-        'comparison_title' => 'Pogledajte slične proizvode na jednom mjestu',
-        'comparison_subtitle' => 'Ako još vagate između nekoliko opcija, ovaj pregled pomaže da brže odlučite koji vodič otvoriti sljedeći.',
-        'comparison_current' => 'Trenutno otvoreno',
-        'comparison_ready' => 'Dostupno za narudžbu',
-        'comparison_markets' => '%s tržišta',
-        'comparison_market_single' => '%s tržište',
-        'comparison_cta' => 'Otvori proizvod',
-        'faq_title' => 'Česta pitanja',
-        'faq_subtitle' => 'Kratki odgovori na pitanja koja korisnici najčešće imaju prije odluke.',
+        'comparison_title' => fcc_t('Pogledajte slične proizvode na jednom mjestu'),
+        'comparison_subtitle' => fcc_t('Ako još vagate između nekoliko opcija, ovaj pregled pomaže da brže odlučite koji vodič otvoriti sljedeći.'),
+        'comparison_current' => fcc_t('Trenutno otvoreno'),
+        'comparison_ready' => fcc_t('Dostupno za narudžbu'),
+        'comparison_markets' => fcc_t('%s tržišta'),
+        'comparison_market_single' => fcc_t('%s tržište'),
+        'comparison_cta' => fcc_t('Otvori proizvod'),
+        'faq_title' => fcc_t('Česta pitanja'),
+        'faq_subtitle' => fcc_t('Kratki odgovori na pitanja koja korisnici najčešće imaju prije odluke.'),
     ]
     : [
         'summary_label' => 'What you get',
-        'summary_value' => 'Product overview and practical guide',
-        'trust_note' => 'This page helps visitors quickly understand what the product is for, what stands out about it, and which next steps may help before placing an order.',
-        'related_eyebrow' => 'You may also like',
-        'related_title' => 'More products that may suit you',
-        'card_eyebrow_product' => 'Forever product',
+        'summary_value' => fcc_t('Product overview and practical guide'),
+        'trust_note' => fcc_t('This page helps visitors quickly understand what the product is for, what stands out about it, and which next steps may help before placing an order.'),
+        'related_eyebrow' => fcc_t('You may also like'),
+        'related_title' => fcc_t('More products that may suit you'),
+        'card_eyebrow_product' => fcc_t('Forever product'),
         'card_eyebrow_guide' => 'Practical guide',
-        'card_available_badge' => 'Ready to order',
+        'card_available_badge' => fcc_t('Ready to order'),
         'card_market_singular' => 'market',
         'card_market_plural' => 'markets',
-        'card_cta' => 'View details',
+        'card_cta' => fcc_t('View details'),
         'decision_eyebrow' => 'Faster decisions',
-        'decision_title' => 'Who this guide helps most',
-        'checks_eyebrow' => 'Quick check',
-        'checks_title' => 'The key details before the next step',
-        'action_title' => 'Ready for the next step?',
-        'action_subtitle' => 'The main button opens the official Forever webshop for the visitor market, where this product can be ordered, or visitors can compare similar Forever products first.',
-        'action_primary' => 'Open Forever webshop and order',
-        'action_compare' => 'Compare similar products',
-        'action_faq' => 'Jump to FAQ',
-        'action_guide' => 'Jump to guide',
-        'decision_point_1' => 'If you want to quickly understand what %s is meant for before deciding.',
-        'decision_point_2' => 'If you want the key details in one place without searching across several pages.',
-        'decision_point_3' => 'If you are comparing several Forever products and want to narrow the choice faster.',
-        'decision_point_3_single' => 'If you want a clear overview before deciding whether this is the right product for you.',
-        'check_markets' => 'Availability: %s',
-        'check_sku' => 'SKU: %s',
-        'check_category' => 'Category: %s',
-        'check_section' => 'Guide topic: %s',
+        'decision_title' => fcc_t('Who this guide helps most'),
+        'checks_eyebrow' => fcc_t('Quick check'),
+        'checks_title' => fcc_t('The key details before the next step'),
+        'action_title' => fcc_t('Ready for the next step?'),
+        'action_subtitle' => fcc_t('The main button opens the official Forever webshop for the visitor market, where this product can be ordered, or visitors can compare similar Forever products first.'),
+        'action_primary' => fcc_t('Open Forever webshop and order'),
+        'action_compare' => fcc_t('Compare similar products'),
+        'action_faq' => fcc_t('Jump to FAQ'),
+        'action_guide' => fcc_t('Jump to guide'),
+        'decision_point_1' => fcc_t('If you want to quickly understand what %s is meant for before deciding.'),
+        'decision_point_2' => fcc_t('If you want the key details in one place without searching across several pages.'),
+        'decision_point_3' => fcc_t('If you are comparing several Forever products and want to narrow the choice faster.'),
+        'decision_point_3_single' => fcc_t('If you want a clear overview before deciding whether this is the right product for you.'),
+        'check_markets' => fcc_t('Availability: %s'),
+        'check_sku' => fcc_t('SKU: %s'),
+        'check_category' => fcc_t('Category: %s'),
+        'check_section' => fcc_t('Guide topic: %s'),
         'comparison_eyebrow' => 'Comparison',
-        'comparison_title' => 'See similar products in one place',
-        'comparison_subtitle' => 'If you are still choosing between a few options, this overview helps you decide which guide to open next.',
-        'comparison_current' => 'Currently open',
-        'comparison_ready' => 'Ready to order',
+        'comparison_title' => fcc_t('See similar products in one place'),
+        'comparison_subtitle' => fcc_t('If you are still choosing between a few options, this overview helps you decide which guide to open next.'),
+        'comparison_current' => fcc_t('Currently open'),
+        'comparison_ready' => fcc_t('Ready to order'),
         'comparison_markets' => '%s markets',
         'comparison_market_single' => '%s market',
-        'comparison_cta' => 'Open product',
-        'faq_title' => 'Frequently asked questions',
-        'faq_subtitle' => 'Short answers to the questions visitors most often have before deciding.',
+        'comparison_cta' => fcc_t('Open product'),
+        'faq_title' => fcc_t('Frequently asked questions'),
+        'faq_subtitle' => fcc_t('Short answers to the questions visitors most often have before deciding.'),
     ];
 
 if($fcc_is_start_package_context) {
     $fcc_blog_microcopy = array_merge($fcc_blog_microcopy, \Altum\Language::$code === 'hr'
         ? [
-            'summary_value' => 'Registracija, Start paket i poslovni početak',
-            'trust_note' => 'Ovo je glavni početni članak za poslovnu suradnju. Klik vodi prema registraciji i narudžbi Start paketa na odgovarajućem Forever tržištu korisnika.',
-            'related_eyebrow' => 'Sljedeći koraci',
-            'related_title' => 'Još vodiča za početak suradnje',
-            'decision_title' => 'Kome je Start paket pravi prvi korak',
-            'checks_title' => 'Što dobivate s ovim početkom',
-            'action_title' => 'Želite pokrenuti suradnju i aktivirati benefite?',
-            'action_subtitle' => 'Ovaj korak vodi direktno na registraciju i narudžbu Start paketa u zemlji korisnika, uz otvaranje poslovnog statusa i FCC benefita.',
-            'action_primary' => 'Registriraj se i naruči Start paket',
-            'action_compare' => 'Pogledaj sljedeće korake',
-            'action_guide' => 'Pogledaj što dobivaš',
-            'decision_point_1' => 'Ako želite postati Forever poslovni suradnik i krenuti kroz službeni početni paket.',
-            'decision_point_2' => 'Ako vam je cilj otvoriti put prema 30% popusta i aktivirati vlastiti Forever ID.',
-            'decision_point_3' => 'Ako tražite glavni članak za početak suradnje, registraciju i uključivanje u FCC sustav.',
-            'decision_point_3_single' => 'Ako tražite glavni članak za početak suradnje, registraciju i uključivanje u FCC sustav.',
-            'comparison_title' => 'Korisni sljedeći koraci nakon odluke za početak',
-            'comparison_subtitle' => 'Nakon Start paketa, ovi vodiči pomažu razumjeti sustav, alate i prve poslovne korake.',
+            'summary_value' => fcc_t('Registracija, Start paket i poslovni početak'),
+            'trust_note' => fcc_t('Ovo je glavni početni članak za poslovnu suradnju. Klik vodi prema registraciji i narudžbi Start paketa na odgovarajućem Forever tržištu korisnika.'),
+            'related_eyebrow' => fcc_t('Sljedeći koraci'),
+            'related_title' => fcc_t('Još vodiča za početak suradnje'),
+            'decision_title' => fcc_t('Kome je Start paket pravi prvi korak'),
+            'checks_title' => fcc_t('Što dobivate s ovim početkom'),
+            'action_title' => fcc_t('Želite pokrenuti suradnju i aktivirati benefite?'),
+            'action_subtitle' => fcc_t('Ovaj korak vodi direktno na registraciju i narudžbu Start paketa u zemlji korisnika, uz otvaranje poslovnog statusa i FCC benefita.'),
+            'action_primary' => fcc_t('Registriraj se i naruči Start paket'),
+            'action_compare' => fcc_t('Pogledaj sljedeće korake'),
+            'action_guide' => fcc_t('Pogledaj što dobivaš'),
+            'decision_point_1' => fcc_t('Ako želite postati Forever poslovni suradnik i krenuti kroz službeni početni paket.'),
+            'decision_point_2' => fcc_t('Ako vam je cilj otvoriti put prema 30% popusta i aktivirati vlastiti Forever ID.'),
+            'decision_point_3' => fcc_t('Ako tražite glavni članak za početak suradnje, registraciju i uključivanje u FCC sustav.'),
+            'decision_point_3_single' => fcc_t('Ako tražite glavni članak za početak suradnje, registraciju i uključivanje u FCC sustav.'),
+            'comparison_title' => fcc_t('Korisni sljedeći koraci nakon odluke za početak'),
+            'comparison_subtitle' => fcc_t('Nakon Start paketa, ovi vodiči pomažu razumjeti sustav, alate i prve poslovne korake.'),
         ]
         : [
-            'summary_value' => 'Registration, starter pack, and business launch',
-            'trust_note' => 'This is the main starting article for business partnership. The main click leads directly to registration and starter pack ordering in the visitor’s matching Forever market.',
-            'related_eyebrow' => 'Next steps',
-            'related_title' => 'More guides for getting started',
-            'decision_title' => 'Who the Start Package is best for',
+            'summary_value' => fcc_t('Registration, starter pack, and business launch'),
+            'trust_note' => fcc_t('This is the main starting article for business partnership. The main click leads directly to registration and starter pack ordering in the visitor’s matching Forever market.'),
+            'related_eyebrow' => fcc_t('Next steps'),
+            'related_title' => fcc_t('More guides for getting started'),
+            'decision_title' => fcc_t('Who the Start Package is best for'),
             'checks_title' => 'What you get with this start',
-            'action_title' => 'Ready to start the partnership and unlock benefits?',
-            'action_subtitle' => 'This step leads directly to registration and starter pack ordering in the visitor’s market, while opening business status and FCC benefits.',
-            'action_primary' => 'Register and order the Start Package',
-            'action_compare' => 'See the next steps',
+            'action_title' => fcc_t('Ready to start the partnership and unlock benefits?'),
+            'action_subtitle' => fcc_t('This step leads directly to registration and starter pack ordering in the visitor’s market, while opening business status and FCC benefits.'),
+            'action_primary' => fcc_t('Register and order the Start Package'),
+            'action_compare' => fcc_t('See the next steps'),
             'action_guide' => 'See what you get',
-            'decision_point_1' => 'If you want to become a Forever business partner through the official starter pack path.',
-            'decision_point_2' => 'If your goal is to open the path toward a 30% discount and activate your Forever ID.',
-            'decision_point_3' => 'If you are looking for the main article for partnership, registration, and entry into the FCC system.',
-            'decision_point_3_single' => 'If you are looking for the main article for partnership, registration, and entry into the FCC system.',
-            'comparison_title' => 'Useful next steps after choosing to start',
-            'comparison_subtitle' => 'After the Start Package, these guides help explain the system, tools, and the first business steps.',
+            'decision_point_1' => fcc_t('If you want to become a Forever business partner through the official starter pack path.'),
+            'decision_point_2' => fcc_t('If your goal is to open the path toward a 30% discount and activate your Forever ID.'),
+            'decision_point_3' => fcc_t('If you are looking for the main article for partnership, registration, and entry into the FCC system.'),
+            'decision_point_3_single' => fcc_t('If you are looking for the main article for partnership, registration, and entry into the FCC system.'),
+            'comparison_title' => fcc_t('Useful next steps after choosing to start'),
+            'comparison_subtitle' => fcc_t('After the Start Package, these guides help explain the system, tools, and the first business steps.'),
         ]
     );
 }
@@ -474,16 +478,16 @@ $fcc_product_summary_cards = [];
 if($fcc_is_start_package_context) {
     $fcc_product_summary_cards = \Altum\Language::$code === 'hr'
         ? [
-            ['label' => 'Status', 'value' => 'Forever poslovni suradnik'],
-            ['label' => 'Popust', 'value' => 'Put prema 30% popusta'],
-            ['label' => 'Dobivate', 'value' => 'Forever ID i FCC benefite'],
-            ['label' => 'Korak', 'value' => 'Registracija i narudžba u vašoj zemlji'],
+            ['label' => 'Status', 'value' => fcc_t('Forever poslovni suradnik')],
+            ['label' => 'Popust', 'value' => fcc_t('Put prema 30% popusta')],
+            ['label' => 'Dobivate', 'value' => fcc_t('Forever ID i FCC benefite')],
+            ['label' => 'Korak', 'value' => fcc_t('Registracija i narudžba u vašoj zemlji')],
         ]
         : [
-            ['label' => 'Status', 'value' => 'Forever business partner'],
-            ['label' => 'Discount', 'value' => 'Path toward a 30% discount'],
-            ['label' => 'You get', 'value' => 'Forever ID and FCC benefits'],
-            ['label' => 'Step', 'value' => 'Registration and ordering in the visitor market'],
+            ['label' => 'Status', 'value' => fcc_t('Forever business partner')],
+            ['label' => 'Discount', 'value' => fcc_t('Path toward a 30% discount')],
+            ['label' => 'You get', 'value' => fcc_t('Forever ID and FCC benefits')],
+            ['label' => 'Step', 'value' => fcc_t('Registration and ordering in the visitor market')],
         ];
 } else {
     $fcc_product_summary_cards[] = [
@@ -500,7 +504,7 @@ if($fcc_is_start_package_context) {
 
     if($fcc_market_count > 0) {
         $fcc_product_summary_cards[] = [
-            'label' => \Altum\Language::$code === 'hr' ? 'Dostupna tržišta' : 'Available markets',
+            'label' => \Altum\Language::$code === 'hr' ? fcc_t('Dostupna tržišta') : fcc_t('Available markets'),
             'value' => $fcc_global_market_display_value ?: ($fcc_market_count . '+'),
         ];
     }
@@ -516,16 +520,16 @@ if($fcc_is_start_package_context) {
 if($fcc_is_start_package_context) {
     $fcc_product_quick_checks = \Altum\Language::$code === 'hr'
         ? [
-            'Nova osoba se kroz ovaj paket upisuje u Forever i postaje poslovni suradnik.',
-            'Otvara se put prema 30% popusta i svim ključnim poslovnim benefitima.',
-            'Registracija i narudžba vode direktno na odgovarajuće Forever tržište korisnika.',
-            'Paket je povezan s FCC sustavom i služi kao glavni početni korak za suradnju.',
+            fcc_t('Nova osoba se kroz ovaj paket upisuje u Forever i postaje poslovni suradnik.'),
+            fcc_t('Otvara se put prema 30% popusta i svim ključnim poslovnim benefitima.'),
+            fcc_t('Registracija i narudžba vode direktno na odgovarajuće Forever tržište korisnika.'),
+            fcc_t('Paket je povezan s FCC sustavom i služi kao glavni početni korak za suradnju.'),
         ]
         : [
-            'A new person joins Forever through this package and becomes a business partner.',
-            'It opens the path toward a 30% discount and the core business benefits.',
-            'Registration and ordering lead directly to the matching Forever market for the visitor.',
-            'The package is tied to the FCC system and serves as the main starting step for partnership.',
+            fcc_t('A new person joins Forever through this package and becomes a business partner.'),
+            fcc_t('It opens the path toward a 30% discount and the core business benefits.'),
+            fcc_t('Registration and ordering lead directly to the matching Forever market for the visitor.'),
+            fcc_t('The package is tied to the FCC system and serves as the main starting step for partnership.'),
         ];
 } else {
     if($fcc_market_count > 0) {
@@ -566,8 +570,8 @@ if(!empty($fcc_blog_shop_context['quick_checks'])) {
 
 if($fcc_uses_global_market_display && $fcc_market_count > 0) {
     $market_summary_labels = \Altum\Language::$code === 'hr'
-        ? ['Dostupna tržišta']
-        : ['Available markets'];
+        ? [fcc_t('Dostupna tržišta')]
+        : [fcc_t('Available markets')];
     $market_summary_found = false;
 
     foreach($fcc_product_summary_cards as &$summary_card) {
@@ -670,7 +674,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
 <?php if($fcc_post_alternate_urls): ?>
     <?php ob_start() ?>
     <?php foreach($fcc_post_alternate_urls as $hreflang => $href): ?>
-        <link rel="alternate" hreflang="<?= e($hreflang) ?>" href="<?= e($href) ?>" />
+        <link rel="alternate" hreflang="<?= e(fcc_language_tag($hreflang)) ?>" href="<?= e($href) ?>" />
     <?php endforeach ?>
     <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
 <?php endif ?>
@@ -846,7 +850,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
 <div class="fcc-blog-page-bg">
 <div class="container <?= settings()->content->blog_columns == 1 ? 'col-lg-8' : null ?> fcc-blog-wrap">
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li><a href="<?= url('blog') ?>"><?= l('blog.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
@@ -888,7 +892,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
                     <div class="fcc-article-hero">
                         <?php if($data->blog_post->image): ?>
                             <div class="fcc-hero-image-frame">
-                                <img src="<?= \Altum\Uploads::get_full_url('blog') . $data->blog_post->image ?>" class="blog-post-image img-fluid w-100 rounded mb-3 fcc-hero-image" alt="<?= $data->blog_post->image_description ?>" loading="eager" decoding="async" />
+                                <img src="<?= fcc_fast_image_url(\Altum\Uploads::get_full_url('blog') . $data->blog_post->image) ?>" class="blog-post-image img-fluid w-100 rounded mb-3 fcc-hero-image" alt="<?= $data->blog_post->image_description ?>" loading="eager" decoding="async" />
                             </div>
                         <?php endif ?>
 
@@ -1016,10 +1020,10 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
                     <?php endif ?>
 
                     <?php if(!empty($fcc_blog_toc)): ?>
-                        <nav class="fcc-blog-toc mb-4" id="fcc-product-guide-nav" aria-label="<?= \Altum\Language::$code === 'hr' ? 'Sadržaj članka' : 'Article table of contents' ?>">
+                        <nav class="fcc-blog-toc mb-4" id="fcc-product-guide-nav" aria-label="<?= \Altum\Language::$code === 'hr' ? fcc_t('Sadržaj članka') : fcc_t('Article table of contents') ?>">
                             <div class="fcc-blog-toc-header">
-                                <span class="fcc-blog-toc-eyebrow"><?= \Altum\Language::$code === 'hr' ? 'Brza navigacija' : 'Quick navigation' ?></span>
-                                <h2 class="fcc-blog-toc-title"><?= \Altum\Language::$code === 'hr' ? 'Što ćete pronaći u ovom vodiču' : 'What you will find in this guide' ?></h2>
+                                <span class="fcc-blog-toc-eyebrow"><?= \Altum\Language::$code === 'hr' ? fcc_t('Brza navigacija') : fcc_t('Quick navigation') ?></span>
+                                <h2 class="fcc-blog-toc-title"><?= \Altum\Language::$code === 'hr' ? fcc_t('Što ćete pronaći u ovom vodiču') : fcc_t('What you will find in this guide') ?></h2>
                             </div>
 
                             <div class="fcc-blog-toc-grid">
@@ -1044,7 +1048,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
 
                         <?php if(!empty($fcc_blog_key_sections)): ?>
                             <div class="fcc-blog-highlights">
-                                <div class="fcc-blog-highlights-title"><?= \Altum\Language::$code === 'hr' ? 'Glavne teme ovog vodiča' : 'Main topics in this guide' ?></div>
+                                <div class="fcc-blog-highlights-title"><?= \Altum\Language::$code === 'hr' ? fcc_t('Glavne teme ovog vodiča') : fcc_t('Main topics in this guide') ?></div>
                                 <div class="fcc-blog-highlights-list">
                                     <?php foreach($fcc_blog_key_sections as $key_section): ?>
                                         <span class="fcc-blog-highlight-chip"><?= e($key_section) ?></span>
@@ -1055,6 +1059,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
 
                         <div class="ql-content">
                             <?= $fcc_rendered_blog_content ?>
+                            <?php if(fcc_market_policy_enabled()): $post=$data->blog_post; require THEME_PATH.'views/blog/product-contact.php'; endif ?>
                         </div>
 
                         <?php if (!empty($data->referral)): ?>                            
@@ -1310,7 +1315,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
                                                 data-fcc-blog-post-id="<?= (int) $related_blog_post->blog_post_id ?>"
                                                 data-fcc-blog-label="<?= e($related_blog_post->title) ?>"
                                             >
-                                                <img src="<?= \Altum\Uploads::get_full_url('blog') . $related_blog_post->image ?>" class="fcc-related-product-image" alt="<?= e($related_blog_post->image_description ?? $related_blog_post->title) ?>" loading="lazy" decoding="async" />
+                                                <img src="<?= fcc_fast_image_url(\Altum\Uploads::get_full_url('blog') . $related_blog_post->image) ?>" class="fcc-related-product-image" alt="<?= e($related_blog_post->image_description ?? $related_blog_post->title) ?>" loading="lazy" decoding="async" />
                                             </a>
                                         <?php endif ?>
 
@@ -1441,7 +1446,7 @@ if(!empty($fcc_blog_shop_context['secondary_cta_label']) && $fcc_action_secondar
                                 <?php foreach($data->blog_posts_popular as $blog_post): ?>
                                     <li class="mb-3 d-flex align-items-center fcc-popular-item">
                                         <?php if(!empty($blog_post->image)): ?>
-                                            <img src="<?= \Altum\Uploads::get_full_url('blog') . $blog_post->image ?>" alt="<?= $blog_post->title ?>" class="fcc-popular-thumb mr-3" loading="lazy" decoding="async" />
+                                            <img src="<?= fcc_fast_image_url(\Altum\Uploads::get_full_url('blog') . $blog_post->image) ?>" alt="<?= $blog_post->title ?>" class="fcc-popular-thumb mr-3" loading="lazy" decoding="async" />
                                         <?php else: ?>
                                             <span class="fcc-popular-badge mr-3"></span>
                                         <?php endif ?>
@@ -1515,7 +1520,7 @@ $fcc_blog_page_language_code = !empty($data->blog_post->language) && isset(\Altu
     ? \Altum\Language::$active_languages[$data->blog_post->language]
     : (\Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr');
 
-$fcc_blog_chat_enabled = !empty($data->ai_chat_owner_user_id)
+$fcc_blog_chat_enabled = !fcc_market_contact_only($data->resolved_market_country_code??null) && !empty($data->ai_chat_owner_user_id)
     && fcc_ai_user_has_public_ai_access((int) $data->ai_chat_owner_user_id);
 
 $fcc_blog_chat_language_code = !empty($data->ai_chat_owner_user_id)
@@ -1532,40 +1537,25 @@ $fcc_blog_chat_language_code = !empty($data->ai_chat_owner_user_id)
             'blog_post_id' => (int) ($data->blog_post->blog_post_id ?? 0),
             'owner_name' => (string) ($data->ai_chat_owner_name ?? ''),
             'language_code' => $fcc_blog_chat_language_code,
-            'source_context' => 'FCC blog article',
+            'source_context' => fcc_t('FCC blog article'),
+            'market_code' => (string)($data->resolved_market_country_code??''),
             'hide_without_context' => true,
             'dom_id' => 'fcc-blog-chat-extreme-' . (int) ($data->blog_post->blog_post_id ?? 0),
-            'intro_label' => 'FCC Preporuka',
+            'intro_label' => fcc_t('FCC Preporuka'),
         ],
     ]) ?>
 <?php endif ?>
 
 <?php ob_start() ?>
 <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "<?= l('index.title') ?>",
-                    "item": "<?= url() ?>"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "<?= l('blog.title') ?>",
-                    "item": "<?= url('blog') ?>"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 3,
-                    "name": "<?= $data->blog_post->title ?>",
-                    "item": "<?= SITE_URL . ($data->blog_post->language ? \Altum\Language::$active_languages[$data->blog_post->language] . '/' : null) . 'blog/' . $data->blog_post->url ?>"
-                }
-            ]
-        }
+<?= json_encode([
+    '@context'=>'https://schema.org', '@type'=>'BreadcrumbList',
+    'itemListElement'=>[
+        ['@type'=>'ListItem','position'=>1,'name'=>l('index.breadcrumb'),'item'=>url()],
+        ['@type'=>'ListItem','position'=>2,'name'=>l('blog.title'),'item'=>url('blog')],
+        ['@type'=>'ListItem','position'=>3,'name'=>$data->blog_post->title,'item'=>$fcc_blog_post_url],
+    ],
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>
 </script>
 
 <?php
@@ -1665,7 +1655,7 @@ if($fcc_is_product_context) {
         'url' => (string) $fcc_blog_post_url,
         'brand' => [
             '@type' => 'Brand',
-            'name' => 'Forever Living Products',
+            'name' => fcc_t('Forever Living Products'),
         ],
         'mainEntityOfPage' => $fcc_blog_post_url,
         'isRelatedTo' => [
@@ -1719,7 +1709,7 @@ if($fcc_is_product_context) {
             'itemCondition' => 'https://schema.org/NewCondition',
             'seller' => [
                 '@type' => 'Organization',
-                'name' => 'Forever Living Products',
+                'name' => fcc_t('Forever Living Products'),
             ],
         ];
 
@@ -1777,14 +1767,7 @@ if($fcc_is_product_context) {
         }
     }
 
-    if(settings()->content->blog_ratings_is_enabled && $data->blog_post->total_ratings > 0) {
-        $fcc_blog_product_schema['aggregateRating'] = [
-            '@type' => 'AggregateRating',
-            'ratingValue' => (string) $data->blog_post->average_rating,
-            'reviewCount' => (string) $data->blog_post->total_ratings,
-        ];
-    }
-
+    /* Article votes remain visible, but are not product review ratings. */
     if(empty($fcc_blog_product_schema['offers']) && empty($fcc_blog_product_schema['review']) && empty($fcc_blog_product_schema['aggregateRating'])) {
         $fcc_blog_product_schema = null;
     }
@@ -1802,7 +1785,7 @@ if($fcc_is_product_context) {
         "image": <?= json_encode(\Altum\Uploads::get_full_url('blog') . $data->blog_post->image, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         <?php endif ?>
     "author": {
-        "@type": "Person",
+        "@type": "Organization",
         "name": <?= json_encode(settings()->main->title, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
             "url": <?= json_encode(SITE_URL, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
         },
@@ -1825,6 +1808,7 @@ if($fcc_is_product_context) {
             }
             <?php endif ?>
     },
+    "inLanguage": <?= json_encode(fcc_language_tag()) ?>,
     "datePublished": "<?= (new \DateTime($data->blog_post->datetime))->format('Y-m-d\TH:i:sP') ?>",
         "dateModified": "<?= (new \DateTime($data->blog_post->last_datetime))->format('Y-m-d\TH:i:sP') ?>",
         "keywords": <?= json_encode($fcc_blog_public_bundle['meta_keywords'] ?? ($data->blog_post->keywords ?? ''), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,

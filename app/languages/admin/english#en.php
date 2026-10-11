@@ -1,26 +1,11 @@
 <?php
-/*
- * Copyright (c) 2025 AltumCode (https://altumcode.com/)
- *
- * This software is licensed exclusively by AltumCode and is sold only via https://altumcode.com/.
- * Unauthorized distribution, modification, or use of this software without a valid license is not permitted and may be subject to applicable legal actions.
- *
- * 🌍 View all other existing AltumCode projects via https://altumcode.com/
- * 📧 Get in touch for support or general queries via https://altumcode.com/contact
- * 📤 Download the latest version via https://altumcode.com/downloads
- *
- * 🐦 X/Twitter: https://x.com/AltumCode
- * 📘 Facebook: https://facebook.com/altumcode
- * 📸 Instagram: https://instagram.com/altumcode
- */
-
+/** FCC English locale. Stable keys and placeholders are preserved. */
 return [
     'admin_global.html_info' => 'This field accepts the usage of <code>span</code> HTML tag along with the <code>style</code> attribute.',
     'admin_global.html_info_tooltip' => 'Available CSS for the style attribute: color,font-weight,font-style,text-decoration,font-family,background-color,text-transform,margin,padding,text-align',
-
     'admin_blog.menu' => 'Blog',
     'admin_blog.advanced' => 'Advanced settings',
-    'admin_blog.title' => 'Title',
+    'admin_blog.title' => 'Subject',
     'admin_blog.keywords' => 'Meta keywords',
     'admin_blog.keywords_help' => 'Comma separated keywords (keyword1, keyword2, etc)',
     'admin_blog.image' => 'Featured image',
@@ -34,8 +19,6 @@ return [
     'admin_blog.content' => 'Content',
     'admin_blog.is_published' => 'Is published',
     'admin_blog.error_message.url_exists' => 'This URL alias is already taken.',
-
-
     'admin_blog_posts.breadcrumb' => 'Blog posts',
     'admin_blog_posts.title' => 'Blog posts',
     'admin_blog_posts.menu' => 'Posts',
@@ -47,32 +30,24 @@ return [
     'admin_blog_posts.total_ratings' => '%s ratings',
     'admin_blog_posts.average_rating' => '%s avg rating',
     'admin_blog_posts.table.blog_post' => 'Post',
-
-
     'admin_blog_post_create.breadcrumb' => 'Create blog post',
     'admin_blog_post_create.title' => 'Create blog post',
     'admin_blog_post_create.header' => 'Create blog post',
-
-
     'admin_blog_post_update.breadcrumb' => 'Edit blog post',
     'admin_blog_post_update.title' => 'Edit blog post',
     'admin_blog_post_update.header' => 'Edit blog post',
-        /* Custom code: FC-2026-03-30: blog english draft localization */
-        'admin_blog_post_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English draft.',
-        'admin_blog_post_create_english.warning_already_english' => 'This article is already in English.',
-        'admin_blog_post_create_english.warning_exists' => 'An English version already exists for this URL.',
-        'admin_blog_post_create_english.success_created' => 'English draft created successfully. Review it before publishing.',
-        'admin_blog_post_create_english.warning_category_missing' => 'No matching English category was found and it could not be auto-created, so the draft was created without a category.',
-        'admin_blog_post_create_english.error_failed' => 'The English draft could not be created: %s',
-        'admin_blog_posts_category_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English category.',
-        'admin_blog_posts_category_create_english.warning_already_english' => 'This category is already in English.',
-        'admin_blog_posts_category_create_english.error_create_failed' => 'The English category could not be created.',
-        'admin_blog_posts_category_create_english.warning_target_same' => 'This category is already using the target English record.',
-        'admin_blog_posts_category_create_english.success_created' => 'English category created successfully.',
-        'admin_blog_posts_category_create_english.error_failed' => 'The English category could not be created: %s',
-        /* /Custom code: FC-2026-03-30 */
-
-
+    'admin_blog_post_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English draft.',
+    'admin_blog_post_create_english.warning_already_english' => 'This article is already in English.',
+    'admin_blog_post_create_english.warning_exists' => 'An English version already exists for this URL.',
+    'admin_blog_post_create_english.success_created' => 'English draft created successfully. Review it before publishing.',
+    'admin_blog_post_create_english.warning_category_missing' => 'No matching English category was found and it could not be auto-created, so the draft was created without a category.',
+    'admin_blog_post_create_english.error_failed' => 'The English draft could not be created: %s',
+    'admin_blog_posts_category_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English category.',
+    'admin_blog_posts_category_create_english.warning_already_english' => 'This category is already in English.',
+    'admin_blog_posts_category_create_english.error_create_failed' => 'The English category could not be created.',
+    'admin_blog_posts_category_create_english.warning_target_same' => 'This category is already using the target English record.',
+    'admin_blog_posts_category_create_english.success_created' => 'English category created successfully.',
+    'admin_blog_posts_category_create_english.error_failed' => 'The English category could not be created: %s',
     'admin_blog_posts_categories.breadcrumb' => 'Blog posts categories',
     'admin_blog_posts_categories.title' => 'Blog posts categories',
     'admin_blog_posts_categories.menu' => 'Categories',
@@ -82,21 +57,15 @@ return [
     'admin_blog_posts_categories.create' => 'Create category',
     'admin_blog_posts_categories.table.blog_posts_category' => 'Category',
     'admin_blog_posts_categories.table.blog_posts' => 'View blog posts',
-
-
     'admin_blog_posts_category_create.breadcrumb' => 'Create category',
     'admin_blog_posts_category_create.title' => 'Create category',
     'admin_blog_posts_category_create.header' => 'Create category',
-
-
     'admin_blog_posts_category_update.breadcrumb' => 'Edit category',
     'admin_blog_posts_category_update.title' => 'Edit category',
     'admin_blog_posts_category_update.header' => 'Edit category',
-
-
     'admin_resources.menu' => 'Resources',
     'admin_resources.advanced' => 'Advanced settings',
-    'admin_resources.title' => 'Title',
+    'admin_resources.title' => 'Subject',
     'admin_resources.keywords' => 'Meta keywords',
     'admin_resources.keywords_help' => 'Comma separated keywords (keyword1, keyword2, etc)',
     'admin_resources.open_in_new_tab' => 'Open in new tab',
@@ -117,8 +86,6 @@ return [
     'admin_resources.plans_ids_help' => 'Select the plans that you wish to display this page exclusively to. Leave empty to display for everyone.',
     'admin_resources.is_published' => 'Is published',
     'admin_resources.error_message.url_exists' => 'This URL alias is already taken.',
-
-
     'admin_pages.breadcrumb' => 'Pages',
     'admin_pages.title' => 'Pages',
     'admin_pages.menu' => 'Pages',
@@ -128,37 +95,27 @@ return [
     'admin_pages.create' => 'Create page',
     'admin_pages.table.page' => 'Page',
     'admin_pages.table.total_views' => '%s views',
-    /* Custom code: FC-2026-02-24: pages thumbnails */
     'admin_pages.image' => 'Featured image',
     'admin_pages.image_description' => 'Image description',
-    /* /Custom code: FC-2026-02-24 */
-
-
     'admin_page_create.breadcrumb' => 'Create page',
     'admin_page_create.title' => 'Create page',
     'admin_page_create.header' => 'Create page',
-
-
     'admin_page_update.breadcrumb' => 'Edit page',
     'admin_page_update.title' => 'Edit page',
     'admin_page_update.header' => 'Edit page',
-        /* Custom code: FC-2026-03-30: page english draft localization */
-        'admin_page_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English page draft.',
-        'admin_page_create_english.warning_already_english' => 'This page is already in English.',
-        'admin_page_create_english.warning_exists' => 'An English page version already exists for this URL.',
-        'admin_page_create_english.success_created' => 'English page draft created successfully. Review it before publishing.',
-        'admin_page_create_english.warning_category_missing' => 'No matching English page category was found and it could not be auto-created, so the draft was created without a category.',
-        'admin_page_create_english.error_failed' => 'The English page draft could not be created: %s',
-        'admin_pages_category_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English page category.',
-        'admin_pages_category_create_english.warning_already_english' => 'This page category is already in English.',
-        'admin_pages_category_create_english.error_create_failed' => 'The English page category could not be created.',
-        'admin_pages_category_create_english.warning_target_same' => 'This page category is already using the target English record.',
-        'admin_pages_category_create_english.success_created' => 'English page category created successfully.',
-        'admin_pages_category_create_english.error_failed' => 'The English page category could not be created: %s',
-        'admin_ai.error_missing_api_key' => 'OpenAI API key is missing in settings.',
-        /* /Custom code: FC-2026-03-30 */
-
-
+    'admin_page_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English page draft.',
+    'admin_page_create_english.warning_already_english' => 'This page is already in English.',
+    'admin_page_create_english.warning_exists' => 'An English page version already exists for this URL.',
+    'admin_page_create_english.success_created' => 'English page draft created successfully. Review it before publishing.',
+    'admin_page_create_english.warning_category_missing' => 'No matching English page category was found and it could not be auto-created, so the draft was created without a category.',
+    'admin_page_create_english.error_failed' => 'The English page draft could not be created: %s',
+    'admin_pages_category_create_english.error_language_disabled' => 'English must be enabled in Languages before creating an English page category.',
+    'admin_pages_category_create_english.warning_already_english' => 'This page category is already in English.',
+    'admin_pages_category_create_english.error_create_failed' => 'The English page category could not be created.',
+    'admin_pages_category_create_english.warning_target_same' => 'This page category is already using the target English record.',
+    'admin_pages_category_create_english.success_created' => 'English page category created successfully.',
+    'admin_pages_category_create_english.error_failed' => 'The English page category could not be created: %s',
+    'admin_ai.error_missing_api_key' => 'OpenAI API key is missing in settings.',
     'admin_pages_categories.breadcrumb' => 'Pages categories',
     'admin_pages_categories.menu' => 'Categories',
     'admin_pages_categories.title' => 'Pages categories',
@@ -168,32 +125,24 @@ return [
     'admin_pages_categories.create' => 'Create category',
     'admin_pages_categories.table.pages_category' => 'Category',
     'admin_pages_categories.table.pages' => 'View pages',
-
-
     'admin_pages_category_create.breadcrumb' => 'Create pages category',
     'admin_pages_category_create.title' => 'Create pages category',
     'admin_pages_category_create.header' => 'Create a new pages category',
-
-
     'admin_pages_category_update.breadcrumb' => 'Edit pages category',
     'admin_pages_category_update.title' => 'Edit pages category',
     'admin_pages_category_update.header' => 'Edit pages category',
-
-
     'admin_plans.breadcrumb' => 'Plans',
     'admin_plans.title' => 'Plans',
     'admin_plans.menu' => 'Plans',
     'admin_plans.header' => 'Plans',
     'admin_plans.create' => 'Create plan',
-
     'admin_plans.table.name' => 'Plan Name',
     'admin_plans.table.custom_help' => 'Custom plans can be defined directly from the User Edit page.',
     'admin_plans.table.price' => 'Price',
     'admin_plans.table.users' => 'Users',
-
     'admin_plans.suggested_plan_id' => 'Suggested upgrade plan',
     'admin_plans.suggested_plan_id_help' => 'Display a plan as a suggestion to upgrade in the account plan page.',
-    'admin_plans.suggested_plan_code_id' => 'Suggested upgrade - discount code',
+    'admin_plans.suggested_plan_code_id' => 'Suggested upgrade: discount code',
     'admin_plans.suggested_plan_code_id_help' => 'Offer a discount code for the user to use when upgrading his plan.',
     'admin_plans.custom_redirect_url' => 'Success payment redirect URL',
     'admin_plans.custom_redirect_url_help' => 'Redirect the user to a custom URL after a successful payment. It will override the default thank you page and not work for the Offline payment method.',
@@ -219,7 +168,6 @@ return [
     'admin_plans.trial_days' => 'Trial days',
     'admin_plans.trial_days_help' => 'Set 0 if you do not want to offer a trial for this plan.',
     'admin_plans.custom_help' => '<strong>Updating this plan will not affect any users who are on a custom plan.</strong> Use the user update page instead if you want to edit a particular custom plan of a user. It will only affect the plan displayed on the front-end plans section.',
-
     'admin_plans.plan.header' => 'Plan features',
     'admin_plans.plan.per_month' => 'per month',
     'admin_plans.plan.unlimited' => 'Set <span class="badge badge-light" data-copy>-1</span> for unlimited.',
@@ -231,7 +179,7 @@ return [
     'admin_plans.plan.pixels_limit' => 'Pixels Limit',
     'admin_plans.plan.qr_codes_limit' => 'QR Codes Limit',
     'admin_plans.plan.qr_codes_bulk_limit' => 'QR Codes Bulk Limit',
-    'admin_plans.plan.biolinks_limit' => 'FCC apps',
+    'admin_plans.plan.biolinks_limit' => 'FCC App',
     'admin_plans.plan.biolinks_limit_help' => 'The total amount of FCC apps that a user can create.',
     'admin_plans.plan.links_limit' => 'Links Limit',
     'admin_plans.plan.links_limit_help' => 'The total amount of shortened links that a user can create.',
@@ -306,8 +254,8 @@ return [
     'admin_plans.plan.dofollow_is_enabled_help' => 'The user biolink links will have the dofollow property, otherwise it is set to nofollow by default.',
     'admin_plans.plan.custom_pwa_is_enabled' => 'Custom biolink page PWA',
     'admin_plans.plan.custom_pwa_is_enabled_help' => 'The user biolink pages will be able to have their own customizable PWA app.',
-	'admin_plans.plan.branded_button_is_enabled' => 'Branded biolink pages',
-	'admin_plans.plan.branded_button_is_enabled_help' => 'Gives the user the ability to brand their biolink pages with their company logo.',
+    'admin_plans.plan.branded_button_is_enabled' => 'Branded biolink pages',
+    'admin_plans.plan.branded_button_is_enabled_help' => 'Gives the user the ability to brand their biolink pages with their company logo.',
     'admin_plans.plan.enabled_biolink_blocks' => 'Enabled FCC blocks',
     'admin_plans.plan.api_is_enabled' => 'API access',
     'admin_plans.plan.api_is_enabled_help' => 'Enable ability for the user to use the REST API.',
@@ -340,32 +288,25 @@ return [
     'admin_plans.plan.chats_model_help' => 'Select the AI model the user has access to when using the AI chats functionality. You can read more details about the models on <a href="https://platform.openai.com/docs/models/" target="_blank">OpenAI Models</a> page.',
     'admin_plans.plan.transcriptions_per_month_limit' => 'AI Transcriptions',
     'admin_plans.plan.transcriptions_file_size_limit' => 'AI Transcriptions file size limit',
-    'admin_plans.plan.transcriptions_file_size_limit_help' => 'Maximum 25MB - limited by the OpenAI API. You are not able to set a higher limit than your actual server upload limit.',
+    'admin_plans.plan.transcriptions_file_size_limit_help' => 'Maximum 25MB: limited by the OpenAI API. You are not able to set a higher limit than your actual server upload limit.',
     'admin_plans.plan.syntheses_api' => 'AI Syntheses API',
     'admin_plans.plan.syntheses_api_help' => 'Select the AI API provider the user has access to when generating AI text to speech.',
     'admin_plans.plan.syntheses_per_month_limit' => 'AI Syntheses',
     'admin_plans.plan.synthesized_characters_per_month_limit' => 'AI Synthesized characters',
     'admin_plans.plan.email_reports_is_enabled' => 'Email reports',
     'admin_plans.plan.email_reports_is_enabled_help' => 'Enabling this will give all people having this plan the ability to enable email reports for their links.',
-
     'admin_plan_delete_modal.header' => 'Delete plan',
     'admin_plan_delete_modal.subheader' => 'By deleting the plan, all the recurring subscriptions of this plan will be cancelled. Users will still have their features they paid for until the Expiration Date of the plan. This action cannot be undone.',
-
-
     'admin_plan_create.breadcrumb' => 'Create plan',
     'admin_plan_create.title' => 'Create plan',
     'admin_plan_create.menu' => 'Create plan',
     'admin_plan_create.header' => 'Create a new plan',
-
-
     'admin_plan_update.breadcrumb' => 'Edit plan',
     'admin_plan_update.title' => 'Edit plan',
     'admin_plan_update.header' => 'Edit plan',
     'admin_plan_update.update_users_plan_settings.button' => 'Update and update plan subscribers as well',
     'admin_plan_update.update_users_plan_settings.button_help' => 'By updating the plan subscribers you will overwrite all their current settings with the new settings of this plan.',
     'admin_plan_update.error_message.disabled_plans' => 'You are not allowed to disable all the plans which are available (Custom plans are not considered if the payment system is disabled).',
-
-
     'admin_codes.breadcrumb' => 'Codes',
     'admin_codes.title' => 'Codes',
     'admin_codes.menu' => 'Codes',
@@ -373,7 +314,6 @@ return [
     'admin_codes.header_no_data' => 'Create your first code',
     'admin_codes.subheader_no_data' => 'Create discount codes or fully redeemable codes that you can share to your users.',
     'admin_codes.create' => 'Create code',
-
     'admin_codes.type_discount' => 'Discount',
     'admin_codes.type_redeemable' => 'Redeemable',
     'admin_codes.days' => 'Days',
@@ -383,29 +323,23 @@ return [
     'admin_codes.discount_help' => 'Choose a discount between 1% and 99% off for the code',
     'admin_codes.quantity' => 'Quantity',
     'admin_codes.quantity_help' => 'How many time the code can be used.',
-	'admin_codes.is_bulk' => 'Bulk generator',
-	'admin_codes.is_scheduled' => 'Schedule',
-	'admin_codes.start_datetime' => 'Start date',
-	'admin_codes.end_datetime' => 'End date',
+    'admin_codes.is_bulk' => 'Bulk generator',
+    'admin_codes.is_scheduled' => 'Schedule',
+    'admin_codes.start_datetime' => 'Start date',
+    'admin_codes.end_datetime' => 'End date',
     'admin_codes.amount' => 'Amount of unique codes',
     'admin_codes.prefix' => 'Prefix for the generated unique codes',
     'admin_codes.redeemed' => 'Redeemed',
     'admin_codes.plans_ids' => 'Plans',
-
-
     'admin_code_create.breadcrumb' => 'Create code',
     'admin_code_create.title' => 'Create code',
     'admin_code_create.menu' => 'Create code',
     'admin_code_create.header' => 'Create a new code',
-
-
     'admin_code_update.breadcrumb' => 'Edit code',
     'admin_code_update.title' => 'Edit code',
     'admin_code_update.header' => 'Edit code',
     'admin_code_update.subheader' => 'Changing the settings will not have any effect on already redeemed or used codes.',
     'admin_code_update.subheader2' => 'You can share the code with a shareable link: %s',
-
-
     'admin_taxes.breadcrumb' => 'Taxes',
     'admin_taxes.title' => 'Taxes',
     'admin_taxes.menu' => 'Taxes',
@@ -428,15 +362,11 @@ return [
     'admin_taxes.countries_help' => 'Select the countries that you want to apply this tax on. Leave empty if you want the tax to be applied for all countries.',
     'admin_taxes.county' => 'County',
     'admin_taxes.state' => 'State',
-
-
     'admin_tax_create.breadcrumb' => 'Create tax',
     'admin_tax_create.title' => 'Create tax',
     'admin_tax_create.menu' => 'Create tax',
     'admin_tax_create.header' => 'Create a new tax',
     'admin_tax_create.subheader' => 'Once a tax is created it can\'t be edited. After the tax is created, you can associate it with your created Plans.',
-
-
     'admin_taxes_import.breadcrumb' => 'Import taxes',
     'admin_taxes_import.title' => 'Import taxes',
     'admin_taxes_import.menu' => 'Import taxes',
@@ -445,49 +375,35 @@ return [
     'admin_taxes_import.file_help' => 'The CSV file structure must be as per the csv file below.',
     'admin_taxes_import.file_help2' => 'Download example CSV file',
     'admin_taxes_import.success_message' => '%s taxes have been successfully imported.',
-
-
     'admin_tax_update.breadcrumb' => 'Edit tax',
     'admin_tax_update.title' => 'Edit tax',
     'admin_tax_update.header' => 'Edit tax',
-
-
     'admin_tax_delete_modal.header' => 'Delete tax',
     'admin_tax_delete_modal.subheader' => 'If you delete a tax while it is being used for a previous registered payment, you will lose important invoice data. This action cannot be undone.',
-
-
     'admin_affiliates_withdrawals.title' => 'Affiliates withdrawals',
     'admin_affiliates_withdrawals.menu' => 'Aff. withdrawals',
     'admin_affiliates_withdrawals.header' => 'Affiliates withdrawals',
-
     'admin_affiliates_withdrawals.amount' => 'Amount',
     'admin_affiliates_withdrawals.is_paid' => 'Is paid',
     'admin_affiliates_withdrawals.is_paid_paid' => 'Paid',
     'admin_affiliates_withdrawals.is_paid_pending' => 'Pending',
     'admin_affiliates_withdrawals.action_pay_affiliate_withdrawal' => 'Approve withdrawal',
-
-
     'admin_affiliate_withdrawal_approve_modal.header' => 'Approve withdrawal',
     'admin_affiliate_withdrawal_approve_modal.subheader' => 'If you approve the withdrawal, the affiliate withdrawal will be considered as completed and the user will get notified via email. Don\'t forget to send their payment.',
     'admin_affiliate_withdrawal_approve_modal.success_message' => 'Affiliate withdrawal request was approved.',
-
-
     'admin_payment_create.breadcrumb' => 'Add payment',
     'admin_payment_create.title' => 'Add payment',
     'admin_payment_create.menu' => 'Add payment',
     'admin_payment_create.header' => 'Add a new payment',
     'admin_payment_create.subheader' => 'The vendor business details will be automatically taken from the %ssettings page%s.',
     'admin_payment_create.subheader2' => 'Once an payment & invoice is generated it can\'t be edited.',
-
-
     'admin_payments.title' => 'Payments list',
     'admin_payments.header' => 'Payments list',
     'admin_payments.menu' => 'Payments',
     'admin_payments.breadcrumb' => 'Payments',
-
     'admin_payments.plan' => 'Plan',
     'admin_payments.action.view_proof' => 'View proof',
-	'admin_payments.action.approve_proof' => 'Approve payment',
+    'admin_payments.action.approve_proof' => 'Approve payment',
     'admin_payments.action.cancel' => 'Cancel payment',
     'admin_payments.action.refund' => 'Refund payment',
     'admin_payments.invoice' => 'Invoice',
@@ -517,7 +433,6 @@ return [
     'admin_payments.payment_proof_help' => 'Optional proof of payment to be attached.',
     'admin_payments.datetime_help' => 'The date of the payment. UTC timezone required.',
     'admin_payments.error_message.user_id_not_exists' => 'The user with this ID has not been found.',
-
     'admin_payments.status.paid' => 'Paid',
     'admin_payments.status.pending' => 'Pending',
     'admin_payments.status.cancelled' => 'Cancelled',
@@ -527,18 +442,12 @@ return [
     'admin_payments.filters.plan_id' => 'Plan',
     'admin_payments.filters.search_by_payment_id' => 'External Payment ID',
     'admin_payments.filters.order_by_total_amount' => 'Total amount',
-
-
     'admin_payment_approve_modal.header' => 'Approve payment',
     'admin_payment_approve_modal.subheader' => 'If you approve the payment, the plan for the user will start.',
     'admin_payment_approve_modal.success_message' => 'Payment approval was performed successfully.',
-
-
-	'admin_payment_cancel_modal.header' => 'Cancel payment',
-	'admin_payment_cancel_modal.subheader' => 'If you cancel the payment, the payment will be marked as cancelled.',
-	'admin_payment_cancel_modal.success_message' => 'Payment cancelling was performed successfully.',
-
-
+    'admin_payment_cancel_modal.header' => 'Cancel payment',
+    'admin_payment_cancel_modal.subheader' => 'If you cancel the payment, the payment will be marked as cancelled.',
+    'admin_payment_cancel_modal.success_message' => 'Payment cancelling was performed successfully.',
     'admin_payment_refund_modal.header' => 'Mark payment as refunded',
     'admin_payment_refund_modal.subheader' => 'After marking the payment as refunded, the system will automatically generate a credit note. The refund payment to the user must be done manually.',
     'admin_payment_refund_modal.success_message' => 'Payment marked as refunded successfully.',
@@ -547,8 +456,6 @@ return [
     'admin_payment_refund_modal.origin' => 'Refund origin',
     'admin_payment_refund_modal.origin.manual' => 'Manual',
     'admin_payment_refund_modal.origin.chargeback' => 'Chargeback',
-
-
     'admin_index.title' => 'Admin dashboard',
     'admin_index.menu' => 'Admin dashboard',
     'admin_index.header' => 'Welcome back, %s 👋',
@@ -562,7 +469,6 @@ return [
     'admin_index.biolink_links' => 'FCC Apps',
     'admin_index.shortened_links' => 'Shortened links',
     'admin_index.track_links' => 'Pageviews tracked',
-    /* Custom code: FC-2026-03-04: admin dashboard phase 1 analytics labels */
     'admin_index.analytics_phase1.header' => 'Active collaborators & realtime',
     'admin_index.analytics_phase1.subheader' => 'See who is active right now and how collaborator activity has moved over the last 30 days.',
     'admin_index.analytics_phase1.period.today' => 'Today',
@@ -573,9 +479,7 @@ return [
     'admin_index.analytics_phase1.kpi.net_earnings' => 'Net earnings',
     'admin_index.analytics_phase1.kpi.new_users' => 'New users',
     'admin_index.analytics_phase1.kpi.active_pro' => 'Active PRO',
-    /* Custom code: FC-2026-03-05: active pro KPI tooltip text */
     'admin_index.analytics_phase1.kpi.active_pro_tooltip' => 'Counts only users with status = 1, plan_id = 5, and a future plan expiration date.',
-    /* /Custom code: FC-2026-03-05 */
     'admin_index.analytics_phase1.kpi.churn' => 'Share of users who canceled billing',
     'admin_index.analytics_phase1.kpi.arpu' => 'Average earnings per active PRO user',
     'admin_index.analytics_phase1.charts.revenue' => 'Revenue trend (30 days)',
@@ -588,15 +492,12 @@ return [
     'admin_index.analytics_phase1.realtime.online_users' => 'Online collaborators',
     'admin_index.analytics_phase1.realtime.active_sessions' => 'Collaborator sessions',
     'admin_index.analytics_phase1.realtime.recent_logins_total' => 'Collaborator logins (24h)',
-    /* Custom code: FC-2026-03-05: clarify recent logins 24h label */
     'admin_index.analytics_phase1.realtime.recent_logins' => 'Last 5 collaborator logins (24h)',
-    /* /Custom code: FC-2026-03-05 */
     'admin_index.analytics_phase1.realtime.online_collaborators' => 'Online collaborators',
     'admin_index.analytics_phase1.alerts.header' => 'Early alerts',
     'admin_index.analytics_phase1.alerts.failed_payments_7d' => 'Failed payments in 7d',
     'admin_index.analytics_phase1.alerts.churn_spike_on' => 'Increased share of canceled billing detected',
     'admin_index.analytics_phase1.alerts.churn_spike_off' => 'Share of canceled billing is stable',
-    /* Custom code: FC-2026-03-04: phase 2 sales and subscriptions labels */
     'admin_index.sales_subscriptions.header' => 'Sales and subscriptions',
     'admin_index.sales_subscriptions.subheader' => 'Overview for users who entered card details, started trial, and then kept or canceled subscription.',
     'admin_index.sales_subscriptions.recurring_revenue_current_month' => 'Recurring earnings this month',
@@ -624,10 +525,9 @@ return [
     'admin_index.sales_subscriptions.meta_trial_started_at' => 'Trial started',
     'admin_index.sales_subscriptions.meta_cancelled_during_trial_at' => 'Cancelled during trial',
     'admin_index.sales_subscriptions.meta_failed_payments' => 'Failed payments',
-    'admin_index.sales_subscriptions.meta_last_failed_payment' => 'Last failed payment',
+    'admin_index.sales_subscriptions.meta_last_failed_payment' => 'Last failed charge',
     'admin_index.sales_subscriptions.meta_changed_plans' => 'Changed plans',
     'admin_index.sales_subscriptions.meta_last_plan_change' => 'Last change',
-    /* Custom code: FC-2026-03-04: phase 5 action center labels */
     'admin_index.action_center.header' => 'Action center',
     'admin_index.action_center.subheader' => 'Priority lists and warning thresholds to take action quickly.',
     'admin_index.action_center.urgent_trials_header' => 'Urgent: trial ending soon without billing',
@@ -644,8 +544,6 @@ return [
     'admin_index.action_center.billing_cancelled_during_trial' => 'Canceled billing during trial',
     'admin_index.action_center.billing_no_active_subscription' => 'No active PRO package',
     'admin_index.compact_list.show_less' => 'Show less',
-    /* /Custom code: FC-2026-03-04 */
-    /* Custom code: FC-2026-03-04: phase 4 biolink analytics labels */
     'admin_index.biolink_analytics.header' => 'FCC App traffic and collaborator results',
     'admin_index.biolink_analytics.subheader' => 'Overview of unique clicks, top countries, and top collaborators by Forever web shop and registration clicks.',
     'admin_index.biolink_analytics.period_label' => 'Period',
@@ -665,7 +563,6 @@ return [
     'admin_index.biolink_analytics.search_no_results' => 'No collaborators found for that search.',
     'admin_index.biolink_analytics.selection_label' => 'Current view',
     'admin_index.biolink_analytics.selection_all' => 'All collaborators total',
-    /* Custom code: FC-2026-03-05: clarified webshop-outgoing-click labels */
     'admin_index.biolink_analytics.top_countries_header' => 'Top countries by unique outgoing clicks to the Forever Living Products web shop',
     'admin_index.biolink_analytics.leaderboard_header' => 'Top collaborators by outgoing clicks to the Forever Living Products web shop',
     'admin_index.biolink_analytics.leaderboard_subheader' => 'This list ranks collaborators by unique outgoing clicks to the Forever Living Products web shop in the selected period. Click a collaborator to open detailed metrics and top countries.',
@@ -673,11 +570,9 @@ return [
     'admin_index.biolink_analytics.top_shop_sources_subheader' => 'Sources that generate the highest outgoing webshop clicks across all collaborators.',
     'admin_index.biolink_analytics.top_registration_sources_header' => 'Top traffic sources for business collaboration clicks',
     'admin_index.biolink_analytics.top_registration_sources_subheader' => 'Sources that generate the highest business collaboration registration clicks across all collaborators.',
-    /* /Custom code: FC-2026-03-05 */
     'admin_index.biolink_analytics.user_details_default_title' => 'Collaborator details',
     'admin_index.biolink_analytics.user_details_for' => 'Details for',
     'admin_index.biolink_analytics.user_top_countries_header' => 'Top countries for this collaborator',
-    /* Custom code: FC-2026-03-30: qualified collaborators coaching block labels */
     'admin_index.biolink_qualified_watch.eyebrow' => 'Homepage qualification cockpit',
     'admin_index.biolink_qualified_watch.header' => 'Qualified collaborators for Featured Apps and homepage sponsors',
     'admin_index.biolink_qualified_watch.subheader' => 'Premium overview of collaborators who generated at least 15 unique Forever webshop clicks in the last 90 days, focused on momentum, markets, sources, and business direction.',
@@ -688,12 +583,12 @@ return [
     'admin_index.biolink_qualified_watch.rising_users' => 'Rising collaborators',
     'admin_index.biolink_qualified_watch.total_shop_clicks' => 'Total webshop clicks',
     'admin_index.biolink_qualified_watch.search_label' => 'Collaborator search',
-    'admin_index.biolink_qualified_watch.search_placeholder' => 'Enter name, email, or Forever ID',
+    'admin_index.biolink_qualified_watch.search_placeholder' => 'Type name, email, or Forever ID',
     'admin_index.biolink_qualified_watch.filter_label' => 'Status filter',
     'admin_index.biolink_qualified_watch.filter.all' => 'All',
     'admin_index.biolink_qualified_watch.filter.top' => 'Top',
     'admin_index.biolink_qualified_watch.filter.rising' => 'Rising',
-    'admin_index.biolink_qualified_watch.filter.steady' => 'Steady',
+    'admin_index.biolink_qualified_watch.filter.steady' => 'Stable',
     'admin_index.biolink_qualified_watch.filter.attention' => 'Needs attention',
     'admin_index.biolink_qualified_watch.results_label' => 'Results shown',
     'admin_index.biolink_qualified_watch.empty' => 'No qualified collaborators match the active filter or search query.',
@@ -703,7 +598,7 @@ return [
     'admin_index.biolink_qualified_watch.growth_new' => 'New',
     'admin_index.biolink_qualified_watch.status.top' => 'Top momentum',
     'admin_index.biolink_qualified_watch.status.rising' => 'Rising',
-    'admin_index.biolink_qualified_watch.status.steady' => 'Steady',
+    'admin_index.biolink_qualified_watch.status.steady' => 'Stable',
     'admin_index.biolink_qualified_watch.status.attention' => 'Needs attention',
     'admin_index.biolink_qualified_watch.forever_id' => 'Forever ID',
     'admin_index.biolink_qualified_watch.last_click' => 'Last click',
@@ -739,8 +634,6 @@ return [
     'admin_index.biolink_qualified_watch.source.qr' => 'QR code',
     'admin_index.biolink_qualified_watch.source.utm' => 'UTM campaigns',
     'admin_index.biolink_qualified_watch.source.referral' => 'Referral traffic',
-    /* /Custom code: FC-2026-03-30 */
-    /* Custom code: FC-2026-03-30: admin self-click watch labels */
     'admin_index.biolink_self_clicks_watch.header' => 'Suspicious self-click patterns',
     'admin_index.biolink_self_clicks_watch.subheader' => 'Heuristic overview of collaborators whose Forever webshop clicks look unusually concentrated, direct, or self-generated.',
     'admin_index.biolink_self_clicks_watch.note' => 'This is an indication based on the current click log, not final proof.',
@@ -750,7 +643,7 @@ return [
     'admin_index.biolink_self_clicks_watch.flagged_clicks' => 'Flagged clicks',
     'admin_index.biolink_self_clicks_watch.empty' => 'No users match a strong enough pattern in the selected period.',
     'admin_index.biolink_self_clicks_watch.score' => 'Score',
-    'admin_index.biolink_self_clicks_watch.main_signal_score' => 'Main signal',
+    'admin_index.biolink_self_clicks_watch.main_signal_score' => 'Main concern',
     'admin_index.biolink_self_clicks_watch.signal_events' => 'Signal events',
     'admin_index.biolink_self_clicks_watch.last_click' => 'Last click',
     'admin_index.biolink_self_clicks_watch.total_clicks' => 'Unique webshop clicks',
@@ -780,13 +673,12 @@ return [
     'admin_index.biolink_self_clicks_watch.reason.device_concentration' => 'Most clicks use the same device type: %1$s%% (%2$s).',
     'admin_index.biolink_self_clicks_watch.reason.device_diversity' => 'Clicks mostly use the same device type (%1$s variation).',
     'admin_index.biolink_self_clicks_watch.reason.burst' => 'Burst detected: %1$s clicks within the same hour.',
-    'admin_index.biolink_self_clicks_watch.click_flag.main_signal' => 'Main signal',
+    'admin_index.biolink_self_clicks_watch.click_flag.main_signal' => 'Main concern',
     'admin_index.biolink_self_clicks_watch.click_flag.direct' => 'Direct source',
     'admin_index.biolink_self_clicks_watch.click_flag.city_cluster' => 'Same city',
     'admin_index.biolink_self_clicks_watch.click_flag.browser_cluster' => 'Same browser',
     'admin_index.biolink_self_clicks_watch.click_flag.device_cluster' => 'Same device',
     'admin_index.biolink_self_clicks_watch.click_flag.burst' => 'Burst hour',
-    /* /Custom code: FC-2026-03-30 */
     'admin_index.funnels_analytics.header' => 'Collaborator funnels analytics',
     'admin_index.funnels_analytics.subheader' => 'Admin overview of lead funnel performance, top funnels, top collaborators, and funnel-type comparisons.',
     'admin_index.funnels_analytics.period_label' => 'Period',
@@ -835,9 +727,6 @@ return [
     'admin_index.funnels_analytics.flow_opportunities_header' => 'Funnel flow opportunities',
     'admin_index.funnels_analytics.flow_opportunities_subheader' => 'Funnels with the biggest loss at a specific flow stage.',
     'admin_index.funnels_analytics.flow_weakest_stage' => 'Weakest stage',
-    /* /Custom code: FC-2026-03-04 */
-    /* /Custom code: FC-2026-03-04 */
-    /* Custom code: FC-2026-03-04: trial monitoring labels */
     'admin_index.trial_monitoring.header' => '30-day trial monitoring',
     'admin_index.trial_monitoring.subheader' => 'Users currently in an active trial period, with clear billing cancellation markers.',
     'admin_index.trial_monitoring.total' => '%s active trial users',
@@ -875,11 +764,9 @@ return [
     'admin_index.upcoming_charges.next_30d' => 'Charges in next 30 days',
     'admin_index.upcoming_charges.charge_on' => 'Expected charge on',
     'admin_index.upcoming_charges.days_left' => 'In %s days',
-    'admin_index.upcoming_charges.trial' => 'Trial ending',
+    'admin_index.upcoming_charges.trial' => 'Trial ends',
     'admin_index.upcoming_charges.subscription' => 'Subscription renewal',
     'admin_index.upcoming_charges.empty' => 'There are currently no users with an upcoming subscription charge.',
-    /* /Custom code: FC-2026-03-04 */
-    /* /Custom code: FC-2026-03-04 */
     'admin_index.fcc_pending.header' => 'FCC education pending users',
     'admin_index.fcc_pending.subheader' => 'Collaborators who still have not completed FCC education.',
     'admin_index.fcc_pending.total' => '%s pending',
@@ -894,7 +781,6 @@ return [
     'admin_index.sales_link_missing.empty' => 'Great! All active collaborators have a valid Forever sales link set.',
     'admin_index.sales_link_missing.search_placeholder' => 'Search by name or Forever ID',
     'admin_index.sales_link_missing.no_results' => 'No collaborators found for the selected search term.',
-    /* Custom code: FC-2026-03-31: Leader Operating System admin module labels */
     'admin_leader_operating_system.menu' => 'FCC LOS',
     'admin_leader_operating_system.title' => 'Leader Operating System',
     'admin_leader_operating_system.section_nav' => 'LOS sections',
@@ -915,15 +801,15 @@ return [
     'admin_leader_operating_system.forever.kpi.qualified' => 'Reached ≥ 0.33 Personal CC in month',
     'admin_leader_operating_system.forever.kpi.enrolled' => 'Program enrollments',
     'admin_leader_operating_system.forever.kpi.started' => 'Program started',
-    'admin_leader_operating_system.forever.kpi.completed' => 'Completed 30 steps',
+    'admin_leader_operating_system.forever.kpi.completed' => 'Completed 60 steps',
     'admin_leader_operating_system.forever.kpi.active' => 'Active in window',
     'admin_leader_operating_system.forever.kpi.tasks' => 'Completed tasks',
-    'admin_leader_operating_system.forever.kpi.results' => 'Recorded results',
+    'admin_leader_operating_system.forever.kpi.results' => 'Results',
     'admin_leader_operating_system.forever.kpi.official_four_cc' => 'Official 4 CC Active',
     'admin_leader_operating_system.forever.kpi.effective_four_cc' => 'Effective 4 CC',
     'admin_leader_operating_system.forever.results_not_cc' => 'Tasks and results are operational counts, not CC points.',
     'admin_leader_operating_system.forever.kpi_comparison' => '%s · %s versus the previous period',
-    'admin_leader_operating_system.forever.comparison_note' => 'Activity, tasks, and results compare the selected window with the immediately preceding equal window. For enrolled, started, and completed, the large number is the permanent all-time total while the delta compares new events in those two equal windows. Monthly Personal CC and both 4 CC indicators cover only the current FLP structure. Official 4 CC counts confirmed FLP360 signals; effective 4 CC uses the official 1/0 and only falls back, when that signal is missing, to Personal CC ≥ 1 and inclusive Total Active CC ≥ 4.',
+    'admin_leader_operating_system.forever.comparison_note' => 'Activity, easy steps and challenging steps are counted by FCC account and compare the selected window with the immediately preceding window of the same length. For enrolled, started and completed, the large number is the permanent total, while the change compares new events in those two equal windows. Monthly Personal CC and both 4 CC indicators are deduplicated by Forever ID and count only the current FLP structure. Official 4 CC counts confirmed FLP360 signals; effective 4 CC uses the official 1/0 and, only when that signal is missing, the fallback formula of Personal CC ≥ 1 and inclusive Total Active CC ≥ 4.',
     'admin_leader_operating_system.forever.global_title' => 'Global 1000 CC plan',
     'admin_leader_operating_system.forever.global_metric_official' => 'FLP360 Global Total CC',
     'admin_leader_operating_system.forever.global_metric_fallback' => 'FCC personal CC sum · not Global Total CC',
@@ -938,7 +824,7 @@ return [
     'admin_leader_operating_system.forever.data_period' => 'Data period:',
     'admin_leader_operating_system.forever.no_previous_month' => 'No previous month to compare',
     'admin_leader_operating_system.forever.linkage_title' => 'Project coverage summary',
-    'admin_leader_operating_system.forever.linkage_note' => 'These are independent indicators, not steps in a conversion funnel: structure, qualified, and FCC-linked cover the current FLP structure; enrolled and started are permanent project totals; active covers the selected time window. Linkage uses only an exact 12-digit Forever ID.',
+    'admin_leader_operating_system.forever.linkage_note' => 'These are separate indicators, not steps in one conversion funnel: structure and qualified count unique Forever IDs, FCC connected counts active accounts in the current structure, enrolled and started count participants by account, and active refers to the selected time window. An approved shared Forever ID is not an error and does not merge account progress.',
     'admin_leader_operating_system.forever.missing_linkage' => 'members have no active FCC link',
     'admin_leader_operating_system.forever.duplicate_linkage' => 'Forever IDs have multiple active FCC links',
     'admin_leader_operating_system.forever.enrolled_linkage_issue' => 'enrolled members currently lack a unique link',
@@ -996,7 +882,7 @@ return [
     'admin_leader_operating_system.forever.warning.missing_enrollment' => 'The VIP enrollment table is not available yet; the enrollment KPI is temporarily 0.',
     'admin_leader_operating_system.forever.warning.missing_structured_outcomes' => 'Structured result, difficulty, and help fields are not fully migrated yet; available tasks are still shown.',
     'admin_leader_operating_system.forever.warning.invalid_admin_fbo' => 'The administrator Forever ID is not linked correctly; the plan temporarily uses a clearly labeled FCC personal CC sum.',
-    'admin_leader_operating_system.forever.source.fallback_personal_cc' => 'Temporary FCC personal CC sum — not official Global Total CC',
+    'admin_leader_operating_system.forever.source.fallback_personal_cc' => 'Temporary FCC personal CC sum: not official Global Total CC',
     'admin_leader_operating_system.forever.result_type.contact' => 'Contact / outreach',
     'admin_leader_operating_system.forever.result_type.conversation' => 'Quality conversation',
     'admin_leader_operating_system.forever.result_type.invitation' => 'Invitation / guest',
@@ -1084,7 +970,6 @@ return [
     'admin_leader_operating_system.filter.risk' => 'Risk',
     'admin_leader_operating_system.filter.high_potential' => 'High potential',
     'admin_leader_operating_system.filter.inactive' => 'Inactive',
-    /* Custom code: FC-2026-03-31: LOS plain-language overview labels */
     'admin_leader_operating_system.ai_filter_label' => 'AI stage',
     'admin_leader_operating_system.ai_filter.all' => 'All AI states',
     'admin_leader_operating_system.ai_filter.inactive' => 'AI not started',
@@ -1093,12 +978,12 @@ return [
     'admin_leader_operating_system.ai_filter.active' => 'My next step active',
     'admin_leader_operating_system.anomaly_filter_label' => 'Risk signals',
     'admin_leader_operating_system.anomaly_filter.all' => 'All signal states',
-    'admin_leader_operating_system.anomaly_filter.stable' => 'Stable',
+    'admin_leader_operating_system.anomaly_filter.stable' => 'Healthy',
     'admin_leader_operating_system.anomaly_filter.watch' => 'Watch',
     'admin_leader_operating_system.anomaly_filter.high' => 'Check now',
     'admin_leader_operating_system.sort_label' => 'Sort',
-    'admin_leader_operating_system.sort.leader_os' => 'Overall LOS score',
-    'admin_leader_operating_system.sort.shop_clicks' => 'Shop clicks',
+    'admin_leader_operating_system.sort.leader_os' => 'Leader OS score',
+    'admin_leader_operating_system.sort.shop_clicks' => 'Webshop clicks',
     'admin_leader_operating_system.sort.growth' => 'Growth',
     'admin_leader_operating_system.sort.registrations' => 'Registrations',
     'admin_leader_operating_system.sort.risk' => 'Risk',
@@ -1134,7 +1019,6 @@ return [
     'admin_leader_operating_system.recent_coaching_title' => 'Recent coaching activity',
     'admin_leader_operating_system.recent_coaching_text' => 'A quick view of the latest mentor interventions so it is clear who was touched recently and what changed last.',
     'admin_leader_operating_system.recent_coaching_empty' => 'There are no logged coaching activities yet.',
-    /* /Custom code: FC-2026-03-31 */
     'admin_leader_operating_system.queue_open' => 'Open priority detail',
     'admin_leader_operating_system.ai_guidance_badge' => 'AI mentor guidance',
     'admin_leader_operating_system.ai_usage.inactive' => 'AI not started',
@@ -1155,7 +1039,7 @@ return [
     'admin_leader_operating_system.queue_reason_in_progress' => 'This collaborator is already being handled and should be monitored until the status is closed.',
     'admin_leader_operating_system.queue_reason_monitor' => 'Worth keeping on the radar, but not at the very top of urgency.',
     'admin_leader_operating_system.results_total' => '%s results',
-    'admin_leader_operating_system.results_range' => 'Showing %s - %s',
+    'admin_leader_operating_system.results_range' => 'Showing %s to %s',
     'admin_leader_operating_system.empty' => 'No collaborators match the selected period, filter, or search term.',
     'admin_leader_operating_system.pagination_summary' => 'Page %s of %s',
     'admin_leader_operating_system.pagination_previous' => 'Previous',
@@ -1166,10 +1050,10 @@ return [
     'admin_leader_operating_system.status.high_potential' => 'High potential',
     'admin_leader_operating_system.status.inactive' => 'Inactive',
     'admin_leader_operating_system.qualified_hint' => 'Qualified for the 90d view',
-    'admin_leader_operating_system.table.collaborator' => 'Collaborator',
+    'admin_leader_operating_system.table.collaborator' => 'Member',
     'admin_leader_operating_system.table.status' => 'Status',
     'admin_leader_operating_system.table.score' => 'LOS score',
-    'admin_leader_operating_system.table.shop_clicks' => 'Shop clicks',
+    'admin_leader_operating_system.table.shop_clicks' => 'Webshop clicks',
     'admin_leader_operating_system.table.app_quality' => 'App quality',
     'admin_leader_operating_system.table.growth' => 'Growth',
     'admin_leader_operating_system.table.registrations' => 'Registrations',
@@ -1223,9 +1107,7 @@ return [
     'admin_leader_operating_system.app_quality_stage.strong' => 'Strong base',
     'admin_leader_operating_system.app_quality_stage.growing' => 'Good foundation',
     'admin_leader_operating_system.app_quality_stage.foundation' => 'Needs work',
-    /* Custom code: FC-2026-03-31: LOS plain-language detail helpers */
     'admin_leader_operating_system.leader.panel_ai_helper' => 'The three indicators below summarize traffic strength, activity rhythm, and the risk that the collaborator is losing momentum.',
-    /* Custom code: FC-2026-03-31: LOS V3 anomaly radar labels */
     'admin_leader_operating_system.leader.open_anomaly_radar' => 'Open risk signals',
     'admin_leader_operating_system.leader.anomaly_title' => 'Risk signal radar',
     'admin_leader_operating_system.leader.anomaly_text' => 'This highlights unusual traffic, conversion, and activity patterns that deserve faster admin or mentor review.',
@@ -1235,7 +1117,7 @@ return [
     'admin_leader_operating_system.leader.anomaly_top_concern' => 'Main concern',
     'admin_leader_operating_system.leader.anomaly_none' => 'No strong signal',
     'admin_leader_operating_system.leader.anomaly_empty' => 'There are no strong risky or unusual signals for the selected period.',
-    'admin_leader_operating_system.leader.anomaly_level.stable' => 'Stable',
+    'admin_leader_operating_system.leader.anomaly_level.stable' => 'Healthy',
     'admin_leader_operating_system.leader.anomaly_level.watch' => 'Watch',
     'admin_leader_operating_system.leader.anomaly_level.high' => 'Check now',
     'admin_leader_operating_system.leader.anomaly_signal.source_concentration.label' => 'Traffic depends too much on one source',
@@ -1280,7 +1162,6 @@ return [
     'admin_leader_operating_system.leader.anomaly_signal.app_signal_gap.label' => 'Interest exists, but the path to the shop is weak',
     'admin_leader_operating_system.leader.anomaly_signal.app_signal_gap.text' => 'The app generated %1$s WhatsApp clicks, %2$s product clicks, and %3$s sign-ups, but only %4$s visits to the shop. That suggests people react, but the sales path is still not clear enough.',
     'admin_leader_operating_system.leader.anomaly_signal.app_signal_gap.action' => 'Review where interest stops before the shop and strengthen the main sales path.',
-    /* Custom code: FC-2026-03-31: LOS Phase 6 privacy-safe fraud intelligence strings */
     'admin_leader_operating_system.leader.open_fraud_intelligence' => 'Open fraud check',
     'admin_leader_operating_system.leader.fraud_title' => 'Traffic integrity check',
     'admin_leader_operating_system.leader.fraud_text' => 'This shows blocked and suspicious attempts to inflate Forever outbound clicks toward webshop and discount destinations. Only the first valid click per identity is accepted, while repeats are automatically excluded from stats.',
@@ -1292,7 +1173,7 @@ return [
     'admin_leader_operating_system.leader.fraud_retention_value' => '%s days',
     'admin_leader_operating_system.leader.fraud_empty' => 'There are no suspicious manipulation attempts for Forever outbound clicks in the selected period.',
     'admin_leader_operating_system.leader.fraud_none' => 'No strong fraud signal',
-    'admin_leader_operating_system.leader.fraud_level.stable' => 'Stable',
+    'admin_leader_operating_system.leader.fraud_level.stable' => 'Healthy',
     'admin_leader_operating_system.leader.fraud_level.watch' => 'Watch',
     'admin_leader_operating_system.leader.fraud_level.high' => 'Check now',
     'admin_leader_operating_system.leader.fraud_cluster_visitors' => 'Blocked attempts',
@@ -1303,11 +1184,8 @@ return [
     'admin_leader_operating_system.leader.fraud_recent_attempts' => 'Latest suspicious attempts',
     'admin_leader_operating_system.leader.fraud_recent_time' => 'Time',
     'admin_leader_operating_system.leader.fraud_recent_target' => 'Target',
-    'admin_leader_operating_system.leader.fraud_recent_source' => 'Source',
+    'admin_leader_operating_system.leader.fraud_recent_source' => 'Resource',
     'admin_leader_operating_system.leader.fraud_blocked_default_action' => 'This click was automatically blocked and was not counted in stats or coaching signals.',
-    /* /Custom code: FC-2026-03-31 */
-    /* /Custom code: FC-2026-03-31 */
-    /* Custom code: FC-2026-03-31: App structure labels for LOS detail */
     'admin_leader_operating_system.leader.panel_app_structure' => 'Current app structure',
     'admin_leader_operating_system.leader.panel_app_structure_text' => 'Summary of existing Forever Card apps and blocks used as AI context for recommendations.',
     'admin_leader_operating_system.leader.panel_app_structure_helper' => 'This lets you quickly see how strong the app setup is, how many selling entry points exist, and where key elements are missing.',
@@ -1467,7 +1345,7 @@ return [
     'admin_leader_operating_system.leader.ai_plan_days_ago' => '%s day(s) ago',
     'admin_leader_operating_system.leader.ai_plan_current_week' => 'Current week',
     'admin_leader_operating_system.leader.ai_plan_previous_week' => 'Previous week',
-    'admin_leader_operating_system.leader.ai_plan_submitted_at' => 'Submitted',
+    'admin_leader_operating_system.leader.ai_plan_submitted_at' => 'Sent',
     'admin_leader_operating_system.leader.ai_plan_no_previous_week' => 'There is no previous weekly check-in to compare with.',
     'admin_leader_operating_system.leader.ai_plan_change_log' => 'What changed',
     'admin_leader_operating_system.leader.ai_plan_no_changes' => 'There are no changes in the main weekly signals compared to the previous check-in.',
@@ -1475,7 +1353,6 @@ return [
     'admin_leader_operating_system.leader.ai_plan_latest_plan' => 'Latest plan',
     'admin_leader_operating_system.leader.ai_plan_plan_generated' => 'Plan generated',
     'admin_leader_operating_system.leader.ai_plan_no_plan' => 'A weekly check-in exists, but the plan for the mentor has not been generated yet.',
-    /* /Custom code: FC-2026-03-31 */
     'admin_leader_operating_system.leader.kpi_score' => 'Leader OS score',
     'admin_leader_operating_system.leader.kpi_status' => 'Status',
     'admin_leader_operating_system.leader.kpi_shop_clicks' => 'Webshop clicks',
@@ -1609,7 +1486,6 @@ return [
     'admin_leader_operating_system.leader.ai_error_missing_api_key' => 'OpenAI API key is missing in settings.',
     'admin_leader_operating_system.leader.ai_error_request_failed' => 'AI report generation failed. Try again after checking the AI settings.',
     'admin_leader_operating_system.leader.ai_error_invalid_response' => 'AI returned an invalid report format.',
-    /* Custom code: FC-2026-03-31: LOS outreach panel labels */
     'admin_leader_operating_system.leader.outreach_panel' => 'Outreach and report history',
     'admin_leader_operating_system.leader.outreach_panel_text' => 'Review the AI email draft, send it to the collaborator, and track the latest sent and generated versions for this period.',
     'admin_leader_operating_system.leader.outreach_empty' => 'Generate an AI report first to unlock the outreach review panel.',
@@ -1632,22 +1508,16 @@ return [
     'admin_leader_operating_system.leader.outreach_error_recipient' => 'Enter a valid recipient email address.',
     'admin_leader_operating_system.leader.outreach_error_subject' => 'Enter an email subject before sending.',
     'admin_leader_operating_system.leader.outreach_error_body' => 'Enter email content before sending.',
-    /* /Custom code: FC-2026-03-31 */
     'admin_leader_operating_system.leader.next_step.risk' => 'Review the source drop and reactivate traffic toward the webshop.',
     'admin_leader_operating_system.leader.next_step.opportunity' => 'Push conversion because traffic exists, but registrations are lagging.',
     'admin_leader_operating_system.leader.next_step.rising' => 'Keep the current growth channel and duplicate the strongest traffic source.',
     'admin_leader_operating_system.leader.next_step.reactivate' => 'Restart activity with a fresh wave of posts and direct link sharing.',
     'admin_leader_operating_system.leader.next_step.stable' => 'Maintain a stable rhythm and monitor shifts by source and country.',
-    /* /Custom code: FC-2026-03-31 */
-
-
     'admin_users.breadcrumb' => 'Users',
     'admin_users.title' => 'Users',
     'admin_users.header' => 'Users',
     'admin_users.menu' => 'Users',
     'admin_users.table.total_logins' => 'Total logins: %s',
-
-
     'admin_users.user_id' => 'User ID',
     'admin_users.plan_id' => 'Plan',
     'admin_users.plan_expiration_date' => 'Plan expiration date',
@@ -1685,51 +1555,36 @@ return [
     'admin_users.anti_phishing_code' => 'Anti phishing code',
     'admin_users.user_deletion_reminder' => 'User deletion reminder sent',
     'admin_users.is_newsletter_subscribed' => 'Is newsletter subscribed',
-
     'admin_users.error_message.self_delete' => 'You can\'t delete yourself.',
     'admin_users.error_message.name_length' => 'The name field must be between 1 and 64 characters.',
     'admin_users.error_message.email_exists' => 'This email is already used by another account.',
-
-
     'admin_user_login_modal.header' => 'Login as this user',
     'admin_user_login_modal.subheader' => 'By logging in as another user, you will be logged out of the current account and fully logged in to this user.',
     'admin_user_login_modal.success_message' => 'Successfully logged in as %s! To get out of this account simply use the Exit button at the top.',
     'admin_user_login_modal.error_message.disabled' => 'You can only login if the status of the user is active.',
-
-
     'admin_users_bulk_resend_activation_modal.header' => 'Resend email activations in bulk',
     'admin_users_bulk_resend_activation_modal.button' => 'Resend email activations',
     'admin_users_bulk_resend_activation_modal.subheader' => 'You\'ve selected multiple entries. This may take a while & it action cannot be undone.',
     'admin_users_bulk_resend_activation_modal.success_message' => 'We\'ve sent %s email activations to unconfirmed users successfully.',
-
-
     'admin_user_create.breadcrumb' => 'Create user',
     'admin_user_create.title' => 'Create user',
     'admin_user_create.header' => 'Create user',
     'admin_user_create.menu' => 'Create user',
-
-
     'admin_user_update.breadcrumb' => 'Edit user',
     'admin_user_update.title' => 'Edit user',
     'admin_user_update.header' => 'Edit user',
-
-
     'admin_user_update.plan.header' => 'Plan',
     'admin_user_update.plan.settings' => 'Plan settings',
     'admin_user_update.plan.plan_expiration_date_invalid' => 'You must set the plan expiration date some time in the future.',
-
     'admin_user_update.change_password.header' => 'Change password',
     'admin_user_update.change_password.subheader' => 'Leave it empty if you don\'t want to change the password.',
     'admin_user_update.change_password.new_password' => 'New password',
     'admin_user_update.change_password.repeat_password' => 'Repeat password',
-
-
     'admin_user_view.breadcrumb' => 'View user',
     'admin_user_view.title' => 'View user',
     'admin_user_view.header' => 'View user',
     'admin_user_view.billing' => 'Billing details',
     'admin_user_view.referred_by' => 'Referrals',
-    /* Custom code: FC-2026-03-04: admin user view analytics labels */
     'admin_user_view.analytics.header' => 'Collaborator performance overview',
     'admin_user_view.analytics.subheader' => 'Quick summary of traffic, FCC App activity, and revenue.',
     'admin_user_view.analytics.track_clicks_total' => 'Tracked clicks (total)',
@@ -1776,7 +1631,6 @@ return [
     'admin_user_view.funnels.entry_to_start' => 'Entry → start',
     'admin_user_view.funnels.start_to_success' => 'Start → success',
     'admin_user_view.funnels.success_to_cta' => 'Success → CTA',
-    /* Custom code: FC-2026-03-19: admin user email activity labels */
     'admin_user_view.email_activity.header' => 'User email activity',
     'admin_user_view.email_activity.subheader' => 'All broadcast and automation emails received by this user, when they arrived, and what happened after delivery.',
     'admin_user_view.email_activity.total_sent' => 'Total emails sent',
@@ -1805,15 +1659,9 @@ return [
     'admin_user_view.email_unsubscribe.message_type' => 'Message type',
     'admin_user_view.email_unsubscribe.recipient_email' => 'Recipient email',
     'admin_user_view.email_unsubscribe.resource' => 'Broadcast / automation',
-    /* /Custom code: FC-2026-03-19 */
-    /* /Custom code: FC-2026-03-04 */
-
-
     'admin_users_logs.title' => 'Users logs',
     'admin_users_logs.header' => 'Users logs',
     'admin_users_logs.menu' => 'Users logs',
-
-
     'admin_image_optimizer.title' => 'Image optimizer logs',
     'admin_image_optimizer.header' => 'Image optimizer logs',
     'admin_image_optimizer.menu' => 'Image optimizer',
@@ -1822,8 +1670,6 @@ return [
     'admin_image_optimizer.original_size' => 'Original size',
     'admin_image_optimizer.new_size' => 'New size',
     'admin_image_optimizer.percentage_difference' => 'Size difference',
-
-
     'admin_internal_notifications.breadcrumb' => 'Users notifications',
     'admin_internal_notifications.title' => 'Users notifications',
     'admin_internal_notifications.header' => 'Users notifications',
@@ -1841,15 +1687,11 @@ return [
     'admin_internal_notifications.is_read' => 'Is read',
     'admin_internal_notifications.read_datetime' => 'Read on %s',
     'admin_internal_notifications.filters.read_datetime' => 'Read datetime',
-
-
     'admin_internal_notification_create.breadcrumb' => 'Create notification',
     'admin_internal_notification_create.title' => 'Create notification',
     'admin_internal_notification_create.menu' => 'Create notification',
     'admin_internal_notification_create.header' => 'Create a new notification',
     'admin_internal_notification_create.send' => 'Send notification',
-
-
     'admin_push_notifications.breadcrumb' => 'Push notifications',
     'admin_push_notifications.title' => 'Push notifications',
     'admin_push_notifications.header' => 'Push notifications',
@@ -1858,7 +1700,7 @@ return [
     'admin_push_notifications.menu' => 'Push notifications',
     'admin_push_notifications.create' => 'Send',
     'admin_push_notifications.table.push_notification' => 'Notification',
-    'admin_push_notifications.main.title' => 'Title',
+    'admin_push_notifications.main.title' => 'Subject',
     'admin_push_notifications.main.total_push_notifications' => 'Total push notifications',
     'admin_push_notifications.main.sent_push_notifications' => 'Sent push notifications',
     'admin_push_notifications.main.push_subscribers_ids' => 'Push Subscribers IDs',
@@ -1873,7 +1715,6 @@ return [
     'admin_push_notifications.main.status.processing' => 'Processing',
     'admin_push_notifications.main.status.sent' => 'Sent',
     'admin_push_notifications.main.last_sent_datetime' => 'Last sent notification %s',
-
     'admin_push_notification_create.breadcrumb' => 'Create notification',
     'admin_push_notification_create.title' => 'Create notification',
     'admin_push_notification_create.menu' => 'Create notification',
@@ -1882,15 +1723,11 @@ return [
     'admin_push_notification_create.send' => 'Send notification',
     'admin_push_notification_create.success_message.save' => '%s notification was saved. You can come back later and send it.',
     'admin_push_notification_create.success_message.send' => '%s notification will start to be processed.',
-
-
     'admin_push_notification_update.breadcrumb' => 'Update notification',
     'admin_push_notification_update.title' => 'Update notification',
     'admin_push_notification_update.menu' => 'Update notification',
     'admin_push_notification_update.header' => 'Update notification',
     'admin_push_notification_update.error_message.processing' => 'You can not view or update a push notification while it is processing.',
-
-
     'admin_push_subscribers.breadcrumb' => 'Push subscribers',
     'admin_push_subscribers.title' => 'Push subscribers',
     'admin_push_subscribers.header' => 'Push subscribers',
@@ -1898,28 +1735,23 @@ return [
     'admin_push_subscribers.subheader_no_data' => 'There are no push subscribers right now, here you will see a list with all of them when you get some.',
     'admin_push_subscribers.menu' => 'Push subscribers',
     'admin_push_subscribers.table.push_subscriber' => 'Push subscriber',
-
-
     'admin_redeemed_codes.title' => 'Redeemed codes',
     'admin_redeemed_codes.header' => 'Redeemed codes',
     'admin_redeemed_codes.menu' => 'Redeemed codes',
     'admin_redeemed_codes.table.code' => 'Code',
-
-
-    'admin_settings.title' => 'Settings - %s',
-    'admin_settings.menu' => 'Settings',
-    'admin_settings.header' => 'Settings - %s',
+    'admin_settings.title' => 'Settings: %s',
+    'admin_settings.menu' => 'Configure',
+    'admin_settings.header' => 'Settings: %s',
     'admin_settings.documentation' => 'Read the %sdocumentation%s to get more details.',
     'admin_settings.payment_processors' => 'Processors',
     'admin_settings.social_logins' => 'Social logins',
     'admin_settings.social_logins.callback_url' => 'Callback URL',
-	'admin_settings.extended' => 'Extended',
-	'admin_settings.plugins' => 'Plugins',
-	'admin_settings.system' => 'System',
-	'admin_settings.interface' => 'Interface',
-	'admin_settings.integrations' => 'Integrations',
-	'admin_settings.general' => 'General',
-
+    'admin_settings.extended' => 'Extended',
+    'admin_settings.plugins' => 'Plugins',
+    'admin_settings.system' => 'System',
+    'admin_settings.interface' => 'Interface',
+    'admin_settings.integrations' => 'Integrations',
+    'admin_settings.general' => 'General',
     'admin_settings.main.tab' => 'Main',
     'admin_settings.main.index_settings' => 'Index settings',
     'admin_settings.main.app_settings' => 'App-wide settings',
@@ -1978,9 +1810,8 @@ return [
     'admin_settings.main.breadcrumbs_is_enabled' => 'Enable breadcrumbs',
     'admin_settings.main.breadcrumbs_is_enabled_help' => 'Breadcrumbs are the small links above most pages that help you navigate back and understand where you are at better.',
     'admin_settings.main.display_pagination_when_no_pages' => 'Display pagination regardless of page count',
-    'admin_settings.main.display_pagination_when_no_pages_help' => 'If disabled - pagination button will only display when there are at least 2 pages available.',
+    'admin_settings.main.display_pagination_when_no_pages_help' => 'If disabled: pagination button will only display when there are at least 2 pages available.',
     'admin_settings.main.maintenance_is_enabled' => 'Enable maintenance mode',
-    /* Custom code: FC-2026-03-02: maintenance applies only to user zone */
     'admin_settings.main.maintenance_is_enabled_help' => 'User zone will be inaccessible for everyone except admins and the maintenance notice will be shown. Public FCC Apps remain accessible.',
     'admin_settings.main.user_zone_maintenance_is_enabled' => 'Additional user zone lock mode',
     'admin_settings.main.user_zone_maintenance_is_enabled_help' => 'When enabled, user zone is hidden from all non-admin users and the same maintenance notice is shown as in the main maintenance mode.',
@@ -1989,14 +1820,13 @@ return [
     'admin_settings.main.maintenance_button_text' => 'Action button text',
     'admin_settings.main.maintenance_button_url' => 'Action button URL',
     'admin_settings.main.default_avatar' => 'Default user avatar',
-    'admin_settings.main.default_avatar_help' => 'If not set - gravatar.com will be used for displaying avatars.',
-	'admin_settings.main.referrer_policy' => 'Referrer policy',
-	'admin_settings.main.referrer_policy_help' => 'Defines how much information (none, domain, or full URL) about the current page URL is shared when navigating from one page to another.',
-	'admin_settings.main.referrer_policy.no_referrer' => 'Send no referrer',
-	'admin_settings.main.referrer_policy.strict_origin_when_cross_origin' => 'Send full URL to internal links, domain only to external pages',
-	'admin_settings.main.referrer_policy.unsafe_url' => 'Send full URL to internal & external',
-	'admin_settings.main.referrer_policy.origin' => 'Send full domain only to internal & external',
-
+    'admin_settings.main.default_avatar_help' => 'If not set: gravatar.com will be used for displaying avatars.',
+    'admin_settings.main.referrer_policy' => 'Referrer policy',
+    'admin_settings.main.referrer_policy_help' => 'Defines how much information (none, domain, or full URL) about the current page URL is shared when navigating from one page to another.',
+    'admin_settings.main.referrer_policy.no_referrer' => 'Send no referrer',
+    'admin_settings.main.referrer_policy.strict_origin_when_cross_origin' => 'Send full URL to internal links, domain only to external pages',
+    'admin_settings.main.referrer_policy.unsafe_url' => 'Send full URL to internal & external',
+    'admin_settings.main.referrer_policy.origin' => 'Send full domain only to internal & external',
     'admin_settings.users.tab' => 'Users',
     'admin_settings.users.welcome_email_is_enabled' => 'Send welcome email',
     'admin_settings.users.welcome_email_is_enabled_help' => 'Send out a welcome email when a user finishes registration.',
@@ -2040,7 +1870,6 @@ return [
     'admin_settings.users.register_lockout_max_registrations' => 'Max registrations',
     'admin_settings.users.register_lockout_time' => 'Lockout time',
     'admin_settings.users.cleanup' => 'Cleanup',
-
     'admin_settings.content.tab' => 'Content',
     'admin_settings.content.blog' => 'Blog',
     'admin_settings.content.blog_is_enabled' => 'Enable blog system',
@@ -2060,13 +1889,10 @@ return [
     'admin_settings.content.broadcasts_statistics_is_enabled' => 'Track email views & clicks for Broadcasts',
     'admin_settings.content.broadcasts_statistics_is_enabled_help' => 'Enabling this feature will increase the load on your server and database storage.',
     'admin_settings.content.broadcasts_emails_per_cron' => 'Sent emails per cron run',
-
-    'admin_settings.payment.tab' => 'Payment',
+    'admin_settings.payment.tab' => 'Payments',
     'admin_settings.payment.is_enabled' => 'Enable payments system',
     'admin_settings.payment.is_enabled_help' => 'Disabling the payment system will remove all the options for the users to upgrade their accounts or see any payment related information.',
-    /* Custom code: FC-2026-03-30: centralized payment license notice translation */
     'admin_settings.payment.license_required' => 'You need to own the Extended License in order to activate the payment system.',
-    /* /Custom code: FC-2026-03-30 */
     'admin_settings.payment.default_payment_frequency' => 'Default payment frequency',
     'admin_settings.payment.default_payment_type' => 'Default payment type',
     'admin_settings.payment.type' => 'Enabled payment types',
@@ -2090,7 +1916,7 @@ return [
     'admin_settings.payment.default_currency' => 'Default currency',
     'admin_settings.payment.default_currency_help' => 'Default currency code for the payments. Once you start receiving payments, do not change this value.',
     'admin_settings.payment.auto_currency_detection' => 'Enable auto currency detection',
-    'admin_settings.payment.auto_currency_detection_help' => 'For new users (guests) - automatically detect and associate the right currency based on the users country and continent.',
+    'admin_settings.payment.auto_currency_detection_help' => 'For new users (guests): automatically detect and associate the right currency based on the users country and continent.',
     'admin_settings.payment.codes_is_enabled' => 'Enable discount & redeemable codes',
     'admin_settings.payment.codes_is_enabled_help' => 'Enabling the discount codes system will enable users to add a discount code created from the admin panel, before they checkout.',
     'admin_settings.payment.taxes_and_billing_is_enabled' => 'Enable taxes & billing system',
@@ -2109,153 +1935,127 @@ return [
     'admin_settings.payment.trial_require_card_help' => 'If checked, trials will only work with payment processors which have implemented trial subscriptions (Stripe for now) and will disable the trial system with no card required.',
     'admin_settings.payment.plan_features' => 'Plan feature visibility',
     'admin_settings.payment.plan_features_help' => 'Show or hide specific plan features anywhere they appear. This only changes visibility, not functionality.',
-
     'admin_settings.paddle_billing.tab' => 'Paddle Billing',
     'admin_settings.paddle_billing.is_enabled' => 'Enable Paddle Billing payments',
-    'admin_settings.paddle_billing.api_key' => 'API key',
+    'admin_settings.paddle_billing.api_key' => 'API Key',
     'admin_settings.paddle_billing.secret_key' => 'Secret key',
     'admin_settings.paddle_billing.client_side_token' => 'Client side token',
-
     'admin_settings.klarna.tab' => 'Klarna',
     'admin_settings.klarna.is_enabled' => 'Enable Klarna payments',
     'admin_settings.klarna.username' => 'Username',
     'admin_settings.klarna.password' => 'Password',
-
     'admin_settings.plisio.tab' => 'Plisio',
     'admin_settings.plisio.is_enabled' => 'Enable Plisio payments',
     'admin_settings.plisio.secret_key' => 'Secret key',
     'admin_settings.plisio.accepted_cryptocurrencies' => 'Accepted cryptocurrencies',
     'admin_settings.plisio.default_cryptocurrency' => 'Default cryptocurrency',
-
-
     'admin_settings.plisio_whitelabel.tab' => 'Plisio whitelabel',
     'admin_settings.plisio_whitelabel.is_enabled' => 'Enable Plisio whitelabel payments',
     'admin_settings.plisio_whitelabel.payment_blocks_fee' => 'Payment blocks fee',
-
-
     'admin_settings.revolut.tab' => 'Revolut',
     'admin_settings.revolut.is_enabled' => 'Enable Revolut payments',
     'admin_settings.revolut.secret_key' => 'Secret key',
     'admin_settings.revolut.webhook_id' => 'Webhook ID',
-    'admin_settings.revolut.webhook_id_help' => 'Once generated, do not modify the value, nor the mode - as they are directly associated with each other.',
+    'admin_settings.revolut.webhook_id_help' => 'Once generated, do not modify the value, nor the mode: as they are directly associated with each other.',
     'admin_settings.revolut.webhook_id_generate' => 'Generate',
-
     'admin_settings.paypal.tab' => 'Paypal',
     'admin_settings.paypal.is_enabled' => 'Enable Paypal payments',
-    'admin_settings.paypal.client_id' => 'Client Id',
+    'admin_settings.paypal.client_id' => 'Client ID',
     'admin_settings.paypal.secret' => 'Secret',
-
     'admin_settings.stripe.tab' => 'Stripe',
     'admin_settings.stripe.is_enabled' => 'Enable Stripe payments',
     'admin_settings.stripe.publishable_key' => 'Publishable Key',
     'admin_settings.stripe.secret_key' => 'Secret Key',
     'admin_settings.stripe.webhook_secret' => 'Webhook Secret',
-
     'admin_settings.offline_payment.tab' => 'Offline payment',
     'admin_settings.offline_payment.is_enabled' => 'Enable offline payments',
     'admin_settings.offline_payment.instructions' => 'Instructions',
     'admin_settings.offline_payment.instructions_help' => 'Payment instructions for the user to see, before submitting the payment.',
     'admin_settings.offline_payment.proof_size_limit' => 'Uploaded proof size limit',
-
     'admin_settings.coinbase.tab' => 'Coinbase',
     'admin_settings.coinbase.is_enabled' => 'Enable Coinbase payments',
     'admin_settings.coinbase.api_key' => 'API Key',
     'admin_settings.coinbase.webhook_secret' => 'Webhook Secret',
-
     'admin_settings.payu.tab' => 'PayU',
     'admin_settings.payu.is_enabled' => 'Enable PayU payments',
     'admin_settings.payu.merchant_pos_id' => 'Merchant POS Id',
     'admin_settings.payu.signature_key' => 'Signature Key',
     'admin_settings.payu.oauth_client_id' => 'Oauth Client Id',
     'admin_settings.payu.oauth_client_secret' => 'Oauth Client Secret',
-
     'admin_settings.iyzico.tab' => 'Iyzico',
     'admin_settings.iyzico.is_enabled' => 'Enable Iyzico payments',
     'admin_settings.iyzico.api_key' => 'API Key',
-    'admin_settings.iyzico.secret_key' => 'Secret Key',
-
+    'admin_settings.iyzico.secret_key' => 'Secret key',
     'admin_settings.paystack.tab' => 'Paystack',
     'admin_settings.paystack.is_enabled' => 'Enable Paystack payments',
     'admin_settings.paystack.public_key' => 'Public Key',
     'admin_settings.paystack.secret_key' => 'Secret Key',
-
     'admin_settings.razorpay.tab' => 'Razorpay',
     'admin_settings.razorpay.is_enabled' => 'Enable Razorpay payments',
     'admin_settings.razorpay.key_id' => 'Key Id',
     'admin_settings.razorpay.key_secret' => 'Key Secret',
     'admin_settings.razorpay.webhook_secret' => 'Webhook Secret',
-
     'admin_settings.mollie.tab' => 'Mollie',
     'admin_settings.mollie.is_enabled' => 'Enable Mollie payments',
     'admin_settings.mollie.api_key' => 'API Key',
-
     'admin_settings.yookassa.tab' => 'Yookassa',
     'admin_settings.yookassa.is_enabled' => 'Enable Yookassa payments',
     'admin_settings.yookassa.shop_id' => 'Shop ID',
-    'admin_settings.yookassa.secret_key' => 'Secret Key',
-
+    'admin_settings.yookassa.secret_key' => 'Secret key',
     'admin_settings.crypto_com.tab' => 'Crypto.com',
     'admin_settings.crypto_com.is_enabled' => 'Enable Crypto.com payments',
     'admin_settings.crypto_com.publishable_key' => 'Publishable Key',
     'admin_settings.crypto_com.secret_key' => 'Secret Key',
     'admin_settings.crypto_com.webhook_secret' => 'Webhook Secret',
-
     'admin_settings.paddle.tab' => 'Paddle Classic',
     'admin_settings.paddle.is_enabled' => 'Enable Paddle Classic payments',
     'admin_settings.paddle.vendor_id' => 'Vendor ID',
     'admin_settings.paddle.api_key' => 'API Key',
     'admin_settings.paddle.public_key' => 'Public Key',
-
     'admin_settings.mercadopago.tab' => 'MercadoPago',
     'admin_settings.mercadopago.is_enabled' => 'Enable MercadoPago payments',
     'admin_settings.mercadopago.access_token' => 'Access Token',
-
     'admin_settings.midtrans.tab' => 'Midtrans',
     'admin_settings.midtrans.is_enabled' => 'Enable Midtrans payments',
     'admin_settings.midtrans.server_key' => 'Server Key',
-
     'admin_settings.flutterwave.tab' => 'Flutterwave',
     'admin_settings.flutterwave.is_enabled' => 'Enable Flutterwave payments',
     'admin_settings.flutterwave.secret_key' => 'Secret Key',
-
     'admin_settings.lemonsqueezy.tab' => 'Lemonsqueezy',
     'admin_settings.lemonsqueezy.is_enabled' => 'Enable Lemonsqueezy payments',
-    'admin_settings.lemonsqueezy.api_key' => 'Api key',
+    'admin_settings.lemonsqueezy.api_key' => 'API Key',
     'admin_settings.lemonsqueezy.signing_secret' => 'Secret signing',
     'admin_settings.lemonsqueezy.store_id' => 'Store ID',
-    'admin_settings.lemonsqueezy.one_time_monthly_variant_id' => 'One time payment - monthly - variant id',
-    'admin_settings.lemonsqueezy.one_time_quarterly_variant_id' => 'One time payment - quarterly - variant id',
-    'admin_settings.lemonsqueezy.one_time_biannual_variant_id' => 'One time payment - biannual - variant id',
-    'admin_settings.lemonsqueezy.one_time_annual_variant_id' => 'One time payment - annual - variant id',
-    'admin_settings.lemonsqueezy.one_time_lifetime_variant_id' => 'One time payment - lifetime - variant id',
-    'admin_settings.lemonsqueezy.recurring_monthly_variant_id' => 'Recurring payment - monthly - variant id',
-    'admin_settings.lemonsqueezy.recurring_quarterly_variant_id' => 'Recurring payment - quarterly - variant id',
-    'admin_settings.lemonsqueezy.recurring_biannual_variant_id' => 'Recurring payment - biannual - variant id',
-    'admin_settings.lemonsqueezy.recurring_annual_variant_id' => 'Recurring payment - annual - variant id',
-
+    'admin_settings.lemonsqueezy.one_time_monthly_variant_id' => 'One time payment: monthly: variant id',
+    'admin_settings.lemonsqueezy.one_time_quarterly_variant_id' => 'One time payment: quarterly: variant id',
+    'admin_settings.lemonsqueezy.one_time_biannual_variant_id' => 'One time payment: biannual: variant id',
+    'admin_settings.lemonsqueezy.one_time_annual_variant_id' => 'One time payment: annual: variant id',
+    'admin_settings.lemonsqueezy.one_time_lifetime_variant_id' => 'One time payment: lifetime: variant id',
+    'admin_settings.lemonsqueezy.recurring_monthly_variant_id' => 'Recurring payment: monthly: variant id',
+    'admin_settings.lemonsqueezy.recurring_quarterly_variant_id' => 'Recurring payment: quarterly: variant id',
+    'admin_settings.lemonsqueezy.recurring_biannual_variant_id' => 'Recurring payment: biannual: variant id',
+    'admin_settings.lemonsqueezy.recurring_annual_variant_id' => 'Recurring payment: annual: variant id',
     'admin_settings.myfatoorah.tab' => 'Myfatoorah',
     'admin_settings.myfatoorah.is_enabled' => 'Enable Myfatoorah payments',
-    'admin_settings.myfatoorah.api_key' => 'API key',
+    'admin_settings.myfatoorah.api_key' => 'API Key',
     'admin_settings.myfatoorah.secret_key' => 'Secret key',
     'admin_settings.myfatoorah.api_endpoint' => 'API endpoint',
     'admin_settings.myfatoorah.api_endpoint_help' => 'Choose the endpoint based on the account region.',
-
     'admin_settings.affiliate.tab' => 'Affiliate',
     'admin_settings.affiliate.is_enabled' => 'Enable the affiliate system',
     'admin_settings.affiliate.is_enabled_help' => 'The affiliate system will enable your users to get paid for bringing other paying users to your platform.',
     'admin_settings.affiliate.commission_type' => 'Commission type',
-    'admin_settings.affiliate.commission_type_once' => 'Once - give out commission for the first payment of a referred user',
-    'admin_settings.affiliate.commission_type_forever' => 'Forever - give out commission for all the payments of a referred user',
+    'admin_settings.affiliate.commission_type_once' => 'Once: give out commission for the first payment of a referred user',
+    'admin_settings.affiliate.commission_type_forever' => 'Forever: give out commission for all the payments of a referred user',
     'admin_settings.affiliate.tracking_type' => 'Tracking type',
-    'admin_settings.affiliate.tracking_type_first' => 'First - track first referrer until the tracking duration expires',
-    'admin_settings.affiliate.tracking_type_last' => 'Last - override tracking cookie to the last referred',
+    'admin_settings.affiliate.tracking_type_first' => 'First: track first referrer until the tracking duration expires',
+    'admin_settings.affiliate.tracking_type_last' => 'Last: override tracking cookie to the last referred',
     'admin_settings.affiliate.tracking_duration' => 'Tracking duration',
     'admin_settings.affiliate.tracking_duration_help' => 'How long does the affiliate tracking cookie live on the browser.',
     'admin_settings.affiliate.minimum_withdrawal_amount' => 'Minimum withdrawal amount',
     'admin_settings.affiliate.minimum_withdrawal_amount_help' => 'How much does a user need to have in his balance until he can request a withdrawal.',
     'admin_settings.affiliate.withdrawal_notes' => 'Withdrawal request notes',
     'admin_settings.affiliate.withdrawal_notes_help' => 'Inform your users about the withdrawal process. You can request them to write in their bank account or Paypal email for example.',
-
     'admin_settings.business.tab' => 'Invoice details',
     'admin_settings.business.subheader' => 'These details will be used for payments & invoices.',
     'admin_settings.business.brand_name' => 'Brand name',
@@ -2271,7 +2071,6 @@ return [
     'admin_settings.business.tax_id' => 'Tax ID',
     'admin_settings.business.custom_key' => 'Custom field name',
     'admin_settings.business.custom_value' => 'Custom field value',
-
     'admin_settings.captcha.tab' => 'Captcha',
     'admin_settings.captcha.type' => 'Captcha provider',
     'admin_settings.captcha.type.basic' => 'Basic captcha (self-hosted)',
@@ -2290,37 +2089,30 @@ return [
     'admin_settings.captcha.resend_activation_is_enabled' => 'Enable captcha on the resend activation page',
     'admin_settings.captcha.contact_is_enabled' => 'Enable captcha on the contact page',
     'admin_settings.captcha.biolink_is_enabled' => 'Enable captcha on FCC Apps for blocks',
-
     'admin_settings.facebook.tab' => 'Facebook login',
     'admin_settings.facebook.is_enabled' => 'Enable Facebook login',
     'admin_settings.facebook.app_id' => 'App Id',
     'admin_settings.facebook.app_secret' => 'App Secret',
-
     'admin_settings.google.tab' => 'Google login',
     'admin_settings.google.is_enabled' => 'Enable Google login',
-    'admin_settings.google.client_id' => 'Client Id',
+    'admin_settings.google.client_id' => 'Client ID',
     'admin_settings.google.client_secret' => 'Client Secret',
-
     'admin_settings.twitter.tab' => 'X login',
     'admin_settings.twitter.is_enabled' => 'Enable X login',
     'admin_settings.twitter.consumer_api_key' => 'Consumer API Key',
     'admin_settings.twitter.consumer_api_secret' => 'Consumer API Secret',
-
     'admin_settings.discord.tab' => 'Discord login',
     'admin_settings.discord.is_enabled' => 'Enable Discord login',
     'admin_settings.discord.client_id' => 'Client ID',
     'admin_settings.discord.client_secret' => 'Client Secret',
-
     'admin_settings.linkedin.tab' => 'LinkedIn login',
     'admin_settings.linkedin.is_enabled' => 'Enable LinkedIn login',
     'admin_settings.linkedin.client_id' => 'Client ID',
     'admin_settings.linkedin.client_secret' => 'Client Secret',
-
     'admin_settings.microsoft.tab' => 'Microsoft login',
     'admin_settings.microsoft.is_enabled' => 'Enable Microsoft login',
     'admin_settings.microsoft.client_id' => 'Client ID',
     'admin_settings.microsoft.client_secret' => 'Client Secret',
-
     'admin_settings.cookie_consent.tab' => 'Cookie consent',
     'admin_settings.cookie_consent.is_enabled' => 'Enable cookie consent',
     'admin_settings.cookie_consent.is_enabled_help' => 'Cookie consent is made possible with the <a href="https://github.com/orestbida/cookieconsent" target="_blank">orestbida/cookieconsent</a> library. If you add your own custom js and want to make it work with this, read their documentation.',
@@ -2333,12 +2125,10 @@ return [
     'admin_settings.cookie_consent.layout' => 'Layout type',
     'admin_settings.cookie_consent.position_y' => 'Position Y',
     'admin_settings.cookie_consent.position_x' => 'Position X',
-
     'admin_settings.socials.tab' => 'Socials',
     'admin_settings.socials.footer' => 'Footer socials',
     'admin_settings.socials.share_buttons' => 'Share buttons',
     'admin_settings.socials.enabled_share_buttons' => 'Enabled share buttons',
-
     'admin_settings.smtp.tab' => 'SMTP (Email)',
     'admin_settings.smtp.transport' => 'Mail transport',
     'admin_settings.smtp.transport_help' => 'Choose how all outgoing emails should be sent from the application.',
@@ -2389,16 +2179,15 @@ return [
     'admin_settings.smtp.button_border_radius' => 'Button border radius',
     'admin_settings.smtp.main_container_border_radius' => 'Main container border radius',
     'admin_settings.smtp.info_message.no_setup' => 'SMTP not configured, so the system can\'t send emails. <a href="%s" target="_blank">Setup SMTP</a>',
-
     'admin_settings.theme.tab' => 'Theme',
     'admin_settings.theme.advanced_coloring' => 'Custom',
     'admin_settings.theme.light' => 'Light theme',
     'admin_settings.theme.dark' => 'Dark theme',
     'admin_settings.theme.primary_theme' => 'Primary color theme',
-    'admin_settings.theme.primary' => 'Primary color shades - from light to dark',
+    'admin_settings.theme.primary' => 'Primary color shades: from light to dark',
     'admin_settings.theme.primary_help' => 'You can check and choose from already created shadings, from <a href="https://tailwindcss.com/docs/customizing-colors" target="_blank" rel="nofollow noreferrer">Tailwind Color Palettes</a>.',
     'admin_settings.theme.gray_theme' => 'Gray color theme',
-    'admin_settings.theme.gray' => 'Gray color shades - from light to dark',
+    'admin_settings.theme.gray' => 'Gray color shades: from light to dark',
     'admin_settings.theme.gray_help' => 'You can check and choose from already created shadings, from <a href="https://tailwindcss.com/docs/customizing-colors" target="_blank" rel="nofollow noreferrer">Tailwind Color Palettes</a>. Choose a gray color palette.',
     'admin_settings.theme.others' => 'Other settings',
     'admin_settings.theme.border_radius' => 'Border radius',
@@ -2406,40 +2195,35 @@ return [
     'admin_settings.theme.font_family_help' => 'The CSS font family name (e.g. Times New Roman).',
     'admin_settings.theme.font_family_default' => 'Default',
     'admin_settings.theme.font_family_custom' => 'Custom',
-
     'admin_settings.custom.tab' => 'Custom JS / CSS',
-    /* Custom code: FC-2026-02-24: FCC Education settings tab */
     'admin_settings.fcc_education.tab' => 'FCC Education',
-        /* Custom code: FC-2026-03-30: FCC education settings localization */
-        'admin_settings.fcc_education.help' => 'Enter custom videos and descriptions per language. Each language has its own configuration.',
-        'admin_settings.fcc_education.page_section' => 'FCC education page',
-        'admin_settings.fcc_education.page_section_help' => 'Edit the title, subtitle, videos, and CTA per language.',
-        'admin_settings.fcc_education.page_enabled' => 'Enable education page',
-        'admin_settings.fcc_education.page_title' => 'Title',
-        'admin_settings.fcc_education.page_subtitle' => 'Subtitle',
-        'admin_settings.fcc_education.page_videos' => 'Video list (one per row: Title | Vimeo ID or URL)',
-        'admin_settings.fcc_education.page_videos_placeholder' => 'Forever Living Products | 123456789',
-        'admin_settings.fcc_education.page_cta' => 'Confirmation button',
-        'admin_settings.fcc_education.help_widget_enabled' => 'Enable widget for this page',
-        'admin_settings.fcc_education.help_widget_title' => 'Title',
-        'admin_settings.fcc_education.help_widget_vimeo' => 'Vimeo ID',
-        'admin_settings.fcc_education.help_widget_description' => 'Description below the video',
-        'admin_settings.fcc_education.help_widget_extra_html' => 'Additional HTML (optional)',
-        'admin_settings.fcc_education.page.links_biolink' => 'FCC Apps',
-        'admin_settings.fcc_education.page.links_link' => 'Shortened links',
-        'admin_settings.fcc_education.page.links_file' => 'File links',
-        'admin_settings.fcc_education.page.links_vcard' => 'VCard links',
-        'admin_settings.fcc_education.page.links_static' => 'Static sites',
-        'admin_settings.fcc_education.page.link_editor' => 'FCC App editor',
-        'admin_settings.fcc_education.page.links_statistics' => 'Links statistics',
-        'admin_settings.fcc_education.page.qr_codes' => 'QR codes',
-        'admin_settings.fcc_education.page.domains' => 'Custom domains',
-        'admin_settings.fcc_education.page.notification_handlers' => 'Notification handlers',
-        'admin_settings.fcc_education.page.pixels' => 'Pixels',
-        'admin_settings.fcc_education.page.projects' => 'Projects',
-        'admin_settings.fcc_education.page.splash_pages' => 'Splash pages',
-        /* /Custom code: FC-2026-03-30 */
-    /* /Custom code: FC-2026-02-24 */
+    'admin_settings.fcc_education.help' => 'Enter custom videos and descriptions per language. Each language has its own configuration.',
+    'admin_settings.fcc_education.page_section' => 'FCC education page',
+    'admin_settings.fcc_education.page_section_help' => 'Edit the title, subtitle, videos, and CTA per language.',
+    'admin_settings.fcc_education.page_enabled' => 'Enable education page',
+    'admin_settings.fcc_education.page_title' => 'Subject',
+    'admin_settings.fcc_education.page_subtitle' => 'Subtitle',
+    'admin_settings.fcc_education.page_videos' => 'Video list (one per row: Title | Vimeo ID or URL)',
+    'admin_settings.fcc_education.page_videos_placeholder' => 'Forever Living Products | 123456789',
+    'admin_settings.fcc_education.page_cta' => 'Confirmation button',
+    'admin_settings.fcc_education.help_widget_enabled' => 'Enable widget for this page',
+    'admin_settings.fcc_education.help_widget_title' => 'Subject',
+    'admin_settings.fcc_education.help_widget_vimeo' => 'Vimeo ID',
+    'admin_settings.fcc_education.help_widget_description' => 'Description below the video',
+    'admin_settings.fcc_education.help_widget_extra_html' => 'Additional HTML (optional)',
+    'admin_settings.fcc_education.page.links_biolink' => 'FCC Apps',
+    'admin_settings.fcc_education.page.links_link' => 'Shortened links',
+    'admin_settings.fcc_education.page.links_file' => 'File links',
+    'admin_settings.fcc_education.page.links_vcard' => 'VCard links',
+    'admin_settings.fcc_education.page.links_static' => 'Static sites',
+    'admin_settings.fcc_education.page.link_editor' => 'FCC App editor',
+    'admin_settings.fcc_education.page.links_statistics' => 'Links statistics',
+    'admin_settings.fcc_education.page.qr_codes' => 'QR codes',
+    'admin_settings.fcc_education.page.domains' => 'Custom domains',
+    'admin_settings.fcc_education.page.notification_handlers' => 'Notification handlers',
+    'admin_settings.fcc_education.page.pixels' => 'Pixels',
+    'admin_settings.fcc_education.page.projects' => 'Projects',
+    'admin_settings.fcc_education.page.splash_pages' => 'Splash pages',
     'admin_settings.custom.body_content' => 'App body content',
     'admin_settings.custom.body_content_help' => 'Insert custom code right inside the <body> tag. Useful for different forms of tracking, Google Tag Manager for example.',
     'admin_settings.custom.welcome_js' => 'User welcome JS',
@@ -2456,10 +2240,8 @@ return [
     'admin_settings.custom.head_js_splash_page' => 'Splash page custom JS',
     'admin_settings.custom.head_css_splash_page' => 'Splash page custom CSS',
     'admin_settings.custom.body_content_splash_page' => 'Splash page body content',
-
     'admin_settings.custom_images.tab' => 'Custom images',
     'admin_settings.custom_images.info' => 'Replace the default images of the homepage with your own.',
-
     'admin_settings.announcements.tab' => 'Announcements',
     'admin_settings.announcements.guests' => 'Guests',
     'admin_settings.announcements.users' => 'Users',
@@ -2467,12 +2249,11 @@ return [
     'admin_settings.announcements.content_help' => 'This field accepts text, html or javascript.',
     'admin_settings.announcements.text_color' => 'Text color',
     'admin_settings.announcements.background_color' => 'Background color',
-
     'admin_settings.internal_notifications.tab' => 'Internal notifs.',
-	'admin_settings.internal_notifications.users' => 'Users',
-	'admin_settings.internal_notifications.users_help' => 'Send direct or bulk internal messages to your users.',
-	'admin_settings.internal_notifications.admins' => 'Admins',
-	'admin_settings.internal_notifications.admins_help' => 'Receive internal notifications from your users on certain actions mentioned below. <br /><br />Your latest notifications will also display in the admin panel dashboard.',
+    'admin_settings.internal_notifications.users' => 'Users',
+    'admin_settings.internal_notifications.users_help' => 'Send direct or bulk internal messages to your users.',
+    'admin_settings.internal_notifications.admins' => 'Admins',
+    'admin_settings.internal_notifications.admins_help' => 'Receive internal notifications from your users on certain actions mentioned below. <br /><br />Your latest notifications will also display in the admin panel dashboard.',
     'admin_settings.internal_notifications.users_is_enabled' => 'Enable notifications system for users',
     'admin_settings.internal_notifications.admins_is_enabled' => 'Enable notifications system for admins (admin panel)',
     'admin_settings.internal_notifications.new_user' => 'New user',
@@ -2480,7 +2261,6 @@ return [
     'admin_settings.internal_notifications.new_payment' => 'New payment',
     'admin_settings.internal_notifications.new_affiliate_withdrawal' => 'New affiliate withdrawal',
     'admin_settings.internal_notifications.new_newsletter_subscriber' => 'New newsletter subscriber',
-
     'admin_settings.email_notifications.tab' => 'Email notifications',
     'admin_settings.email_notifications.emails' => 'Emails to be notified',
     'admin_settings.email_notifications.emails_help' => 'Emails that will receive a notification when one of the actions from below are performed. Add valid email addresses separated by a comma.',
@@ -2498,7 +2278,6 @@ return [
     'admin_settings.email_notifications.contact_help' => 'Enable the contact system.',
     'admin_settings.email_notifications.new_affiliate_withdrawal' => 'New affiliate withdrawal',
     'admin_settings.email_notifications.new_affiliate_withdrawal_help' => 'Receive an email when a new affiliate withdrawal request is submitted.',
-
     'admin_settings.push_notifications.tab' => 'Push notifications',
     'admin_settings.push_notifications.is_enabled' => 'Enable the Push Notifications system',
     'admin_settings.push_notifications.guests_is_enabled' => 'Accept guests as subscribers',
@@ -2512,7 +2291,6 @@ return [
     'admin_settings.push_notifications.notifications_per_cron' => 'Total sent notifications per cron run',
     'admin_settings.push_notifications.notifications_per_cron_batch' => 'Sent notifications per cron run in one batch',
     'admin_settings.push_notifications.notifications_per_cron_batch_concurrently' => 'Sent notifications at once per cron batch concurrently',
-
     'admin_settings.offload.tab' => 'Offload & CDN',
     'admin_settings.offload.cdn' => 'CDN',
     'admin_settings.offload.offload' => 'Offload',
@@ -2533,24 +2311,23 @@ return [
     'admin_settings.offload.secret_access_key' => 'Secret access key',
     'admin_settings.offload.storage_name' => 'Bucket name',
     'admin_settings.offload.region' => 'Region',
-
     'admin_settings.pwa.tab' => 'PWA',
-	'admin_settings.pwa.is_enabled' => 'Enable the PWA system',
-	'admin_settings.pwa.is_fullscreen' => 'Enable full screen support (iOS only)',
-	'admin_settings.pwa.is_fullscreen_help' => 'If enabled, your PWA will not have a status bar at the top with the theme color. Instead it will be full screen, simulating a real app experience.',
-	'admin_settings.pwa.dynamic_splash_screen' => 'Enable dynamic splash screen (iOS only)',
-	'admin_settings.pwa.dynamic_splash_screen_help' => 'Android creates splash screens automatically. Enable this to generate them for iOS devices; otherwise, a blank splash screen will appear.',
+    'admin_settings.pwa.is_enabled' => 'Enable the PWA system',
+    'admin_settings.pwa.is_fullscreen' => 'Enable full screen support (iOS only)',
+    'admin_settings.pwa.is_fullscreen_help' => 'If enabled, your PWA will not have a status bar at the top with the theme color. Instead it will be full screen, simulating a real app experience.',
+    'admin_settings.pwa.dynamic_splash_screen' => 'Enable dynamic splash screen (iOS only)',
+    'admin_settings.pwa.dynamic_splash_screen_help' => 'Android creates splash screens automatically. Enable this to generate them for iOS devices; otherwise, a blank splash screen will appear.',
     'admin_settings.pwa.display_install_bar' => 'Display install bar in the footer',
     'admin_settings.pwa.display_install_bar_for_guests' => 'Display install bar for guests',
     'admin_settings.pwa.display_install_bar_delay' => 'Delay until install bar shows up',
     'admin_settings.pwa.display_install_bar_minimum_pageviews_count' => 'Minimum session pageviews count before install bar shows up',
     'admin_settings.pwa.pageviews' => 'pageviews',
     'admin_settings.pwa.app_name' => 'App name',
-    'admin_settings.pwa.app_name_help' => 'The full name of your PWA app - will be shown in your phone home screen or desktop.',
+    'admin_settings.pwa.app_name_help' => 'The full name of your PWA app: will be shown in your phone home screen or desktop.',
     'admin_settings.pwa.short_app_name' => 'App short name',
-    'admin_settings.pwa.short_app_name_help' => 'Optional short name of your PWA - will be shown when there is not enough room to display the full name.',
+    'admin_settings.pwa.short_app_name_help' => 'Optional short name of your PWA: will be shown when there is not enough room to display the full name.',
     'admin_settings.pwa.app_description' => 'App short description',
-    'admin_settings.pwa.app_description_help' => 'Optional short description of your PWA - will be shown in some devices when installing and after installation.',
+    'admin_settings.pwa.app_description_help' => 'Optional short description of your PWA: will be shown in some devices when installing and after installation.',
     'admin_settings.pwa.background_color' => 'Background color',
     'admin_settings.pwa.background_color_help' => 'The background color used on the splash screen and while the app is loading.',
     'admin_settings.pwa.theme_color' => 'Theme color',
@@ -2567,14 +2344,13 @@ return [
     'admin_settings.pwa.desktop_screenshots_help2' => 'All desktop screenshots must have the same size.',
     'admin_settings.pwa.screenshot_x' => 'Screenshot %s',
     'admin_settings.pwa.shortcuts' => 'Shortcuts',
-    'admin_settings.pwa.shortcut_name_x' => 'Shortcut #%s - name',
-    'admin_settings.pwa.shortcut_description_x' => 'Shortcut #%s - description',
-    'admin_settings.pwa.shortcut_url_x' => 'Shortcut #%s - URL',
-    'admin_settings.pwa.shortcut_icon_x' => 'Shortcut #%s - Icon',
+    'admin_settings.pwa.shortcut_name_x' => 'Shortcut #%s: name',
+    'admin_settings.pwa.shortcut_description_x' => 'Shortcut #%s: description',
+    'admin_settings.pwa.shortcut_url_x' => 'Shortcut #%s: URL',
+    'admin_settings.pwa.shortcut_icon_x' => 'Shortcut #%s: Icon',
     'admin_settings.pwa.shortcut_icon_x_help' => 'Make sure the icon is 192x192 pixels.',
     'admin_settings.pwa.app_start_url' => 'App start URL',
     'admin_settings.pwa.app_start_url_help' => 'What internal page should load when the PWA app is opened. UTM tracking parameters are automatically added: <code>utm_source=pwa&utm_medium=web-app&utm_campaign=install-or-pwa-launch</code>',
-
     'admin_settings.image_optimizer.tab' => 'Image optimizer',
     'admin_settings.image_optimizer.is_enabled' => 'Enable the image optimizer system',
     'admin_settings.image_optimizer.provider' => 'Optimization provider',
@@ -2585,13 +2361,12 @@ return [
     'admin_settings.image_optimizer.provider.imagerypro' => 'AltumCode Imagery Pro',
     'admin_settings.image_optimizer.provider.imagerypro_help' => 'Service provided by AltumCode. Works with JPG, PNG, SVG, GIF, AVIF, WEBP files up to 20MB.',
     'admin_settings.image_optimizer.provider.imagerypro_help2' => 'Subscribe to any <a href="https://altumco.de/subscribe-club" target="_blank">AltumCode Club</a> subscriptions to get access.',
-    'admin_settings.image_optimizer.imagerypro_api_key' => 'API key',
+    'admin_settings.image_optimizer.imagerypro_api_key' => 'API Key',
     'admin_settings.image_optimizer.imagerypro_api_key_help' => 'License key from your active AltumCode Club subscription.',
     'admin_settings.image_optimizer.quality' => 'Optimization quality',
     'admin_settings.image_optimizer.quality_help' => 'The level of quality after the optimization. Use ~75% to get a good optimization result and also keep quality at a good rate.',
     'admin_settings.image_optimizer.statistics_is_enabled' => 'Enable statistics',
     'admin_settings.image_optimizer.statistics_is_enabled_help' => 'Track all the image optimizations logs and inspect them via the admin panel.',
-
     'admin_settings.email_shield.tab' => 'Email shield',
     'admin_settings.email_shield.is_enabled' => 'Enable the email shield system',
     'admin_settings.email_shield.email_shield_api_key' => 'Email Shield API key',
@@ -2601,11 +2376,10 @@ return [
     'admin_settings.email_shield.statistics_is_enabled_help' => 'Track how many valid and invalid email domain results your site gets on a daily basis.',
     'admin_settings.email_shield.whitelisted_domains' => 'Whitelisted domains',
     'admin_settings.email_shield.whitelisted_domains_help' => 'Domains that you wish to always allow that might get blocked. Comma separated values of domains ( domain.com, domain2.com , etc ).',
-
     'admin_settings.dynamic_og_images.tab' => 'Dynamic OGs',
     'admin_settings.dynamic_og_images.info' => 'You must make sure your server does not block incoming requests from the following ip: <strong>178.156.142.190</strong>',
     'admin_settings.dynamic_og_images.is_enabled' => 'Enable the dynamic OG images generator system',
-    'admin_settings.dynamic_og_images.preview' => 'Preview',
+    'admin_settings.dynamic_og_images.preview' => 'Overview',
     'admin_settings.dynamic_og_images.preview_help' => 'This is an approximate preview with a sample screenshot image. The actual dynamic image will be generated based on the visited public page.',
     'admin_settings.dynamic_og_images.api_key' => 'API Key',
     'admin_settings.dynamic_og_images.api_key_help' => 'The API key of an admin account of the website.',
@@ -2616,7 +2390,7 @@ return [
     'admin_settings.dynamic_og_images.quality_help' => 'Use ~90 for a crisp but still small and optimized image in modern WEBP format.',
     'admin_settings.dynamic_og_images.logo' => 'Logo',
     'admin_settings.dynamic_og_images.logo_help' => 'Logo to be displayed on the OG image. Low file size SVG or WEBP highly recommended.',
-    'admin_settings.dynamic_og_images.title' => 'Title',
+    'admin_settings.dynamic_og_images.title' => 'Subject',
     'admin_settings.dynamic_og_images.title_help' => 'Branded title of your site to be displayed on the OG image. Leave empty to disable.',
     'admin_settings.dynamic_og_images.title_color' => 'Title color',
     'admin_settings.dynamic_og_images.background' => 'Background image',
@@ -2626,52 +2400,46 @@ return [
     'admin_settings.dynamic_og_images.screenshot_image_border_radius' => 'Screenshot image size border radius',
     'admin_settings.dynamic_og_images.screenshot_image_border_radius_help' => 'Roundness of the dynamic screenshot inside the OG image.',
     'admin_settings.dynamic_og_images.refresh_interval' => 'Refresh interval',
-
-
     'admin_settings.sso.tab' => 'SSO',
     'admin_settings.sso.is_enabled' => 'Enable the SSO (Single Sign On) system',
     'admin_settings.sso.is_enabled_help' => 'This feature allows you to connect other installations of AltumCode software and allow your users to easily switch between them with a single click of a button.',
     'admin_settings.sso.display_menu_items' => 'Display switch links in the menu',
     'admin_settings.sso.display_menu_items_help' => 'If you enable this, links of all connected websites will display to your users.',
     'admin_settings.sso.display_menu_items_help2' => 'If you disable this, you can create custom redirection links and add them from the %sPages%s section, with URLs as such: %s.',
-    'admin_settings.sso.display_menu_items_help3' => '<code>{website_id}</code> - should be replaced with the website id you enter below.',
-    'admin_settings.sso.display_menu_items_help4' => '<code>{page}</code> - can be a page from that particular website, example: dashboard.',
+    'admin_settings.sso.display_menu_items_help3' => '<code>{website_id}</code>: should be replaced with the website id you enter below.',
+    'admin_settings.sso.display_menu_items_help4' => '<code>{page}</code>: can be a page from that particular website, example: dashboard.',
     'admin_settings.sso.websites' => 'Websites',
     'admin_settings.sso.id' => 'ID',
     'admin_settings.sso.id_help' => 'Simple identification name for the website.',
     'admin_settings.sso.api_key' => 'API Key',
     'admin_settings.sso.api_key_help' => 'The API key of an admin account of the website.',
     'admin_settings.sso.url_help' => 'The base URL of the another AltumCode software installation.',
-
     'admin_settings.webhooks.tab' => 'Webhooks',
     'admin_settings.webhooks.help' => 'Send a webhook POST request to the above URL with the %s form data values when this event is triggered.',
     'admin_settings.webhooks.secret_key' => 'Secret key',
     'admin_settings.webhooks.secret_key_help' => 'The signing secret key that you will be able to use to validate all the incoming webhooks.',
     'admin_settings.webhooks.secret_key_help2' => 'All webhook requests will include the <code>webhook-id</code>, <code>webhook-timestamp</code> and <code>webhook-signature</code> headers for proper verification.',
     'admin_settings.webhooks.secret_key_regenerate' => 'Regenerate',
-    'admin_settings.webhooks.wait_for_response_domains' => 'Wait for webhook response - domains',
+    'admin_settings.webhooks.wait_for_response_domains' => 'Wait for webhook response: domains',
     'admin_settings.webhooks.wait_for_response_domains_help' => 'Normally, webhooks are sent in a fast “fire-and-forget” mode. To ensure compatibility with platforms like Make.com or n8n that require the full response to be read, list those domains here (comma-separated). Requests to these domains will wait for a complete response.',
-    'admin_settings.webhooks.user_new' => 'New users event - webhook URL',
-    'admin_settings.webhooks.user_update' => 'Users update event - webhook URL',
-    'admin_settings.webhooks.user_delete' => 'User deletion event - webhook URL',
-    'admin_settings.webhooks.payment_new' => 'New payment event - webhook URL',
-    'admin_settings.webhooks.code_redeemed' => 'Code redeemed event - webhook URL',
-    'admin_settings.webhooks.contact' => 'Contact form - webhook URL',
-    'admin_settings.webhooks.cron_start' => 'Cron job start - webhook URL',
-    'admin_settings.webhooks.cron_end' => 'Cron job end - webhook URL',
-    'admin_settings.webhooks.domain_new' => 'New user domain event - webhook URL',
-    'admin_settings.webhooks.domain_update' => 'Updated user domain event - webhook URL',
-    'admin_settings.webhooks.link_new' => 'New user link event - webhook URL',
-    'admin_settings.webhooks.link_update' => 'Updated user link event - webhook URL',
-
+    'admin_settings.webhooks.user_new' => 'New users event: webhook URL',
+    'admin_settings.webhooks.user_update' => 'Users update event: webhook URL',
+    'admin_settings.webhooks.user_delete' => 'User deletion event: webhook URL',
+    'admin_settings.webhooks.payment_new' => 'New payment event: webhook URL',
+    'admin_settings.webhooks.code_redeemed' => 'Code redeemed event: webhook URL',
+    'admin_settings.webhooks.contact' => 'Contact form: webhook URL',
+    'admin_settings.webhooks.cron_start' => 'Cron job start: webhook URL',
+    'admin_settings.webhooks.cron_end' => 'Cron job end: webhook URL',
+    'admin_settings.webhooks.domain_new' => 'New user domain event: webhook URL',
+    'admin_settings.webhooks.domain_update' => 'Updated user domain event: webhook URL',
+    'admin_settings.webhooks.link_new' => 'New user link event: webhook URL',
+    'admin_settings.webhooks.link_update' => 'Updated user link event: webhook URL',
     'admin_settings.webhooks.contact_form' => 'Contact form',
     'admin_settings.webhooks.cron' => 'Cron',
-
     'admin_settings.webhooks.secret_key_regenerate.header' => 'Regenerate secret key',
     'admin_settings.webhooks.secret_key_regenerate.subheader' => 'The previous key will stop working immediately. This action cannot be undone.',
-
     'admin_settings.cron.tab' => 'Cron',
-    'admin_settings.cron.settings' => 'Settings',
+    'admin_settings.cron.settings' => 'Configure',
     'admin_settings.cron.run_manually' => 'Run manually via the browser',
     'admin_settings.cron.cron' => 'Essential cron job',
     'admin_settings.cron.broadcasts' => 'Broadcasts cron job',
@@ -2681,23 +2449,19 @@ return [
     'admin_settings.cron.cron_settings_help' => 'Do not modify these values if you do not know what you are doing.',
     'admin_settings.cron.last_execution' => 'Last executed: %s',
     'admin_settings.cron.last_processing_time' => 'Last processing time: %s',
-
     'admin_settings.health.tab' => 'Health',
     'admin_settings.health.help' => 'This page checks and displays information about your server and tells you if your server minimum requirements are in good order.',
-
     'admin_settings.cache.tab' => 'Cache',
     'admin_settings.cache.is_enabled' => 'Cache is enabled',
     'admin_settings.cache.driver' => 'Driver',
     'admin_settings.cache.size' => 'Current cache size',
     'admin_settings.cache.clear' => 'Clear cache',
-
     'admin_settings.license.tab' => 'License',
     'admin_settings.license.license' => 'License',
     'admin_settings.license.license_help' => 'The license you got from purchasing the product.',
     'admin_settings.license.type' => 'License type',
     'admin_settings.license.new_license' => 'New license',
     'admin_settings.license.new_license_help' => 'Leave empty if you don\'t want to change it. Only use this field if you want to change your website license to a new one.',
-
     'admin_settings.support.tab' => 'Support',
     'admin_settings.support.key' => 'Support key',
     'admin_settings.support.status.active' => 'Active. Will expire on %s.',
@@ -2707,7 +2471,6 @@ return [
     'admin_settings.support.extend' => 'Extend your support',
     'admin_settings.support.new_key' => 'New support key',
     'admin_settings.support.new_key_help' => 'Leave empty if you don\'t want to change it.',
-
     'admin_settings.ads.tab' => 'Ads',
     'admin_settings.ads.ads_help' => 'Ads will only show users that do not have a plan with the \'No ads\' plan feature enabled. These fields accept text, html or javascript.',
     'admin_settings.ads.ad_blocker_detector_is_enabled' => 'Ad blocker detector',
@@ -2720,14 +2483,12 @@ return [
     'admin_settings.ads.footer_biolink' => 'FCC App footer',
     'admin_settings.ads.header_splash' => 'Splash page header',
     'admin_settings.ads.footer_splash' => 'Splash page footer',
-
-    'admin_settings_send_test_email_modal.header' => 'Send test email',
+    'admin_settings_send_test_email_modal.header' => 'Send a test email',
     'admin_settings_send_test_email_modal.success_message' => 'The test email was sent successfully.',
     'admin_settings_send_test_email_modal.success_message.brevo_api' => 'The test email was sent successfully through the Brevo API.',
     'admin_settings_send_test_email_modal.success_message.smtp' => 'The test email was sent successfully through SMTP.',
     'admin_settings_send_test_email_modal.success_message.smtp_fallback' => 'The test email was sent successfully through the backup SMTP transport.',
     'admin_settings_send_test_email_modal.error_message' => 'The test email could not be sent: %s',
-
     'admin_settings.notification_handlers.tab' => 'Notif. handlers',
     'admin_settings.notification_handlers.is_enabled' => 'Enable %s notifications',
     'admin_settings.notification_handlers.twilio_sid' => 'Twilio account SID',
@@ -2735,7 +2496,6 @@ return [
     'admin_settings.notification_handlers.twilio_number' => 'Twilio phone number',
     'admin_settings.notification_handlers.whatsapp_number_id' => 'Whatsapp phone number ID',
     'admin_settings.notification_handlers.whatsapp_access_token' => 'Whatsapp access token',
-
     'admin_settings.codes.tab' => 'Codes',
     'admin_settings.codes.qr_codes_branding_logo' => 'QR code branding logo',
     'admin_settings.codes.qr_codes_default_image' => 'QR code default image',
@@ -2743,7 +2503,6 @@ return [
     'admin_settings.codes.available_qr_codes' => 'Available QR codes',
     'admin_settings.codes.logo_size_limit' => 'Logo size limit',
     'admin_settings.codes.background_size_limit' => 'Background size limit',
-
     'admin_settings.links.tab' => 'Links system',
     'admin_settings.forever.tab' => 'Forever webshop',
     'admin_settings.vip_funnel.tab' => 'VIP Funnel',
@@ -2802,7 +2561,7 @@ return [
     'admin_settings.links.biolinks_report_is_enabled' => 'Enable the FCC App reporting system',
     'admin_settings.links.biolinks_report_is_enabled_help' => 'Enabling this will display a small flag icon that allows your users to report FCC Apps. The contact system must be enabled for this to work.',
     'admin_settings.links.sixsixpusher' => '66pusher integration',
-    'admin_settings.links.sixsixpusher_help' => 'Connect your <a href="https://altumco.de/66pusher">66pusher<a/> installation to the 66biolinks system.',
+    'admin_settings.links.sixsixpusher_help' => 'Connect your <a href="https://altumco.de/66pusher">66pusher</a> installation to the 66biolinks system.',
     'admin_settings.links.sixsixpusher_is_enabled' => 'Enable the 66pusher system',
     'admin_settings.links.sixsixpusher_service_worker_file_name' => 'Service worker file name',
     'admin_settings.links.sixsixpusher_service_worker_file_name_help' => 'The same value that is written in the setup of your 66pusher installation.',
@@ -2871,13 +2630,13 @@ return [
     'admin_settings.links.file_size_limit' => 'FCC App file block size limit',
     'admin_settings.links.product_file_size_limit' => 'FCC App product file block size limit',
     'admin_settings.links.static_size_limit' => 'Static files size limit',
-	'admin_settings.links.pwa_icon_size_limit' => 'PWA icons size limit',
+    'admin_settings.links.pwa_icon_size_limit' => 'PWA icons size limit',
     'admin_settings.links.branded_button_icon_size_limit' => 'Branded buttons icons size limit',
     'admin_settings.links.offline_payment_proof_size_limit' => 'Offline payment proof size limit',
     'admin_settings.links.blacklisted_domains' => 'Blacklisted domains',
     'admin_settings.links.blacklisted_domains_help' => 'Comma separated values of domains ( domain.com, domain2.com , etc ). People will not be able to shorten / add any domain that is included in this list.',
     'admin_settings.links.blacklisted_keywords' => 'Blacklisted Keywords',
-    'admin_settings.links.blacklisted_keywords_help' => 'Comma separated values of domains ( word1, word2, word3 , etc ). People will not be able to use any custom url that is included in this list.',
+    'admin_settings.links.blacklisted_keywords_help' => 'Comma separated values (word1, word2, word3, etc.). People will not be able to use any custom URL included in this list.',
     'admin_settings.links.google_safe_browsing_is_enabled' => 'Google Safe Browsing API',
     'admin_settings.links.google_safe_browsing_is_enabled_help' => 'Check all the URLs that the user adds via their links to make sure that they are not malicious / dangerous sites.',
     'admin_settings.links.google_safe_browsing_api_key' => 'Google Safe Browsing API Key',
@@ -2894,8 +2653,6 @@ return [
     'admin_settings.links.email_reports_is_enabled_weekly' => 'Weekly',
     'admin_settings.links.email_reports_is_enabled_monthly' => 'Monthly',
     'admin_settings.links.email_reports_is_enabled_help' => 'Enabling the email reports will give your users the ability to get email reports of their links statistics.',
-
-
     'admin_settings.tools.tab' => 'Tools',
     'admin_settings.tools.is_enabled' => 'Enable tools system',
     'admin_settings.tools.access' => 'Who gets access',
@@ -2913,15 +2670,12 @@ return [
     'admin_settings.tools.submissions_is_enabled' => 'Enable submissions count to be displayed',
     'admin_settings.tools.ratings_is_enabled' => 'Enable tool ratings',
     'admin_settings.tools.categories_expanded_is_enabled' => 'Categories tools sections expanded by default',
-
-
     'admin_settings.signatures.tab' => 'Signatures',
     'admin_settings.signatures.is_enabled' => 'Enable signatures system',
     'admin_settings.signatures.branding' => 'Branding',
     'admin_settings.signatures.branding_help' => 'This branding is used by default in the signatures. HTML can be used in this field.',
-
     'admin_settings.aix.tab' => 'AIX',
-    'admin_settings.aix.openai_api_key' => 'OpenAI - API Key',
+    'admin_settings.aix.openai_api_key' => 'OpenAI: API Key',
     'admin_settings.aix.openai_api_key_help' => 'You can also insert multiple OpenAI API Keys per line and the system will randomly choose one on each request.',
     'admin_settings.aix.documents_is_enabled' => 'Enable the AI Documents system',
     'admin_settings.aix.images_is_enabled' => 'Enable the AI Images system',
@@ -2938,8 +2692,6 @@ return [
     'admin_settings.aix.images_available_artists' => 'Available artists',
     'admin_settings.aix.images_available_artists_help' => 'Generate AI images with the style of one of these artists. Write in names of highly popular artists, comma separated values, leave empty to disable. Test those inputs before going to production with them.',
     'admin_settings.aix.syntheses_is_enabled' => 'Enable the AI Text to Speech system',
-
-
     'admin_languages.breadcrumb' => 'Languages',
     'admin_languages.title' => 'Languages',
     'admin_languages.menu' => 'Languages',
@@ -2972,31 +2724,24 @@ return [
     'admin_languages.info_message.max_input_vars' => 'Your PHP settings (max_input_vars) allow you to submit %1$s fields at one time.',
     'admin_languages.info_message.max_input_vars_help' => 'Increase this setting from your host to at least %s or contact your webhost provider & ask them to change it for you.',
     'admin_languages.info_message.total' => 'There are currently %1$s/%2$s filled translation strings (%3$s empty translation strings).',
-    'admin_languages.info_message.main' => 'The main language will always be replaced with releases of new updates. <a href="' . PRODUCT_DOCUMENTATION_URL . '" target="_blank">Read the documentation FAQ</a>.',
+    'admin_languages.info_message.main' => 'The main language will always be replaced with releases of new updates. <a href="https://altumco.de/66biolinks-docs" target="_blank">Read the documentation FAQ</a>.',
     'admin_languages.error_message.language_exists' => '%1$s (%2$s) language already exists.',
     'admin_languages.error_message.missing_variables' => 'This field is expecting %1$s variable strings but %2$s were given.',
-
-
     'admin_language_create.breadcrumb' => 'Create language',
     'admin_language_create.title' => 'Create language',
     'admin_language_create.header' => 'Create language',
     'admin_language_create.subheader' => 'You can translate the new language after it\'s creation.',
     'admin_language_create.menu' => 'Create language',
-
-
     'admin_language_update.breadcrumb' => 'Edit language',
     'admin_language_update.title' => 'Edit language',
     'admin_language_update.header' => 'Edit language',
-
-
-    'admin_statistics.title' => 'Statistics - %s',
+    'admin_statistics.title' => 'Statistics: %s',
     'admin_statistics.menu' => 'Statistics',
     'admin_statistics.header' => 'Statistics',
     'admin_statistics.subheader' => 'See how your website evolves throughout time.',
     'admin_statistics.users' => 'Users',
     'admin_statistics.users.header' => 'Users',
     'admin_statistics.percentage' => 'Percentage',
-
     'admin_statistics.payments' => 'Payments',
     'admin_statistics.payments.menu' => 'Payments',
     'admin_statistics.payments.header' => 'Sales',
@@ -3006,123 +2751,94 @@ return [
     'admin_statistics.payments.plans' => 'Payment plans',
     'admin_statistics.payments.types' => 'Payment types',
     'admin_statistics.payments.frequencies' => 'Payment frequencies',
-
     'admin_statistics.redeemed_codes.menu' => 'Redeemed codes',
     'admin_statistics.redeemed_codes.header' => 'Redeemed codes',
     'admin_statistics.redeemed_codes.chart_discount_codes' => 'Discount codes',
     'admin_statistics.redeemed_codes.chart_redeemable_codes' => 'Redeemable codes',
-
     'admin_statistics.affiliates_commissions.menu' => 'Aff. Commissions',
     'admin_statistics.affiliates_commissions.header' => 'Affiliates commissions',
     'admin_statistics.affiliates_commissions.chart_total_affiliates_commissions' => 'Total affiliates commissions',
     'admin_statistics.affiliates_commissions.chart_amount' => 'Total amount',
-
     'admin_statistics.affiliates_withdrawals.menu' => 'Aff. Withdrawals',
     'admin_statistics.affiliates_withdrawals.header' => 'Affiliates withdrawals',
     'admin_statistics.affiliates_withdrawals.chart_total_affiliates_withdrawals' => 'Total affiliates withdrawals',
     'admin_statistics.affiliates_withdrawals.chart_amount' => 'Total amount',
-
     'admin_statistics.email_shield.menu' => 'Email shield',
     'admin_statistics.email_shield.header' => 'Email shield',
     'admin_statistics.email_shield.chart.valid' => 'Valid email domains',
     'admin_statistics.email_shield.chart.invalid' => 'Invalid email domains',
-
-
     'admin_statistics.image_optimizer.menu' => 'Image optimizer',
     'admin_statistics.image_optimizer.header' => 'Image optimizer',
     'admin_statistics.image_optimizer.chart.total' => 'Total optimizations',
     'admin_statistics.image_optimizer.chart.saved_size' => 'Total saved size',
     'admin_statistics.image_optimizer.chart.average_percentage_difference' => 'Average size reduced',
-
     'admin_statistics.database.menu' => 'Database',
     'admin_statistics.database.header' => 'Database',
     'admin_statistics.database.size' => 'Size',
     'admin_statistics.database.rows' => 'Rows',
-
     'admin_statistics.local_files.menu' => 'Local files',
     'admin_statistics.local_files.header' => 'Local files',
     'admin_statistics.local_files.info' => 'These are statistics for local files from the uploads folder.',
     'admin_statistics.local_files.files_x' => '%s files',
     'admin_statistics.local_files.total_files' => 'Total files',
     'admin_statistics.local_files.total_size' => 'Total size',
-
     'admin_statistics.broadcasts.menu' => 'Broadcasts',
     'admin_statistics.broadcasts.header' => 'New broadcasts',
     'admin_statistics.broadcasts.chart_broadcasts' => 'Broadcasts',
     'admin_statistics.broadcasts.chart_sent_emails' => 'Sent emails',
-
     'admin_statistics.internal_notifications.chart_internal_notifications' => 'Sent notifications',
     'admin_statistics.internal_notifications.chart_read_notifications' => 'Read notifications',
-
     'admin_statistics.push_notifications.chart_sent_push_notifications' => 'Sent notifications',
-
     'admin_statistics.teams_members.menu' => 'Teams members',
     'admin_statistics.teams_members.header' => 'New teams members',
     'admin_statistics.teams_members.chart' => 'Teams members',
-
     'admin_statistics.growth.menu' => 'Users growth',
     'admin_statistics.growth.header' => 'Users growth',
-
     'admin_statistics.growth.users.header' => 'New registered users',
     'admin_statistics.growth.users.chart' => 'Users',
-
     'admin_statistics.growth.users_logs.header' => 'Active users',
     'admin_statistics.growth.users_logs.chart' => 'Active users',
-
     'admin_statistics.users_map.menu' => 'Users map',
-
     'admin_statistics.users.menu' => 'Users stats',
     'admin_statistics.users.devices' => 'Devices',
     'admin_statistics.users.operating_systems' => 'Operating systems',
     'admin_statistics.users.browsers' => 'Browsers',
     'admin_statistics.users.sources' => 'Sources',
-    'admin_statistics.users.source' => 'Source',
+    'admin_statistics.users.source' => 'Resource',
     'admin_statistics.users.plans' => 'Plans',
     'admin_statistics.users.plan' => 'Plan',
-
     'admin_statistics.track_links.menu' => 'Links statistics',
     'admin_statistics.track_links.header' => 'Links statistics',
     'admin_statistics.track_links.chart' => 'Pageviews',
-
     'admin_statistics.biolinks_blocks.menu' => 'FCC blocks',
     'admin_statistics.biolinks_blocks.header' => 'FCC blocks',
-
     'admin_statistics.splash_pages.menu' => 'Splash pages',
     'admin_statistics.splash_pages.header' => 'Splash pages',
     'admin_statistics.splash_pages.chart' => 'New splash pages',
-
     'admin_statistics.qr_codes.menu' => 'QR codes',
     'admin_statistics.qr_codes.header' => 'QR codes',
     'admin_statistics.qr_codes.chart' => 'New qr codes',
-
     'admin_statistics.signatures.menu' => 'Signatures',
     'admin_statistics.signatures.header' => 'Signatures',
     'admin_statistics.signatures.chart' => 'New signatures',
-
     'admin_statistics.documents.menu' => 'AI Documents',
     'admin_statistics.documents.header' => 'AI Documents',
     'admin_statistics.documents.chart' => 'New AI documents',
-
     'admin_statistics.images.menu' => 'AI Images',
     'admin_statistics.images.header' => 'AI Images',
     'admin_statistics.images.chart' => 'New AI images',
-
     'admin_statistics.transcriptions.menu' => 'AI Transcriptions',
     'admin_statistics.transcriptions.header' => 'AI Transcriptions',
     'admin_statistics.transcriptions.chart' => 'New AI Transcriptions',
-
     'admin_statistics.syntheses.menu' => 'AI Syntheses',
     'admin_statistics.syntheses.header' => 'AI Syntheses',
     'admin_statistics.syntheses.chart' => 'New AI Syntheses',
-
     'admin_statistics.chats.menu' => 'AI Chats',
     'admin_statistics.chats.header' => 'AI Chats',
     'admin_statistics.chats.chart' => 'New AI Chats',
-
     'admin_statistics.chats_messages.menu' => 'AI Chats messages',
     'admin_statistics.chats_messages.header' => 'AI Chats messages',
     'admin_statistics.chats_messages.chart' => 'New AI Chats messages',
-
     'admin_statistics.tools_views.menu' => 'Tools views',
     'admin_statistics.tools_views.header' => 'Tools views',
     'admin_statistics.tools_submissions.menu' => 'Tools submissions',
@@ -3134,27 +2850,18 @@ return [
     'admin_statistics.tools.total_submissions' => 'Submissions',
     'admin_statistics.tools.ratings' => 'Ratings',
     'admin_statistics.tools.average_rating' => 'Avg. rating',
-
     'admin_statistics.email_reports.menu' => 'Email reports',
     'admin_statistics.email_reports.header' => 'Email reports',
     'admin_statistics.email_reports.chart' => 'Email reports',
-
-
     'admin_teams.title' => 'Teams',
     'admin_teams.header' => 'Teams',
     'admin_teams.menu' => 'Teams',
-
-
     'admin_team_members.title' => 'Team members',
     'admin_team_members.header' => 'Team members',
     'admin_team_members.menu' => 'Team members',
-
-
     'admin_teams_member.title' => 'Teams\' member',
     'admin_teams_member.header' => 'Teams\' member',
     'admin_teams_member.menu' => 'Teams\' member',
-
-
     'admin_plugins.title' => 'Plugins',
     'admin_plugins.menu' => 'Plugins',
     'admin_plugins.header' => 'Plugins',
@@ -3169,9 +2876,8 @@ return [
     'admin_plugins.status_uninstalled' => 'Uninstalled',
     'admin_plugins.status_active' => 'Active',
     'admin_plugins.status_disabled' => 'Disabled',
-    'admin_plugins.settings' => 'Settings',
+    'admin_plugins.settings' => 'Configure',
     'admin_plugins.outdated' => 'Outdated plugin<br />Latest: %s',
-
     'admin_plugins.table.plugin' => 'Plugin',
     'admin_plugins.table.version' => 'Version',
     'admin_plugins.table.author' => 'Author',
@@ -3179,30 +2885,24 @@ return [
     'admin_plugins.uninstall_message' => '%s has been successfully uninstalled.',
     'admin_plugins.activate_message' => '%s has been successfully activated.',
     'admin_plugins.disable_message' => '%s has been successfully disabled.',
-
     'admin_plugin_uninstall_modal.header' => 'Uninstall plugin',
     'admin_plugin_uninstall_modal.subheader' => 'By uninstalling the plugin, all the potential data related to the plugin will be removed from the system.',
-
     'admin_plugin_delete_modal.header' => 'Delete plugin',
     'admin_plugin_delete_modal.subheader' => 'To delete the plugin, simply go into the <strong>plugins</strong> folder and delete the plugin.',
-
     'admin_api_documentation.menu' => 'API docs',
     'admin_api_documentation.title' => 'Admin API documentation',
     'admin_api_documentation.header' => 'Admin API documentation',
     'admin_api_documentation.subheader' => 'This is the documentation for the available API endpoints, only for the admins, which are built around the <strong>REST architecture</strong>. All the API endpoints will return a <strong>JSON response</strong> with the standard <strong>HTTP response codes</strong> and need a <strong>Bearer Authentication via an API Key</strong>.',
-
     'admin_api_documentation.users.header' => 'Users',
-    'admin_api_documentation.users.update.status' => '0 - Disabled, 1 - Active, 2 - Banned',
-    'admin_api_documentation.users.update.type' => '0 - Normal user, 1 - Admin',
+    'admin_api_documentation.users.update.status' => '0: Disabled, 1: Active, 2: Banned',
+    'admin_api_documentation.users.update.type' => '0: Normal user, 1: Admin',
     'admin_api_documentation.users.update.plan_id' => '\'free\', or an integer plan_id',
     'admin_api_documentation.users.update.plan_expiration_date' => 'Y-m-d H:i:s format in UTC timezone',
-    'admin_api_documentation.users.update.plan_trial_done' => '0 - No, 1 - Yes',
+    'admin_api_documentation.users.update.plan_trial_done' => '0: No, 1: Yes',
     'admin_api_documentation.users.one_time_login_code_header' => 'Generate a one time login code',
     'admin_api_documentation.plans.header' => 'Plans',
     'admin_api_documentation.payments.header' => 'Payments',
     'admin_api_documentation.domains.header' => 'Domains',
-
-
     'admin_logs.breadcrumb' => 'Logs',
     'admin_logs.title' => 'Logs',
     'admin_logs.header' => 'Logs',
@@ -3210,13 +2910,9 @@ return [
     'admin_logs.main.size' => 'Size',
     'admin_logs.main.last_modified' => 'Last modified',
     'admin_logs.total' => '%s log files this month',
-
-
     'admin_log.breadcrumb' => 'Log',
-    'admin_log.title' => 'Log - %s',
+    'admin_log.title' => 'Log: %s',
     'admin_log.header' => '%s Log',
-
-
     'admin_broadcasts.breadcrumb' => 'Broadcasts',
     'admin_broadcasts.title' => 'Broadcasts',
     'admin_broadcasts.menu' => 'Broadcasts',
@@ -3259,8 +2955,6 @@ return [
     'admin_broadcasts.languages' => 'Languages',
     'admin_broadcasts.operating_systems' => 'Operating systems',
     'admin_broadcasts.browsers' => 'Browsers',
-
-
     'admin_broadcast_create.breadcrumb' => 'Create broadcast',
     'admin_broadcast_create.title' => 'Create broadcast',
     'admin_broadcast_create.menu' => 'Create broadcast',
@@ -3275,15 +2969,11 @@ return [
     'admin_broadcast_create.success_message.preview' => 'Preview email sent to %s',
     'admin_broadcast_create.success_message.save' => '%s broadcast was saved. You can come back later and send it.',
     'admin_broadcast_create.success_message.send' => '%s broadcast will start to be processed.',
-
-
     'admin_broadcast_update.breadcrumb' => 'Update broadcast',
     'admin_broadcast_update.title' => 'Update broadcast',
     'admin_broadcast_update.menu' => 'Update broadcast',
     'admin_broadcast_update.header' => 'Update broadcast',
     'admin_broadcast_update.error_message.processing' => 'You can update a broadcast while it is processing.',
-
-    /* Custom code: FC-2026-03-18: admin live email automations language */
     'admin_automations.breadcrumb' => 'Automations',
     'admin_automations.title' => 'Email automations',
     'admin_automations.menu' => 'Email automations',
@@ -3300,7 +2990,7 @@ return [
     'admin_automations.live_rules.batch_title' => 'Batched sending',
     'admin_automations.live_rules.batch_text' => 'Cron sends only a limited number of emails per run to keep delivery controlled.',
     'admin_automations.segment' => 'Segment',
-    'admin_automations.segment.missing_forever_sales_link' => 'Collaborators without a Forever sales link',
+    'admin_automations.segment.missing_forever_sales_link' => 'Collaborators without Forever sales link',
     'admin_automations.live_users' => 'Live users',
     'admin_automations.active_enrollments' => 'Active enrollments',
     'admin_automations.due_now' => 'Due now',
@@ -3348,137 +3038,131 @@ return [
     'admin_automation_update.success_message.preview' => 'Test email sent to %s.',
     'admin_automation_update.success_message.preview_all' => '%s test emails were sent to %s.',
     'admin_automation_update.success_message' => 'Automation settings updated successfully.',
-        /* Custom code: FC-2026-03-30: admin mail builder localization */
-        'admin_mail_builder.shortcodes_title' => 'Email shortcodes',
-        'admin_mail_builder.copy_hint' => 'Click a code to copy it',
-        'admin_mail_builder.editor_title' => 'Email builder',
-        'admin_mail_builder.pill_personalization' => 'Personalization',
-        'admin_mail_builder.pill_primary_cta' => 'One primary CTA',
-        'admin_mail_builder.pill_clear_structure' => 'Clear message structure',
-        'admin_mail_builder.pill_unsubscribe_footer' => 'Unsubscribe footer is added automatically',
-        'admin_mail_builder.delay_label' => 'Delay from the previous sent email',
-        'admin_mail_builder.delay_unit_minutes' => 'Minutes',
-        'admin_mail_builder.delay_unit_hours' => 'Hours',
-        'admin_mail_builder.delay_unit_days' => 'Days',
-        'admin_automation_create.auto_exit_condition' => 'Automatically exit when the user no longer matches the condition',
-            'admin_automation_create.segment_display_name' => 'Displayed segment label',
-            'admin_automation_create.reentry' => 'Re-enter when the user matches the condition again',
-        'admin_automation_create.header' => 'New automation',
-        'admin_automation_create.subheader' => 'Create the live automation and then edit its steps and statistics.',
-        'admin_automation_create.back' => 'Back',
-        'admin_automation_create.hero_eyebrow' => 'Live automation flow',
-        'admin_automation_create.hero_title' => 'Set up an onboarding sequence that immediately feels like a real campaign and guides the user to the next step.',
-        'admin_automation_create.hero_text' => 'First define the segment and rules, then add email steps and delays. Each step is a separate message with its own CTA.',
-        'admin_automation_create.stat_segment' => 'Segment',
-        'admin_automation_create.stat_steps' => 'Steps',
-        'admin_automation_create.stat_mode' => 'Mode',
-        'admin_automation_create.stat_mode_value' => 'Automatic flow',
-        'admin_automation_create.section_eyebrow' => 'Automation settings',
-        'admin_automation_create.section_title' => 'Core rules and audience',
-        'admin_automation_create.section_text' => 'Define who sees the automation and how it behaves when a user enters the segment again.',
-        'admin_automation_create.name_label' => 'Name',
-        'admin_automation_create.status_label' => 'Status',
-        'admin_automation_create.segment_label' => 'Segment',
-        'admin_automation_create.steps_short' => 'Steps',
-        'admin_automation_create.plans' => 'Plans',
-        'admin_automation_create.shortcodes_help' => 'Use variables in the subject and content so user details are inserted automatically.',
-        'admin_automation_create.sequence_eyebrow' => 'Sequence %s',
-        'admin_automation_create.step_intro' => 'A clear message, one main action, and enough spacing to feel like a real email.',
-        'admin_automation_create.step_mail_badge' => 'Email %s',
-        'admin_automation_create.delay_help' => 'This step is sent after the selected time from the previously sent email.',
-        'admin_automation_create.editor_meta' => 'Build the message, CTA, and personalization for this step.',
-        'admin_automation_create.add_next_step' => 'Add next step',
-        'admin_automation_create.remove_last_step' => 'Remove last step',
-        'admin_automation_create.ready_title' => 'Ready for activation',
-        'admin_automation_create.ready_text' => 'If the status is active, cron will start processing users from the selected segment.',
-        'admin_automation_create.submit' => 'Create automation',
-        'admin_automation_update.segment_label' => 'Segment',
-        'admin_automation_update.segment_display_name' => 'Displayed segment label',
-        'admin_automation_update.reentry' => 'Re-entry',
-        'admin_automation_update.auto_exit' => 'Automatic exit',
-        'admin_automation_update.page_text' => 'Edit the automation and review detailed recipient statistics.',
-        'admin_automation_update.smtp_settings' => 'Brevo settings',
-        'admin_automation_update.plans' => 'Plans',
-        'admin_automation_update.shortcodes_help' => 'Use them in the subject and content so every email stays personalized without manual editing.',
-        'admin_automation_update.hero_eyebrow' => 'Automation overview',
-        'admin_automation_update.hero_title' => 'Edit the sequence and analytics in one place, without admin clutter.',
-        'admin_automation_update.hero_text' => 'The top section is for results and filters, the lower section is for content and timing of each email step.',
-        'admin_automation_update.summary_sent' => 'Sent',
-        'admin_automation_update.summary_delivered' => 'Delivered',
-        'admin_automation_update.summary_opened' => 'Opened',
-        'admin_automation_update.summary_clicked' => 'Clicked',
-        'admin_automation_update.summary_goal_completed' => 'Goal',
-        'admin_automation_update.summary_unsubscribed' => 'Unsubscribed',
-        'admin_automation_update.summary_all_records' => 'All records',
-        'admin_automation_update.records_shown' => '%s records shown.',
-        'admin_automation_update.records_shown_total' => '%s of %s records shown.',
-        'admin_automation_update.filter_label' => 'Filter',
-        'admin_automation_update.table_user' => 'User',
-        'admin_automation_update.table_step' => 'Step',
-        'admin_automation_update.table_status' => 'Status',
-        'admin_automation_update.table_sent' => 'Sent',
-        'admin_automation_update.table_delivered' => 'Delivered',
-        'admin_automation_update.table_opened' => 'Opened',
-        'admin_automation_update.table_clicked' => 'Clicked',
-        'admin_automation_update.table_unsubscribed' => 'Unsubscribed',
-        'admin_automation_update.table_message' => 'Message',
-        'admin_automation_update.no_recipients' => 'There are no recipients for the selected filter.',
-        'admin_automation_update.settings_eyebrow' => 'Core settings',
-        'admin_automation_update.settings_title' => 'Segment, status and behavior',
-        'admin_automation_update.settings_text' => 'Changes here affect who enters the automation and how many users cron processes per run.',
-        'admin_automation_update.name_label' => 'Name',
-        'admin_automation_update.status_label' => 'Status',
-        'admin_automation_update.existing_step_eyebrow' => 'Existing step',
-        'admin_automation_update.existing_step_intro' => 'Edit the subject, delay, and content without leaving this screen.',
-        'admin_automation_update.delay_help' => 'This step is sent after the selected time from the previously sent email.',
-        'admin_automation_update.editor_meta' => 'Build the message, CTA, and personalization for this step.',
-        'admin_automation_update.new_step_eyebrow' => 'New step',
-        'admin_automation_update.new_step_badge' => 'New',
-        'admin_automation_update.new_step_intro' => 'Add the next message in the sequence only when you really need it.',
-        'admin_automation_update.new_step_title' => 'New step %s',
-        'admin_automation_update.new_delay_help' => 'Waiting time after the previous email.',
-        'admin_automation_update.new_editor_meta' => 'A new step that is sent after the previous email.',
-        'admin_automation_update.new_default_content' => '<p>Write the content for the new step.</p>',
-        'admin_automation_update.add_next_step' => 'Add next step',
-        'admin_automation_update.remove_last_new_step' => 'Remove last new step',
-        'admin_automation_update.save_title' => 'Save changes and test',
-        'admin_automation_update.save_text' => 'Before activation you can send a test email or the full sequence to your own address.',
-        'admin_automation_update.save_submit' => 'Save automation',
-        'admin_automation_update.activity_time' => 'Time',
-        'admin_automation_update.activity_user' => 'User',
-        'admin_automation_update.activity_details' => 'Details',
-        'admin_broadcasts.shortcodes_help_create' => 'Use them in the subject and content so every user receives a personalized message.',
-        'admin_broadcasts.shortcodes_help_update' => 'Use them in the subject and content so the email stays personalized without manual editing.',
-        'admin_broadcasts.editor_meta_create' => 'Write it like a real email: clear opening line, short blocks, and one primary CTA.',
-        'admin_broadcasts.editor_meta_update' => 'Edit the message like a real newsletter or system email, with a clear CTA and short blocks.',
-        'admin_broadcasts.default_content' => '<p>Write the email content here.</p>',
-        'admin_broadcasts.hero_eyebrow' => 'Broadcast campaign',
-        'admin_broadcasts.stat_type' => 'Type',
-        'admin_broadcasts.stat_type_value' => 'Broadcast',
-        'admin_broadcasts.stat_audience' => 'Audience',
-        'admin_broadcasts.stat_audience_segmented' => 'Segmented',
-        'admin_broadcasts.stat_editor' => 'Editor',
-        'admin_broadcasts.stat_editor_value' => 'Mail builder',
-        'admin_broadcasts.stat_audience_count' => '%s contacts',
-        'admin_broadcast_create.hero_title' => 'Turn a regular newsletter form into a clean campaign composer.',
-        'admin_broadcast_create.hero_text' => 'First choose the audience, then write the message on a canvas that feels like a finished email instead of a raw textarea.',
-        'admin_broadcast_create.submit_title' => 'Draft or send now',
-        'admin_broadcast_create.submit_text' => 'Save it as a draft for later or send it immediately to the selected segment.',
-        'admin_broadcast_update.hero_title' => 'Review, edit and send in one calmer campaign layout.',
-        'admin_broadcast_update.hero_text' => 'Message, audience and preview are arranged like a campaign composer instead of a classic admin form.',
-        'admin_broadcast_update.submit_title_sent' => 'Campaign update',
-        'admin_broadcast_update.submit_title_draft' => 'Draft or send',
-        'admin_broadcast_update.submit_text_sent' => 'You can still administratively update and review a campaign that was already sent.',
-        'admin_broadcast_update.submit_text_draft' => 'Save the draft for later or send it immediately to the selected segment.',
-        /* /Custom code: FC-2026-03-30 */
-    /* /Custom code: FC-2026-03-18 */
-
-
+    'admin_mail_builder.shortcodes_title' => 'Email shortcodes',
+    'admin_mail_builder.copy_hint' => 'Click a code to copy it',
+    'admin_mail_builder.editor_title' => 'Mail builder',
+    'admin_mail_builder.pill_personalization' => 'Personalization',
+    'admin_mail_builder.pill_primary_cta' => 'One primary CTA',
+    'admin_mail_builder.pill_clear_structure' => 'Clear message structure',
+    'admin_mail_builder.pill_unsubscribe_footer' => 'Unsubscribe footer is added automatically',
+    'admin_mail_builder.delay_label' => 'Delay from the previous sent email',
+    'admin_mail_builder.delay_unit_minutes' => 'Minutes',
+    'admin_mail_builder.delay_unit_hours' => 'Hours',
+    'admin_mail_builder.delay_unit_days' => 'Days',
+    'admin_automation_create.auto_exit_condition' => 'Automatically exit when the user no longer matches the condition',
+    'admin_automation_create.segment_display_name' => 'Displayed segment label',
+    'admin_automation_create.reentry' => 'Re-enter when the user matches the condition again',
+    'admin_automation_create.header' => 'New automation',
+    'admin_automation_create.subheader' => 'Create the live automation and then edit its steps and statistics.',
+    'admin_automation_create.back' => 'Back',
+    'admin_automation_create.hero_eyebrow' => 'Live automation flow',
+    'admin_automation_create.hero_title' => 'Set up an onboarding sequence that immediately feels like a real campaign and guides the user to the next step.',
+    'admin_automation_create.hero_text' => 'First define the segment and rules, then add email steps and delays. Each step is a separate message with its own CTA.',
+    'admin_automation_create.stat_segment' => 'Segment',
+    'admin_automation_create.stat_steps' => 'Steps',
+    'admin_automation_create.stat_mode' => 'Mode',
+    'admin_automation_create.stat_mode_value' => 'Automatic flow',
+    'admin_automation_create.section_eyebrow' => 'Automation settings',
+    'admin_automation_create.section_title' => 'Core rules and audience',
+    'admin_automation_create.section_text' => 'Define who sees the automation and how it behaves when a user enters the segment again.',
+    'admin_automation_create.name_label' => 'Name',
+    'admin_automation_create.status_label' => 'Status',
+    'admin_automation_create.segment_label' => 'Segment',
+    'admin_automation_create.steps_short' => 'Steps',
+    'admin_automation_create.plans' => 'Plans',
+    'admin_automation_create.shortcodes_help' => 'Use variables in the subject and content so user details are inserted automatically.',
+    'admin_automation_create.sequence_eyebrow' => 'Sequence %s',
+    'admin_automation_create.step_intro' => 'A clear message, one main action, and enough spacing to feel like a real email.',
+    'admin_automation_create.step_mail_badge' => 'Email %s',
+    'admin_automation_create.delay_help' => 'This step is sent after the selected time from the previously sent email.',
+    'admin_automation_create.editor_meta' => 'Build the message, CTA, and personalization for this step.',
+    'admin_automation_create.add_next_step' => 'Add next step',
+    'admin_automation_create.remove_last_step' => 'Remove last step',
+    'admin_automation_create.ready_title' => 'Ready for activation',
+    'admin_automation_create.ready_text' => 'If the status is active, cron will start processing users from the selected segment.',
+    'admin_automation_create.submit' => 'Create automation',
+    'admin_automation_update.segment_label' => 'Segment',
+    'admin_automation_update.segment_display_name' => 'Displayed segment label',
+    'admin_automation_update.reentry' => 'Re-entry',
+    'admin_automation_update.auto_exit' => 'Automatic exit',
+    'admin_automation_update.page_text' => 'Edit the automation and review detailed recipient statistics.',
+    'admin_automation_update.smtp_settings' => 'Brevo settings',
+    'admin_automation_update.plans' => 'Plans',
+    'admin_automation_update.shortcodes_help' => 'Use them in the subject and content so the email stays personalized without manual editing.',
+    'admin_automation_update.hero_eyebrow' => 'Automation overview',
+    'admin_automation_update.hero_title' => 'Edit the sequence and analytics in one place, without admin clutter.',
+    'admin_automation_update.hero_text' => 'The top section is for results and filters, the lower section is for content and timing of each email step.',
+    'admin_automation_update.summary_sent' => 'Sent',
+    'admin_automation_update.summary_delivered' => 'Delivered',
+    'admin_automation_update.summary_opened' => 'Opened',
+    'admin_automation_update.summary_clicked' => 'Clicked',
+    'admin_automation_update.summary_goal_completed' => 'Goal',
+    'admin_automation_update.summary_unsubscribed' => 'Unsubscribed',
+    'admin_automation_update.summary_all_records' => 'All records',
+    'admin_automation_update.records_shown' => '%s records shown.',
+    'admin_automation_update.records_shown_total' => '%s of %s records shown.',
+    'admin_automation_update.filter_label' => 'Filter',
+    'admin_automation_update.table_user' => 'User',
+    'admin_automation_update.table_step' => 'Step',
+    'admin_automation_update.table_status' => 'Status',
+    'admin_automation_update.table_sent' => 'Sent',
+    'admin_automation_update.table_delivered' => 'Delivered',
+    'admin_automation_update.table_opened' => 'Opened',
+    'admin_automation_update.table_clicked' => 'Clicked',
+    'admin_automation_update.table_unsubscribed' => 'Unsubscribed',
+    'admin_automation_update.table_message' => 'Message',
+    'admin_automation_update.no_recipients' => 'There are no recipients for the selected filter.',
+    'admin_automation_update.settings_eyebrow' => 'Core settings',
+    'admin_automation_update.settings_title' => 'Segment, status and behavior',
+    'admin_automation_update.settings_text' => 'Changes here affect who enters the automation and how many users cron processes per run.',
+    'admin_automation_update.name_label' => 'Name',
+    'admin_automation_update.status_label' => 'Status',
+    'admin_automation_update.existing_step_eyebrow' => 'Existing step',
+    'admin_automation_update.existing_step_intro' => 'Edit the subject, delay, and content without leaving this screen.',
+    'admin_automation_update.delay_help' => 'This step is sent after the selected time from the previously sent email.',
+    'admin_automation_update.editor_meta' => 'Build the message, CTA, and personalization for this step.',
+    'admin_automation_update.new_step_eyebrow' => 'New step',
+    'admin_automation_update.new_step_badge' => 'New',
+    'admin_automation_update.new_step_intro' => 'Add the next message in the sequence only when you really need it.',
+    'admin_automation_update.new_step_title' => 'New step %s',
+    'admin_automation_update.new_delay_help' => 'Waiting time after the previous email.',
+    'admin_automation_update.new_editor_meta' => 'A new step that is sent after the previous email.',
+    'admin_automation_update.new_default_content' => '<p>Write the content for the new step.</p>',
+    'admin_automation_update.add_next_step' => 'Add next step',
+    'admin_automation_update.remove_last_new_step' => 'Remove last new step',
+    'admin_automation_update.save_title' => 'Save changes and test',
+    'admin_automation_update.save_text' => 'Before activation you can send a test email or the full sequence to your own address.',
+    'admin_automation_update.save_submit' => 'Save automation',
+    'admin_automation_update.activity_time' => 'Time',
+    'admin_automation_update.activity_user' => 'User',
+    'admin_automation_update.activity_details' => 'Details',
+    'admin_broadcasts.shortcodes_help_create' => 'Use them in the subject and content so every user receives a personalized message.',
+    'admin_broadcasts.shortcodes_help_update' => 'Use them in the subject and content so the email stays personalized without manual editing.',
+    'admin_broadcasts.editor_meta_create' => 'Write it like a real email: clear opening line, short blocks, and one primary CTA.',
+    'admin_broadcasts.editor_meta_update' => 'Edit the message like a real newsletter or system email, with a clear CTA and short blocks.',
+    'admin_broadcasts.default_content' => '<p>Write the email content here.</p>',
+    'admin_broadcasts.hero_eyebrow' => 'Broadcast campaign',
+    'admin_broadcasts.stat_type' => 'Type',
+    'admin_broadcasts.stat_type_value' => 'Broadcast',
+    'admin_broadcasts.stat_audience' => 'Audience',
+    'admin_broadcasts.stat_audience_segmented' => 'Segmented',
+    'admin_broadcasts.stat_editor' => 'Editor',
+    'admin_broadcasts.stat_editor_value' => 'Mail builder',
+    'admin_broadcasts.stat_audience_count' => '%s contacts',
+    'admin_broadcast_create.hero_title' => 'Turn a regular newsletter form into a clean campaign composer.',
+    'admin_broadcast_create.hero_text' => 'First choose the audience, then write the message on a canvas that feels like a finished email instead of a raw textarea.',
+    'admin_broadcast_create.submit_title' => 'Draft or send now',
+    'admin_broadcast_create.submit_text' => 'Save it as a draft for later or send it immediately to the selected segment.',
+    'admin_broadcast_update.hero_title' => 'Review, edit and send in one calmer campaign layout.',
+    'admin_broadcast_update.hero_text' => 'Message, audience and preview are arranged like a campaign composer instead of a classic admin form.',
+    'admin_broadcast_update.submit_title_sent' => 'Campaign update',
+    'admin_broadcast_update.submit_title_draft' => 'Draft or send',
+    'admin_broadcast_update.submit_text_sent' => 'You can still administratively update and review a campaign that was already sent.',
+    'admin_broadcast_update.submit_text_draft' => 'Save the draft for later or send it immediately to the selected segment.',
     'admin_broadcast_view.breadcrumb' => 'View broadcast',
     'admin_broadcast_view.title' => 'View broadcast',
     'admin_broadcast_view.menu' => 'View broadcast',
     'admin_broadcast_view.header' => 'View broadcast',
-    /* Custom code: FC-2026-03-30: admin hub and FCC field localization */
     'admin_broadcast_view.subheader' => 'Delivery, opens, clicks and recipient list overview for this email.',
     'admin_broadcast_view.summary_status' => 'Status',
     'admin_broadcast_view.summary_sent' => 'Sent',
@@ -3514,14 +3198,14 @@ return [
     'admin_automations.hub_smtp_settings' => 'Brevo settings',
     'admin_automations.hub_card_emails' => 'Emails',
     'admin_automations.hub_card_automations' => 'Automations',
-    'admin_automations.hub_card_clicks' => 'Clicks',
+    'admin_automations.hub_card_clicks' => 'Clicked',
     'admin_automations.hub_unsubscribed_title' => 'Manually unsubscribed contacts',
     'admin_automations.hub_unsubscribed_text' => 'Unsubscribes are visible inside each email or automation, together with the email address and unsubscribe time.',
     'admin_automations.hub_broadcasts_title' => 'Emails',
     'admin_automations.hub_broadcasts_shown' => '%s emails shown.',
     'admin_automations.hub_broadcasts_shown_total' => '%s of %s emails shown.',
     'admin_automations.hub_hide_older' => 'Hide older',
-    'admin_automations.hub_show_all' => 'Show all',
+    'admin_automations.hub_show_all' => 'View all',
     'admin_automations.hub_add_mail' => 'Add email',
     'admin_automations.hub_table_name' => 'Name',
     'admin_automations.hub_table_segment' => 'Segment',
@@ -3553,9 +3237,6 @@ return [
     'admin_user_update.fcc_featured_summary' => 'Short public summary of the main app',
     'admin_user_update.fcc_featured_summary_help' => 'This summary is optional. If left empty, the system will use an automatic public summary based on the active blocks in the main app.',
     'admin_user_update.fcc_featured_missing' => 'This user does not yet have a main Forever Card App assigned, so these settings cannot be edited yet.',
-    /* /Custom code: FC-2026-03-30 */
-
-
     'admin_dynamic_og_images.breadcrumb' => 'Dynamic OG images',
     'admin_dynamic_og_images.title' => 'Dynamic OG images',
     'admin_dynamic_og_images.header' => 'Dynamic OG images',
@@ -3566,8 +3247,6 @@ return [
     'admin_dynamic_og_images.processed' => 'Processed',
     'admin_dynamic_og_images.header_no_data' => 'There are no dynamic OG images available.',
     'admin_dynamic_og_images.subheader_no_data' => 'The system will automatically generate dynamic OG images for your public pages as you visit them.',
-
-
     'admin_links.title' => 'Links',
     'admin_links.header' => 'Links',
     'admin_links.menu' => 'Links',
@@ -3576,38 +3255,29 @@ return [
     'admin_links.remove_verify' => 'Remove verified status',
     'admin_links.filters.is_verified' => 'Verified FCC App',
     'admin_links.link_id' => 'Link ID',
-
     'admin_biolinks_blocks.breadcrumb' => 'FCC blocks',
     'admin_biolinks_blocks.title' => 'FCC blocks',
     'admin_biolinks_blocks.header' => 'FCC blocks',
     'admin_biolinks_blocks.menu' => 'FCC blocks',
-
-
     'admin_biolinks_themes.breadcrumb' => 'FCC themes',
     'admin_biolinks_themes.title' => 'FCC themes',
     'admin_biolinks_themes.header' => 'FCC themes',
     'admin_biolinks_themes.menu' => 'FCC themes',
     'admin_biolinks_themes.biolink' => 'FCC App',
-    'admin_biolinks_themes.biolink_block' => 'FCC block - all others',
-    'admin_biolinks_themes.biolink_block_socials' => 'FCC block - socials',
-    'admin_biolinks_themes.biolink_block_heading' => 'FCC block - heading',
-    'admin_biolinks_themes.biolink_block_paragraph' => 'FCC block - paragraph',
-	'admin_biolinks_themes.total_usage' => 'Total usage',
-	'admin_biolinks_themes.apply_update_to_existing_biolinks' => 'Apply update to existing FCC Apps',
-	'admin_biolinks_themes.apply_update_to_existing_biolinks_help' => 'When submitting the form, automatically update all existing FCC Apps using this theme, including their blocks, with the new theme settings.',
-
-
+    'admin_biolinks_themes.biolink_block' => 'FCC block: all others',
+    'admin_biolinks_themes.biolink_block_socials' => 'FCC block: socials',
+    'admin_biolinks_themes.biolink_block_heading' => 'FCC block: heading',
+    'admin_biolinks_themes.biolink_block_paragraph' => 'FCC block: paragraph',
+    'admin_biolinks_themes.total_usage' => 'Total usage',
+    'admin_biolinks_themes.apply_update_to_existing_biolinks' => 'Apply update to existing FCC Apps',
+    'admin_biolinks_themes.apply_update_to_existing_biolinks_help' => 'When submitting the form, automatically update all existing FCC Apps using this theme, including their blocks, with the new theme settings.',
     'admin_biolink_theme_create.breadcrumb' => 'Create FCC theme',
     'admin_biolink_theme_create.title' => 'Create FCC theme',
     'admin_biolink_theme_create.header' => 'Create FCC theme',
     'admin_biolink_theme_create.menu' => 'Create theme',
-
-
     'admin_biolink_theme_update.breadcrumb' => 'Edit FCC theme',
     'admin_biolink_theme_update.title' => 'Edit FCC theme',
     'admin_biolink_theme_update.header' => 'Edit FCC theme',
-
-
     'admin_biolinks_templates.breadcrumb' => 'FCC templates',
     'admin_biolinks_templates.title' => 'FCC templates',
     'admin_biolinks_templates.header' => 'FCC templates',
@@ -3616,46 +3286,29 @@ return [
     'admin_biolinks_templates.main.link_id' => 'FCC App',
     'admin_biolinks_templates.main.link_id_help' => 'Select the FCC App that will be used as a template and preview. Only FCC Apps owned by admin users will show up here. Once you choose an FCC App, do not edit its URL.',
     'admin_biolinks_templates.error_message.link_id' => 'FCC App ID is not valid.',
-
-
     'admin_biolink_template_create.breadcrumb' => 'Create FCC template',
     'admin_biolink_template_create.title' => 'Create FCC template',
     'admin_biolink_template_create.header' => 'Create FCC template',
     'admin_biolink_template_create.menu' => 'Create template',
-
-
     'admin_biolink_template_update.breadcrumb' => 'Edit FCC template',
     'admin_biolink_template_update.title' => 'Edit FCC template',
     'admin_biolink_template_update.header' => 'Edit FCC template',
-
-
     'admin_projects.title' => 'Projects',
     'admin_projects.header' => 'Projects',
     'admin_projects.menu' => 'Projects',
-
-
     'admin_splash_pages.title' => 'Splash pages',
     'admin_splash_pages.header' => 'Splash pages',
     'admin_splash_pages.menu' => 'Splash pages',
-
-
     'admin_pixels.title' => 'Pixels',
     'admin_pixels.header' => 'Pixels',
     'admin_pixels.menu' => 'Pixels',
-
-
-
     'admin_qr_codes.title' => 'QR codes',
     'admin_qr_codes.header' => 'QR codes',
     'admin_qr_codes.menu' => 'QR codes',
-
-
     'admin_domains.breadcrumb' => 'Domains',
     'admin_domains.title' => 'Domains',
     'admin_domains.header' => 'Domains',
     'admin_domains.menu' => 'Domains',
-
-
     'admin_domains.info_one' => 'Ensure the domain or subdomain has an A record pointing to %s, or a CNAME record pointing to %s.',
     'admin_domains.info_two' => 'Point the domain to the original product installation files and issue an SSL certificate for the new domain from your host.',
     'admin_domains.scheme' => 'Scheme',
@@ -3666,32 +3319,22 @@ return [
     'admin_domains.custom_index_url' => 'Custom index url',
     'admin_domains.custom_index_url_help' => 'Redirect to a specific url when visitors land on the index of the domain.',
     'admin_domains.custom_not_found_url' => 'Custom 404 not found url',
-    'admin_domains.custom_not_found_url_help' => 'Redirect to a specific url when visitors land on a not found page of the domain.',
+    'admin_domains.custom_not_found_url_help' => 'Redirect to a specific URL when visitors reach the domain’s 404 page.',
     'admin_domains.type_global' => 'Global domain',
     'admin_domains.type_user' => 'User domain',
-
-
     'admin_domain_create.breadcrumb' => 'Add domain',
     'admin_domain_create.title' => 'Add global domain',
     'admin_domain_create.header' => 'Add global domain',
     'admin_domain_create.menu' => 'Add domain',
-
-
     'admin_domain_update.breadcrumb' => 'Edit domain',
     'admin_domain_update.title' => 'Edit domain',
     'admin_domain_update.header' => 'Edit domain',
-
-
     'admin_signatures.title' => 'Signatures',
     'admin_signatures.header' => 'Signatures',
     'admin_signatures.menu' => 'Signatures',
-
-
     'admin_data.title' => 'Data',
     'admin_data.header' => 'Data',
     'admin_data.menu' => 'Data',
-
-    /* Custom code: FC-2026-03-08: admin feedback tickets translations */
     'admin_feedback_tickets.title' => 'Feedback tickets',
     'admin_feedback_tickets.header' => 'Feedback tickets',
     'admin_feedback_tickets.menu' => 'Feedback tickets',
@@ -3706,40 +3349,25 @@ return [
     'admin_feedback_tickets.alert.migration_missing' => 'Feedback tickets tables are missing. Please run migration: %s',
     'admin_feedback_tickets.notification.title' => 'New reply on your feedback ticket',
     'admin_feedback_tickets.notification.description' => 'Admin has replied to: %s',
-    /* /Custom code: FC-2026-03-08 */
-
-
     'admin_payment_processors.title' => 'Payment processors',
     'admin_payment_processors.header' => 'Payment processors',
     'admin_payment_processors.menu' => 'Payment processors',
-
-
     'admin_guests_payments.title' => 'Guests payments',
     'admin_guests_payments.header' => 'Guests payments',
     'admin_guests_payments.menu' => 'Guests payments',
-
-
     'admin_documents.title' => 'AI Documents',
     'admin_documents.header' => 'AI Documents',
     'admin_documents.menu' => 'AI Documents',
-
-
     'admin_images.title' => 'AI Images',
     'admin_images.header' => 'AI Images',
     'admin_images.menu' => 'AI Images',
-
-
     'admin_transcriptions.title' => 'AI Transcriptions',
     'admin_transcriptions.header' => 'AI Transcriptions',
     'admin_transcriptions.menu' => 'AI Transcriptions',
-
-
     'admin_chats.title' => 'AI Chats',
     'admin_chats.header' => 'AI Chats',
     'admin_chats.menu' => 'AI Chats',
     'admin_chats.chats_current_month' => 'Chats this month',
-
-
     'admin_templates_categories.breadcrumb' => 'AI Templates Categories',
     'admin_templates_categories.title' => 'AI Templates Categories',
     'admin_templates_categories.menu' => 'AI Templates Categories',
@@ -3751,19 +3379,13 @@ return [
     'admin_templates_categories.main.emoji_placeholder' => '⭐️',
     'admin_templates_categories.main.color' => 'Text color',
     'admin_templates_categories.main.background' => 'Background color',
-
-
     'admin_template_category_create.breadcrumb' => 'Create template category',
     'admin_template_category_create.title' => 'Create template category',
     'admin_template_category_create.menu' => 'Create template category',
     'admin_template_category_create.header' => 'Create a new template category',
-
-
     'admin_template_category_update.breadcrumb' => 'Edit template category',
     'admin_template_category_update.title' => 'Edit template category',
     'admin_template_category_update.header' => 'Edit template category',
-
-
     'admin_templates.breadcrumb' => 'AI Templates',
     'admin_templates.title' => 'AI Templates',
     'admin_templates.menu' => 'AI Templates',
@@ -3780,24 +3402,16 @@ return [
     'admin_templates.main.prompt' => 'Prompt',
     'admin_templates.main.prompt_placeholder' => 'Explain the following text as if you were a 1st grader: {text}',
     'admin_templates.main.prompt_help' => 'This is the prompt that will get sent to OpenAI API. You can use <code>{key}</code> variables based on the key value of your dynamic inputs. Be mindful of how long the prompt is, as it uses tokens on OpenAI and the result length may be shorter if you have a long prompt',
-
-
     'admin_template_create.breadcrumb' => 'Create template',
     'admin_template_create.title' => 'Create template',
     'admin_template_create.menu' => 'Create template',
     'admin_template_create.header' => 'Create a new template',
-
-
     'admin_template_update.breadcrumb' => 'Edit template',
     'admin_template_update.title' => 'Edit template',
     'admin_template_update.header' => 'Edit template',
-
-
     'admin_syntheses.title' => 'AI Syntheses',
     'admin_syntheses.header' => 'AI Syntheses',
     'admin_syntheses.menu' => 'AI Syntheses',
-
-
     'admin_chats_assistants.breadcrumb' => 'AI Assistants',
     'admin_chats_assistants.title' => 'AI Assistants',
     'admin_chats_assistants.menu' => 'AI Assistants',
@@ -3809,25 +3423,17 @@ return [
     'admin_chats_assistants.main.prompt_placeholder' => 'Act like Bill Gates.',
     'admin_chats_assistants.main.prompt_help' => 'This is the prompt that will get sent to OpenAI API to tell the AI what type of personality to use. Be mindful of how long the prompt is, as it uses tokens on OpenAI and the result length may be shorter if you have a long prompt',
     'admin_chats_assistants.main.image' => 'Avatar',
-
-
     'admin_chat_assistant_create.breadcrumb' => 'Create chat assistant',
     'admin_chat_assistant_create.title' => 'Create chat assistant',
     'admin_chat_assistant_create.menu' => 'Create chat assistant',
     'admin_chat_assistant_create.header' => 'Create a new chat assistant',
-
-
     'admin_chat_assistant_update.breadcrumb' => 'Edit chat assistant',
     'admin_chat_assistant_update.title' => 'Edit chat assistant',
     'admin_chat_assistant_update.header' => 'Edit chat assistant',
-
-
     'admin_notification_handlers.title' => 'Notification handlers',
     'admin_notification_handlers.header' => 'Notification handlers',
     'admin_notification_handlers.menu' => 'Notif. handlers',
-
-    /* Custom code */
-    'admin_users.main.limited' => 'Limited access',    
+    'admin_users.main.limited' => 'Limited access',
     'admin_users.main.forever_id' => 'Forever ID',
     'admin_users.main.phone' => 'Phone',
     'admin_users.main.address' => 'Address',
@@ -3846,14 +3452,12 @@ return [
     'admin_blog.main.visibility' => 'Visibility',
     'admin_blog.main.show_share_links' => 'Show share links',
     'admin_blog.main.description' => 'Description',
-    /* /Custom code */
-    /* Custom code: FC-2026-03-17: admin billing risk translations */
     'admin_billing_risk.menu' => 'Billing risk',
     'admin_billing_risk.header' => 'Billing risk',
     'admin_billing_risk.subheader' => 'Users with failed recurring payments, active grace periods, or revoked access.',
     'admin_billing_risk.total' => '%s users',
     'admin_billing_risk.search_placeholder' => 'Search by name, email, or failure reason',
-    'admin_billing_risk.state' => 'State',
+    'admin_billing_risk.state' => 'Status',
     'admin_billing_risk.state_healthy' => 'Healthy',
     'admin_billing_risk.state_past_due' => 'Past due',
     'admin_billing_risk.state_past_due_critical' => 'Critical',
@@ -3869,7 +3473,6 @@ return [
     'admin_billing_risk.notification_recovered' => 'Recovered',
     'admin_billing_risk.notification_revoked' => 'Access revoked',
     'admin_billing_risk.no_data' => 'No users currently need billing follow-up.',
-
     'admin_index.billing_risk.header' => 'Billing health',
     'admin_index.billing_risk.subheader' => 'Monitor failed renewals, upcoming grace expirations, and recent recoveries.',
     'admin_index.billing_risk.view_all' => 'Open billing list',
@@ -3877,7 +3480,6 @@ return [
     'admin_index.billing_risk.recovered_7d' => 'Recovered in 7 days',
     'admin_index.billing_risk.users_header' => 'Priority follow-up',
     'admin_index.billing_risk.users_subheader' => 'Most urgent recurring billing issues across the account base.',
-
     'admin_user_view.billing_risk.header' => 'Billing risk timeline',
     'admin_user_view.billing_risk.subheader' => 'Stripe status, warnings, grace period, and access actions for this user.',
     'admin_user_view.billing_risk.current_state' => 'Current state',
@@ -3899,5 +3501,4 @@ return [
     'admin_user_view.billing_risk.event_type_payment_recovered' => 'Payment recovered',
     'admin_user_view.billing_risk.event_type_payment_confirmed' => 'Payment confirmed',
     'admin_user_view.billing_risk.event_type_access_revoked' => 'Access revoked',
-    /* /Custom code: FC-2026-03-17 */
 ];

@@ -113,7 +113,7 @@ class Language {
             $cache_file_path = self::$path . 'cache/' . $name . '#' . self::$languages[$name]['code'] . '.php';
 
             /* Try to access the cached file */
-            if(file_exists($cache_file_path) && self::is_valid_cached_language_file($cache_file_path)) {
+            if(file_exists($cache_file_path) && filemtime($cache_file_path) >= filemtime(self::$path . $name . '#' . self::$languages[$name]['code'] . '.php') && self::is_valid_cached_language_file($cache_file_path)) {
                 self::$languages[$name]['content'] = require $cache_file_path;
             }
 

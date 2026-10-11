@@ -122,34 +122,8 @@
                         $browser_name = $whichbrowser->browser->name ?? null;
                         $accept_language_header = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? (string) $_SERVER['HTTP_ACCEPT_LANGUAGE'] : null;
                         $browser_language = $accept_language_header ? mb_substr($accept_language_header, 0, 2) : null;
-                        $country_code = null;
-                        $country_code_is_trusted = false;
-                        /* Custom code: FC-2026-03-05: robust country detection fallback for BIH-only block display */
-                        foreach(['HTTP_CF_IPCOUNTRY', 'HTTP_CF-IPCOUNTRY', 'GEOIP_COUNTRY_CODE', 'HTTP_GEOIP_COUNTRY_CODE'] as $country_header_key) {
-                            if(!empty($_SERVER[$country_header_key])) {
-                                $header_country_code = mb_strtoupper(trim((string) $_SERVER[$country_header_key]));
-                                $header_country_code = mb_substr($header_country_code, 0, 2);
-
-                                if(mb_strlen($header_country_code) == 2 && $header_country_code !== 'XX') {
-                                    $country_code = $header_country_code;
-                                    $country_code_is_trusted = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if(!$country_code && isset($maxmind['country']['iso_code'])) {
-                            $country_code = $maxmind['country']['iso_code'];
-                        }
-
-                        if(!$country_code) {
-                            $country_code = \Altum\Link::get_external_geo_country_code($geo_lookup_ip);
-                        }
-
-                        if($country_code) {
-                            $country_code = mb_strtoupper((string) $country_code);
-                        }
-
+                        $country_code = strtoupper((string)fcc_forever_country_context()['country']) ?: null;
+                        $country_code_is_trusted = true;
                         $forever_id = $data->user->preferences->meta->foreverId ?? '';
                         $forever_webshop_links = settings()->links->forever_webshop_links ?? new \StdClass();
                         $forever_business_links = settings()->links->forever_business_links ?? new \StdClass();
@@ -157,84 +131,6 @@
                         $city_name = isset($maxmind) && isset($maxmind['city']) ? $maxmind['city']['names']['en'] : null;
                         $continent_code = isset($maxmind) && isset($maxmind['continent']) ? $maxmind['continent']['code'] : null;
                         $device_type = get_this_device_type();
-                        $fcc_blog_language_names_by_code = array_flip((array) \Altum\Language::$active_languages);
-                        $fcc_forever_product_translation_cache = [];
-                        $fcc_forever_product_id_cache = [];
-                        $fcc_resolve_forever_product = static function(string $translation_key, string $target_language_code, string $fallback_language_code = '') use (&$fcc_forever_product_translation_cache, $fcc_blog_language_names_by_code) {
-                            $translation_key = trim($translation_key);
-                            $target_language_code = trim($target_language_code);
-                            $fallback_language_code = trim($fallback_language_code);
-
-                            if($translation_key === '') {
-                                return null;
-                            }
-
-                            $cache_key = $translation_key . '|' . $target_language_code . '|' . $fallback_language_code;
-                            if(array_key_exists($cache_key, $fcc_forever_product_translation_cache)) {
-                                return $fcc_forever_product_translation_cache[$cache_key];
-                            }
-
-                            $language_priority = array_values(array_filter(array_unique([
-                                $target_language_code,
-                                $fallback_language_code,
-                            ])));
-
-                            foreach($language_priority as $language_code) {
-                                $language_name = $fcc_blog_language_names_by_code[$language_code] ?? null;
-
-                                if(!$language_name) {
-                                    continue;
-                                }
-
-                                $blog_post = db()
-                                    ->where('is_published', 1)
-                                    ->where('url', $translation_key)
-                                    ->where('language', $language_name)
-                                    ->getOne('blog_posts', ['blog_post_id', 'title', 'description', 'url', 'image', 'language']);
-
-                                if(!$blog_post) {
-                                    continue;
-                                }
-
-                                $language_prefix = !empty($blog_post->language) && isset(\Altum\Language::$active_languages[$blog_post->language])
-                                    ? \Altum\Language::$active_languages[$blog_post->language] . '/'
-                                    : null;
-
-                                return $fcc_forever_product_translation_cache[$cache_key] = (object) [
-                                    'blog_post_id' => (int) ($blog_post->blog_post_id ?? 0),
-                                    'title' => (string) ($blog_post->title ?? ''),
-                                    'description' => mb_substr(trim(strip_tags((string) ($blog_post->description ?? ''))), 0, 220),
-                                    'blog_url' => SITE_URL . $language_prefix . 'blog/' . ($blog_post->url ?? ''),
-                                    'image_url' => !empty($blog_post->image) ? \Altum\Uploads::get_full_url('blog') . $blog_post->image : null,
-                                    'language_code' => $language_code,
-                                ];
-                            }
-
-                            $fallback_post = db()
-                                ->where('is_published', 1)
-                                ->where('url', $translation_key)
-                                ->getOne('blog_posts', ['blog_post_id', 'title', 'description', 'url', 'image', 'language']);
-
-                            if(!$fallback_post) {
-                                return $fcc_forever_product_translation_cache[$cache_key] = null;
-                            }
-
-                            $fallback_language_code = !empty($fallback_post->language) && isset(\Altum\Language::$active_languages[$fallback_post->language])
-                                ? \Altum\Language::$active_languages[$fallback_post->language]
-                                : \Altum\Language::$default_code;
-                            $language_prefix = !empty($fallback_post->language) && isset(\Altum\Language::$active_languages[$fallback_post->language])
-                                ? \Altum\Language::$active_languages[$fallback_post->language] . '/'
-                                : null;
-
-                            return $fcc_forever_product_translation_cache[$cache_key] = (object) [
-                                'blog_post_id' => (int) ($fallback_post->blog_post_id ?? 0),
-                                'title' => (string) ($fallback_post->title ?? ''),
-                                'description' => mb_substr(trim(strip_tags((string) ($fallback_post->description ?? ''))), 0, 220),
-                                'blog_url' => SITE_URL . $language_prefix . 'blog/' . ($fallback_post->url ?? ''),
-                                'image_url' => !empty($fallback_post->image) ? \Altum\Uploads::get_full_url('blog') . $fallback_post->image : null,
-                                'language_code' => $fallback_language_code,
-                            ];
-                        };
                         ?>
 
                         <?php foreach($data->biolink_blocks as $row): ?>
@@ -242,90 +138,8 @@
                             <?php
                             $row->settings = json_decode($row->settings ?? '');
 
-                            /* Custom code */
-                            if($row->type == 'link_forever_shop') {
-                                $business_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
-                                    $country_code,
-                                    array_keys(array_filter((array) $forever_business_links, static function($value) {
-                                        return !empty($value);
-                                    })),
-                                    $accept_language_header,
-                                    $country_code_is_trusted
-                                );
-                                $business_base_url = $forever_business_links->{$business_country_code} ?? null;
-
-                                if(!$business_base_url && !empty($forever_business_links->us)) {
-                                    $business_country_code = 'us';
-                                    $business_base_url = $forever_business_links->us;
-                                }
-
-                                if(!$business_base_url && !empty($forever_business_links->gb)) {
-                                    $business_country_code = 'gb';
-                                    $business_base_url = $forever_business_links->gb;
-                                }
-
-                                if($business_base_url) {
-                                    $row->location_url = \Altum\Link::build_forever_destination_url($business_base_url, $forever_id, $business_country_code);
-                                }
-                            }
-
-                            if($row->type == 'link_forever_webshop_reg') {
-                                $registration_country_links = \Altum\Link::get_forever_webshop_registration_country_links();
-                                $registration_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
-                                    $country_code,
-                                    array_keys($registration_country_links),
-                                    $accept_language_header,
-                                    $country_code_is_trusted
-                                ) ?: 'hr';
-
-                                $registration_url = \Altum\Link::build_forever_webshop_registration_url($forever_id, $registration_country_code);
-
-                                if($registration_url) {
-                                    $row->location_url = $registration_url;
-                                }
-                            }
-
-                            if($row->type === 'link_forever_product') {
-                                $product_translation_key = trim((string) ($row->settings->product_translation_key ?? ''));
-
-                                if($product_translation_key === '' && !empty($row->settings->product_blog_post_id)) {
-                                    $product_blog_post_id = (int) $row->settings->product_blog_post_id;
-
-                                    if(!array_key_exists($product_blog_post_id, $fcc_forever_product_id_cache)) {
-                                        $product_blog_post = db()
-                                            ->where('blog_post_id', $product_blog_post_id)
-                                            ->getOne('blog_posts', ['url']);
-
-                                        $fcc_forever_product_id_cache[$product_blog_post_id] = $product_blog_post->url ?? '';
-                                    }
-
-                                    $product_translation_key = (string) $fcc_forever_product_id_cache[$product_blog_post_id];
-                                    $row->settings->product_translation_key = $product_translation_key;
-                                }
-
-                                $app_language_code = $data->link->settings->language_code ?? \Altum\Language::$default_code;
-                                $product_language_mode = in_array($row->settings->product_language_mode ?? 'app', ['app', 'manual'], true) ? $row->settings->product_language_mode : 'app';
-                                $target_language_code = $product_language_mode === 'manual'
-                                    ? (string) ($row->settings->product_language_code ?? $app_language_code)
-                                    : (string) $app_language_code;
-                                $fallback_language_code = (string) ($row->settings->product_fallback_language_code ?? 'hr');
-                                $resolved_product = $fcc_resolve_forever_product($product_translation_key, $target_language_code, $fallback_language_code);
-
-                                if($resolved_product) {
-                                    $row->location_url = $resolved_product->blog_url;
-                                    $row->settings->product_blog_post_id = $resolved_product->blog_post_id;
-                                    $row->settings->product_image_url = $resolved_product->image_url;
-
-                                    if(!empty($resolved_product->title) && trim((string) ($row->settings->name ?? '')) === '') {
-                                        $row->settings->name = $resolved_product->title;
-                                    }
-
-                                    if(!empty($resolved_product->description) && trim((string) ($row->settings->description ?? '')) === '') {
-                                        $row->settings->description = $resolved_product->description;
-                                    }
-                                }
-                            }
-                            /* /Custom code */
+                            /* Resolve localized product copy and always retain the card owner. */
+                            if($row->type === 'link_forever_product' && !fcc_product_render_block($row, $data->link)) continue;
 
                             /* Check if its a scheduled link and we should show it or not */
                             if(
@@ -373,6 +187,14 @@
                                 }
                             }
 
+                            // The initial NFC card includes a shopping action for every package.
+                            if(!$is_biolink_block_enabled_for_plan && in_array($row->type,['link_forever_webshop_reg','link_forever_shop'],true)
+                                && !empty($row->settings->factory_shop)
+                                && (int)fc_get_user_main_biolink_id((int)$data->user->user_id, false) === (int)$data->link->link_id) {
+                                $is_biolink_block_enabled_for_plan = true;
+                            }
+
+                            if(in_array($row->type,['link_forever_shop','link_forever_webshop_reg'],true))$is_biolink_block_enabled_for_plan=true;
                             if(!$is_biolink_block_enabled_for_plan) {
                                 continue;
                             }
@@ -431,37 +253,15 @@
                                     continue;
                                 }                                
                             }                              
-                            if($row->type == 'link_discount' && !filter_var($row->settings->decoded_url ?? '', FILTER_VALIDATE_URL)) {
-                                continue;
-                            }                    
-                            if($row->type == 'link_discount') {
-                                if(function_exists('fc_forever_ordering_copy_payload') && isset($row->settings) && is_object($row->settings)) {
-                                    $row->settings = fc_forever_ordering_copy_payload($row->settings);
-                                }
-
-                                $webshop_country_code = \Altum\Link::resolve_preferred_forever_market_country_code(
-                                    $country_code,
-                                    array_keys(array_filter((array) $forever_webshop_links, static function($value) {
-                                        return !empty($value);
-                                    })),
-                                    $accept_language_header,
-                                    $country_code_is_trusted
-                                );
-                                $webshop_base_url = $forever_webshop_links->{$webshop_country_code} ?? null;
-
-                                if(!$webshop_base_url && !empty($forever_webshop_links->us)) {
-                                    $webshop_country_code = 'us';
-                                    $webshop_base_url = $forever_webshop_links->us;
-                                }
-
-                                if(!$webshop_base_url && !empty($forever_webshop_links->gb)) {
-                                    $webshop_country_code = 'gb';
-                                    $webshop_base_url = $forever_webshop_links->gb;
-                                }
-
-                                if($webshop_base_url) {
-                                    $discount_query_params = \Altum\Link::get_forever_discount_query_params($row->settings->decoded_url ?? null);
-                                    $row->location_url = \Altum\Link::build_forever_destination_url($webshop_base_url, $forever_id, $webshop_country_code, $discount_query_params);
+                            if(in_array($row->type,['link_forever_shop','link_forever_webshop_reg','link_discount','link_forever_living_bih','link_forever_living_alb_kosovo'],true)) {
+                                $row->location_url=fcc_forever_entry_url((string)$data->link->url,$row->type==='link_forever_shop'?'business':'shop',(int)$row->biolink_block_id);
+                            }
+                            if(!empty($row->location_url) && !in_array($row->type, ['link_forever_shop', 'link_forever_webshop_reg', 'link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo'], true)) {
+                                $row->location_url = fcc_forever_owned_destination((string) $row->location_url, (string) $data->link->url, $data->user->preferences);
+                            }
+                            if($row->type === 'image_slider') {
+                                foreach($row->settings->items ?? [] as $item) {
+                                    if(is_object($item) && !empty($item->location_url)) $item->location_url = fcc_forever_owned_destination((string) $item->location_url, (string) $data->link->url, $data->user->preferences);
                                 }
                             }
 
@@ -475,6 +275,7 @@
                             ?>
 
                             <?= \Altum\Link::get_biolink_link($row, $data->user, $this->biolink_theme ?? null, $data->link) ?? null ?>
+                            <?php if(in_array($row->type,['link_forever_shop','link_forever_webshop_reg','link_discount'],true)): ?><div class="col-12 text-center mb-2"><small><?= htmlspecialchars(fcc_forever_copy('automatic'),ENT_QUOTES,'UTF-8') ?> <a href="<?= htmlspecialchars($row->location_url.'&choose=1',ENT_QUOTES,'UTF-8') ?>"><?= htmlspecialchars(fcc_forever_copy('change'),ENT_QUOTES,'UTF-8') ?></a></small></div><?php endif ?>
 
                         <?php endforeach ?>
                     <?php endif ?>
@@ -658,6 +459,7 @@
     /* Internal tracking for biolink page blocks */
     document.querySelectorAll('a[data-track-biolink-block-id]').forEach(element => {
         element.addEventListener('click', event => {
+            if (new URL(event.currentTarget.href).pathname.endsWith('/forever-shop')) return;
             let biolink_block_id = event.currentTarget.getAttribute('data-track-biolink-block-id');
             let beacon_url = `${site_url}l/link?biolink_block_id=${biolink_block_id}&no_redirect`;
 

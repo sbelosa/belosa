@@ -66,6 +66,7 @@ class FccAiHub extends Controller {
             'en' => l('fcc_ai.form.language_en'),
             'sl' => l('fcc_ai.form.language_sl'),
             'bg' => l('fcc_ai.form.language_bg'),
+            'de' => 'Deutsch', 'es'=>'Español', 'sr'=>'Srpski', 'sq'=>'Shqip', 'fr'=>'Français', 'cnr'=>'Crnogorski', 'sv'=>'Svenska','hu'=>'Magyar','pl'=>'Polski','ro'=>'Română',
         ];
         $tone_options = [
             'consultative' => l('fcc_ai.form.tone_consultative'),
@@ -146,6 +147,17 @@ class FccAiHub extends Controller {
                 Alerts::add_success(l('fcc_ai.alert.saved'));
                 redirect('fcc-ai');
             }
+        }
+
+        if(fcc_partner_enabled((int)$this->user->user_id) && ($_GET['assistant_type']??'')!=='pets_advisor') {
+            require_once APP_PATH.'helpers/fcc_public_advisor.php';
+            $data=fcc_advisor_hub((int)$this->user->user_id,$_GET);
+            $data['language_options']=$language_options;$data['tone_options']=$tone_options;$data['is_admin']=$is_admin;
+            $data['owner_phone']=fc_get_user_default_whatsapp_phone($this->user);
+            $data['catalog_review']=$is_admin?fcc_advisor_catalog_review():[];
+            Title::set(fcc_t('Moj AI savjetnik'));
+            $view=new \Altum\View('fcc-ai/partner',(array)$this);
+            $this->add_view_content('content',$view->run($data));return;
         }
 
         $assistants = db()->where('user_id', (int) $this->user->user_id)->get('fcc_ai_assistants');
@@ -511,6 +523,41 @@ class FccAiHub extends Controller {
         $this->add_view_content('content', $view->run($data));
     }
 
+    public function advisor_feedback() {
+        \Altum\Authentication::guard();$this->ensure_hub_json_access();
+        if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!\Altum\Csrf::check())Response::json('Invalid request.','error');
+        try {
+            $c=db()->where('user_id',(int)$this->user->user_id)->where('assistant_type','product_advisor')->where('fcc_ai_conversation_id',(int)($_POST['conversation_id']??0))->getOne('fcc_ai_conversations');
+            if(!$c)throw new \RuntimeException(fcc_t('Razgovor nije pronađen.'));
+            $result=fcc_ai_save_message_feedback($c,(int)($_POST['message_id']??0),'down','other','',fcc_ai_build_feedback_actor('owner',(string)$this->user->user_id,(int)$this->user->user_id));
+            Response::json(fcc_t('Odgovor je označen za provjeru.'),'success',$result);
+        }catch(\Throwable $e){Response::json($e->getMessage(),'error');}
+    }
+
+    public function advisor_preview() {
+        \Altum\Authentication::guard();$this->ensure_hub_json_access();
+        if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!\Altum\Csrf::check())Response::json('Invalid request.','error');
+        try {
+            if((int)($_SESSION['advisor_preview_at']??0)>time()-10)throw new \RuntimeException(fcc_t('Pričekaj nekoliko sekundi prije nove probe.'));
+            $_SESSION['advisor_preview_at']=time();
+            require_once APP_PATH.'helpers/fcc_public_advisor.php';
+            $link=db()->where('user_id',(int)$this->user->user_id)->where('type','biolink')->where('link_id',(int)($_POST['link_id']??0))->getOne('links');
+            if(!$link)throw new \RuntimeException(fcc_t('Kartica nije pronađena.'));
+            $message=trim(mb_substr((string)($_POST['message']??''),0,1000));if(!$message)throw new \RuntimeException(fcc_t('Napiši probno pitanje.'));
+            $lang=fcc_locale((string)($_POST['language']??'hr'));
+            $context=fcc_public_advisor_context([],$message,(string)($_POST['market']??''),(string)$link->url);
+            $a=db()->where('user_id',(int)$this->user->user_id)->where('assistant_type','product_advisor')->getOne('fcc_ai_assistants');
+            $settings=json_decode($a->settings??'{}',true)?:[];$context['owner_style']=['tone'=>$settings['tone']??'friendly'];
+            foreach(['persona_prompt','rules_prompt'] as $field)if(!fcc_ai_prompt_attempts_to_override_guardrails((string)($a->$field??'')))$context['owner_style'][$field]=mb_substr((string)($a->$field??''),0,600);
+            if(fcc_advisor_business_intent($message)&&empty($context['catalog']['medical_context']))$context['available_business_actions']=fcc_advisor_business_actions($this->user,$link,$lang,$context['market']);
+            $result=fcc_public_advisor_generate($context,$message,[],$lang,'fcc-advisor-preview-'.(int)$this->user->user_id);
+            $products=array_map(fn($key)=>$context['candidates'][$key],$result['data']['product_keys']);
+            $actions=$result['urgent']?[]:($result['medical']?array_filter([fcc_advisor_medical_contact($this->user,$link,$message,$lang)]):fcc_public_advisor_suggestions($this->user,$link,$products,$result['data']['business_interest'],false,$context['market'],$lang));
+            if($result['data']['business_interest']&&!$result['urgent']&&!$result['medical'])$actions=array_merge($actions,$context['available_business_actions']??fcc_advisor_business_actions($this->user,$link,$lang,$context['market']));
+            Response::json('Preview ready.','success',['answer'=>$result['data']['answer'],'actions'=>array_values($actions),'reason'=>$result['attempt']['reason']??'','model'=>$result['attempt']['model']??'']);
+        }catch(\Throwable $e){Response::json($e->getMessage(),'error');}
+    }
+
     public function coach_conversation() {
         \Altum\Authentication::guard();
         $this->ensure_coach_json_access();
@@ -571,6 +618,9 @@ class FccAiHub extends Controller {
         }
 
         try {
+            if(!isset($_POST['token']) || !is_string($_POST['token']) || !hash_equals(\Altum\Csrf::get(), $_POST['token'])) {
+                Response::json('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.', 'error');
+            }
             $result = fcc_ai_capture_internal_coach_feedback($this->user, [
                 'conversation_public_id' => input_clean((string) ($_POST['conversation_public_id'] ?? ''), 64),
                 'message_id' => (int) ($_POST['message_id'] ?? 0),
@@ -583,7 +633,7 @@ class FccAiHub extends Controller {
                 'source_page_section' => input_clean((string) ($_POST['source_page_section'] ?? ''), 64),
             ]);
 
-            Response::json('Feedback je spremljen.', 'success', $result);
+            Response::json('Ocjena je spremljena.', 'success', $result);
         } catch(\Throwable $exception) {
             Response::json($exception->getMessage(), 'error');
         }

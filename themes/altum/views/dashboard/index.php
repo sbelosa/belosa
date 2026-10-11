@@ -1,6 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php
+$partner_statistics = !empty($data->partner_statistics);
 $dashboard_forever_products_url = fc_get_forever_products_blog_category_url(\Altum\Language::$name);
 $dashboard_forever_activity = (array) ($data->forever_activity_notice ?? []);
 $dashboard_forever_activity_status = $dashboard_forever_activity['status'] ?? 'unavailable';
@@ -1756,7 +1757,11 @@ $dashboard_format_cc = static function($value): string {
         <!-- /Custom code: FC-2026-02-24 -->
     <?php endif ?>
 
+    <?php if($partner_statistics): ?>
+    <header class="fp-page-heading"><div><span class="fp-eyebrow"><?= l('dashboard.hero.period_30_days') ?></span><h1><?= fcc_partner_h(fcc_t('Detaljna statistika')) ?></h1></div><a class="fp-button fp-button-outline" href="<?= url('fcc-results') ?>"><?= fcc_partner_h(fcc_t('Rezultati')) ?> →</a></header>
+    <?php endif ?>
     <div class="mb-5 dashboard-growth-shell">
+        <?php if(!$partner_statistics): ?>
         <div class="dashboard-page-guide-rail">
             <button type="button" class="dashboard-page-guide-trigger dashboard-tour-target" id="dashboard_tour_step_page_guide" data-dashboard-start-tour>
                 <i class="fas fa-fw fa-route"></i>
@@ -1886,7 +1891,7 @@ $dashboard_format_cc = static function($value): string {
                     <div class="dashboard-growth-aside-row">
                         <span><?= l('dashboard.growth.outbound_clicks_label') ?></span>
                         <strong id="dashboard_growth_signal_30d">0</strong>
-                        <a class="d-block small mt-2" href="<?= url('fcc-results#objasnjenje-klikova') ?>">Kako se računaju klikovi? Pogledaj svoj dnevnik.</a>
+                        <a class="d-block small mt-2" href="<?= url('fcc-results#objasnjenje-klikova') ?>"><?= htmlspecialchars(fcc_t('Kako se računaju klikovi? Pogledaj svoj dnevnik.'), ENT_QUOTES, 'UTF-8') ?></a>
                     </div>
                     <div class="dashboard-growth-aside-row">
                         <span><?= l('dashboard.growth.ai_status_label') ?></span>
@@ -1942,6 +1947,7 @@ $dashboard_format_cc = static function($value): string {
             </div>
         </div>
 
+        <?php endif ?>
         <div class="dashboard-workbench dashboard-growth-card mb-4 dashboard-tour-target" id="dashboard_tour_step_workbench">
             <div class="dashboard-workbench-header">
                 <div>
@@ -2115,6 +2121,7 @@ $dashboard_format_cc = static function($value): string {
     </div>
 </div>
 
+<?php if(!$partner_statistics): ?>
 <div class="modal fade" id="dashboard_how_fcc_works_modal" tabindex="-1" role="dialog" aria-labelledby="dashboard_how_fcc_works_modal_title" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -2260,6 +2267,7 @@ $dashboard_format_cc = static function($value): string {
 </div>
 
 <!-- Custom code: FC-2026-03-30: dashboard geo breakdown modal -->
+<?php endif ?>
 <div class="modal fade" id="dashboard_geo_breakdown_modal" tabindex="-1" role="dialog" aria-labelledby="dashboard_geo_breakdown_modal_title" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -3447,13 +3455,13 @@ $dashboard_format_cc = static function($value): string {
                     }
                 }
 
-                    initDashboardOnboarding();
+                    <?php if(!$partner_statistics): ?>initDashboardOnboarding();<?php endif ?>
                 }
             } catch (error) {
                 render_dashboard_fetch_error();
             }
         })();
 
-        initDashboardOnboarding();
+        <?php if(!$partner_statistics): ?>initDashboardOnboarding();<?php endif ?>
     </script>
 <?php \Altum\Event::add_content(ob_get_clean(), 'javascript') ?>

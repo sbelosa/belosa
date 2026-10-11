@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
     <ol class="custom-breadcrumbs small">
         <li>
             <a href="<?= url('admin/blog-posts') ?>"><?= l('admin_blog_posts.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -117,31 +117,31 @@
                 <?php $countries_array = ['hr', 'ba', 'al', 'si', 'rs', 'at', 'au', 'ca', 'de', 'ie', 'lu', 'nl', 'no', 'pl', 'se', 'gb', 'us', 'qa', 'ch', 'ae']; ?>
                 <?php /* Custom code: FC-2026-03-09: custom webshop link labels for selected countries */ ?>
                 <?php $country_labels = [
-                    'hr' => 'Forever HR - Hrvatska',
-                    'ba' => 'Forever BA - Bosna i Hercegovina',
-                    'al' => 'Forever AL - Albanija',
-                    'si' => 'Forever SI - Slovenija',
-                    'rs' => 'Forever RS - Srbija',
-                    'at' => 'Forever AT - Forever Austria',
-                    'au' => 'Forever AU - Forever Australia',
-                    'ca' => 'Forever CA - Kanada',
-                    'de' => 'Forever DE - Njemačka',
-                    'ie' => 'Forever IE - Forever Irska',
-                    'lu' => 'Forever LU - Luksemburg',
-                    'nl' => 'Forever NL - Nizozemska',
-                    'no' => 'Forever NO - Forever Norveška',
-                    'pl' => 'Forever PL - Poljska',
-                    'se' => 'Forever SE - Forever Švedska',
-                    'gb' => 'Forever GB - Ujedinjeno Kraljevstvo',
-                    'us' => 'Forever US - Sjedinjene Američke Države',
-                    'qa' => 'Forever QA - Katar',
-                    'ch' => 'Forever CH - Švicarska',
-                    'ae' => 'Forever AE - Forever Emirati',
+                    'hr' => fcc_t('Forever HR - Hrvatska'),
+                    'ba' => fcc_t('Forever BA - Bosna i Hercegovina'),
+                    'al' => fcc_t('Forever AL - Albanija'),
+                    'si' => fcc_t('Forever SI - Slovenija'),
+                    'rs' => fcc_t('Forever RS - Srbija'),
+                    'at' => fcc_t('Forever AT - Forever Austria'),
+                    'au' => fcc_t('Forever AU - Forever Australia'),
+                    'ca' => fcc_t('Forever CA - Kanada'),
+                    'de' => fcc_t('Forever DE - Njemačka'),
+                    'ie' => fcc_t('Forever IE - Forever Irska'),
+                    'lu' => fcc_t('Forever LU - Luksemburg'),
+                    'nl' => fcc_t('Forever NL - Nizozemska'),
+                    'no' => fcc_t('Forever NO - Forever Norveška'),
+                    'pl' => fcc_t('Forever PL - Poljska'),
+                    'se' => fcc_t('Forever SE - Forever Švedska'),
+                    'gb' => fcc_t('Forever GB - Ujedinjeno Kraljevstvo'),
+                    'us' => fcc_t('Forever US - Sjedinjene Američke Države'),
+                    'qa' => fcc_t('Forever QA - Katar'),
+                    'ch' => fcc_t('Forever CH - Švicarska'),
+                    'ae' => fcc_t('Forever AE - Forever Emirati'),
                 ]; ?>
                 <?php /* /Custom code: FC-2026-03-09 */ ?>
                 <?php foreach ($countries_array as $country): ?>                     
                     <?php /* Custom code: FC-2026-03-09: render mapped labels for selected countries */ ?>
-                    <label for="webshop_links_hr"><i class="fa fa-fw fa-sm fa-shopping-cart text-muted mr-1"></i> <?= $country_labels[$country] ?? ('Forever ' . strtoupper($country)) ?></label>
+                    <label for="webshop_links_hr"><i class="fa fa-fw fa-sm fa-shopping-cart text-muted mr-1"></i> <?= $country_labels[$country] ?? (fcc_t('Forever ') . strtoupper($country)) ?></label>
                     <?php /* /Custom code: FC-2026-03-09 */ ?>
                     <div class="input-group">                          
                         <input id="webshop_links_<?= $country ?>" type="text" name="webshop_links_<?= $country ?>" class="form-control" value="<?= isset($data->webshop_links->$country) ? $data->webshop_links->$country : null ?>" />                    
@@ -157,69 +157,69 @@
             <!-- /Custom code -->
 
             <button class="btn btn-block btn-gray-200 font-size-little-small font-weight-450 my-4" type="button" data-toggle="collapse" data-target="#shop_context_container" aria-expanded="false" aria-controls="shop_context_container">
-                <i class="fas fa-fw fa-store fa-sm mr-1"></i> Shop landing sadržaj
+                <i class="fas fa-fw fa-store fa-sm mr-1"></i> <?= htmlspecialchars(fcc_t('Shop landing sadržaj'), ENT_QUOTES, 'UTF-8') ?>
             </button>
 
             <div class="collapse" id="shop_context_container">
                 <?php if(!$data->blog_shop_context_supported): ?>
                     <div class="alert alert-info">
-                        Strukturirana shop polja će biti aktivna nakon lokalne SQL migracije za stupac <code>blog_posts.shop_context</code>.
+                        <?= htmlspecialchars(fcc_t('Strukturirana shop polja će biti aktivna nakon lokalne SQL migracije za stupac'), ENT_QUOTES, 'UTF-8') ?> <code>blog_posts.shop_context</code>.
                     </div>
                 <?php endif ?>
 
                 <div class="form-group">
-                    <label for="shop_context_page_role"><i class="fas fa-fw fa-sm fa-sitemap text-muted mr-1"></i> Tip landing stranice</label>
+                    <label for="shop_context_page_role"><i class="fas fa-fw fa-sm fa-sitemap text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Tip landing stranice'), ENT_QUOTES, 'UTF-8') ?></label>
                     <select id="shop_context_page_role" name="shop_context_page_role" class="custom-select">
-                        <option value="" <?= ($data->shop_context_form->page_role ?? '') === '' ? 'selected="selected"' : null ?>>Standardno</option>
-                        <option value="product" <?= ($data->shop_context_form->page_role ?? '') === 'product' ? 'selected="selected"' : null ?>>Product landing</option>
-                        <option value="business_start" <?= ($data->shop_context_form->page_role ?? '') === 'business_start' ? 'selected="selected"' : null ?>>Start suradnje / Start paket</option>
+                        <option value="" <?= ($data->shop_context_form->page_role ?? '') === '' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Standardno'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="product" <?= ($data->shop_context_form->page_role ?? '') === 'product' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Product landing'), ENT_QUOTES, 'UTF-8') ?></option>
+                        <option value="business_start" <?= ($data->shop_context_form->page_role ?? '') === 'business_start' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Start suradnje / Start paket'), ENT_QUOTES, 'UTF-8') ?></option>
                     </select>
-                    <small class="form-text text-muted">Koristi se za posebne layoute poput Start paketa i jačih product landing stranica.</small>
+                    <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Koristi se za posebne layoute poput Start paketa i jačih product landing stranica.'), ENT_QUOTES, 'UTF-8') ?></small>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_trust_note"><i class="fas fa-fw fa-sm fa-shield-alt text-muted mr-1"></i> Kratka napomena ispod hero sekcije</label>
-                    <textarea id="shop_context_trust_note" name="shop_context_trust_note" class="form-control" rows="3" placeholder="Npr. Ova stranica pomaže brzo razumjeti što korisnik dobiva i koji je najbolji sljedeći korak."><?= e($data->shop_context_form->trust_note ?? '') ?></textarea>
+                    <label for="shop_context_trust_note"><i class="fas fa-fw fa-sm fa-shield-alt text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Kratka napomena ispod hero sekcije'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_trust_note" name="shop_context_trust_note" class="form-control" rows="3" placeholder="<?= htmlspecialchars(fcc_t('Npr. Ova stranica pomaže brzo razumjeti što korisnik dobiva i koji je najbolji sljedeći korak.'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->trust_note ?? '') ?></textarea>
                 </div>
 
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_meta_title"><i class="fas fa-fw fa-sm fa-heading text-muted mr-1"></i> SEO meta naslov</label>
-                            <input id="shop_context_meta_title" type="text" name="shop_context_meta_title" class="form-control" value="<?= e($data->shop_context_form->meta_title ?? '') ?>" maxlength="180" placeholder="Ako ostane prazno, koristi se SEO fallback prema naslovu i kategoriji." />
+                            <label for="shop_context_meta_title"><i class="fas fa-fw fa-sm fa-heading text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('SEO meta naslov'), ENT_QUOTES, 'UTF-8') ?></label>
+                            <input id="shop_context_meta_title" type="text" name="shop_context_meta_title" class="form-control" value="<?= e($data->shop_context_form->meta_title ?? '') ?>" maxlength="180" placeholder="<?= htmlspecialchars(fcc_t('Ako ostane prazno, koristi se SEO fallback prema naslovu i kategoriji.'), ENT_QUOTES, 'UTF-8') ?>" />
                         </div>
                     </div>
 
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_meta_keywords"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> SEO meta ključne riječi</label>
-                            <input id="shop_context_meta_keywords" type="text" name="shop_context_meta_keywords" class="form-control" value="<?= e($data->shop_context_form->meta_keywords ?? '') ?>" maxlength="255" placeholder="Ako ostane prazno, koristi se kombinacija proizvoda, kategorije i aliasa." />
+                            <label for="shop_context_meta_keywords"><i class="fas fa-fw fa-sm fa-key text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('SEO meta ključne riječi'), ENT_QUOTES, 'UTF-8') ?></label>
+                            <input id="shop_context_meta_keywords" type="text" name="shop_context_meta_keywords" class="form-control" value="<?= e($data->shop_context_form->meta_keywords ?? '') ?>" maxlength="255" placeholder="<?= htmlspecialchars(fcc_t('Ako ostane prazno, koristi se kombinacija proizvoda, kategorije i aliasa.'), ENT_QUOTES, 'UTF-8') ?>" />
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_meta_description"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> SEO meta opis</label>
-                    <textarea id="shop_context_meta_description" name="shop_context_meta_description" class="form-control" rows="3" placeholder="Ako ostane prazno, koristi se opis proizvoda ili generirani SEO sažetak."><?= e($data->shop_context_form->meta_description ?? '') ?></textarea>
+                    <label for="shop_context_meta_description"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('SEO meta opis'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_meta_description" name="shop_context_meta_description" class="form-control" rows="3" placeholder="<?= htmlspecialchars(fcc_t('Ako ostane prazno, koristi se opis proizvoda ili generirani SEO sažetak.'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->meta_description ?? '') ?></textarea>
                 </div>
 
                 <div class="card border rounded-0 mb-4">
                     <div class="card-body">
-                        <h3 class="h6 mb-3"><i class="fas fa-fw fa-sm fa-receipt text-muted mr-1"></i> Merchant schema podaci</h3>
-                        <p class="small text-muted mb-3">Popunite samo ako imate točnu aktivnu cijenu i pravila koja su prikazana/primjenjiva za taj proizvod. Ako cijena nije upisana, stranica neće slati <code>Offer</code> schema kako Google ne bi prijavio grešku.</p>
+                        <h3 class="h6 mb-3"><i class="fas fa-fw fa-sm fa-receipt text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Merchant schema podaci'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <p class="small text-muted mb-3"><?= htmlspecialchars(fcc_t('Popunite samo ako imate točnu aktivnu cijenu i pravila koja su prikazana/primjenjiva za taj proizvod. Ako cijena nije upisana, stranica neće slati'), ENT_QUOTES, 'UTF-8') ?> <code>Offer</code> <?= htmlspecialchars(fcc_t('schema kako Google ne bi prijavio grešku.'), ENT_QUOTES, 'UTF-8') ?></p>
 
                         <div class="row">
                             <div class="col-12 col-lg-6">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_offer_price"><i class="fas fa-fw fa-sm fa-tag text-muted mr-1"></i> Aktivna cijena</label>
-                                    <input id="shop_context_schema_offer_price" type="text" name="shop_context_schema_offer_price" class="form-control" value="<?= e($data->shop_context_form->schema_offer_price ?? '') ?>" maxlength="32" placeholder="Npr. 29.90" />
+                                    <label for="shop_context_schema_offer_price"><i class="fas fa-fw fa-sm fa-tag text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Aktivna cijena'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_offer_price" type="text" name="shop_context_schema_offer_price" class="form-control" value="<?= e($data->shop_context_form->schema_offer_price ?? '') ?>" maxlength="32" placeholder="<?= htmlspecialchars(fcc_t('Npr. 29.90'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-lg-6">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_offer_currency"><i class="fas fa-fw fa-sm fa-coins text-muted mr-1"></i> Valuta</label>
-                                    <input id="shop_context_schema_offer_currency" type="text" name="shop_context_schema_offer_currency" class="form-control" value="<?= e($data->shop_context_form->schema_offer_currency ?? '') ?>" maxlength="3" placeholder="Npr. EUR" />
+                                    <label for="shop_context_schema_offer_currency"><i class="fas fa-fw fa-sm fa-coins text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Valuta'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_offer_currency" type="text" name="shop_context_schema_offer_currency" class="form-control" value="<?= e($data->shop_context_form->schema_offer_currency ?? '') ?>" maxlength="3" placeholder="<?= htmlspecialchars(fcc_t('Npr. EUR'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
                         </div>
@@ -227,28 +227,28 @@
                         <div class="row">
                             <div class="col-12 col-lg-4">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_shipping_country"><i class="fas fa-fw fa-sm fa-globe text-muted mr-1"></i> Dostava zemlja</label>
-                                    <input id="shop_context_schema_shipping_country" type="text" name="shop_context_schema_shipping_country" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_country ?? '') ?>" maxlength="2" placeholder="Npr. HR" />
+                                    <label for="shop_context_schema_shipping_country"><i class="fas fa-fw fa-sm fa-globe text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Dostava zemlja'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_shipping_country" type="text" name="shop_context_schema_shipping_country" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_country ?? '') ?>" maxlength="2" placeholder="<?= htmlspecialchars(fcc_t('Npr. HR'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-lg-4">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_shipping_price"><i class="fas fa-fw fa-sm fa-truck text-muted mr-1"></i> Cijena dostave</label>
-                                    <input id="shop_context_schema_shipping_price" type="text" name="shop_context_schema_shipping_price" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_price ?? '') ?>" maxlength="32" placeholder="Npr. 0 ili 4.99" />
+                                    <label for="shop_context_schema_shipping_price"><i class="fas fa-fw fa-sm fa-truck text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Cijena dostave'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_shipping_price" type="text" name="shop_context_schema_shipping_price" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_price ?? '') ?>" maxlength="32" placeholder="<?= htmlspecialchars(fcc_t('Npr. 0 ili 4.99'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-lg-2">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_shipping_min_days">Min dana</label>
+                                    <label for="shop_context_schema_shipping_min_days"><?= htmlspecialchars(fcc_t('Min dana'), ENT_QUOTES, 'UTF-8') ?></label>
                                     <input id="shop_context_schema_shipping_min_days" type="text" name="shop_context_schema_shipping_min_days" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_min_days ?? '') ?>" maxlength="3" placeholder="1" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-lg-2">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_shipping_max_days">Max dana</label>
+                                    <label for="shop_context_schema_shipping_max_days"><?= htmlspecialchars(fcc_t('Max dana'), ENT_QUOTES, 'UTF-8') ?></label>
                                     <input id="shop_context_schema_shipping_max_days" type="text" name="shop_context_schema_shipping_max_days" class="form-control" value="<?= e($data->shop_context_form->schema_shipping_max_days ?? '') ?>" maxlength="3" placeholder="7" />
                                 </div>
                             </div>
@@ -257,22 +257,22 @@
                         <div class="row">
                             <div class="col-12 col-lg-4">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_return_country"><i class="fas fa-fw fa-sm fa-undo text-muted mr-1"></i> Povrat zemlja</label>
-                                    <input id="shop_context_schema_return_country" type="text" name="shop_context_schema_return_country" class="form-control" value="<?= e($data->shop_context_form->schema_return_country ?? '') ?>" maxlength="2" placeholder="Npr. HR" />
+                                    <label for="shop_context_schema_return_country"><i class="fas fa-fw fa-sm fa-undo text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Povrat zemlja'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_return_country" type="text" name="shop_context_schema_return_country" class="form-control" value="<?= e($data->shop_context_form->schema_return_country ?? '') ?>" maxlength="2" placeholder="<?= htmlspecialchars(fcc_t('Npr. HR'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-lg-4">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_return_days">Rok povrata u danima</label>
-                                    <input id="shop_context_schema_return_days" type="text" name="shop_context_schema_return_days" class="form-control" value="<?= e($data->shop_context_form->schema_return_days ?? '') ?>" maxlength="3" placeholder="Npr. 14" />
+                                    <label for="shop_context_schema_return_days"><?= htmlspecialchars(fcc_t('Rok povrata u danima'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_return_days" type="text" name="shop_context_schema_return_days" class="form-control" value="<?= e($data->shop_context_form->schema_return_days ?? '') ?>" maxlength="3" placeholder="<?= htmlspecialchars(fcc_t('Npr. 14'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-lg-4">
                                 <div class="form-group">
-                                    <label for="shop_context_schema_return_fees">Trošak povrata</label>
-                                    <input id="shop_context_schema_return_fees" type="text" name="shop_context_schema_return_fees" class="form-control" value="<?= e($data->shop_context_form->schema_return_fees ?? '') ?>" maxlength="64" placeholder="FreeReturn ili ReturnShippingFees" />
+                                    <label for="shop_context_schema_return_fees"><?= htmlspecialchars(fcc_t('Trošak povrata'), ENT_QUOTES, 'UTF-8') ?></label>
+                                    <input id="shop_context_schema_return_fees" type="text" name="shop_context_schema_return_fees" class="form-control" value="<?= e($data->shop_context_form->schema_return_fees ?? '') ?>" maxlength="64" placeholder="<?= htmlspecialchars(fcc_t('FreeReturn ili ReturnShippingFees'), ENT_QUOTES, 'UTF-8') ?>" />
                                 </div>
                             </div>
                         </div>
@@ -282,83 +282,87 @@
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_decision_title"><i class="fas fa-fw fa-sm fa-user-check text-muted mr-1"></i> Naslov sekcije “Za koga je”</label>
+                            <label for="shop_context_decision_title"><i class="fas fa-fw fa-sm fa-user-check text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Naslov sekcije “Za koga je”'), ENT_QUOTES, 'UTF-8') ?></label>
                             <input id="shop_context_decision_title" type="text" name="shop_context_decision_title" class="form-control" value="<?= e($data->shop_context_form->decision_title ?? '') ?>" maxlength="160" />
                         </div>
                     </div>
 
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_checks_title"><i class="fas fa-fw fa-sm fa-list-check text-muted mr-1"></i> Naslov sekcije “Na brzinu provjerite”</label>
+                            <label for="shop_context_checks_title"><i class="fas fa-fw fa-sm fa-list-check text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Naslov sekcije “Na brzinu provjerite”'), ENT_QUOTES, 'UTF-8') ?></label>
                             <input id="shop_context_checks_title" type="text" name="shop_context_checks_title" class="form-control" value="<?= e($data->shop_context_form->checks_title ?? '') ?>" maxlength="160" />
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_summary_cards"><i class="fas fa-fw fa-sm fa-th-large text-muted mr-1"></i> Kartice sažetka</label>
-                    <textarea id="shop_context_summary_cards" name="shop_context_summary_cards" class="form-control" rows="5" placeholder="Status | Forever poslovni suradnik&#10;Popust | Put prema 30% popusta"><?= e($data->shop_context_form->summary_cards ?? '') ?></textarea>
-                    <small class="form-text text-muted">Jedan red = jedna kartica. Format: <code>Label | Vrijednost</code>.</small>
+                    <label for="shop_context_summary_cards"><i class="fas fa-fw fa-sm fa-th-large text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Kartice sažetka'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_summary_cards" name="shop_context_summary_cards" class="form-control" rows="5" placeholder="<?= htmlspecialchars(fcc_t('Status | Forever poslovni suradnik
+Popust | Put prema 30% popusta'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->summary_cards ?? '') ?></textarea>
+                    <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Jedan red = jedna kartica. Format:'), ENT_QUOTES, 'UTF-8') ?> <code>Label | Vrijednost</code>.</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_ideal_for"><i class="fas fa-fw fa-sm fa-bullseye text-muted mr-1"></i> Za koga je stranica</label>
-                    <textarea id="shop_context_ideal_for" name="shop_context_ideal_for" class="form-control" rows="5" placeholder="Ako želite postati Forever poslovni suradnik.&#10;Ako tražite glavni korak za registraciju i početak."><?= e($data->shop_context_form->ideal_for ?? '') ?></textarea>
-                    <small class="form-text text-muted">Jedan red = jedna točka koja se prikazuje u decision bloku.</small>
+                    <label for="shop_context_ideal_for"><i class="fas fa-fw fa-sm fa-bullseye text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Za koga je stranica'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_ideal_for" name="shop_context_ideal_for" class="form-control" rows="5" placeholder="<?= htmlspecialchars(fcc_t('Ako želite postati Forever poslovni suradnik.
+Ako tražite glavni korak za registraciju i početak.'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->ideal_for ?? '') ?></textarea>
+                    <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Jedan red = jedna točka koja se prikazuje u decision bloku.'), ENT_QUOTES, 'UTF-8') ?></small>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_quick_checks"><i class="fas fa-fw fa-sm fa-check-double text-muted mr-1"></i> Brze provjere / ključne informacije</label>
-                    <textarea id="shop_context_quick_checks" name="shop_context_quick_checks" class="form-control" rows="5" placeholder="Registracija i narudžba vode na tržište korisnika.&#10;Otvara se put prema 30% popusta."><?= e($data->shop_context_form->quick_checks ?? '') ?></textarea>
-                    <small class="form-text text-muted">Jedan red = jedna stavka u quick-check bloku.</small>
+                    <label for="shop_context_quick_checks"><i class="fas fa-fw fa-sm fa-check-double text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Brze provjere / ključne informacije'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_quick_checks" name="shop_context_quick_checks" class="form-control" rows="5" placeholder="<?= htmlspecialchars(fcc_t('Registracija i narudžba vode na tržište korisnika.
+Otvara se put prema 30% popusta.'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->quick_checks ?? '') ?></textarea>
+                    <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Jedan red = jedna stavka u quick-check bloku.'), ENT_QUOTES, 'UTF-8') ?></small>
                 </div>
 
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_action_title"><i class="fas fa-fw fa-sm fa-bolt text-muted mr-1"></i> Naslov CTA bloka</label>
+                            <label for="shop_context_action_title"><i class="fas fa-fw fa-sm fa-bolt text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Naslov CTA bloka'), ENT_QUOTES, 'UTF-8') ?></label>
                             <input id="shop_context_action_title" type="text" name="shop_context_action_title" class="form-control" value="<?= e($data->shop_context_form->action_title ?? '') ?>" maxlength="160" />
                         </div>
                     </div>
 
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_primary_cta_label"><i class="fas fa-fw fa-sm fa-mouse-pointer text-muted mr-1"></i> Tekst glavnog CTA gumba</label>
+                            <label for="shop_context_primary_cta_label"><i class="fas fa-fw fa-sm fa-mouse-pointer text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Tekst glavnog CTA gumba'), ENT_QUOTES, 'UTF-8') ?></label>
                             <input id="shop_context_primary_cta_label" type="text" name="shop_context_primary_cta_label" class="form-control" value="<?= e($data->shop_context_form->primary_cta_label ?? '') ?>" maxlength="120" />
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_action_subtitle"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> Podnaslov CTA bloka</label>
-                    <textarea id="shop_context_action_subtitle" name="shop_context_action_subtitle" class="form-control" rows="3" placeholder="Npr. Ovaj korak vodi direktno na registraciju i narudžbu Start paketa u zemlji korisnika."><?= e($data->shop_context_form->action_subtitle ?? '') ?></textarea>
+                    <label for="shop_context_action_subtitle"><i class="fas fa-fw fa-sm fa-align-left text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Podnaslov CTA bloka'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_action_subtitle" name="shop_context_action_subtitle" class="form-control" rows="3" placeholder="<?= htmlspecialchars(fcc_t('Npr. Ovaj korak vodi direktno na registraciju i narudžbu Start paketa u zemlji korisnika.'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->action_subtitle ?? '') ?></textarea>
                 </div>
 
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_secondary_cta_label"><i class="fas fa-fw fa-sm fa-arrow-right text-muted mr-1"></i> Tekst pomoćnog CTA gumba</label>
+                            <label for="shop_context_secondary_cta_label"><i class="fas fa-fw fa-sm fa-arrow-right text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Tekst pomoćnog CTA gumba'), ENT_QUOTES, 'UTF-8') ?></label>
                             <input id="shop_context_secondary_cta_label" type="text" name="shop_context_secondary_cta_label" class="form-control" value="<?= e($data->shop_context_form->secondary_cta_label ?? '') ?>" maxlength="120" />
                         </div>
                     </div>
 
                     <div class="col-12 col-lg-6">
                         <div class="form-group">
-                            <label for="shop_context_related_eyebrow"><i class="fas fa-fw fa-sm fa-tags text-muted mr-1"></i> Eyebrow povezanih sadržaja</label>
+                            <label for="shop_context_related_eyebrow"><i class="fas fa-fw fa-sm fa-tags text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Eyebrow povezanih sadržaja'), ENT_QUOTES, 'UTF-8') ?></label>
                             <input id="shop_context_related_eyebrow" type="text" name="shop_context_related_eyebrow" class="form-control" value="<?= e($data->shop_context_form->related_eyebrow ?? '') ?>" maxlength="80" />
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_related_title"><i class="fas fa-fw fa-sm fa-link text-muted mr-1"></i> Naslov povezanih sadržaja</label>
+                    <label for="shop_context_related_title"><i class="fas fa-fw fa-sm fa-link text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Naslov povezanih sadržaja'), ENT_QUOTES, 'UTF-8') ?></label>
                     <input id="shop_context_related_title" type="text" name="shop_context_related_title" class="form-control" value="<?= e($data->shop_context_form->related_title ?? '') ?>" maxlength="180" />
                 </div>
 
                 <div class="form-group">
-                    <label for="shop_context_faq"><i class="fas fa-fw fa-sm fa-question-circle text-muted mr-1"></i> Strukturirani FAQ</label>
-                    <textarea id="shop_context_faq" name="shop_context_faq" class="form-control" rows="6" placeholder="Kako započeti? | Klikom na glavni gumb otvara se registracija i narudžba za tržište korisnika.&#10;Dobiva li se Forever ID? | Da, kroz ovaj proces nova osoba dobiva svoj Forever ID."><?= e($data->shop_context_form->faq ?? '') ?></textarea>
-                    <small class="form-text text-muted">Jedan red = jedno pitanje i odgovor. Format: <code>Pitanje | Odgovor</code>.</small>
+                    <label for="shop_context_faq"><i class="fas fa-fw fa-sm fa-question-circle text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Strukturirani FAQ'), ENT_QUOTES, 'UTF-8') ?></label>
+                    <textarea id="shop_context_faq" name="shop_context_faq" class="form-control" rows="6" placeholder="<?= htmlspecialchars(fcc_t('Kako započeti? | Klikom na glavni gumb otvara se registracija i narudžba za tržište korisnika.
+Dobiva li se Forever ID? | Da, kroz ovaj proces nova osoba dobiva svoj Forever ID.'), ENT_QUOTES, 'UTF-8') ?>"><?= e($data->shop_context_form->faq ?? '') ?></textarea>
+                    <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Jedan red = jedno pitanje i odgovor. Format:'), ENT_QUOTES, 'UTF-8') ?> <code>Pitanje | Odgovor</code>.</small>
                 </div>
             </div>
 

@@ -33,7 +33,7 @@ $normalize_plan_description = static function(string $description): string {
     $description = trim($description);
 
     if($description === 'For Offline Forever Business + Physical Forever Business Club Card') {
-        return 'For Offline Forever Business';
+        return fcc_t('For Offline Forever Business');
     }
 
     return $description;
@@ -70,7 +70,7 @@ $get_plan_price_variants = static function($plan) use ($selected_currency, $form
             }
 
             $variants[] = [
-                'label' => l('plan.custom_plan.' . $frequency),
+                'label' => l('account_plan.manage.frequency.' . $frequency),
                 'amount' => $format_currency_amount($amount),
                 'frequency' => $frequency,
             ];
@@ -254,7 +254,7 @@ try {
 } catch(\Throwable $exception) {
     /* Missing or invalid dates must not imply a new renewal date. */
 }
-$is_lifetime = !$is_free_plan && !$has_subscription && $expiration_date && $expiration_date > (new \DateTimeImmutable())->modify('+10 years');
+$is_lifetime = !$is_free_plan && !$has_subscription && $expiration_date && $expiration_date > (new \DateTimeImmutable())->modify(fcc_t('+10 years'));
 $has_paid_access = !$is_free_plan && $expiration_date && $expiration_date > new \DateTimeImmutable();
 $expiration_label = $expiration_date ? \Altum\Date::get($this->user->plan_expiration_date, 2) : l('global.na');
 $renewal_state = $has_subscription ? 'on' : 'off';
@@ -410,9 +410,9 @@ if($suggested_plan) {
                         <i class="fas fa-fw fa-arrow-up mr-1" aria-hidden="true"></i><?= l($is_free_plan ? 'account.plan.upgrade_plan' : 'account.plan.renew_plan') ?>
                     </a>
                 <?php endif ?>
-                <a href="#fcc-plan-features" class="fcc-account-plan-text-link" data-scroll-target="#fcc-plan-features"><?= l('account_plan.manage.view_features') ?> <i class="fas fa-arrow-down ml-1" aria-hidden="true"></i></a>
+                <a href="<?= url('account-plan#fcc-plan-features') ?>" class="fcc-account-plan-text-link" data-scroll-target="#fcc-plan-features"><?= l('account_plan.manage.view_features') ?> <i class="fas fa-arrow-down ml-1" aria-hidden="true"></i></a>
                 <?php if($suggested_plan): ?>
-                    <a href="#fcc-plan-compare" class="fcc-account-plan-text-link" data-scroll-target="#fcc-plan-compare"><?= l('account_plan.premium.goto_compare') ?></a>
+                    <a href="<?= url('account-plan#fcc-plan-compare') ?>" class="fcc-account-plan-text-link" data-scroll-target="#fcc-plan-compare"><?= l('account_plan.premium.goto_compare') ?></a>
                 <?php endif ?>
             </div>
         </div>

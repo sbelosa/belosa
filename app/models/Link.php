@@ -56,13 +56,13 @@ class Link extends Model {
     public function delete($link_id) {
 
         if(!$link = db()->where('link_id', $link_id)->getOne('links', ['user_id', 'link_id', 'biolink_theme_id', 'type', 'settings'])) {
-            return;
+            return false;
         }
 
         /* Custom code: FC-2026-02-24: lock main NFC biolink deletion */
         $main_biolink_id = (int) (fc_get_user_main_biolink_id((int) $link->user_id) ?? 0);
         if($main_biolink_id && $main_biolink_id === (int) $link->link_id) {
-            return;
+            return false;
         }
         /* /Custom code: FC-2026-02-24 */
 
@@ -125,6 +125,8 @@ class Link extends Model {
         /* Clear the cache */
         cache()->deleteItem('biolink_blocks?link_id=' . $link->link_id);
         cache()->deleteItemsByTag('link_id=' . $link->link_id);
+
+        return true;
 
     }
 }

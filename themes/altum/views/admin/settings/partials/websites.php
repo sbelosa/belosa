@@ -6,7 +6,7 @@
         <div class="input-group">
             <input id="service_worker_file_name" name="service_worker_file_name" type="text" class="form-control" value="<?= settings()->websites->service_worker_file_name ?>" />
             <div class="input-group-append">
-                <span class="input-group-text">.js</span>
+                <span class="input-group-text"><?= htmlspecialchars('.js', ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </div>
         <small class="form-text text-muted"><?= l('admin_settings.websites.service_worker_file_name_help') ?></small>

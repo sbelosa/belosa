@@ -28,17 +28,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="vip_funnel_hub_vip_funnel_id"><i class="fas fa-fw fa-diagram-project fa-sm text-muted mr-1"></i> Funnel koji se otvara</label>
+                        <label for="vip_funnel_hub_vip_funnel_id"><i class="fas fa-fw fa-diagram-project fa-sm text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Funnel koji se otvara'), ENT_QUOTES, 'UTF-8') ?></label>
                         <?php /* Custom code: FC-2026-08-20: require an exact VIP Funnel hub target */ ?>
                         <select id="vip_funnel_hub_vip_funnel_id" name="vip_funnel_id" class="custom-select" required="required">
-                            <option value="" selected="selected" disabled="disabled">Odaberi točan funnel</option>
+                            <option value="" selected="selected" disabled="disabled"><?= htmlspecialchars(fcc_t('Odaberi točan funnel'), ENT_QUOTES, 'UTF-8') ?></option>
                             <?php foreach($vip_funnel_options as $option): ?>
                                 <option value="<?= (int) $option['id'] ?>">
                                     <?= htmlspecialchars((string) $option['name'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(mb_strtoupper((string) ($option['status'] ?? '')), ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars(mb_strtoupper((string) ($option['visibility_mode'] ?? '')), ENT_QUOTES, 'UTF-8') ?> — #<?= (int) $option['id'] ?> /<?= htmlspecialchars((string) $option['slug'], ENT_QUOTES, 'UTF-8') ?>
                                 </option>
                             <?php endforeach ?>
                         </select>
-                        <small class="form-text text-muted">Blok otvara isključivo ovdje odabrani funnel; nema automatskog odabira najstarijeg funnel-a.</small>
+                        <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Blok otvara isključivo ovdje odabrani funnel; nema automatskog odabira najstarijeg funnel-a.'), ENT_QUOTES, 'UTF-8') ?></small>
                         <?php /* /Custom code: FC-2026-08-20 */ ?>
                     </div>
 

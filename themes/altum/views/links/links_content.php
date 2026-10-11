@@ -4,6 +4,7 @@
 $fcc_links_type = (string) ($data->filters->filters['type'] ?? '');
 $fcc_is_biolink_links = $fcc_links_type === 'biolink';
 $fcc_is_short_links = $fcc_links_type === 'link';
+if($fcc_is_short_links) require THEME_PATH . 'views/links/short_link_copy.php';
 $fcc_main_featured = $data->main_biolink_featured ?? null;
 $fcc_main_auto_summary = $data->main_biolink_auto_summary ?? '';
 $fcc_main_biolink_row = $data->main_biolink_row ?? null;
@@ -1639,7 +1640,7 @@ if($fcc_links_type === 'biolink') {
     }
 </style>
 
-<div class="fcc-links-shell <?= $fcc_is_biolink_links ? 'is-biolink' : null ?> <?= $fcc_is_short_links ? 'is-short-links' : null ?>">
+<div class="fcc-links-shell <?= $fcc_is_biolink_links ? 'is-biolink' : null ?> <?= $fcc_is_short_links ? 'is-short-links fp-short-links' : null ?>">
 <?php if(in_array($fcc_links_type, ['biolink', 'link'], true)): ?>
     <div class="fcc-page-guide-rail">
         <button type="button" class="fcc-page-guide-trigger" data-fcc-start-tour>
@@ -1660,13 +1661,14 @@ if($fcc_links_type === 'biolink') {
             <div class="fcc-links-heading-copy">
                 <div class="fcc-links-heading-row">
                     <h1 class="text-truncate">
-                        <?= isset($data->filters->filters['type']) ? l('links.menu.' . $data->filters->filters['type']) : l('links.header') ?>
-                        <span class="ml-1" data-toggle="tooltip" title="<?= l('links.subheader') ?>">
+                        <?= $fcc_is_short_links ? $fcc_short_h('title') : (isset($data->filters->filters['type']) ? l('links.menu.' . $data->filters->filters['type']) : l('links.header')) ?>
+                        <span class="ml-1 <?= $fcc_is_short_links ? 'd-none' : null ?>" data-toggle="tooltip" title="<?= l('links.subheader') ?>">
                             <i class="fas fa-fw fa-info-circle text-muted"></i>
                         </span>
                     </h1>
 
                 </div>
+                <?php if($fcc_is_short_links): ?><p class="fp-short-intro"><?= $fcc_short_h('intro') ?></p><?php endif ?>
             </div>
         </div>
     </div>
@@ -1679,14 +1681,14 @@ if($fcc_links_type === 'biolink') {
             ?>
             <div>
                 <button type="button" data-toggle="modal" data-target="<?= '#create_' . $data->filters->filters['type'] ?>" class="btn btn-primary fcc-links-action-btn <?= $fcc_create_button_is_tour_target ? 'fcc-tour-target' : null ?>" <?= $fcc_create_button_id ? 'id="' . $fcc_create_button_id . '"' : null ?>>
-                    <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= l('link.' . $data->filters->filters['type'] . '.name') ?>
+                    <i class="fas fa-fw fa-plus-circle fa-sm mr-1"></i> <?= $fcc_is_short_links ? $fcc_short_h('new') : l('link.' . $data->filters->filters['type'] . '.name') ?>
                 </button>
             </div>
 
             <?php if(settings()->links->shortener_is_enabled && $data->filters->filters['type'] == 'link'): ?>
                 <div>
                     <a href="<?= url('link-create') ?>" class="btn btn-outline-primary fcc-links-action-btn fcc-tour-target" id="fcc_short_links_tour_step_bulk_create" data-toggle="tooltip" title="<?= l('link_create.menu') ?>">
-                        <i class="fas fa-fw fa-upload fa-sm"></i>
+                        <i class="fas fa-fw fa-upload fa-sm"></i><span><?= $fcc_short_h('bulk') ?></span>
                     </a>
                 </div>
             <?php endif ?>
@@ -1783,7 +1785,7 @@ if($fcc_links_type === 'biolink') {
         <div>
             <div class="dropdown">
                 <button type="button" class="btn btn-light dropdown-toggle-simple fcc-links-action-btn <?= !empty($data->links) ? null : 'disabled' ?>" data-toggle="dropdown" data-boundary="viewport" data-tooltip title="<?= l('global.export') ?>" data-tooltip-hide-on-click>
-                    <i class="fas fa-fw fa-sm fa-download"></i>
+                    <i class="fas fa-fw fa-sm fa-download"></i><?php if($fcc_is_short_links): ?><span><?= $fcc_short_h('export') ?></span><?php endif ?>
                 </button>
 
                 <div class="dropdown-menu dropdown-menu-right d-print-none">
@@ -1803,7 +1805,7 @@ if($fcc_links_type === 'biolink') {
         <div>
             <div class="dropdown">
                 <button type="button" class="btn <?= $data->filters->has_applied_filters ? 'btn-dark' : 'btn-light' ?> filters-button dropdown-toggle-simple fcc-links-action-btn <?= !empty($data->links) || $data->filters->has_applied_filters ? null : 'disabled' ?>" <?= $fcc_is_short_links ? 'id="fcc_short_links_tour_step_filters"' : null ?> data-toggle="dropdown" data-boundary="viewport" data-tooltip data-html="true" title="<?= l('global.filters.tooltip') ?>" data-tooltip-hide-on-click>
-                    <i class="fas fa-fw fa-sm fa-filter"></i>
+                    <i class="fas fa-fw fa-sm fa-filter"></i><?php if($fcc_is_short_links): ?><span><?= $fcc_short_h('filters') ?></span><?php endif ?>
                 </button>
 
                 <div class="dropdown-menu dropdown-menu-right filters-dropdown">
@@ -1940,7 +1942,7 @@ if($fcc_links_type === 'biolink') {
         </div>
 
         <div>
-            <button id="bulk_enable" type="button" class="btn btn-light fcc-links-action-btn" data-toggle="tooltip" title="<?= l('global.bulk_actions') ?>"><i class="fas fa-fw fa-sm fa-list"></i></button>
+            <button id="bulk_enable" type="button" class="btn btn-light fcc-links-action-btn" data-toggle="tooltip" title="<?= l('global.bulk_actions') ?>"><i class="fas fa-fw fa-sm fa-list"></i><?php if($fcc_is_short_links): ?><span><?= $fcc_short_h('select') ?></span><?php endif ?></button>
 
             <div id="bulk_group" class="btn-group d-none" role="group">
                 <div class="btn-group dropdown" role="group">
@@ -1963,30 +1965,12 @@ if($fcc_links_type === 'biolink') {
     <div class="fcc-short-links-guide">
         <div class="fcc-short-links-guide-head">
             <div class="fcc-short-links-guide-copy">
-                <h2><?= $fcc_short_links_guide_title ?></h2>
-                <p><?= $fcc_short_links_guide_text ?></p>
+                <h2><?= $fcc_short_h('guide_title') ?></h2>
             </div>
-            <div class="fcc-short-links-guide-total"><?= $fcc_short_links_total_label ?> <?= nr(count($data->links ?? [])) ?></div>
+            <div class="fcc-short-links-guide-total"><?= $fcc_short_h('listed') ?>: <?= nr(count($data->links ?? [])) ?></div>
         </div>
 
-        <div class="fcc-short-links-guide-grid">
-            <div class="fcc-short-links-guide-card">
-                <strong><?= l('links.short_links.guide_card_1_title') ?></strong>
-                <span><?= l('links.short_links.guide_card_1_text') ?></span>
-            </div>
-            <div class="fcc-short-links-guide-card">
-                <strong><?= l('links.short_links.guide_card_2_title') ?></strong>
-                <span><?= l('links.short_links.guide_card_2_text') ?></span>
-            </div>
-            <div class="fcc-short-links-guide-card">
-                <strong><?= l('links.short_links.guide_card_3_title') ?></strong>
-                <span><?= l('links.short_links.guide_card_3_text') ?></span>
-            </div>
-            <div class="fcc-short-links-guide-card">
-                <strong><?= l('links.short_links.guide_card_4_title') ?></strong>
-                <span><?= l('links.short_links.guide_card_4_text') ?></span>
-            </div>
-        </div>
+        <ol class="fp-short-steps"><li><?= $fcc_short_h('paste') ?></li><li><?= $fcc_short_h('name') ?></li><li><?= $fcc_short_h('share') ?></li></ol>
     </div>
 <?php endif ?>
 
@@ -2312,19 +2296,19 @@ if($fcc_links_type === 'biolink') {
         <?php endif ?>
         <?php if(!empty($fcc_table_links)): ?>
         <div class="table-responsive table-custom-container">
-            <table class="table table-custom">
+            <table class="table table-custom <?= $fcc_is_short_links ? 'fp-short-table' : null ?>">
                 <thead>
                 <tr>
                     <th data-bulk-table class="d-none">
                         <div class="custom-control custom-checkbox">
                             <input id="bulk_select_all" type="checkbox" class="custom-control-input" />
-                            <label class="custom-control-label" for="bulk_select_all"></label>
+                            <label class="custom-control-label" for="bulk_select_all"><?php if($fcc_is_short_links): ?><span class="sr-only fp-short-select-all-label"><?= $fcc_short_h('select_all') ?></span><?php endif ?></label>
                         </div>
                     </th>
-                    <th><?= isset($data->filters->filters['type']) && $data->filters->filters['type'] == 'biolink' ? $fcc_secondary_header : l('link.link') ?></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
+                    <th class="<?= $fcc_is_short_links ? 'fp-short-column-link' : null ?>"><?= $fcc_is_short_links ? $fcc_short_h('saved') : (isset($data->filters->filters['type']) && $data->filters->filters['type'] == 'biolink' ? $fcc_secondary_header : l('link.link')) ?></th>
+                    <th class="<?= $fcc_is_short_links ? 'fp-short-column-metrics' : null ?>"><?= $fcc_is_short_links ? $fcc_short_h('clicks') : null ?></th>
+                    <th class="<?= $fcc_is_short_links ? 'fp-short-column-date' : null ?>"><?= $fcc_is_short_links ? $fcc_short_h('created') : null ?></th>
+                    <th class="<?= $fcc_is_short_links ? 'fp-short-column-actions' : null ?>"><?= $fcc_is_short_links ? $fcc_short_h('actions') : null ?></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -2335,7 +2319,7 @@ if($fcc_links_type === 'biolink') {
                     <?php $is_main_biolink = $row->biolink_id && (int) $row->biolink_id === (int) $row->link_id; ?>
                     <!-- /Custom code: FC-2026-02-24 -->
                     <tr <?= $fcc_is_short_links && $fcc_short_link_row_index === 0 ? 'id="fcc_short_links_tour_step_row"' : null ?>>
-                        <td data-bulk-table class="d-none">
+                        <td data-bulk-table class="d-none <?= $fcc_is_short_links ? 'fp-short-cell-select' : null ?>">
                             <div class="custom-control custom-checkbox">
                                 <!-- Custom code: FC-2026-02-24: lock main NFC biolink deletion -->
                                 <input id="selected_link_id_<?= $row->link_id ?>" type="checkbox" class="custom-control-input" name="selected[]" value="<?= $row->link_id ?>" <?= $is_main_biolink ? 'disabled="disabled"' : null ?> title="<?= $is_main_biolink ? l('link_delete_modal.error_message.main_biolink_locked') : '' ?>" />
@@ -2344,7 +2328,7 @@ if($fcc_links_type === 'biolink') {
                             </div>
                         </td>
 
-                        <td class="text-nowrap">
+                        <td class="text-nowrap <?= $fcc_is_short_links ? 'fp-short-cell-link' : null ?>">
                             <div class="d-flex align-items-center">
 
                                 <?php if($row->type == 'biolink' && $row->settings->favicon): ?>
@@ -2363,12 +2347,14 @@ if($fcc_links_type === 'biolink') {
                                         <?php endif ?>
                                     </div>
 
+                                    <?php if($fcc_is_short_links): ?><a class="fp-short-public-url" href="<?= htmlspecialchars($row->full_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars(remove_url_protocol_from_url($row->full_url), ENT_QUOTES, 'UTF-8') ?></a><?php endif ?>
+
                                     <div class="d-flex align-items-center">
                                         <span class="d-inline-block text-truncate small">
 
                                         <?php if(!empty($row->location_url)): ?>
                                             <img referrerpolicy="no-referrer" src="<?= get_favicon_url_from_domain(parse_url($row->location_url, PHP_URL_HOST)) ?>" class="img-fluid icon-favicon-small mr-1" loading="lazy" />
-                                            <a href="<?= $row->location_url ?>" class="text-muted" title="<?= remove_url_protocol_from_url($row->location_url) ?>" target="_blank" rel="noreferrer"><?= string_truncate(remove_url_protocol_from_url($row->location_url), 32) ?></a>
+                                            <a href="<?= htmlspecialchars($row->location_url, ENT_QUOTES, 'UTF-8') ?>" class="text-muted" title="<?= htmlspecialchars(remove_url_protocol_from_url($row->location_url), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noreferrer"><?= $fcc_is_short_links ? htmlspecialchars(remove_url_protocol_from_url($row->location_url), ENT_QUOTES, 'UTF-8') : string_truncate(remove_url_protocol_from_url($row->location_url), 32) ?></a>
                                         <?php else: ?>
                                             <img src="<?= isset($row->settings->favicon) && $row->settings->favicon ? \Altum\Uploads::get_full_url('favicons') . $row->settings->favicon : get_favicon_url_from_domain(parse_url($row->full_url, PHP_URL_HOST)) ?>" class="img-fluid icon-favicon-small mr-1" loading="lazy" />
                                             <a href="<?= $row->full_url ?>" class="text-muted" title="<?= remove_url_protocol_from_url($row->full_url) ?>" target="_blank" rel="noreferrer"><?= string_truncate(remove_url_protocol_from_url($row->full_url), 32) ?></a>
@@ -2398,7 +2384,7 @@ if($fcc_links_type === 'biolink') {
                             </div>
                         </td>
 
-                        <td class="text-nowrap">
+                        <td class="text-nowrap <?= $fcc_is_short_links ? 'fp-short-cell-metrics' : null ?>" <?= $fcc_is_short_links ? 'data-label="' . $fcc_short_h('clicks') . '"' : null ?>>
                             <?php if(settings()->links->projects_is_enabled): ?>
                             <div class="mx-2">
                                 <?php if($row->project_id && isset($data->projects[$row->project_id])): ?>
@@ -2418,7 +2404,11 @@ if($fcc_links_type === 'biolink') {
                             </div>
                         </td>
 
-                        <td class="text-nowrap text-muted">
+                        <td class="text-nowrap text-muted <?= $fcc_is_short_links ? 'fp-short-cell-date' : null ?>" <?= $fcc_is_short_links ? 'data-label="' . $fcc_short_h('created') . '"' : null ?>>
+                            <?php if($fcc_is_short_links): ?>
+                            <span class="fp-short-created" data-toggle="tooltip" data-html="true" title="<?= sprintf(l('global.datetime_tooltip'), '<br />' . \Altum\Date::get($row->datetime, 2) . '<br /><small>' . \Altum\Date::get($row->datetime, 3) . '</small>') ?>"><?= \Altum\Date::get($row->datetime, 'd.m.Y.') ?></span>
+                            <span class="fp-short-created-time" data-toggle="tooltip" data-html="true" title="<?= sprintf(l('global.last_datetime_tooltip'), ($row->last_datetime ? '<br />' . \Altum\Date::get($row->last_datetime, 2) . '<br /><small>' . \Altum\Date::get($row->last_datetime, 3) . '</small>' : '<br />' . l('global.na'))) ?>"><?= \Altum\Date::get($row->datetime, 'H:i') ?> <i class="fas fa-fw fa-history" aria-hidden="true"></i></span>
+                            <?php else: ?>
                             <span class="mr-2" data-toggle="tooltip" data-html="true" title="<?= sprintf(l('global.datetime_tooltip'), '<br />' . \Altum\Date::get($row->datetime, 2) . '<br /><small>' . \Altum\Date::get($row->datetime, 3) . '</small>' . '<br /><small>(' . \Altum\Date::get_timeago($row->datetime) . ')</small>') ?>">
                                 <i class="fas fa-fw fa-calendar text-muted"></i>
                             </span>
@@ -2426,10 +2416,11 @@ if($fcc_links_type === 'biolink') {
                             <span class="mr-2" data-toggle="tooltip" data-html="true" title="<?= sprintf(l('global.last_datetime_tooltip'), ($row->last_datetime ? '<br />' . \Altum\Date::get($row->last_datetime, 2) . '<br /><small>' . \Altum\Date::get($row->last_datetime, 3) . '</small>' . '<br /><small>(' . \Altum\Date::get_timeago($row->last_datetime) . ')</small>' : '<br />' . l('global.na'))) ?>">
                                 <i class="fas fa-fw fa-history text-muted"></i>
                             </span>
+                            <?php endif ?>
                         </td>
 
-                        <td class="text-nowrap">
-                            <div class="d-flex align-items-center justify-content-end" <?= $fcc_is_short_links && $fcc_short_link_row_index === 0 ? 'id="fcc_short_links_tour_step_actions"' : null ?>>
+                        <td class="text-nowrap <?= $fcc_is_short_links ? 'fp-short-cell-actions' : null ?>">
+                            <div class="d-flex align-items-center justify-content-end <?= $fcc_is_short_links ? 'fp-short-row-actions' : null ?>" <?= $fcc_is_short_links && $fcc_short_link_row_index === 0 ? 'id="fcc_short_links_tour_step_actions"' : null ?>>
 
                                 <div class="custom-control custom-switch" data-toggle="tooltip" title="<?= l('links.is_enabled_tooltip') ?>">
                                     <input
@@ -2440,8 +2431,10 @@ if($fcc_links_type === 'biolink') {
                                             onchange="ajax_call_helper(event, 'link-ajax', 'is_enabled_toggle')"
                                         <?= $row->is_enabled ? 'checked="checked"' : null ?>
                                     >
-                                    <label class="custom-control-label" for="link_is_enabled_<?= $row->link_id ?>"></label>
+                                    <label class="custom-control-label" for="link_is_enabled_<?= $row->link_id ?>"><?php if($fcc_is_short_links): ?><span class="sr-only"><?= $fcc_short_h('enable') ?></span><?php endif ?></label>
                                 </div>
+
+                                <?php if($fcc_is_short_links): ?><a class="btn btn-link fp-short-edit" href="<?= url('link/' . $row->link_id) ?>"><i class="fas fa-fw fa-sm fa-pencil-alt"></i><span><?= $fcc_short_h('edit') ?></span></a><?php endif ?>
 
                                 <button
                                         id="url_copy"
@@ -2455,14 +2448,16 @@ if($fcc_links_type === 'biolink') {
                                         data-clipboard-text="<?= $row->full_url ?>"
                                 >
                                     <i class="fas fa-fw fa-sm fa-copy"></i>
+                                    <?php if($fcc_is_short_links): ?><span><?= $fcc_short_h('copy') ?></span><?php endif ?>
                                 </button>
 
                                 <div class="dropdown">
-                                    <button type="button" class="btn btn-link text-secondary dropdown-toggle dropdown-toggle-simple" data-toggle="dropdown" data-boundary="viewport">
+                                    <button type="button" class="btn btn-link text-secondary dropdown-toggle dropdown-toggle-simple" data-toggle="dropdown" data-boundary="viewport" <?= $fcc_is_short_links ? 'aria-label="' . $fcc_short_h('more') . '"' : null ?>>
                                         <i class="fas fa-fw fa-ellipsis-v"></i>
+                                        <?php if($fcc_is_short_links): ?><span><?= $fcc_short_h('more') ?></span><?php endif ?>
                                     </button>
 
-                                    <div class="dropdown-menu dropdown-menu-right">
+                                    <div class="dropdown-menu dropdown-menu-right <?= $fcc_is_short_links ? 'fp-short-menu' : null ?>">
                                         <a href="<?= url('link/' . $row->link_id) ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-pencil-alt mr-2"></i> <?= l('global.edit') ?></a>
                                         <a href="<?= url('link/' . $row->link_id . '/statistics') ?>" class="dropdown-item"><i class="fas fa-fw fa-sm fa-chart-bar mr-2"></i> <?= l('link.statistics.link') ?></a>
                                         <?php if(settings()->codes->qr_codes_is_enabled): ?>
@@ -2509,8 +2504,9 @@ if($fcc_links_type === 'biolink') {
     <div class="fcc-links-empty">
     <?php if($fcc_is_short_links): ?>
         <div class="p-4 text-center">
-            <h2 class="h5 mb-2 text-white"><?= l('links.short_links.empty_title') ?></h2>
-            <p class="text-muted mb-0"><?= l('links.short_links.empty_text') ?></p>
+            <h2 class="h5 mb-2 text-white"><?= $fcc_short_h('empty_title') ?></h2>
+            <p class="text-muted mb-0"><?= $fcc_short_h('empty_text') ?></p>
+            <?php if(settings()->links->shortener_is_enabled): ?><button class="btn btn-primary" type="button" data-toggle="modal" data-target="#create_link"><i class="fas fa-fw fa-plus"></i><?= $fcc_short_h('new') ?></button><?php endif ?>
         </div>
     <?php else: ?>
         <?= include_view(THEME_PATH . 'views/partials/no_data.php', [
@@ -2526,7 +2522,7 @@ if($fcc_links_type === 'biolink') {
 
 <?php if(!empty($fcc_tour_steps)): ?>
     <div class="fcc-tour-backdrop" id="fcc_apps_tour_backdrop"></div>
-    <div class="fcc-tour-popover" id="fcc_apps_tour_popover" aria-live="polite">
+    <div class="fcc-tour-popover <?= $fcc_is_short_links ? 'fp-short-tour' : null ?>" id="fcc_apps_tour_popover" aria-live="polite">
         <div class="fcc-tour-progress" id="fcc_apps_tour_progress">1 / <?= count($fcc_tour_steps) ?></div>
         <div class="fcc-tour-title" id="fcc_apps_tour_title"></div>
         <div class="fcc-tour-text" id="fcc_apps_tour_text"></div>

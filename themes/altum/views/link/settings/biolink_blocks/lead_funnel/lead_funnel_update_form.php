@@ -67,23 +67,23 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
                         <div class="form-group mb-3 <?= !empty($row->settings->show_name) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="name">
                             <div class="input-group">
                                 <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div></div>
-                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="name" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
+                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('name'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
                             </div>
                         </div>
                         <div class="form-group mb-3 <?= !empty($row->settings->show_email) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="email">
                             <div class="input-group">
                                 <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-envelope"></i></div></div>
-                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="email" placeholder="<?= $row->settings->email_placeholder ?? '' ?>">
+                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('email'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->email_placeholder ?? '' ?>">
                             </div>
                         </div>
                         <div class="form-group mb-3 <?= !empty($row->settings->show_phone) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="phone">
                             <div class="input-group">
                                 <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-phone-square-alt"></i></div></div>
-                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="phone" placeholder="<?= $row->settings->phone_placeholder ?? '' ?>">
+                                <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('phone'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->phone_placeholder ?? '' ?>">
                             </div>
                         </div>
                         <div class="form-group mb-3 <?= !empty($row->settings->show_message) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="message">
-                            <textarea class="form-control" rows="3" readonly data-lead-funnel-popup-preview-placeholder="message" placeholder="<?= $row->settings->message_placeholder ?? '' ?>"></textarea>
+                            <textarea class="form-control" rows="3" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('message'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->message_placeholder ?? '' ?>"></textarea>
                         </div>
                         <div class="custom-control custom-switch mb-3 <?= !empty($row->settings->show_agreement) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-agreement-wrapper>
                             <input type="checkbox" class="custom-control-input" disabled>
@@ -204,23 +204,23 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
                             <div class="form-group mb-3 <?= !empty($row->settings->show_name) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="name">
                                 <div class="input-group">
                                     <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-signature"></i></div></div>
-                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="name" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
+                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('name'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->name_placeholder ?? '' ?>">
                                 </div>
                             </div>
                             <div class="form-group mb-3 <?= !empty($row->settings->show_email) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="email">
                                 <div class="input-group">
                                     <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-envelope"></i></div></div>
-                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="email" placeholder="<?= $row->settings->email_placeholder ?? '' ?>">
+                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('email'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->email_placeholder ?? '' ?>">
                                 </div>
                             </div>
                             <div class="form-group mb-3 <?= !empty($row->settings->show_phone) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="phone">
                                 <div class="input-group">
                                     <div class="input-group-prepend"><div class="input-group-text bg-gray-50"><i class="fas fa-fw fa-phone-square-alt"></i></div></div>
-                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="phone" placeholder="<?= $row->settings->phone_placeholder ?? '' ?>">
+                                    <input type="text" class="form-control" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('phone'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->phone_placeholder ?? '' ?>">
                                 </div>
                             </div>
                             <div class="form-group mb-3 <?= !empty($row->settings->show_message) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-field="message">
-                                <textarea class="form-control" rows="3" readonly data-lead-funnel-popup-preview-placeholder="message" placeholder="<?= $row->settings->message_placeholder ?? '' ?>"></textarea>
+                                <textarea class="form-control" rows="3" readonly data-lead-funnel-popup-preview-placeholder="<?= htmlspecialchars(fcc_t('message'), ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= $row->settings->message_placeholder ?? '' ?>"></textarea>
                             </div>
                             <div class="custom-control custom-switch mb-3 <?= !empty($row->settings->show_agreement) ? '' : 'd-none' ?>" data-lead-funnel-popup-preview-agreement-wrapper>
                                 <input type="checkbox" class="custom-control-input" disabled>
@@ -305,8 +305,8 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
         <div class="form-group">
             <label for="<?= 'lead_funnel_video_provider_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-video fa-sm text-muted mr-1"></i> <?= l('biolink_lead_funnel.video_provider') ?></label>
             <select id="<?= 'lead_funnel_video_provider_' . $row->biolink_block_id ?>" name="video_provider" class="custom-select" data-is-not-custom-select>
-                <option value="youtube" <?= ($row->settings->video_provider ?? 'youtube') == 'youtube' ? 'selected="selected"' : null ?>>YouTube</option>
-                <option value="vimeo" <?= ($row->settings->video_provider ?? '') == 'vimeo' ? 'selected="selected"' : null ?>>Vimeo</option>
+                <option value="youtube" <?= ($row->settings->video_provider ?? 'youtube') == 'youtube' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('YouTube'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="vimeo" <?= ($row->settings->video_provider ?? '') == 'vimeo' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('Vimeo'), ENT_QUOTES, 'UTF-8') ?></option>
             </select>
         </div>
 
@@ -786,7 +786,7 @@ $lead_funnel_local_file_size_limit = min((float) settings()->links->file_size_li
         <div class="form-group">
             <label for="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-server fa-sm text-muted mr-1"></i> <?= l('biolink_link.display_operating_systems') ?></label>
             <select id="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>" name="display_operating_systems[]" class="custom-select" multiple="multiple">
-                <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                     <option value="<?= $os_name ?>" <?= in_array($os_name, $row->settings->display_operating_systems ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                 <?php endforeach ?>
             </select>

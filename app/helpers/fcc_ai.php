@@ -1,6 +1,12 @@
 <?php
 defined('ALTUMCODE') || die();
 
+require_once __DIR__ . '/fcc_ai_product_advisor_v2.php';
+require_once __DIR__ . '/fcc_ai_model_policy.php';
+/* Custom code: FC-2026-10-05: Shared Vital5 package information */
+require_once __DIR__ . '/fcc_vital5.php';
+/* /Custom code: FC-2026-10-05 */
+
 function fcc_ai_get_assistant_types(): array {
     static $assistant_types = null;
 
@@ -125,12 +131,31 @@ function fcc_ai_get_public_context_storage_key(): string {
     return 'fcc_ai_public_context';
 }
 
-function fcc_ai_get_internal_storage_key(): string {
-    return 'fcc_ai_internal_conversation_id';
+/** Stable boundary for the new workspace, independent of page, device and plan. */
+function fcc_ai_internal_coach_workspace(?int $user_id = null): string {
+    $user_id ??= (int)(\Altum\Authentication::$user_id ?? 0);
+    return $user_id > 0 && function_exists('fcc_partner_enabled') && fcc_partner_enabled($user_id)
+        ? 'partner_20260927' : 'legacy';
 }
 
-function fcc_ai_get_internal_context_storage_key(): string {
-    return 'fcc_ai_internal_context';
+function fcc_ai_get_internal_storage_key(?int $user_id = null): string {
+    $user_id ??= (int)(\Altum\Authentication::$user_id ?? 0);
+    $workspace = fcc_ai_internal_coach_workspace($user_id);
+    return 'fcc_ai_internal_conversation_id' . ($workspace === 'legacy' ? '' : ':' . $workspace . ':user_' . $user_id);
+}
+
+function fcc_ai_get_internal_context_storage_key(?int $user_id = null): string {
+    $user_id ??= (int)(\Altum\Authentication::$user_id ?? 0);
+    $workspace = fcc_ai_internal_coach_workspace($user_id);
+    return 'fcc_ai_internal_context' . ($workspace === 'legacy' ? '' : ':' . $workspace . ':user_' . $user_id);
+}
+
+function fcc_ai_internal_coach_workspace_matches(object $conversation, int $user_id): bool {
+    $meta = fcc_ai_to_array($conversation->meta ?? '{}');
+    return (int)($conversation->user_id ?? 0) === $user_id
+        && ($conversation->assistant_type ?? '') === 'coach'
+        && ($conversation->scope ?? '') === 'internal_coach'
+        && ($meta['coach_workspace'] ?? 'legacy') === fcc_ai_internal_coach_workspace($user_id);
 }
 
 function fcc_ai_normalize_user_preferences($preferences): \stdClass {
@@ -171,8 +196,10 @@ function fcc_ai_get_internal_coach_campaign_field(array $campaign, string $field
     $language = fcc_ai_resolve_public_reply_language($language);
     $value = $campaign[$field] ?? $default;
 
-    if(is_array($value) && (isset($value['hr']) || isset($value['en']) || isset($value['sl']) || isset($value['bg']))) {
-        return $value[$language] ?? $value['hr'] ?? $value['en'] ?? $default;
+    if(is_array($value) && (isset($value['hr']) || isset($value['en']) || isset($value['sl']) || isset($value['bg']) || isset($value['de']) || isset($value['sr']))) {
+        $copy=$value[$language] ?? $value['hr'] ?? $value['en'] ?? $default;
+        if(in_array($language,['de','sr','sq','cnr','fr','es','sv','hu','pl','ro'],true)&&!isset($value[$language])) return is_array($copy)?fcc_localize_copy($copy,$language):(is_string($copy)?fcc_t($copy,[],$language):$copy);
+        return $copy;
     }
 
     return $value;
@@ -329,7 +356,8 @@ function fcc_ai_get_user_sidebar_signal_state(object $user): array {
             COUNT(*) AS `total`
         FROM `fcc_ai_leads`
         WHERE `user_id` = {$user_id}
-          AND `fcc_ai_lead_id` > {$last_seen_lead_id}")->fetch_object();
+          AND `fcc_ai_lead_id` > {$last_seen_lead_id}
+          AND COALESCE(`status`, 'new') <> 'expired'")->fetch_object();
 
     if($lead_row) {
         $payload['latest_lead_id'] = (int) ($lead_row->latest_id ?? 0);
@@ -685,7 +713,8 @@ function fcc_ai_normalize_language(string $language): string {
         return 'auto';
     }
 
-    return preg_replace('/[^a-z_-]/', '', $language) ?: 'auto';
+    $aliases = ['svenska'=>'sv','swedish'=>'sv','sv-se'=>'sv','magyar'=>'hu','hungarian'=>'hu','hu-hu'=>'hu','polski'=>'pl','polish'=>'pl','pl-pl'=>'pl','română'=>'ro','romana'=>'ro','romanian'=>'ro','ro-ro'=>'ro','shqip'=>'sq','albanian'=>'sq','sq-al'=>'sq','crnogorski'=>'cnr','montenegrin'=>'cnr','cnr-latn'=>'cnr','cnr-me'=>'cnr','cnr-latn-me'=>'cnr','français'=>'fr','french'=>'fr','fr-fr'=>'fr','fr-ca'=>'fr','español'=>'es','spanish'=>'es','es-es'=>'es','es-mx'=>'es','slovenščina'=>'sl', 'slovenski'=>'sl', 'slovenian'=>'sl', 'sl-si'=>'sl', 'hrvatski'=>'hr', 'croatian'=>'hr', 'hr-hr'=>'hr', 'srpski'=>'sr', 'serbian'=>'sr', 'sr-latn'=>'sr', 'sr-rs'=>'sr', 'sr-latn-rs'=>'sr', 'deutsch'=>'de', 'german'=>'de', 'de-de'=>'de', 'de-at'=>'de', 'de-ch'=>'de', 'english'=>'en', 'en-gb'=>'en', 'en-us'=>'en'];
+    return $aliases[$language] ?? (preg_replace('/[^a-z_-]/', '', $language) ?: 'auto');
 }
 
 function fcc_ai_normalize_preferred_contact_channel(string $channel): string {
@@ -1064,6 +1093,9 @@ function fcc_ai_get_coach_choice_labels(): array {
             'mixed_offer' => ['hr' => 'kombinirana ponuda', 'en' => 'mixed offer'],
         ],
         'available_time' => [
+            '10m_daily' => ['hr' => '10 minuta dnevno', 'en' => '10 minutes daily'],
+            '20m_daily' => ['hr' => '20 minuta dnevno', 'en' => '20 minutes daily'],
+            '45m_daily' => ['hr' => '45 minuta dnevno', 'en' => '45 minutes daily'],
             '15m_daily' => ['hr' => '15 minuta dnevno', 'en' => '15 minutes daily'],
             '30m_daily' => ['hr' => '30 minuta dnevno', 'en' => '30 minutes daily'],
             '60m_daily' => ['hr' => '60 minuta dnevno', 'en' => '60 minutes daily'],
@@ -1426,18 +1458,24 @@ function fcc_ai_get_user_plan_settings($user): \stdClass {
     return $resolved_plan_settings;
 }
 
+/** Public access belongs to the card owner, never to the visitor's admin session. */
+function fcc_ai_public_access_policy(object $user, object $plan_settings): bool {
+    if((int)($user->status ?? 0) !== 1) return false;
+    if((int)($user->type ?? 0) === 1) return true;
+    // Legacy packages predate the explicit flag. Preserve their feature setting.
+    if(property_exists($plan_settings, 'fcc_ai_is_enabled') && !$plan_settings->fcc_ai_is_enabled) return false;
+    $extra = fcc_ai_to_object($user->extra ?? null);
+    if(!empty($extra->billing_access_revoked_at)) return false;
+    return fcc_ai_is_plan_expiration_active((string)($user->plan_expiration_date ?? ''))
+        || fcc_ai_is_billing_grace_active($extra);
+}
+
 function fcc_ai_user_has_public_ai_access($user): bool {
-    if(\Altum\Authentication::is_admin()) {
-        return true;
-    }
-
-    $plan_settings = fcc_ai_get_user_plan_settings($user);
-
-    if(!property_exists($plan_settings, 'fcc_ai_is_enabled')) {
-        return true;
-    }
-
-    return (bool) ($plan_settings->fcc_ai_is_enabled ?? false);
+    $uid = is_numeric($user) ? (int)$user : (int)($user->user_id ?? 0);
+    if($uid <= 0) return false;
+    $owner = db()->where('user_id', $uid)->getOne('users', ['user_id', 'type', 'status', 'plan_id', 'plan_settings', 'plan_expiration_date', 'extra']);
+    if(!$owner) return false;
+    return fcc_ai_public_access_policy($owner, fcc_ai_get_user_plan_settings($owner));
 }
 
 function fcc_ai_user_has_coach_access($user): bool {
@@ -1507,6 +1545,9 @@ function fcc_ai_get_active_growth_pro_user_condition_sql(string $users_alias, st
 }
 
 function fcc_ai_user_has_active_growth_pro($user): bool {
+    if(function_exists('fcc_pro_has_access')) {
+        return fcc_pro_has_access(is_numeric($user)?(int)$user:(int)($user->user_id??0));
+    }
     if(\Altum\Authentication::is_admin()) {
         return true;
     }
@@ -1948,7 +1989,7 @@ function fcc_ai_get_user_growth_signal_snapshot(int $user_id, int $link_id = 0):
 
 function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array {
     $payload = [
-        'qualification_version' => 1,
+        'qualification_version' => 2,
         'qualified_clicks_30d' => 0,
         'qualified_clicks_7d' => 0,
         'app_clicks_30d' => 0,
@@ -2010,7 +2051,8 @@ function fcc_ai_get_user_public_visibility_signal_snapshot(int $user_id): array 
         $funnel_shop_clicks = max(0, (int) ($funnel_public_signal['funnel_shop_clicks'] ?? 0));
         $funnel_total = max(0, (int) ($funnel_public_signal['total'] ?? ($funnel_contact_signal + $funnel_shop_clicks)));
 
-        $payload['qualified_clicks_' . $period_key] = $qualified_clicks + $funnel_total;
+        // Contacts and funnel scores are separate analytics, never counted as Forever clicks.
+        $payload['qualified_clicks_' . $period_key] = $qualified_clicks;
         $payload['app_clicks_' . $period_key] = $app_clicks;
         $payload['blog_clicks_' . $period_key] = $blog_clicks;
         $payload['funnel_contacts_' . $period_key] = $funnel_contacts;
@@ -2690,8 +2732,8 @@ function fcc_ai_get_user_mentor_intelligence_summary(object $user, array $contex
         $primary_url = url('account-plan');
         $primary_url_label = $language === 'en' ? 'Open plan' : 'Otvori paket';
         $next_action = $language === 'en'
-            ? 'The foundation is there, but the next step is PRO or a free trial so Coach can unlock the stronger model and the AI growth cycle.'
-            : 'Baza postoji, ali sljedeci korak je PRO ili free trial kako bi Coach otkljucao jaci model i AI growth ciklus.';
+            ? 'The foundation is there, but the next step is PRO or a free trial for VIP Coach and the AI growth cycle.'
+            : 'Baza postoji, ali sljedeci korak je PRO ili besplatni trial za VIP Coach i AI growth ciklus.';
         $admin_action = $language === 'en'
             ? 'This collaborator can be guided towards PRO because the setup is already usable.'
             : 'Ovaj suradnik je dobar kandidat za PRO jer je baza vec slozena i upotrebljiva.';
@@ -2816,13 +2858,13 @@ function fcc_ai_get_internal_coach_mode_payload($user, string $language = 'hr'):
         if($mode_key === 'vip') {
             return [
                 'mode_key' => 'vip',
-                'title' => 'VIP Coach',
-                'intro_label' => 'VIP Coach',
-                'launcher_label' => 'VIP Coach',
-                'assistant_title' => 'VIP Coach',
-                'coach_badge' => 'Strongest intelligence package',
-                'coach_notice' => 'PRO is active, so Coach is using the strongest intelligence package.',
-                'intelligence_label' => 'Strongest intelligence package',
+                'title' => fcc_t('VIP Coach', [], $language),
+                'intro_label' => fcc_t('VIP Coach', [], $language),
+                'launcher_label' => fcc_t('VIP Coach', [], $language),
+                'assistant_title' => fcc_t('VIP Coach', [], $language),
+                'coach_badge' => fcc_t('Tvoj PRO Coach', [], $language),
+                'coach_notice' => fcc_t('Poruke, razgovori i pomoć za tvoj sljedeći korak.', [], $language),
+                'intelligence_label' => fcc_t('Tvoj PRO Coach', [], $language),
                 'route_key' => 'coach_vip',
                 'is_pro' => true,
                 'is_vip' => true,
@@ -2831,13 +2873,13 @@ function fcc_ai_get_internal_coach_mode_payload($user, string $language = 'hr'):
 
         return [
             'mode_key' => 'beginner',
-            'title' => 'Beginner Coach',
-            'intro_label' => 'Beginner Coach',
-            'launcher_label' => 'Beginner Coach',
-            'assistant_title' => 'Beginner Coach',
-            'coach_badge' => 'Basic intelligence package',
-            'coach_notice' => 'You are on the basic intelligence package. PRO or trial upgrades you to VIP Coach.',
-            'intelligence_label' => 'Basic intelligence package',
+            'title' => fcc_t('Beginner Coach', [], $language),
+            'intro_label' => fcc_t('Beginner Coach', [], $language),
+            'launcher_label' => fcc_t('Beginner Coach', [], $language),
+            'assistant_title' => fcc_t('Beginner Coach', [], $language),
+            'coach_badge' => fcc_t('Basic intelligence package', [], $language),
+            'coach_notice' => fcc_t('You are on the basic intelligence package. PRO or trial upgrades you to VIP Coach.', [], $language),
+            'intelligence_label' => fcc_t('Basic intelligence package', [], $language),
             'route_key' => 'coach_beginner',
             'is_pro' => false,
             'is_vip' => false,
@@ -2847,13 +2889,13 @@ function fcc_ai_get_internal_coach_mode_payload($user, string $language = 'hr'):
     if($mode_key === 'vip') {
         return [
             'mode_key' => 'vip',
-            'title' => 'VIP Coach',
-            'intro_label' => 'VIP Coach',
-            'launcher_label' => 'VIP Coach',
-            'assistant_title' => 'VIP Coach',
-            'coach_badge' => 'Najjači paket inteligencije',
-            'coach_notice' => 'PRO je aktivan pa Coach sada koristi najjači paket inteligencije.',
-            'intelligence_label' => 'Najjači paket inteligencije',
+            'title' => fcc_t('VIP Coach', [], $language),
+            'intro_label' => fcc_t('VIP Coach', [], $language),
+            'launcher_label' => fcc_t('VIP Coach', [], $language),
+            'assistant_title' => fcc_t('VIP Coach', [], $language),
+            'coach_badge' => fcc_t('Tvoj PRO Coach', [], $language),
+            'coach_notice' => fcc_t('Poruke, razgovori i pomoć za tvoj sljedeći korak.', [], $language),
+            'intelligence_label' => fcc_t('Tvoj PRO Coach', [], $language),
             'route_key' => 'coach_vip',
             'is_pro' => true,
             'is_vip' => true,
@@ -2862,13 +2904,13 @@ function fcc_ai_get_internal_coach_mode_payload($user, string $language = 'hr'):
 
     return [
         'mode_key' => 'beginner',
-        'title' => 'Beginner Coach',
-        'intro_label' => 'Beginner Coach',
-        'launcher_label' => 'Beginner Coach',
-        'assistant_title' => 'Beginner Coach',
-        'coach_badge' => 'Osnovni paket inteligencije',
-        'coach_notice' => 'Trenutno si na osnovnom paketu inteligencije. PRO ili trial te prebacuju na VIP Coach.',
-        'intelligence_label' => 'Osnovni paket inteligencije',
+        'title' => fcc_t('Beginner Coach', [], $language),
+        'intro_label' => fcc_t('Beginner Coach', [], $language),
+        'launcher_label' => fcc_t('Beginner Coach', [], $language),
+        'assistant_title' => fcc_t('Beginner Coach', [], $language),
+        'coach_badge' => fcc_t('Osnovni paket inteligencije', [], $language),
+        'coach_notice' => fcc_t('Trenutno si na osnovnom paketu inteligencije. PRO ili trial te prebacuju na VIP Coach.', [], $language),
+        'intelligence_label' => fcc_t('Osnovni paket inteligencije', [], $language),
         'route_key' => 'coach_beginner',
         'is_pro' => false,
         'is_vip' => false,
@@ -2880,7 +2922,7 @@ function fcc_ai_get_internal_coach_ui_payload($user, string $language = 'hr'): a
     $mode = fcc_ai_get_internal_coach_mode_payload($user, $language);
     $active_campaign = fcc_ai_get_active_internal_coach_campaign($user, $language);
 
-    return [
+    $payload = [
         'coach_mode_key' => (string) ($mode['mode_key'] ?? 'beginner'),
         'assistant_title' => (string) ($mode['assistant_title'] ?? 'FCC Coach'),
         'intro_label' => (string) ($mode['intro_label'] ?? 'FCC Coach'),
@@ -2900,6 +2942,8 @@ function fcc_ai_get_internal_coach_ui_payload($user, string $language = 'hr'): a
         ),
         'active_campaign' => $active_campaign,
     ];
+    foreach(['assistant_title','intro_label','launcher_label','coach_badge','coach_notice','input_placeholder'] as $field)$payload[$field]=fcc_t($payload[$field],[],$language);
+    return $payload;
 }
 
 function fcc_ai_safe_settings_bucket(string $key): \stdClass {
@@ -2914,6 +2958,7 @@ function fcc_ai_safe_settings_bucket(string $key): \stdClass {
 }
 
 function fcc_ai_get_openai_api_key(): string {
+    if(getenv('FCC_LOCAL') === '1') return getenv('OPENAI_API_KEY') ?: '';
     $main_settings = fcc_ai_safe_settings_bucket('main');
     $aix_settings = fcc_ai_safe_settings_bucket('aix');
     $main_api_key = trim((string) ($main_settings->openai_api_key ?? ''));
@@ -2922,11 +2967,28 @@ function fcc_ai_get_openai_api_key(): string {
         return $main_api_key;
     }
 
-    return trim((string) ($aix_settings->openai_api_key ?? ''));
+    $aix_api_key = trim((string) ($aix_settings->openai_api_key ?? ''));
+    if($aix_api_key !== '') {
+        return $aix_api_key;
+    }
+
+    /* Local/container configuration fallback. Never persist or expose this value. */
+    $environment_api_key = getenv('OPENAI_API_KEY');
+    if(!is_string($environment_api_key) || trim($environment_api_key) === '') {
+        $environment_api_key = $_ENV['OPENAI_API_KEY'] ?? $_SERVER['OPENAI_API_KEY'] ?? '';
+    }
+
+    return trim((string) $environment_api_key);
 }
 
 function fcc_ai_get_available_models(): array {
     return [
+        'gpt-6-sol',
+        'gpt-6-luna',
+        'gpt-5.6',
+        'gpt-5.6-sol',
+        'gpt-5.6-terra',
+        'gpt-5.6-luna',
         'gpt-5.4',
         'gpt-5.4-mini',
         'gpt-5.4-nano',
@@ -2952,9 +3014,9 @@ function fcc_ai_get_global_default_model(): string {
 
 function fcc_ai_get_model_routing_defaults(): array {
     return [
-        'coach_beginner' => '',
-        'coach_vip' => '',
-        'product_advisor' => '',
+        'coach_beginner' => fcc_ai_recommended_models()['coach_beginner'],
+        'coach_vip' => fcc_ai_recommended_models()['coach_vip'],
+        'product_advisor' => fcc_ai_recommended_models()['product_advisor'],
         'pets_advisor' => '',
         'los_team_strategist' => '',
         'los_leader_detail' => '',
@@ -2992,7 +3054,7 @@ function fcc_ai_get_model_routing_config(): array {
 
     foreach($routing as $route_key => $default_value) {
         $candidate = trim((string) ($raw_routing[$route_key] ?? ''));
-        $routing[$route_key] = $candidate !== '' && isset($available_models[$candidate]) ? fc_get_resolved_openai_model($candidate) : '';
+        $routing[$route_key] = $candidate !== '' && isset($available_models[$candidate]) ? fc_get_resolved_openai_model($candidate) : $default_value;
     }
 
     return $routing;
@@ -3588,7 +3650,7 @@ function fcc_ai_get_internal_coach_page_context(array $payload, string $language
 
     $route = $slug_parts[0] ?? '';
 
-    if(in_array($route, ['en', 'hr'], true) && isset($slug_parts[1])) {
+    if(in_array($route, fcc_supported_locales(), true) && isset($slug_parts[1])) {
         $route = $slug_parts[1];
     }
 
@@ -4230,6 +4292,8 @@ function fcc_ai_public_has_conversion_cta(string $content, string $language = 'h
 
 function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', string $user_name = '', array $context = []): string {
     $language = fcc_ai_resolve_public_reply_language($language);
+    if(fcc_new_locale($language))return fcc_t('Bok! Mogu ti pomoći odabrati proizvod, napisati poruku, razjasniti sljedeći korak ili pronaći alat u FCC-u. Što te zanima?',[],$language);
+    if($language==='sr')return 'Zdravo! Mogu da ti pomognem da izabereš proizvod, napišeš poruku, razjasniš sledeći korak ili pronađeš alat u FCC-u. Šta te zanima?';
     $first_name = fcc_ai_extract_first_name($user_name);
     $name_prefix = $first_name !== '' ? $first_name . ', ' : '';
     $coach_summary = is_array($context['coach_summary'] ?? null) ? $context['coach_summary'] : [];
@@ -4237,6 +4301,7 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     $sales_link_summary = is_array($context['sales_link_summary'] ?? null) ? $context['sales_link_summary'] : [];
     $active_campaign = is_array($context['active_campaign'] ?? null) ? $context['active_campaign'] : [];
     $is_vip = !empty($coach_summary['is_vip']);
+    if(function_exists('fcc_journey_enabled') && fcc_journey_enabled()) return $language==='en' ? 'Hi! I can help you choose a product, write a message, work through your next step or find an FCC tool. What would you like help with?' : fcc_t('Bok! Mogu ti pomoći odabrati proizvod, napisati poruku, razjasniti tvoj korak ili pronaći alat u FCC-u. Što te zanima?', [], $language);
     $starter_app_review_available = !empty($starter_summary['app_review_available']);
     $starter_weekly_plan_available = !empty($starter_summary['weekly_plan_available']);
     $sales_link_missing = !empty($sales_link_summary['is_priority_missing']);
@@ -4265,16 +4330,16 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
         }
 
         if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you first toward 15+ / 30d and then toward the main public goal of 50+ / 30d sponsor visibility.' . $campaign_line;
+            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. Right now you can immediately run one initial app review and one first weekly plan, and I will use that to guide you first toward 15+ / 30d and then toward the main public goal of 50+ / 30d sponsor visibility.' . $campaign_line;
         }
 
         if($is_vip && $starter_weekly_plan_available) {
-            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. Your initial app review is already in place, and your first weekly plan is available now so we can turn it into a focused next 7 days.' . $campaign_line;
+            return 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. Your initial app review is already in place, and your first weekly plan is available now so we can turn it into a focused next 7 days.' . $campaign_line;
         }
 
         return $is_vip
-            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active, so I am using the strongest intelligence package. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ / 30d for Featured Apps, 50+ / 30d as the main public sponsor goal, stronger homepage visibility, and a healthy 7-day rhythm.' . $campaign_line
-            : 'Hi ' . $name_prefix . 'I am your Beginner Coach. Right now you are on the basic intelligence package, but I can already help you with the next move inside FCC, social content, follow-up, and app direction. When you activate PRO or trial, I switch into VIP Coach with the strongest intelligence package.' . $campaign_line;
+            ? 'Hi ' . $name_prefix . 'I am your VIP Coach. PRO is active. I can help you use the FCC tools available in your plan. I help you turn your plan, app, contacts and content into the clearest next move inside FCC, and I can also guide you toward 15+ / 30d for Featured Apps, 50+ / 30d as the main public sponsor goal, stronger homepage visibility, and a healthy 7-day rhythm.' . $campaign_line
+            : 'Hi ' . $name_prefix . 'I am your Beginner Coach. Right now you are on the basic intelligence package, but I can already help you with the next move inside FCC, social content, follow-up, and app direction. When you activate PRO or trial, I switch into VIP Coach with personal support for the FCC tools available in your plan.' . $campaign_line;
     }
 
     if($sales_link_missing) {
@@ -4282,16 +4347,16 @@ function fcc_ai_get_internal_coach_welcome_message(string $language = 'hr', stri
     }
 
     if($is_vip && $starter_app_review_available && $starter_weekly_plan_available) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prvo prema 15+ / 30d, a zatim i prema glavnom javnom cilju 50+ / 30d.' . $campaign_line;
+        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Upravo sada možeš odmah napraviti jednu početnu analizu aplikacije i jedan prvi tjedni plan, a ja ću to iskoristiti da te vodim prvo prema 15+ / 30d, a zatim i prema glavnom javnom cilju 50+ / 30d.' . $campaign_line;
     }
 
     if($is_vip && $starter_weekly_plan_available) {
-        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Početna analiza aplikacije je već spremna, a prvi tjedni plan možeš otvoriti odmah kako bismo složili fokusiranih sljedećih 7 dana.' . $campaign_line;
+        return 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Početna analiza aplikacije je već spremna, a prvi tjedni plan možeš otvoriti odmah kako bismo složili fokusiranih sljedećih 7 dana.' . $campaign_line;
     }
 
     return $is_vip
-        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan pa sada koristim najjači paket inteligencije. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ / 30d za Istaknute aplikacije, 50+ / 30d kao glavnom javnom sponsor cilju, jačoj vidljivosti na naslovnici i zdravom 7-dnevnom ritmu.' . $campaign_line
-        : 'Bok ' . $name_prefix . 'ja sam tvoj Beginner Coach. Trenutno si na osnovnom paketu inteligencije, ali ti i dalje mogu pomoći oko sljedećeg poteza u FCC-u, sadržaja za društvene mreže, follow-upa i smjera za aplikaciju. Kad aktiviraš PRO ili trial, prebacujem se u VIP Coach s najjačim paketom inteligencije.' . $campaign_line;
+        ? 'Bok ' . $name_prefix . 'ja sam tvoj VIP Coach. PRO je aktivan. Pomažem ti koristiti FCC alate dostupne u tvojem paketu. Pomažem ti pretvoriti plan, aplikaciju, kontakte i sadržaj u najjasniji sljedeći potez unutar FCC-a, a mogu te i voditi prema 15+ / 30d za Istaknute aplikacije, 50+ / 30d kao glavnom javnom sponsor cilju, jačoj vidljivosti na naslovnici i zdravom 7-dnevnom ritmu.' . $campaign_line
+        : 'Bok ' . $name_prefix . 'ja sam tvoj Beginner Coach. Trenutno si na osnovnom paketu inteligencije, ali ti i dalje mogu pomoći oko sljedećeg poteza u FCC-u, sadržaja za društvene mreže, follow-upa i smjera za aplikaciju. Kad aktiviraš PRO ili trial, prebacujem se u VIP Coach s osobnom podrškom za FCC alate dostupne u tvojem paketu.' . $campaign_line;
 }
 
 function fcc_ai_get_default_internal_coach_persona_prompt(string $language = 'hr'): string {
@@ -6903,10 +6968,14 @@ function fcc_ai_get_latest_internal_coach_conversation_for_user(int $user_id): ?
         return null;
     }
 
+    // Missing metadata belongs to the original FCC. Never fall back across workspaces.
+    $workspace = fcc_ai_internal_coach_workspace($user_id);
+    $workspace_field = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(meta), meta, '{}'), '$.coach_workspace')), 'legacy')";
     $conversation = db()
         ->where('user_id', $user_id)
         ->where('assistant_type', 'coach')
         ->where('scope', 'internal_coach')
+        ->where($workspace_field, $workspace)
         ->where('status', 'active')
         ->orderBy('last_datetime', 'DESC')
         ->orderBy('fcc_ai_conversation_id', 'DESC')
@@ -6920,6 +6989,7 @@ function fcc_ai_get_latest_internal_coach_conversation_for_user(int $user_id): ?
         ->where('user_id', $user_id)
         ->where('assistant_type', 'coach')
         ->where('scope', 'internal_coach')
+        ->where($workspace_field, $workspace)
         ->orderBy('last_datetime', 'DESC')
         ->orderBy('fcc_ai_conversation_id', 'DESC')
         ->getOne('fcc_ai_conversations');
@@ -8063,6 +8133,9 @@ function fcc_ai_resolve_public_reply_language(string $language, string $message 
     $language = fcc_ai_normalize_language($language);
 
     if($language !== 'auto') {
+        if(in_array(explode('-', $language)[0], ['sq','cnr','fr','es','sv','hu','pl','ro'], true)) return explode('-', $language)[0];
+        if(str_starts_with($language, 'sr')) return 'sr';
+        if(str_starts_with($language, 'de')) return 'de';
         if(str_starts_with($language, 'en')) {
             return 'en';
         }
@@ -8114,7 +8187,7 @@ function fcc_ai_resolve_public_reply_language(string $language, string $message 
 }
 
 function fcc_ai_get_blog_language_name(string $reply_language): string {
-    return fcc_ai_resolve_public_reply_language($reply_language) === 'en' ? 'english' : 'Hrvatski';
+    return match(fcc_ai_resolve_public_reply_language($reply_language)) {'en'=>'english', 'sl'=>'Slovenščina', 'de'=>'Deutsch', 'sr'=>'Srpski', 'sq'=>'Shqip', 'cnr'=>'Crnogorski', 'fr'=>'Français', 'es'=>'Español', 'sv'=>'Svenska', 'hu'=>'Magyar', 'pl'=>'Polski', 'ro'=>'Română', default=>'Hrvatski'};
 }
 
 function fcc_ai_get_business_article_slugs(): array {
@@ -8295,6 +8368,12 @@ function fcc_ai_get_public_query_alias_phrases(string $message): array {
     }
 
     $aliases = [];
+
+    /* Custom code: FC-2026-10-05: Route Vital5 spelling variants to its article */
+    if(fcc_ai_contains_keywords($message, ['vital5', 'vital 5', 'vitel5', 'vitel 5'])) {
+        $aliases[] = 'vital5';
+    }
+    /* /Custom code: FC-2026-10-05 */
 
     if(fcc_ai_contains_keywords($message, ['rojal yel', 'rojal jel', 'royal jeli', 'rojal yelli', 'rojal', 'royal kelly', 'royal keli'])) {
         $aliases[] = 'royal jelly';
@@ -8787,7 +8866,9 @@ function fcc_ai_get_public_direct_product_lookup_matches(string $message): array
         'immublend' => ['immublend', 'immunblend', 'immu blend', 'immun blend', 'imunoblend', 'imuno blend', 'imun blend'],
         'immune_gummy' => ['immune gummy', 'imune gummy', 'immune gummi', 'forever gummy', 'gummy'],
         'f15' => ['f15', 'forever f15'],
-        'vital5' => ['vital5', 'vital 5', 'forever vital5', 'forever vital 5'],
+        /* Custom code: FC-2026-10-05: Vital5 spelling aliases */
+        'vital5' => ['vital5', 'vital 5', 'forever vital5', 'forever vital 5', 'vitel5', 'vitel 5'],
+        /* /Custom code: FC-2026-10-05 */
         'omega' => ['omega', 'arctic sea'],
         'dx4' => ['dx4', 'forever dx4', 'dx4 paket', 'dx4 package', 'dx4 program'],
         'nectar' => ['nektar', 'berry nectar', 'aloe berry nectar', 'berry neektar', 'betty neektar', 'betty nektar', 'aloe berry neektar'],
@@ -9100,30 +9181,26 @@ function fcc_ai_get_public_special_direct_product_payload(string $message, strin
         ];
     }
 
+    /* Custom code: FC-2026-10-05: Vital5 composition and its FCC article */
     if(in_array('vital5', $matches, true)) {
+        $copy = fcc_vital5_copy($language);
         return [
-            'primary_product' => 'Vital5® paket',
+            'primary_product' => 'Vital5',
             'support_products' => [],
-            'opening_note' => $language === 'en'
-                ? 'If you are asking specifically about Vital5, it makes sense to stay on the package itself and what is inside it, rather than drifting into an unrelated single product.'
-                : 'Ako pitate baš za Vital5, ovdje ima smisla ostati na samom paketu i onome što sadrži, bez skretanja na nepovezan pojedinačni proizvod.',
-            'recommendation_lines' => $language === 'en'
-                ? [
-                    'Vital5® is a ready-made 5-product Forever package that is usually positioned as a simple reset-and-foundation routine, not as one isolated product.',
-                    'In practice, it includes one aloe base as the foundation of the package, most often Forever Aloe Vera Gel™ but in some markets also Berry, Peaches or Freedom variants, plus Forever Daily, Forever Active Pro B, Forever Arctic Sea and Forever ARGI+®.',
-                    'It makes the most sense when someone wants a complete 5-product routine for digestion, nutritional foundation, daily vitality and easier consistency in one package.',
-                ]
-                : [
-                    'Vital5® je gotov 5-proizvodni Forever paket koji se najčešće gleda kao jednostavniji reset organizma i slaganje jake dnevne baze, a ne kao jedan izdvojeni proizvod.',
-                    'U praksi uključuje 1 aloe bazu kao temelj paketa, najčešće Forever Aloe Vera Gel™, a na nekim tržištima i Berry, Peaches ili Freedom varijantu, uz Forever Daily, Forever Active Pro B, Forever Arctic Sea i Forever ARGI+®.',
-                    'Najviše smisla ima kada osoba želi kompletan 5-proizvodni paket za probavnu, nutritivnu i dnevnu rutinu bez slaganja svega pojedinačno.',
-                ],
+            'opening_note' => (string) ($copy['intro'] ?? ''),
+            'recommendation_lines' => array_values(array_filter([
+                (string) ($copy['generic_contents'] ?? ''),
+                (string) ($copy['market_note'] ?? ''),
+                (string) ($copy['article_cta'] ?? ''),
+            ])),
             'question_lines' => [],
             'monthly_quantity_note' => '',
-            'clear_knowledge_suggestions' => true,
+            'clear_knowledge_suggestions' => false,
+            'primary_knowledge_suggestion_only' => true,
             'force_local_reply' => true,
         ];
     }
+    /* /Custom code: FC-2026-10-05 */
 
     if(in_array('dx4', $matches, true)) {
         return [
@@ -18257,6 +18334,7 @@ function fcc_ai_get_public_support_request_lead_capture(string $language = 'hr',
         },
     };
 
+    $copy=fcc_localize_copy($copy,$language);
     return [
         'recommended' => true,
         'lead_type' => 'support_request',
@@ -18268,6 +18346,16 @@ function fcc_ai_get_public_support_request_lead_capture(string $language = 'hr',
 function fcc_ai_get_public_lead_saved_note(string $language = 'hr', string $owner_name = ''): string {
     $language = fcc_ai_resolve_public_reply_language($language);
     $first_name = fcc_ai_extract_first_name($owner_name);
+    if(fcc_new_locale($language)) return $first_name!==''
+        ? fcc_t('Hvala. Vaš kontakt je sada spremljen i {name} može nastaviti razgovor osobno.',['{name}'=>$first_name],$language)
+        : fcc_t('Hvala. Vaš kontakt je sada spremljen i suradnik može nastaviti razgovor osobno.',[],$language);
+
+    $localized = [
+        'de' => 'Danke. Deine Kontaktdaten wurden gespeichert. %s kann sich bei dir melden.',
+        'es' => 'Gracias. Tus datos de contacto se han guardado. %s puede ponerse en contacto contigo.',
+        'sr' => 'Hvala. Tvoj kontakt je sačuvan i %s može da nastavi razgovor sa tobom.',
+    ];
+    if(isset($localized[$language])) return sprintf($localized[$language], $first_name ?: ['de'=>'Die Kontaktperson', 'es'=>'El titular de la tarjeta', 'sr'=>'saradnik'][$language]);
 
     if($language === 'en') {
         return $first_name !== ''
@@ -18752,6 +18840,9 @@ function fcc_ai_get_public_knowledge_suggestions(string $assistant_type, string 
 }
 
 function fcc_ai_get_public_welcome_message(string $assistant_type, string $language = 'hr'): string {
+    if($assistant_type==='product_advisor'){require_once __DIR__.'/fcc_advisor_experience.php';return fcc_advisor_ui($language)['welcome'];}
+    if(fcc_new_locale($language))return fcc_t(fcc_ai_get_public_welcome_message($assistant_type,'hr'),[],$language);
+    if(fcc_locale($language)==='sr') return $assistant_type==='pets_advisor'?'Zdravo! Ja sam ChatExtreme za ljubimce. Mogu da objasnim sastojke i dostupne informacije o Forever proizvodima za ljubimce. Napiši o kom je ljubimcu reč i šta želiš da saznaš.':'Zdravo! Ja sam FCC Preporuka, tvoj AI savetnik za proizvode. Napiši kakav proizvod tražiš. Mogu da objasnim dostupne informacije i povežem te sa vlasnikom ove kartice za naručivanje ili razgovor o saradnji.';
     $language = fcc_ai_resolve_public_reply_language($language);
 
     if($assistant_type === 'pets_advisor') {
@@ -18761,8 +18852,8 @@ function fcc_ai_get_public_welcome_message(string $assistant_type, string $langu
     }
 
     return $language === 'en'
-        ? 'Hi! I am FCC Preporuka. I can help you choose a sensible Forever product direction, explain why certain ingredients make sense, and if needed point you toward the FCC business opportunity. Tell me what you want to support and I will guide you with safe, simple next steps.'
-        : 'Bok! Ja sam FCC Preporuka. Mogu vam pomoći odabrati razuman Forever smjer proizvoda, objasniti zašto određeni sastojci imaju smisla i po potrebi približiti FCC poslovnu priliku. Napišite što želite podržati, a ja ću vas voditi kroz siguran i jednostavan sljedeći korak.';
+        ? 'Hi! I am FCC Preporuka, your AI product adviser. Tell me what kind of product you are looking for. I can explain the available product information and connect you with the owner of this card for ordering or a conversation about collaboration.'
+        : 'Bok! Ja sam FCC Preporuka, tvoj AI savjetnik za proizvode. Napiši kakav proizvod tražiš. Mogu objasniti dostupne informacije i povezati te s vlasnikom ove kartice za narudžbu ili razgovor o suradnji.';
 }
 
 function fcc_ai_get_default_public_persona_prompt(string $assistant_type, string $language = 'hr'): string {
@@ -19587,6 +19678,9 @@ function fcc_ai_build_public_system_prompt(string $assistant_type, array $contex
         'en' => 'English',
         'bg' => 'Bulgarian',
         'sl' => 'Slovenian',
+        'de' => 'German',
+        'sr' => 'Serbian in Latin script (standard Ekavian)',
+        'sq' => 'Albanian', 'cnr' => 'Montenegrin in Latin script (Ijekavian)', 'fr' => 'French', 'es' => 'Spanish', 'sv' => 'Swedish', 'hu' => 'Hungarian', 'pl' => 'Polish', 'ro' => 'Romanian',
         default => 'Croatian',
     };
     $assistant_label = trim((string) ($assistant->display_name ?? fcc_ai_get_assistant_label($assistant_type, $assistant_type === 'product_advisor' ? 'FCC Preporuka' : 'ChatExtreme')));
@@ -19822,7 +19916,7 @@ function fcc_ai_extract_openai_message_text($content): string {
     return trim(implode("\n\n", array_filter($texts)));
 }
 
-function fcc_ai_send_openai_chat_messages(string $model, array $messages, string $user_identifier): array {
+function fcc_ai_send_openai_chat_messages(string $model, array $messages, string $user_identifier, array $request_options = []): array {
     $api_key = fcc_ai_get_openai_api_key();
 
     if($api_key === '') {
@@ -19839,6 +19933,33 @@ function fcc_ai_send_openai_chat_messages(string $model, array $messages, string
         @session_write_close();
     }
 
+    $spend_user_id = max(0, (int) ($request_options['spend_user_id'] ?? 0));
+    $spend_channel = (string) ($request_options['spend_channel'] ?? '');
+    $spend_ticket = null;
+    if($spend_user_id > 0 && in_array($spend_channel, ['coach', 'cards'], true)) {
+        $spend_ticket = fcc_ai_spend_begin($spend_user_id, $spend_channel, $model);
+        if(empty($spend_ticket['allowed'])) {
+            fcc_ai_spend_release($spend_ticket);
+            return ['success' => false, 'reason' => (string) ($spend_ticket['reason'] ?? 'spend_busy'), 'model' => (string) ($spend_ticket['model'] ?? $model)];
+        }
+        $selected_model = (string) ($spend_ticket['model'] ?? $model);
+        $spend_model_changed = $selected_model !== $model;
+        if($spend_model_changed) {
+            $model = $selected_model;
+            $request_options = array_merge(fcc_ai_workload_options($spend_channel === 'coach' ? 'coach' : 'public_advisor', $model), $request_options);
+        }
+        if($model === 'gpt-6-luna') {
+                $request_options['reasoning_effort'] = 'none';
+                $schema_name = (string) ($request_options['response_format']['json_schema']['name'] ?? '');
+                if($spend_channel === 'coach' && $schema_name === 'fcc_mentor_message' && function_exists('fcc_coach_luna_response_format')) {
+                    $request_options['response_format'] = fcc_coach_luna_response_format();
+                }
+                if($spend_model_changed && $spend_channel === 'coach' && !empty($request_options['spend_luna_instructions'])) {
+                    $messages[] = ['role' => 'system', 'content' => (string) $request_options['spend_luna_instructions']];
+                }
+        }
+    }
+
     try {
         \Unirest\Request::timeout(30);
 
@@ -19848,57 +19969,47 @@ function fcc_ai_send_openai_chat_messages(string $model, array $messages, string
                 'Authorization' => 'Bearer ' . $api_key,
                 'Content-Type' => 'application/json',
             ],
-            \Unirest\Request\Body::json([
-                'model' => $model,
-                'messages' => $messages,
-                'user' => $user_identifier,
-            ])
+            \Unirest\Request\Body::json(fcc_ai_build_chat_request($model, $messages, $user_identifier, $request_options))
         );
 
         if($response->code >= 400) {
-            return [
+            $result = [
                 'success' => false,
                 'reason' => 'api_error',
                 'model' => $model,
+                'provider' => 'openai',
                 'error' => trim((string) ($response->body->error->message ?? 'OpenAI request failed.')),
             ];
+            $body = json_decode(json_encode($response->body), true) ?: [];
+            if(is_array($body['usage'] ?? null)) {
+                $result = array_merge($result, fcc_ai_usage_metrics((string) ($body['model'] ?? $model), $body['usage']), ['provider_usage' => $body['usage']]);
+                $result['model'] = (string) ($body['model'] ?? $model);
+            }
+            $result['service_tier'] = (string) ($body['service_tier'] ?? '');
+            return $spend_ticket ? fcc_ai_spend_finish($spend_ticket, $result) : $result;
         }
 
-        $content = fcc_ai_extract_openai_message_text($response->body->choices[0]->message->content ?? '');
-
-        if($content === '') {
-            return [
-                'success' => false,
-                'reason' => 'empty_response',
-                'model' => trim((string) ($response->body->model ?? $model)),
-            ];
-        }
-
+        $parsed = fcc_ai_parse_chat_response($model, json_decode(json_encode($response->body), true) ?: []);
         $info = \Unirest\Request::getInfo();
-
-        return [
-            'success' => true,
-            'reason' => 'openai',
-            'provider' => 'openai',
-            'content' => $content,
-            'model' => trim((string) ($response->body->model ?? $model)),
-            'input_tokens' => (int) ($response->body->usage->prompt_tokens ?? 0),
-            'output_tokens' => (int) ($response->body->usage->completion_tokens ?? 0),
-            'total_tokens' => (int) ($response->body->usage->total_tokens ?? 0),
-            'api_response_time' => (int) round(((float) ($info['total_time'] ?? 0)) * 1000),
-        ];
+        $parsed['api_response_time'] = (int) round(((float) ($info['total_time'] ?? 0)) * 1000);
+        return $spend_ticket ? fcc_ai_spend_finish($spend_ticket, $parsed) : $parsed;
     } catch(\Throwable $exception) {
-        return [
+        $result = [
             'success' => false,
             'reason' => 'exception',
             'model' => $model,
+            'provider' => 'openai',
             'error' => $exception->getMessage(),
         ];
+        return $spend_ticket ? fcc_ai_spend_finish($spend_ticket, $result) : $result;
+    } finally {
+        if($spend_ticket) fcc_ai_spend_release($spend_ticket);
     }
 }
 
 function fcc_ai_try_generate_public_model_reply(object $conversation, array $context = [], ?object $assistant = null): array {
     $model = fcc_ai_resolve_assistant_model($assistant);
+    $model = fcc_ai_spend_model((int) ($conversation->user_id ?? 0), 'cards', $model);
     $system_prompt = fcc_ai_build_public_system_prompt((string) $conversation->assistant_type, $context, $assistant);
     $messages = fcc_ai_build_public_model_messages($conversation, $system_prompt, 14, $context);
 
@@ -19913,7 +20024,8 @@ function fcc_ai_try_generate_public_model_reply(object $conversation, array $con
     return fcc_ai_send_openai_chat_messages(
         $model,
         $messages,
-        'fcc_ai_user_id:' . (int) ($conversation->user_id ?? 0) . '|conversation:' . (string) ($conversation->public_id ?? '')
+        'fcc_ai_user_id:' . (int) ($conversation->user_id ?? 0) . '|conversation:' . (string) ($conversation->public_id ?? ''),
+        array_merge((string) $conversation->assistant_type === 'product_advisor' ? fcc_ai_workload_options('public_advisor', $model) : [], ['spend_user_id' => (int) ($conversation->user_id ?? 0), 'spend_channel' => 'cards'])
     );
 }
 
@@ -22468,7 +22580,34 @@ function fcc_ai_resolve_public_owner_context(array $payload): ?array {
         $conversation = fcc_ai_get_conversation_by_public_id($conversation_public_id);
     }
 
-    $link_id = isset($payload['link_id']) ? (int) $payload['link_id'] : (int) ($conversation->link_id ?? 0);
+    $requested_link_id = (int) ($payload['link_id'] ?? 0);
+    $requested_visitor_key = trim((string) ($payload['visitor_key'] ?? ''));
+    $requested_assistant_type = trim(mb_strtolower((string) ($payload['assistant_type'] ?? '')));
+    $requested_scope = trim(mb_strtolower((string) ($payload['scope'] ?? '')));
+
+    if($conversation) {
+        $conversation_visitor_key = trim((string) ($conversation->visitor_key ?? ''));
+        if($conversation_visitor_key === '' || $requested_visitor_key === '' || !hash_equals($conversation_visitor_key, $requested_visitor_key)) {
+            return null;
+        }
+
+        $conversation_link_id = (int) ($conversation->link_id ?? 0);
+        if($requested_link_id > 0 && $conversation_link_id > 0 && $requested_link_id !== $conversation_link_id) {
+            return null;
+        }
+
+        if($requested_assistant_type !== '' && $requested_assistant_type !== mb_strtolower((string) ($conversation->assistant_type ?? ''))) {
+            return null;
+        }
+
+        if($requested_scope !== '' && $requested_scope !== mb_strtolower((string) ($conversation->scope ?? ''))) {
+            return null;
+        }
+    }
+
+    $link_id = $conversation && !empty($conversation->link_id)
+        ? (int) $conversation->link_id
+        : $requested_link_id;
     $link = null;
     $user = null;
 
@@ -22477,6 +22616,9 @@ function fcc_ai_resolve_public_owner_context(array $payload): ?array {
     }
 
     if($link && !empty($link->user_id)) {
+        if($conversation && !empty($conversation->user_id) && (int) $link->user_id !== (int) $conversation->user_id) {
+            return null;
+        }
         $user = db()->where('user_id', (int) $link->user_id)->getOne('users');
     } elseif($conversation && !empty($conversation->user_id)) {
         $user = db()->where('user_id', (int) $conversation->user_id)->getOne('users');
@@ -22587,62 +22729,540 @@ function fcc_ai_build_data_payload(array $lead, array $context): array {
     return $payload;
 }
 
-function fcc_ai_try_auto_capture_public_lead_from_message(object $conversation, object $user, ?object $link, array $payload, array $intent, string $message): array {
-    $candidate = fcc_ai_extract_public_contact_candidate($message);
+function fcc_ai_get_public_request_origin(): string {
+    $host_header = trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    if($host_header === '' || preg_match('/[\x00-\x20\x7f]/', $host_header)) {
+        return '';
+    }
 
-    if(empty($candidate['has_contact']) || (string) ($conversation->lead_status ?? 'none') === 'captured') {
+    $is_https = function_exists('is_https_request')
+        ? is_https_request()
+        : ((!empty($_SERVER['HTTPS']) && mb_strtolower((string) $_SERVER['HTTPS']) !== 'off')
+            || (int) ($_SERVER['SERVER_PORT'] ?? 80) === 443);
+    $scheme = $is_https ? 'https' : 'http';
+    $parts = parse_url($scheme . '://' . $host_header);
+    if(
+        !is_array($parts)
+        || trim((string) ($parts['host'] ?? '')) === ''
+        || trim((string) ($parts['user'] ?? '')) !== ''
+        || trim((string) ($parts['pass'] ?? '')) !== ''
+        || !in_array((string) ($parts['path'] ?? ''), ['', '/'], true)
+        || isset($parts['query'])
+        || isset($parts['fragment'])
+    ) {
+        return '';
+    }
+
+    $host = mb_strtolower(rtrim(trim((string) $parts['host']), '.'));
+    if($host === '') {
+        return '';
+    }
+    if(str_contains($host, ':') && $host[0] !== '[') {
+        $host = '[' . $host . ']';
+    }
+
+    $port = isset($parts['port']) ? (int) $parts['port'] : null;
+    if($port !== null && ($port <= 0 || $port > 65535)) {
+        return '';
+    }
+    $default_port = $scheme === 'https' ? 443 : 80;
+
+    return $scheme . '://' . $host . ($port !== null && $port !== $default_port ? ':' . $port : '');
+}
+
+function fcc_ai_normalize_public_web_origin(string $url): string {
+    $parts = parse_url(trim($url));
+    if(!is_array($parts)) {
+        return '';
+    }
+
+    $scheme = mb_strtolower((string) ($parts['scheme'] ?? ''));
+    $host = mb_strtolower(rtrim(trim((string) ($parts['host'] ?? '')), '.'));
+    if(
+        !in_array($scheme, ['http', 'https'], true)
+        || $host === ''
+        || trim((string) ($parts['user'] ?? '')) !== ''
+        || trim((string) ($parts['pass'] ?? '')) !== ''
+    ) {
+        return '';
+    }
+    if(str_contains($host, ':') && $host[0] !== '[') {
+        $host = '[' . $host . ']';
+    }
+
+    $port = isset($parts['port']) ? (int) $parts['port'] : null;
+    if($port !== null && ($port <= 0 || $port > 65535)) {
+        return '';
+    }
+    $default_port = $scheme === 'https' ? 443 : 80;
+
+    return $scheme . '://' . $host . ($port !== null && $port !== $default_port ? ':' . $port : '');
+}
+
+function fcc_ai_public_lead_privacy_url_is_browser_compatible(string $privacy_url): bool {
+    $parts = parse_url(trim($privacy_url));
+    $privacy_origin = fcc_ai_normalize_public_web_origin($privacy_url);
+    if(!is_array($parts) || $privacy_origin === '') {
+        return false;
+    }
+
+    $request_origin = fcc_ai_get_public_request_origin();
+    if($request_origin === '' || hash_equals($request_origin, $privacy_origin)) {
+        return true;
+    }
+
+    /* The browser accepts an external privacy document only over canonical
+     * HTTPS without credentials or a custom port. Cross-origin HTTP would make
+     * an otherwise valid server offer disappear in the UI. */
+    return mb_strtolower((string) ($parts['scheme'] ?? '')) === 'https'
+        && !isset($parts['port']);
+}
+
+function fcc_ai_get_public_lead_privacy_url(): string {
+    $request_origin = fcc_ai_get_public_request_origin();
+    $fallback_origin = $request_origin !== ''
+        ? $request_origin
+        : rtrim((string) SITE_URL, '/');
+    $fallback_url = $fallback_origin . '/page/privacy-policy';
+    $privacy_url = '';
+
+    try {
+        $privacy_url = trim((string) (settings()->main->privacy_policy_url ?? ''));
+    } catch(\Throwable $exception) {
+        $privacy_url = '';
+    }
+
+    if($privacy_url === '') {
+        $privacy_url = $fallback_url;
+    }
+
+    if(!fcc_ai_public_lead_privacy_url_is_browser_compatible($privacy_url)) {
+        return mb_substr($fallback_url, 0, 2048);
+    }
+
+    return mb_substr($privacy_url, 0, 2048);
+}
+
+/**
+ * Create the only lead offer shape that may be persisted by the V2 adapter.
+ * No provider output or browser field participates in this snapshot.
+ */
+function fcc_ai_build_public_lead_offer(string $lead_type, string $language, string $owner_name = ''): array {
+    $lead_type = mb_strtolower(trim($lead_type));
+    if(!in_array($lead_type, ['product_interest', 'business_interest', 'mixed_interest'], true)) {
         return [];
     }
 
-    $lead_type = (string) ($intent['lead_type'] ?? 'product_interest');
-    $contact_message = !empty($candidate['is_contact_only']) ? '' : trim($message);
+    $language = fcc_ai_resolve_public_reply_language($language);
+    $owner_name = input_clean(trim($owner_name), 128);
+    $owner_label = $owner_name !== '' ? $owner_name : match($language) {
+        'en' => 'the owner of this app',
+        'sl' => 'lastnik te aplikacije',
+        'bg' => 'собственикът на това приложение',
+        default => 'vlasnik ove aplikacije',
+    };
+    $purpose = match($lead_type) {
+        'business_interest' => 'forever_business_followup',
+        'mixed_interest' => 'forever_product_and_business_followup',
+        default => 'forever_product_followup',
+    };
+
+    $copy = match($language) {
+        'en' => match($lead_type) {
+            'business_interest' => [
+                'headline' => 'Optional conversation about Forever collaboration',
+                'text' => 'If you choose, you can leave your contact. ' . $owner_label . ' will receive it as the owner of this app and may contact you for an informational conversation. There is no earnings promise or obligation.',
+                'consent' => 'I agree that ' . $owner_label . ', the owner of this FCC app, may contact me about Forever business collaboration. My details will be used only to answer this request.',
+            ],
+            'mixed_interest' => [
+                'headline' => 'Optional product and collaboration follow-up',
+                'text' => 'If you choose, you can leave your contact. ' . $owner_label . ' will receive it and may contact you about products and Forever collaboration, without pressure or earnings promises.',
+                'consent' => 'I agree that ' . $owner_label . ', the owner of this FCC app, may contact me about Forever products and business collaboration. My details will be used only to answer this request.',
+            ],
+            default => [
+                'headline' => 'Optional product follow-up',
+                'text' => 'If you choose, you can leave your contact. ' . $owner_label . ' will receive it as the owner of this app and may contact you about Forever products. This is optional and is not medical care.',
+                'consent' => 'I agree that ' . $owner_label . ', the owner of this FCC app, may contact me about Forever products. My details will be used only to answer this request.',
+            ],
+        },
+        'sl' => match($lead_type) {
+            'business_interest' => [
+                'headline' => 'Neobvezen pogovor o sodelovanju Forever',
+                'text' => 'Če želite, lahko pustite kontakt. ' . $owner_label . ' ga bo prejel kot lastnik te aplikacije in vas lahko kontaktira za informativni pogovor. Brez obljub o zaslužku in brez obveznosti.',
+                'consent' => 'Strinjam se, da me lahko ' . $owner_label . ', lastnik te FCC aplikacije, kontaktira glede poslovnega sodelovanja Forever. Podatki se uporabljajo samo za odgovor na to povpraševanje.',
+            ],
+            'mixed_interest' => [
+                'headline' => 'Neobvezen pogovor o izdelkih in sodelovanju',
+                'text' => 'Če želite, lahko pustite kontakt. ' . $owner_label . ' ga bo prejel in vas lahko kontaktira glede izdelkov in sodelovanja Forever, brez pritiska ali obljub o zaslužku.',
+                'consent' => 'Strinjam se, da me lahko ' . $owner_label . ', lastnik te FCC aplikacije, kontaktira glede izdelkov in poslovnega sodelovanja Forever. Podatki se uporabljajo samo za odgovor na to povpraševanje.',
+            ],
+            default => [
+                'headline' => 'Neobvezen pogovor o izdelkih',
+                'text' => 'Če želite, lahko pustite kontakt. ' . $owner_label . ' ga bo prejel kot lastnik te aplikacije in vas lahko kontaktira glede izdelkov Forever. To je neobvezno in ni zdravstvena obravnava.',
+                'consent' => 'Strinjam se, da me lahko ' . $owner_label . ', lastnik te FCC aplikacije, kontaktira glede izdelkov Forever. Podatki se uporabljajo samo za odgovor na to povpraševanje.',
+            ],
+        },
+        'bg' => match($lead_type) {
+            'business_interest' => [
+                'headline' => 'Незадължителен разговор за сътрудничество с Forever',
+                'text' => 'Ако желаете, можете да оставите контакт. ' . $owner_label . ' ще го получи като собственик на това приложение и може да се свърже с вас за информативен разговор. Няма обещание за доходи или задължение.',
+                'consent' => 'Съгласявам се ' . $owner_label . ', собственикът на това FCC приложение, да се свърже с мен относно бизнес сътрудничество с Forever. Данните ми ще се използват само за отговор на тази заявка.',
+            ],
+            'mixed_interest' => [
+                'headline' => 'Незадължителен разговор за продукти и сътрудничество',
+                'text' => 'Ако желаете, можете да оставите контакт. ' . $owner_label . ' ще го получи и може да се свърже с вас относно продукти и сътрудничество с Forever, без натиск или обещания за доходи.',
+                'consent' => 'Съгласявам се ' . $owner_label . ', собственикът на това FCC приложение, да се свърже с мен относно продукти и бизнес сътрудничество с Forever. Данните ми ще се използват само за отговор на тази заявка.',
+            ],
+            default => [
+                'headline' => 'Незадължителен разговор за продукти',
+                'text' => 'Ако желаете, можете да оставите контакт. ' . $owner_label . ' ще го получи като собственик на това приложение и може да се свърже с вас относно продуктите на Forever. Това е по желание и не е медицинска грижа.',
+                'consent' => 'Съгласявам се ' . $owner_label . ', собственикът на това FCC приложение, да се свърже с мен относно продуктите на Forever. Данните ми ще се използват само за отговор на тази заявка.',
+            ],
+        },
+        default => match($lead_type) {
+            'business_interest' => [
+                'headline' => 'Neobavezan razgovor o Forever suradnji',
+                'text' => 'Ako želite, možete dobrovoljno ostaviti kontakt. ' . $owner_label . ' primit će ga kao vlasnik ove aplikacije i može vam se javiti radi informativnog razgovora. Nema obećanja zarade ni obveze.',
+                'consent' => 'Pristajem da me ' . $owner_label . ', vlasnik ove FCC aplikacije, kontaktira o Forever poslovnoj suradnji. Podaci se koriste samo za odgovor na ovaj upit.',
+            ],
+            'mixed_interest' => [
+                'headline' => 'Neobavezan razgovor o proizvodima i suradnji',
+                'text' => 'Ako želite, možete dobrovoljno ostaviti kontakt. ' . $owner_label . ' primit će ga i može vam se javiti o proizvodima i Forever suradnji, bez pritiska i bez obećanja zarade.',
+                'consent' => 'Pristajem da me ' . $owner_label . ', vlasnik ove FCC aplikacije, kontaktira o Forever proizvodima i poslovnoj suradnji. Podaci se koriste samo za odgovor na ovaj upit.',
+            ],
+            default => [
+                'headline' => 'Neobavezan razgovor o proizvodima',
+                'text' => 'Ako želite, možete dobrovoljno ostaviti kontakt. ' . $owner_label . ' primit će ga kao vlasnik ove aplikacije i može vam se javiti o Forever proizvodima. To nije medicinski pregled ni obveza.',
+                'consent' => 'Pristajem da me ' . $owner_label . ', vlasnik ove FCC aplikacije, kontaktira o Forever proizvodima. Podaci se koriste samo za odgovor na ovaj upit.',
+            ],
+        },
+    };
+
+    $issued_at = time();
+
+    return [
+        'v' => 1,
+        'server_owned' => true,
+        'eligible' => true,
+        'recommended' => true,
+        'offer_id' => fcc_ai_generate_public_id(24),
+        'lead_type' => $lead_type,
+        'purpose' => $purpose,
+        'headline' => (string) $copy['headline'],
+        'text' => (string) $copy['text'],
+        'owner_name' => $owner_name,
+        'consent_text' => (string) $copy['consent'],
+        'consent_version' => 'fcc_public_contact_v1',
+        'consent_source' => 'fcc_product_advisor_v2_lead_form',
+        'privacy_url' => fcc_ai_get_public_lead_privacy_url(),
+        'issued_at' => $issued_at,
+        'expires_at' => $issued_at + 86400,
+        'retention_days' => 180,
+    ];
+}
+
+function fcc_ai_normalize_public_lead_offer_snapshot($value, bool $require_unexpired = true): array {
+    $offer = is_array($value) ? $value : [];
+    $lead_type = mb_strtolower(trim((string) ($offer['lead_type'] ?? '')));
+    $purpose = trim((string) ($offer['purpose'] ?? ''));
+    $expected_purpose = [
+        'product_interest' => 'forever_product_followup',
+        'business_interest' => 'forever_business_followup',
+        'mixed_interest' => 'forever_product_and_business_followup',
+    ][$lead_type] ?? '';
+    $offer_id = mb_strtolower(trim((string) ($offer['offer_id'] ?? '')));
+    $issued_at = (int) ($offer['issued_at'] ?? 0);
+    $expires_at = (int) ($offer['expires_at'] ?? 0);
+    $privacy_url = trim((string) ($offer['privacy_url'] ?? ''));
+
+    if(
+        ($offer['v'] ?? null) !== 1
+        || ($offer['server_owned'] ?? null) !== true
+        || ($offer['eligible'] ?? null) !== true
+        || ($offer['recommended'] ?? null) !== true
+        || preg_match('/^[a-f0-9]{32,64}$/D', $offer_id) !== 1
+        || $expected_purpose === ''
+        || !hash_equals($expected_purpose, $purpose)
+        || trim((string) ($offer['headline'] ?? '')) === ''
+        || trim((string) ($offer['text'] ?? '')) === ''
+        || trim((string) ($offer['consent_text'] ?? '')) === ''
+        || !hash_equals('fcc_public_contact_v1', (string) ($offer['consent_version'] ?? ''))
+        || !hash_equals('fcc_product_advisor_v2_lead_form', (string) ($offer['consent_source'] ?? ''))
+        || !fcc_ai_public_lead_privacy_url_is_browser_compatible($privacy_url)
+        || $issued_at <= 0
+        || $expires_at <= $issued_at
+        || $issued_at > (time() + 60)
+        || ($require_unexpired && $expires_at < time())
+        || (int) ($offer['retention_days'] ?? 0) !== 180
+    ) {
+        return [];
+    }
+
+    return [
+        'v' => 1,
+        'server_owned' => true,
+        'eligible' => true,
+        'recommended' => true,
+        'offer_id' => $offer_id,
+        'lead_type' => $lead_type,
+        'purpose' => $purpose,
+        'headline' => mb_substr(trim((string) $offer['headline']), 0, 180),
+        'text' => mb_substr(trim((string) $offer['text']), 0, 800),
+        'owner_name' => mb_substr(trim((string) ($offer['owner_name'] ?? '')), 0, 128),
+        'consent_text' => mb_substr(trim((string) $offer['consent_text']), 0, 1000),
+        'consent_version' => 'fcc_public_contact_v1',
+        'consent_source' => 'fcc_product_advisor_v2_lead_form',
+        'privacy_url' => mb_substr($privacy_url, 0, 2048),
+        'issued_at' => $issued_at,
+        'expires_at' => $expires_at,
+        'retention_days' => 180,
+    ];
+}
+
+/**
+ * Resolve the V2 assistant reply bound to the newest chat user turn.
+ *
+ * Assistant insertion order is not conversational authority: a slow reply to
+ * an older user turn may be inserted after a faster urgent reply. The explicit
+ * reply-to binding is therefore the only safe current-turn boundary.
+ */
+function fcc_ai_get_current_v2_reply_state(int $conversation_id, bool $for_update = false): array {
+    if($conversation_id <= 0) {
+        return [];
+    }
+
+    $user_query = db();
+    if($for_update) {
+        $user_query->setQueryOption('FOR UPDATE');
+    }
+    $user_messages = $user_query
+        ->where('fcc_ai_conversation_id', $conversation_id)
+        ->where('role', 'user')
+        ->where('message_type', 'chat')
+        ->orderBy('fcc_ai_message_id', 'DESC')
+        ->get('fcc_ai_messages', 80, ['fcc_ai_message_id', 'meta']);
+
+    $current_user_message_id = (int) ($user_messages[0]->fcc_ai_message_id ?? 0);
+    if($current_user_message_id <= 0) {
+        return [];
+    }
+
+    $assistant_query = db();
+    if($for_update) {
+        $assistant_query->setQueryOption('FOR UPDATE');
+    }
+    $assistant_messages = $assistant_query
+        ->where('fcc_ai_conversation_id', $conversation_id)
+        ->where('role', 'assistant')
+        ->where('message_type', 'chat')
+        ->orderBy('fcc_ai_message_id', 'DESC')
+        ->get('fcc_ai_messages', 80, ['fcc_ai_message_id', 'meta']);
+
+    foreach((array) $assistant_messages as $message) {
+        $meta = fcc_ai_to_array($message->meta ?? []);
+        if(
+            in_array((string) ($meta['engine'] ?? ''), ['fcc_product_advisor_v2', 'fcc_public_advisor'], true)
+            && (int) ($meta['reply_to_user_message_id'] ?? 0) === $current_user_message_id
+        ) {
+            return [
+                'user_message_id' => $current_user_message_id,
+                'assistant_message_id' => (int) ($message->fcc_ai_message_id ?? 0),
+                'meta' => $meta,
+            ];
+        }
+    }
+
+    return [
+        'user_message_id' => $current_user_message_id,
+        'assistant_message_id' => 0,
+        'meta' => [],
+    ];
+}
+
+/**
+ * Advance the server-owned current lead-offer pointer for a conversation.
+ *
+ * The V2 reply bound to the newest chat user turn is authoritative. Reading both
+ * message ranges while the conversation row is locked makes slow/out-of-order
+ * completion fail closed.
+ */
+function fcc_ai_set_public_lead_offer_state(int $conversation_id, int $assistant_message_id, array $offer = []): array {
+    if($conversation_id <= 0 || $assistant_message_id <= 0) {
+        throw new \RuntimeException(fcc_t('Lead offer state requires a persisted V2 reply.'));
+    }
+
+    $requested_offer = $offer ? fcc_ai_normalize_public_lead_offer_snapshot($offer, true) : [];
+    if($offer && !$requested_offer) {
+        throw new \RuntimeException(fcc_t('Invalid server-owned lead offer snapshot.'));
+    }
+
+    fcc_ai_ensure_tables();
+    db()->startTransaction();
 
     try {
-        $saved = fcc_ai_capture_public_lead([
-            'assistant_type' => (string) ($conversation->assistant_type ?? 'product_advisor'),
-            'scope' => (string) ($conversation->scope ?? 'public_app'),
-            'conversation_public_id' => (string) ($conversation->public_id ?? ''),
-            'link_id' => (int) ($link->link_id ?? $conversation->link_id ?? 0),
-            'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
-            'language' => (string) ($payload['language'] ?? ($conversation->language ?? '')),
-            'source_context' => (string) ($payload['source_context'] ?? ''),
-            'source_page_url' => (string) ($payload['source_page_url'] ?? ''),
-            'source_page_slug' => (string) ($payload['source_page_slug'] ?? ''),
-            'visitor_key' => (string) ($payload['visitor_key'] ?? ($conversation->visitor_key ?? '')),
-            'lead_type' => $lead_type !== '' ? $lead_type : 'product_interest',
-            'name' => (string) ($candidate['name'] ?? ''),
-            'email' => (string) ($candidate['email'] ?? ''),
-            'phone' => (string) ($candidate['phone'] ?? ''),
-            'preferred_contact_channel' => (string) ($candidate['preferred_contact_channel'] ?? 'whatsapp'),
-            'message' => $contact_message,
-        ]);
+        $conversation = db()
+            ->setQueryOption('FOR UPDATE')
+            ->where('fcc_ai_conversation_id', $conversation_id)
+            ->getOne('fcc_ai_conversations');
+        $current_reply = fcc_ai_get_current_v2_reply_state($conversation_id, true);
+        $provided_message = db()
+            ->where('fcc_ai_message_id', $assistant_message_id)
+            ->where('fcc_ai_conversation_id', $conversation_id)
+            ->where('role', 'assistant')
+            ->where('message_type', 'chat')
+            ->getOne('fcc_ai_messages', ['fcc_ai_message_id', 'meta']);
+
+        if(!$conversation || !$provided_message) {
+            throw new \RuntimeException(fcc_t('Lead offer reply is not part of the conversation.'));
+        }
+
+        $provided_meta = fcc_ai_to_array($provided_message->meta ?? []);
+        $provided_snapshot = fcc_ai_normalize_public_lead_offer_snapshot($provided_meta['lead_offer'] ?? null, true);
+        $provided_state = (string) ($provided_meta['lead_offer_state'] ?? '');
+        $provided_user_message_id = (int) ($provided_meta['reply_to_user_message_id'] ?? 0);
+        if(
+            !in_array((string) ($provided_meta['engine'] ?? ''), ['fcc_product_advisor_v2', 'fcc_public_advisor'], true)
+            || $provided_user_message_id <= 0
+            || !in_array($provided_state, ['active', 'revoked'], true)
+            || ($provided_state === 'active') !== (bool) $provided_snapshot
+            || (bool) $requested_offer !== (bool) $provided_snapshot
+            || ($requested_offer && !hash_equals((string) $requested_offer['offer_id'], (string) $provided_snapshot['offer_id']))
+        ) {
+            throw new \RuntimeException(fcc_t('Lead offer state does not match the persisted V2 reply.'));
+        }
+
+        $latest_user_message_id = (int) ($current_reply['user_message_id'] ?? 0);
+        $latest_message_id = (int) ($current_reply['assistant_message_id'] ?? 0);
+        $latest_meta = fcc_ai_to_array($current_reply['meta'] ?? []);
+        if($latest_user_message_id <= 0) {
+            throw new \RuntimeException(fcc_t('Current V2 lead offer state could not be resolved.'));
+        }
+
+        $latest_offer = fcc_ai_normalize_public_lead_offer_snapshot($latest_meta['lead_offer'] ?? null, true);
+        $latest_state = (string) ($latest_meta['lead_offer_state'] ?? '');
+        $is_active = $latest_state === 'active'
+            && ($latest_meta['lead_offer_revoked'] ?? false) !== true
+            && (bool) $latest_offer;
+        $conversation_meta = fcc_ai_to_array($conversation->meta ?? []);
+        $state_datetime = get_date();
+
+        if($is_active) {
+            $conversation_meta['lead_offer_state'] = 'active';
+            $conversation_meta['active_lead_offer'] = [
+                'offer_id' => (string) $latest_offer['offer_id'],
+                'offer_hash' => hash('sha256', (string) $latest_offer['offer_id']),
+                'server_message_id' => $latest_message_id,
+                'reply_to_user_message_id' => $latest_user_message_id,
+                'lead_type' => (string) $latest_offer['lead_type'],
+                'purpose' => (string) $latest_offer['purpose'],
+                'issued_at' => (int) $latest_offer['issued_at'],
+                'expires_at' => (int) $latest_offer['expires_at'],
+                'consent_version' => (string) $latest_offer['consent_version'],
+                'consent_source' => (string) $latest_offer['consent_source'],
+            ];
+            $conversation_meta['lead_offer_updated_at'] = $state_datetime;
+            unset($conversation_meta['lead_offer_revoked_at'], $conversation_meta['lead_offer_revoked_message_id']);
+        } else {
+            unset($conversation_meta['active_lead_offer']);
+            $conversation_meta['lead_offer_state'] = 'revoked';
+            $conversation_meta['lead_offer_revoked_at'] = $state_datetime;
+            $conversation_meta['lead_offer_revoked_message_id'] = $latest_message_id;
+            $conversation_meta['lead_offer_pending_user_message_id'] = $latest_user_message_id;
+        }
+
+        $updated = db()
+            ->where('fcc_ai_conversation_id', $conversation_id)
+            ->update('fcc_ai_conversations', [
+                'meta' => json_encode($conversation_meta),
+                'last_datetime' => $state_datetime,
+            ]);
+        if($updated === false) {
+            throw new \RuntimeException(fcc_t('Current lead offer state could not be saved.'));
+        }
+
+        db()->commit();
 
         return [
-            'saved' => true,
-            'lead' => $saved,
-            'candidate' => $candidate,
+            'state' => $is_active ? 'active' : 'revoked',
+            'server_message_id' => $latest_message_id,
+            'reply_to_user_message_id' => $latest_user_message_id,
         ];
     } catch(\Throwable $exception) {
-        fcc_ai_log_event([
-            'fcc_ai_conversation_id' => (int) ($conversation->fcc_ai_conversation_id ?? 0),
-            'user_id' => (int) ($user->user_id ?? 0),
-            'assistant_type' => (string) ($conversation->assistant_type ?? 'product_advisor'),
-            'event_type' => 'lead_auto_capture_failed',
-            'link_id' => (int) ($link->link_id ?? $conversation->link_id ?? 0),
-            'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
-            'meta' => [
-                'error' => $exception->getMessage(),
-                'has_email' => !empty($candidate['email']),
-                'has_phone' => !empty($candidate['phone']),
-            ],
-        ]);
-
-        return [
-            'saved' => false,
-            'error' => $exception->getMessage(),
-            'candidate' => $candidate,
-        ];
+        db()->rollback();
+        throw $exception;
     }
+}
+
+function fcc_ai_find_public_lead_offer(int $conversation_id, string $offer_id, bool $for_update = false): array {
+    $offer_id = mb_strtolower(trim($offer_id));
+    if($conversation_id <= 0 || preg_match('/^[a-f0-9]{32,64}$/D', $offer_id) !== 1) {
+        return [];
+    }
+
+    $current_reply = fcc_ai_get_current_v2_reply_state($conversation_id, $for_update);
+    $meta = fcc_ai_to_array($current_reply['meta'] ?? []);
+    $current_user_message_id = (int) ($current_reply['user_message_id'] ?? 0);
+    $current_assistant_message_id = (int) ($current_reply['assistant_message_id'] ?? 0);
+    if(
+        $current_user_message_id <= 0
+        || $current_assistant_message_id <= 0
+        || !hash_equals('active', (string) ($meta['lead_offer_state'] ?? ''))
+        || ($meta['lead_offer_revoked'] ?? false) === true
+        || (int) ($meta['reply_to_user_message_id'] ?? 0) !== $current_user_message_id
+    ) {
+        return [];
+    }
+
+    $candidate = fcc_ai_normalize_public_lead_offer_snapshot($meta['lead_offer'] ?? null, true);
+    if($candidate && hash_equals($offer_id, (string) $candidate['offer_id'])) {
+        $candidate['server_message_id'] = $current_assistant_message_id;
+        $candidate['reply_to_user_message_id'] = $current_user_message_id;
+        return $candidate;
+    }
+
+    return [];
+}
+
+function fcc_ai_get_public_lead_optional_consent_columns(): array {
+    static $columns = null;
+    if(is_array($columns)) {
+        return $columns;
+    }
+
+    $columns = [];
+    try {
+        foreach((array) db()->rawQuery('SHOW COLUMNS FROM `fcc_ai_leads`') as $column) {
+            $name = trim((string) ($column->Field ?? ''));
+            if(in_array($name, [
+                'lead_offer_id',
+                'consent_at',
+                'consent_text',
+                'consent_version',
+                'consent_purpose',
+                'consent_source',
+                'privacy_url',
+                'retention_until',
+                'lifecycle_status',
+            ], true)) {
+                $columns[$name] = true;
+            }
+        }
+    } catch(\Throwable $exception) {
+        $columns = [];
+    }
+
+    return $columns;
+}
+
+function fcc_ai_try_auto_capture_public_lead_from_message(object $conversation, object $user, ?object $link, array $payload, array $intent, string $message): array {
+    /* Consent-first policy: ordinary chat content is never a lead form. This
+     * compatibility shim intentionally performs no extraction and no write so
+     * legacy callers cannot silently re-enable automatic contact capture. */
+    return [
+        'saved' => false,
+        'disabled' => true,
+        'reason' => 'explicit_consent_required',
+    ];
 }
 
 function fcc_ai_log_event(array $payload): void {
@@ -22951,11 +23571,11 @@ function fcc_ai_save_message_feedback(object $conversation, int $message_id, str
     $feedback_type = fcc_ai_normalize_feedback_type($feedback_type);
 
     if($feedback_type === '') {
-        throw new \RuntimeException('Nepoznat tip povratne informacije.');
+        throw new \RuntimeException(fcc_t('Nepoznat tip povratne informacije.'));
     }
 
     if($message_id <= 0 || empty($conversation->fcc_ai_conversation_id)) {
-        throw new \RuntimeException('Nije moguće povezati feedback s porukom.');
+        throw new \RuntimeException(fcc_t('Nije moguće povezati feedback s porukom.'));
     }
 
     $message = db()
@@ -22965,7 +23585,7 @@ function fcc_ai_save_message_feedback(object $conversation, int $message_id, str
         ->getOne('fcc_ai_messages', ['fcc_ai_message_id', 'content', 'meta']);
 
     if(!$message) {
-        throw new \RuntimeException('Odgovor za feedback nije pronađen.');
+        throw new \RuntimeException(fcc_t('Odgovor za feedback nije pronađen.'));
     }
 
     $actor_type = trim((string) ($actor['actor_type'] ?? 'visitor'));
@@ -22973,7 +23593,7 @@ function fcc_ai_save_message_feedback(object $conversation, int $message_id, str
     $actor_user_id = !empty($actor['actor_user_id']) ? (int) $actor['actor_user_id'] : null;
 
     if($actor_identifier === '') {
-        throw new \RuntimeException('Nedostaje identitet za spremanje feedbacka.');
+        throw new \RuntimeException(fcc_t('Nedostaje identitet za spremanje feedbacka.'));
     }
 
     $reason = fcc_ai_normalize_feedback_reason($reason);
@@ -22998,6 +23618,8 @@ function fcc_ai_save_message_feedback(object $conversation, int $message_id, str
         'actor_identifier' => $actor_identifier,
         'actor_user_id' => $actor_user_id ?: null,
         'status' => $status,
+        'reviewed_by_user_id' => null,
+        'reviewed_at' => null,
         'meta' => json_encode(array_merge([
             'message_excerpt' => fcc_ai_excerpt((string) ($message->content ?? ''), 240),
         ], $meta)),
@@ -23033,6 +23655,9 @@ function fcc_ai_save_message_feedback(object $conversation, int $message_id, str
     if($feedback_type === 'down' && $previous_feedback_type !== 'down') {
         fcc_ai_notify_feedback_review($conversation, $reason, $note);
     }
+    if($feedback_type === 'up' && $previous_feedback_type === 'down' && fcc_ai_get_unresolved_feedback_total_for_conversation((int)$conversation->fcc_ai_conversation_id) === 0) {
+        fcc_ai_mark_review_notifications_read_for_conversation($conversation);
+    }
 
     $feedback_map = fcc_ai_get_message_feedback_map([$message_id], $actor);
 
@@ -23047,7 +23672,7 @@ function fcc_ai_mark_feedback_resolved(int $feedback_id, int $user_id): array {
     fcc_ai_ensure_tables();
 
     if($feedback_id <= 0 || $user_id <= 0) {
-        throw new \RuntimeException('Signal za provjeru nije pronađen.');
+        throw new \RuntimeException(fcc_t('Signal za provjeru nije pronađen.'));
     }
 
     $feedback = db()
@@ -23061,7 +23686,7 @@ function fcc_ai_mark_feedback_resolved(int $feedback_id, int $user_id): array {
         ]);
 
     if(!$feedback || (string) ($feedback->feedback_type ?? '') !== 'down') {
-        throw new \RuntimeException('Signal za provjeru nije pronađen.');
+        throw new \RuntimeException(fcc_t('Signal za provjeru nije pronađen.'));
     }
 
     db()->where('fcc_ai_message_feedback_id', $feedback_id)->update('fcc_ai_message_feedback', [
@@ -23103,7 +23728,7 @@ function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_use
     fcc_ai_ensure_tables();
 
     if($feedback_id <= 0 || $admin_user_id <= 0) {
-        throw new \RuntimeException('Signal za provjeru nije pronađen.');
+        throw new \RuntimeException(fcc_t('Signal za provjeru nije pronađen.'));
     }
 
     $feedback = db()
@@ -23118,11 +23743,13 @@ function fcc_ai_mark_feedback_resolved_by_admin(int $feedback_id, int $admin_use
         ]);
 
     if(!$feedback || (string) ($feedback->feedback_type ?? '') !== 'down') {
-        throw new \RuntimeException('Signal za provjeru nije pronađen.');
+        throw new \RuntimeException(fcc_t('Signal za provjeru nije pronađen.'));
     }
 
     db()->where('fcc_ai_message_feedback_id', $feedback_id)->update('fcc_ai_message_feedback', [
         'status' => 'resolved',
+        'reviewed_by_user_id' => $admin_user_id,
+        'reviewed_at' => get_date(),
         'last_datetime' => get_date(),
     ]);
 
@@ -23185,6 +23812,9 @@ function fcc_ai_mark_review_notifications_read_for_conversation(object $conversa
         return;
     }
 
+    if((string)($conversation->scope ?? '') === 'internal_coach') {
+        db()->where('for_who','admin')->where('url',url('partner/admin?coach=1&rating=open&conversation='.(int)$conversation->fcc_ai_conversation_id))->update('internal_notifications',['is_read'=>1]);
+    }
     db()
         ->where('user_id', $user_id)
         ->where('for_who', 'user')
@@ -23669,6 +24299,7 @@ function fcc_ai_push_internal_notification(?int $user_id, string $for_who, strin
 
 function fcc_ai_get_admin_review_url_for_conversation(object $conversation): string {
     $user_id = (int) ($conversation->user_id ?? 0);
+    if(($conversation->scope??'')==='internal_coach' && (int)($conversation->fcc_ai_conversation_id??0)>0) return url('partner/admin?coach=1&thread='.(int)$conversation->fcc_ai_conversation_id);
 
     if($user_id <= 0) {
         return url('admin/leader-operating-system?tab=ai_intelligence&period=30d');
@@ -23693,7 +24324,8 @@ function fcc_ai_notify_feedback_review(object $conversation, string $reason = ''
         $user_description .= ' ' . ($language === 'en' ? 'Note:' : 'Napomena:') . ' ' . fcc_ai_excerpt(trim($note), 120);
     }
 
-    fcc_ai_push_internal_notification((int) ($conversation->user_id ?? 0), 'user', $user_title, $user_description, $user_url, 'fas fa-comment-exclamation');
+    if((string)($conversation->scope ?? '') !== 'internal_coach') fcc_ai_push_internal_notification((int) ($conversation->user_id ?? 0), 'user', $user_title, $user_description, $user_url, 'fas fa-comment-exclamation');
+    else $admin_url = url('partner/admin?coach=1&rating=open&conversation='.(int)$conversation->fcc_ai_conversation_id);
 
     $admin_title = $language === 'en' ? 'AI answer reported for review' : 'AI odgovor prijavljen za provjeru';
     $admin_description = $assistant_label . ' · user #' . (int) ($conversation->user_id ?? 0) . ($reason_label !== '' ? ' · ' . $reason_label : '');
@@ -23704,13 +24336,18 @@ function fcc_ai_notify_lead_captured(object $conversation, int $datum_id, string
     $language = fcc_ai_resolve_public_reply_language((string) ($conversation->language ?? \Altum\Language::$code ?? 'hr'));
     $assistant_label = fcc_ai_get_assistant_label((string) ($conversation->assistant_type ?? ''));
     $lead_type_label = fcc_ai_get_lead_type_label($lead_type, $language);
-    $user_url = $datum_id > 0 ? url('data?datum_id=' . $datum_id) : url('data');
+    $user_url = url('partner/contacts');
+    if($datum_id>0&&function_exists('fcc_partner_sync_leads')) {
+        fcc_partner_sync_leads((int)$conversation->user_id);
+        $source=fcc_partner_one("SELECT contact_id FROM fcc_partner_contact_sources WHERE user_id=? AND source_kind='data' AND source_id=?",[(int)$conversation->user_id,$datum_id]);
+        if(!empty($source['contact_id']))$user_url=url('partner/contacts?id='.(int)$source['contact_id']);
+    }
     $admin_url = fcc_ai_get_admin_review_url_for_conversation($conversation);
 
     $user_title = $language === 'en' ? 'New AI lead arrived' : 'Stigao je novi AI lead';
     $user_description = $language === 'en'
-        ? $assistant_label . ' captured a new ' . mb_strtolower($lead_type_label) . ' signal with score ' . nr($lead_score) . '. Open the contact and continue the follow-up.'
-        : $assistant_label . ' je uhvatio novi signal za ' . mb_strtolower($lead_type_label) . ' s ocjenom ' . nr($lead_score) . '. Otvori kontakt i nastavi follow-up.';
+        ? 'A visitor asked to hear from you. Open the contact to reply.'
+        : 'Posjetitelj želi tvoj odgovor. Otvori kontakt i dogovori nastavak razgovora.';
 
     fcc_ai_push_internal_notification((int) ($conversation->user_id ?? 0), 'user', $user_title, $user_description, $user_url, 'fas fa-user-plus');
 
@@ -25014,19 +25651,13 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
     $scope_breakdown = [];
     $user_totals = [];
 
-    $conversation_result = database()->query("SELECT
-            `c`.`user_id`,
-            `u`.`name`,
-            `c`.`assistant_type`,
-            `c`.`scope`,
-            COUNT(*) AS `conversations`,
-            SUM(`c`.`total_user_messages`) AS `user_messages`,
-            SUM(`c`.`total_assistant_messages`) AS `assistant_messages`,
-            MAX(COALESCE(`c`.`last_message_at`, `c`.`last_datetime`, `c`.`datetime`)) AS `last_message_at`
-        FROM `fcc_ai_conversations` AS `c`
-        LEFT JOIN `users` AS `u` ON `u`.`user_id` = `c`.`user_id`
-        WHERE COALESCE(`c`.`last_message_at`, `c`.`last_datetime`, `c`.`datetime`) >= '{$period_start_sql}'{$conversation_user_filter}
-        GROUP BY `c`.`user_id`, `u`.`name`, `c`.`assistant_type`, `c`.`scope`");
+    $conversation_result = database()->query("SELECT c.user_id,u.name,c.assistant_type,c.scope,
+            COUNT(*) conversations,SUM(m.user_messages) user_messages,SUM(m.assistant_messages) assistant_messages,MAX(m.last_message_at) last_message_at
+        FROM fcc_ai_conversations c
+        JOIN (SELECT fcc_ai_conversation_id,SUM(role='user') user_messages,SUM(role='assistant') assistant_messages,MAX(datetime) last_message_at
+              FROM fcc_ai_messages WHERE datetime>='{$period_start_sql}' AND datetime<UTC_TIMESTAMP() AND message_type='chat' AND role IN ('user','assistant') GROUP BY fcc_ai_conversation_id) m ON m.fcc_ai_conversation_id=c.fcc_ai_conversation_id
+        LEFT JOIN users u ON u.user_id=c.user_id WHERE 1=1{$conversation_user_filter}
+        GROUP BY c.user_id,u.name,c.assistant_type,c.scope");
 
     while($row = $conversation_result->fetch_assoc()) {
         $user_id = (int) ($row['user_id'] ?? 0);
@@ -25310,6 +25941,7 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
         LEFT JOIN `users` AS `u` ON `u`.`user_id` = `l`.`user_id`
         LEFT JOIN `fcc_ai_conversations` AS `c` ON `c`.`fcc_ai_conversation_id` = `l`.`fcc_ai_conversation_id`
         WHERE `l`.`datetime` >= '{$period_start_sql}'{$lead_user_filter}
+          AND COALESCE(`l`.`status`, 'new') <> 'expired'
         ORDER BY `l`.`lead_score` DESC, `l`.`datetime` DESC
         LIMIT {$limit}");
 
@@ -25448,17 +26080,12 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         ];
     }
 
-    $aggregate_result = database()->query("SELECT
-            `assistant_type`,
-            `scope`,
-            COUNT(*) AS `conversations`,
-            SUM(`total_user_messages`) AS `user_messages`,
-            SUM(`total_assistant_messages`) AS `assistant_messages`,
-            SUM(CASE WHEN `lead_status` = 'captured' THEN 1 ELSE 0 END) AS `captured_threads`
-        FROM `fcc_ai_conversations`
-        WHERE `user_id` = {$user_id}
-          AND COALESCE(`last_message_at`, `last_datetime`, `datetime`) >= '{$period_start_sql}'
-        GROUP BY `assistant_type`, `scope`");
+    $aggregate_result = database()->query("SELECT c.assistant_type,c.scope,COUNT(*) conversations,
+            SUM(m.user_messages) user_messages,SUM(m.assistant_messages) assistant_messages,SUM(c.lead_status='captured') captured_threads
+        FROM fcc_ai_conversations c
+        JOIN (SELECT fcc_ai_conversation_id,SUM(role='user') user_messages,SUM(role='assistant') assistant_messages
+              FROM fcc_ai_messages WHERE datetime>='{$period_start_sql}' AND datetime<UTC_TIMESTAMP() AND message_type='chat' AND role IN ('user','assistant') GROUP BY fcc_ai_conversation_id) m ON m.fcc_ai_conversation_id=c.fcc_ai_conversation_id
+        WHERE c.user_id={$user_id} GROUP BY c.assistant_type,c.scope");
 
     while($row = $aggregate_result->fetch_assoc()) {
         $assistant_type = (string) ($row['assistant_type'] ?? '');
@@ -25646,6 +26273,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
         LEFT JOIN `fcc_ai_conversations` AS `c` ON `c`.`fcc_ai_conversation_id` = `l`.`fcc_ai_conversation_id`
         WHERE `l`.`user_id` = {$user_id}
           AND `l`.`datetime` >= '{$period_start_sql}'
+          AND COALESCE(`l`.`status`, 'new') <> 'expired'
         ORDER BY `l`.`datetime` DESC
         LIMIT {$limit}");
 
@@ -26024,7 +26652,7 @@ function fcc_ai_create_or_resume_public_conversation(array $payload): array {
 
     $context = fcc_ai_resolve_public_owner_context($payload);
     if(!$context) {
-        throw new \RuntimeException('Nije moguce povezati razgovor s FCC aplikacijom.');
+        throw new \RuntimeException(fcc_t('Nije moguce povezati razgovor s FCC aplikacijom.'));
     }
 
     $user = $context['user'];
@@ -26037,7 +26665,7 @@ function fcc_ai_create_or_resume_public_conversation(array $payload): array {
     }
 
     if(!$assistant_type) {
-        throw new \RuntimeException('Nepoznat AI assistant tip.');
+        throw new \RuntimeException(fcc_t('Nepoznat AI assistant tip.'));
     }
 
     if(!fcc_ai_user_has_public_ai_access($user)) {
@@ -26049,17 +26677,28 @@ function fcc_ai_create_or_resume_public_conversation(array $payload): array {
     $source_context = trim((string) ($payload['source_context'] ?? ''));
     $source_page_url = trim((string) ($payload['source_page_url'] ?? ''));
     $source_page_slug = trim((string) ($payload['source_page_slug'] ?? ''));
+    $source_page_title = trim((string) ($payload['source_page_title'] ?? ''));
+    $source_page_section = trim((string) ($payload['source_page_section'] ?? ''));
+    $market_code = mb_strtolower(trim((string) ($payload['market_code'] ?? '')));
     $blog_post_id = isset($payload['blog_post_id']) ? (int) $payload['blog_post_id'] : null;
     $visitor_key = trim((string) ($payload['visitor_key'] ?? ''));
     $visitor_key = $visitor_key !== '' ? mb_substr($visitor_key, 0, 64) : fcc_ai_generate_public_id(12);
 
     fcc_ai_seed_user_assistants((int) $user->user_id, (string) ($user->name ?? ''));
     $assistant_id = fcc_ai_get_assistant_id_for_user((int) $user->user_id, $assistant_type, $scope);
+    $resolved_assistant = fcc_ai_get_assistant_by_id((int) $assistant_id);
+
+    if(!$resolved_assistant || (int) ($resolved_assistant->is_enabled ?? 0) !== 1) {
+        throw new \RuntimeException(fcc_t('Ovaj AI savjetnik trenutno nije uključen u FCC aplikaciji.'));
+    }
 
     if($conversation) {
         $meta = is_object($conversation->meta) ? (array) $conversation->meta : (array) json_decode($conversation->meta ?? '{}', true);
         $meta['source_page_url'] = $source_page_url !== '' ? $source_page_url : ($meta['source_page_url'] ?? '');
         $meta['source_page_slug'] = $source_page_slug !== '' ? $source_page_slug : ($meta['source_page_slug'] ?? '');
+        $meta['source_page_title'] = $source_page_title !== '' ? $source_page_title : ($meta['source_page_title'] ?? '');
+        $meta['source_page_section'] = $source_page_section !== '' ? $source_page_section : ($meta['source_page_section'] ?? '');
+        $meta['market_code'] = $market_code !== '' ? $market_code : ($meta['market_code'] ?? '');
         $meta['continuation_storage_key'] = fcc_ai_get_public_storage_key();
 
         db()->where('fcc_ai_conversation_id', $conversation->fcc_ai_conversation_id)->update('fcc_ai_conversations', [
@@ -26114,6 +26753,9 @@ function fcc_ai_create_or_resume_public_conversation(array $payload): array {
         'source_context' => $source_context,
         'source_page_url' => $source_page_url,
         'source_page_slug' => $source_page_slug,
+        'source_page_title' => $source_page_title,
+        'source_page_section' => $source_page_section,
+        'market_code' => $market_code,
         'continuation_storage_key' => fcc_ai_get_public_storage_key(),
     ];
 
@@ -26176,13 +26818,93 @@ function fcc_ai_create_or_resume_public_conversation(array $payload): array {
     ];
 }
 
+/**
+ * Decide the engine boundary before any legacy product-advisor code runs.
+ * A collaborator in the V2 cohort may use V2 or receive a controlled block;
+ * unsupported scope/runtime state must never silently downgrade to V1.
+ */
+function fcc_ai_resolve_product_advisor_v2_route(
+    bool $feature_enabled,
+    string $language_code,
+    string $market_code,
+    bool $scope_supported,
+    bool $runtime_ready
+): array {
+    $language_code = mb_strtolower(trim($language_code));
+    $market_code = mb_strtolower(trim($market_code));
+
+    if(!$feature_enabled) {
+        return [
+            'engine' => 'legacy_v1',
+            'reason' => 'feature_not_enabled',
+            'language_code' => $language_code,
+            'market_code' => $market_code,
+        ];
+    }
+
+    if($language_code === '' || $market_code === '') {
+        return [
+            'engine' => 'fail_closed',
+            'reason' => 'missing_scope',
+            'language_code' => $language_code,
+            'market_code' => $market_code,
+        ];
+    }
+
+    if(!$scope_supported) {
+        return [
+            'engine' => 'fail_closed',
+            'reason' => 'unsupported_scope',
+            'language_code' => $language_code,
+            'market_code' => $market_code,
+        ];
+    }
+
+    if(!$runtime_ready) {
+        return [
+            'engine' => 'fail_closed',
+            'reason' => 'runtime_not_ready',
+            'language_code' => $language_code,
+            'market_code' => $market_code,
+        ];
+    }
+
+    return [
+        'engine' => 'fcc_product_advisor_v2',
+        'reason' => 'eligible',
+        'language_code' => $language_code,
+        'market_code' => $market_code,
+    ];
+}
+
+function fcc_ai_get_product_advisor_v2_route_error_message(array $route): string {
+    $reason = (string) ($route['reason'] ?? 'unsupported_scope');
+    $language_code = (string) ($route['language_code'] ?? 'hr');
+
+    if($reason === 'runtime_not_ready') {
+        return match($language_code) {
+            'en' => 'FCC Product Advisor V2 is enabled, but its verified catalog is not ready. The legacy advisor was not activated.',
+            'sl' => 'FCC Product Advisor V2 je vključen, vendar preverjeni katalog ni pripravljen. Stari svetovalec se ni vključil.',
+            'bg' => 'FCC Product Advisor V2 е включен, но провереният каталог не е готов. Старият съветник не беше активиран.',
+            default => 'FCC Product Advisor V2 je uključen, ali provjereni katalog nije spreman. Stari savjetnik nije automatski aktiviran.',
+        };
+    }
+
+    return match($language_code) {
+        'en' => 'FCC Product Advisor V2 currently supports the Croatian catalog in Croatian only. Switch the assistant language to Croatian and try again. The legacy advisor was not activated.',
+        'sl' => 'FCC Product Advisor V2 trenutno podpira hrvaški katalog v hrvaščini. Preklopite jezik svetovalca na hrvaščino in poskusite znova. Stari svetovalec se ni vključil.',
+        'bg' => 'FCC Product Advisor V2 в момента поддържа хърватския каталог на хърватски език. Превключете езика на хърватски и опитайте отново. Старият съветник не беше активиран.',
+        default => 'FCC Product Advisor V2 trenutno podržava provjereni hrvatski katalog na hrvatskom jeziku. Odaberite hrvatski jezik i pokušajte ponovno. Stari savjetnik nije automatski aktiviran.',
+    };
+}
+
 function fcc_ai_handle_public_message(array $payload): array {
     fcc_ai_ensure_tables();
 
     $message = trim((string) ($payload['message'] ?? ''));
 
     if($message === '') {
-        throw new \RuntimeException('Poruka ne može biti prazna.');
+        throw new \RuntimeException(fcc_t('Poruka ne može biti prazna.'));
     }
 
     $conversation_payload = [
@@ -26195,6 +26917,9 @@ function fcc_ai_handle_public_message(array $payload): array {
         'source_context' => (string) ($payload['source_context'] ?? ''),
         'source_page_url' => (string) ($payload['source_page_url'] ?? ''),
         'source_page_slug' => (string) ($payload['source_page_slug'] ?? ''),
+        'source_page_title' => (string) ($payload['source_page_title'] ?? ''),
+        'source_page_section' => (string) ($payload['source_page_section'] ?? ''),
+        'market_code' => (string) ($payload['market_code'] ?? ''),
         'visitor_key' => (string) ($payload['visitor_key'] ?? ''),
     ];
 
@@ -26202,10 +26927,13 @@ function fcc_ai_handle_public_message(array $payload): array {
     $context = fcc_ai_resolve_public_owner_context([
         'conversation_public_id' => (string) $conversation_state['conversation_public_id'],
         'link_id' => (int) ($payload['link_id'] ?? 0),
+        'visitor_key' => (string) ($payload['visitor_key'] ?? ''),
+        'assistant_type' => (string) ($payload['assistant_type'] ?? ''),
+        'scope' => (string) ($payload['scope'] ?? ''),
     ]);
 
     if(!$context || empty($context['conversation']) || empty($context['user'])) {
-        throw new \RuntimeException('Nije moguće spremiti poruku bez valjanog FCC AI razgovora.');
+        throw new \RuntimeException(fcc_t('Nije moguće spremiti poruku bez valjanog FCC AI razgovora.'));
     }
 
     $conversation = $context['conversation'];
@@ -26213,6 +26941,59 @@ function fcc_ai_handle_public_message(array $payload): array {
     $link = $context['link'];
     $assistant = fcc_ai_get_assistant_by_id((int) ($conversation->fcc_ai_assistant_id ?? 0));
     $resolved_language = (string) ($conversation_state['language'] ?? $conversation->language ?? 'auto');
+
+    if((string) ($conversation->assistant_type ?? '') === 'product_advisor') {
+        require_once __DIR__ . '/fcc_public_advisor.php';
+        return fcc_public_advisor_handle($payload, $message, $conversation_state, $context);
+    }
+
+    if((string) ($conversation->assistant_type ?? '') === 'product_advisor') {
+        $advisorUserId = (int) ($user->user_id ?? 0);
+        $v2FeatureEnabled = \Altum\Helpers\FccProductAdvisorV2::isFeatureEnabled($advisorUserId);
+        if($v2FeatureEnabled) {
+            $advisor_v2 = new \Altum\Helpers\FccProductAdvisorV2();
+            $v2ScopeLanguage = fcc_ai_v2_detect_language($message, $resolved_language);
+            $v2ScopeMarket = mb_strtolower(trim((string) ($payload['market_code'] ?? '')));
+            $v2ScopeSupported = $advisor_v2->supportsScope($v2ScopeLanguage, $v2ScopeMarket);
+            $v2Route = fcc_ai_resolve_product_advisor_v2_route(
+                true,
+                $v2ScopeLanguage,
+                $v2ScopeMarket,
+                $v2ScopeSupported,
+                $v2ScopeSupported && $advisor_v2->isReady($advisorUserId)
+            );
+
+            if((string) ($v2Route['engine'] ?? '') !== 'fcc_product_advisor_v2') {
+                try {
+                    fcc_ai_log_event([
+                        'fcc_ai_conversation_id' => (int) ($conversation->fcc_ai_conversation_id ?? 0),
+                        'user_id' => $advisorUserId,
+                        'assistant_type' => 'product_advisor',
+                        'event_type' => 'product_v2_route_rejected',
+                        'link_id' => (int) ($link->link_id ?? $conversation->link_id ?? 0),
+                        'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
+                        'meta' => [
+                            'reason' => (string) ($v2Route['reason'] ?? 'unknown'),
+                            'language_code' => (string) ($v2Route['language_code'] ?? ''),
+                            'market_code' => (string) ($v2Route['market_code'] ?? ''),
+                            'routing_policy' => 'v2_cohort_fail_closed_no_v1',
+                        ],
+                    ]);
+                } catch(\Throwable $exception) {
+                    error_log(sprintf(
+                        '[fcc_product_advisor_v2] routing_rejection_log_failed reason=%s fingerprint=%s',
+                        (string) ($v2Route['reason'] ?? 'unknown'),
+                        substr(hash('sha256', $exception->getMessage()), 0, 16)
+                    ));
+                }
+
+                throw new \RuntimeException(fcc_ai_get_product_advisor_v2_route_error_message($v2Route));
+            }
+
+            return $advisor_v2->handle($payload, $message, $conversation_state, $context, $assistant);
+        }
+    }
+
     $contextual_message_bundle = fcc_ai_build_contextual_public_message((int) ($conversation->fcc_ai_conversation_id ?? 0), $message, (string) ($conversation->assistant_type ?? ''));
     $current_user_message = trim((string) $message);
     $message_for_matching = trim((string) ($contextual_message_bundle['message'] ?? $current_user_message));
@@ -26701,6 +27482,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         ];
     }
 
+    $reply_meta = array_merge($reply_meta, fcc_ai_usage_metadata($model_attempt));
     $reply_content = trim((string) ($reply['content'] ?? ''));
     $owner_name = trim((string) ($user->name ?? ''));
     $joint_quantity_post_guard_context = trim($followup_anchor_user_message . "\n" . $recent_user_context . "\n" . $message_for_matching);
@@ -27009,7 +27791,7 @@ function fcc_ai_handle_public_message(array $payload): array {
     $reply['meta'] = $reply_meta;
     $reply['knowledge_suggestions'] = $knowledge_suggestions;
 
-    fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'assistant', (string) ($reply['content'] ?? ''), [
+    fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'assistant', (string) ($reply['content'] ?? ''), array_merge([
         'message_type' => 'chat',
         'model' => (string) ($reply_meta['model'] ?? 'fcc-local-preview'),
         'provider' => (string) ($reply_meta['provider'] ?? 'local_preview'),
@@ -27023,7 +27805,7 @@ function fcc_ai_handle_public_message(array $payload): array {
         'knowledge_suggestions' => $knowledge_suggestions,
         'used_context_for_matching' => $used_context_for_matching,
         'recent_user_context' => $recent_user_context,
-    ]);
+    ], fcc_ai_usage_metadata($model_attempt), ['usage' => fcc_ai_usage_metadata($model_attempt)]));
     fcc_ai_increment_daily_stats((int) $user->user_id, (string) $conversation->assistant_type, (string) $conversation->scope, [
         'user_messages' => 1,
         'assistant_messages' => 1,
@@ -27080,6 +27862,7 @@ function fcc_ai_ensure_internal_coach_welcome_message(int $conversation_id, arra
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'hr'));
     $user_name = trim((string) ($context['user_name'] ?? ''));
     $suggestions = fcc_ai_get_internal_coach_suggestions($context, '', 4);
+    if(fcc_journey_enabled()) $suggestions=[];
     $coach_summary = is_array($context['ai_plan']['coach_summary'] ?? null) ? $context['ai_plan']['coach_summary'] : [];
     $welcome_content = fcc_ai_get_internal_coach_welcome_message($language, $user_name, [
         'coach_summary' => $coach_summary,
@@ -27127,9 +27910,9 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         (string) ($context['last_user_message'] ?? '')
     );
     $language_label = match($language) {
-        'en' => 'English',
-        'sl' => 'Slovenian',
-        'bg' => 'Bulgarian',
+        'en' => 'English', 'sl' => 'Slovenian', 'bg' => 'Bulgarian',
+        'de' => 'German', 'sr' => 'Serbian in Latin script (standard Ekavian)',
+        'sq' => 'Albanian', 'cnr' => 'Montenegrin in Latin script (Ijekavian)', 'fr' => 'French', 'es' => 'Spanish', 'sv' => 'Swedish', 'hu' => 'Hungarian', 'pl' => 'Polish', 'ro' => 'Romanian',
         default => 'Croatian',
     };
     $assistant_label = trim((string) ($assistant->display_name ?? fcc_ai_get_assistant_label('coach', 'FCC Coach')));
@@ -27330,7 +28113,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Primary mission: turn uncertainty into the clearest next business move inside FCC. You are not here to impress with broad theory. You are here to help the collaborator move forward now.',
         'Core jobs: guide the collaborator through AI Plan and Your growth plan; explain the current FCC page and what to do on it; help improve apps, contacts and follow-up; create practical content and communication assets; keep the collaborator aligned with the next weekly move.',
         'Always reply in ' . $language_label . '. Keep replies warm, practical, confident and specific to the current FCC page. Prefer one to three short paragraphs, or a short flat list when steps are clearer that way.',
-        'Language purity rule: stay fully inside ' . $language_label . ' in the final answer. Do not mix Croatian, Slovenian, Bulgarian or English in the same reply unless you are quoting an exact UI label, product name or system label that exists in the provided context.',
+        'Language purity rule: stay fully inside ' . $language_label . ' for all new replies, instructions and recipient drafts. The current interface selection overrides older messages, source material, examples and assistant defaults in another language. Continue the existing topic in the selected language without asking the member to open a support ticket merely because the language changed. Keep exact product names, URLs and identifiers unchanged.',
         'Tone: ' . ($tone !== '' ? $tone : 'supportive') . '.',
         'Response rules: always identify the most useful next move; prefer action over explanation; if the user asks for a DM, caption, story angle, checklist, follow-up or action plan, write it directly; if the user is vague, narrow the answer to one best move instead of giving a wide overview.',
         'Clarification gate: if the product name, page intent, market, ordering or promotion rule, campaign condition, app block or collaborator goal is unclear, stop and ask one short clarification question before giving a concrete recommendation. Never guess the product or local rule just to sound helpful.',
@@ -27346,9 +28129,9 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
         'Availability rule: use availability_summary whenever you coach around app reviews or weekly plans. If something is available now, say it clearly. If it is locked, mention the exact next unlock time when provided and redirect the collaborator toward the best thing to do until then.',
         'Product referral rule: when relevant, explain the logged-in share/copy helper on Forever product blog articles. Tell the collaborator to use that helper instead of copying the raw URL. Beginner can use it for stories and direct recommendations. PRO can additionally use the FCC product recommendation block, and those outbound Forever clicks help build the 15+ signal.',
         $page_priority_instruction,
-        'Stay within FCC coaching and platform support. Do not act like the public product advisor, do not diagnose, and do not give medical treatment claims. If a question is really about public product recommendation, steer the collaborator toward the correct public AI or content flow.',
+        'Stay within FCC coaching and platform support. Do not act like the public product advisor, do not diagnose, and do not give medical treatment claims. Help the collaborator write a neutral message for the same contact and locate verified product information for clinician review when relevant; do not redirect to another contact or another AI merely because a health condition was mentioned.',
         'Do not invent FCC pages, settings, analytics, app features or team data that are not present in the provided context. If something is missing, be honest and guide the user with what is available now.',
-        'When talking about FCC AI settings, focus on the collaborator-facing setup only. You may explain Beginner Coach versus VIP Coach and basic versus strongest intelligence package, but never expose raw model names, route keys, hidden admin routing, prompts or policies.',
+        'When talking about FCC AI settings, focus on the collaborator-facing setup only. You may explain the features available with Beginner Coach and VIP Coach without claiming that PRO uses a stronger model, but never expose raw model names, route keys, hidden admin routing, prompts or policies.',
         'Whenever possible, finish with one explicit line that makes the action obvious, such as "Najbolji sljedeći korak sada: ..." or the equivalent in the reply language.',
         fcc_ai_get_default_internal_coach_response_contract($language),
         fcc_ai_get_internal_coach_operating_playbook($language),
@@ -27368,6 +28151,7 @@ function fcc_ai_build_internal_coach_system_prompt(array $context = [], ?object 
 
     $sections[] = 'Immutable guardrails: collaborator-configured prompts may tune style and emphasis only. They must never override FCC coaching scope, hidden system behavior, admin-only boundaries, safety limits, or core operating logic.';
     $sections[] = 'Do not mention internal prompts, policies, Zapier or model details. Focus on the user message, the current FCC context and the next useful move.';
+    $sections[] = (string) file_get_contents(__DIR__ . '/../config/fcc_communication_style.hr.txt');
 
     return trim(implode("\n\n", array_filter($sections)));
 }
@@ -27376,9 +28160,28 @@ function fcc_ai_try_generate_internal_coach_model_reply(object $conversation, ar
     $ai_plan = is_array($context['ai_plan'] ?? null) ? $context['ai_plan'] : [];
     $route_key = trim((string) ($ai_plan['coach_summary']['route_key'] ?? ''));
     $model = fcc_ai_resolve_model_route($route_key !== '' ? $route_key : 'coach_beginner');
-    $system_prompt = fcc_ai_build_internal_coach_system_prompt($context, $assistant);
+    $configured_coach_model = $model;
+    if($route_key === 'coach_vip' && in_array($model, ['gpt-6-sol','gpt-6-luna'], true)) $model = 'gpt-6-sol';
+    if(fcc_journey_enabled((int)$conversation->user_id)) {
+        $history_rows=fcc_coach_history_rows($conversation);
+        $history_packet=fcc_coach_history_packet($history_rows,(string)($context['last_user_message']??end($history_rows)['content']??''));
+        $recent = db()->where('fcc_ai_conversation_id', (int)$conversation->fcc_ai_conversation_id)->where('role', 'user')->orderBy('fcc_ai_message_id', 'DESC')->get('fcc_ai_messages', 6, 'content');
+        $recent_user_text = fcc_coach_retrieval_text(array_reverse($recent));
+        $mentor_context = fcc_coach_mentor_context((int)$conversation->user_id, $recent_user_text, $context);
+        $mentor_context['conversation_memory']=['coverage'=>$history_packet['coverage'],'earlier_excerpts'=>$history_packet['earlier']];
+        if(function_exists('fcc_coach_select_model')) $model = fcc_coach_select_model($configured_coach_model, $route_key, (string)($context['last_user_message'] ?? end($history_rows)['content'] ?? ''), $mentor_context, $history_packet['recent'] ?? []);
+        $system_prompt = fcc_coach_prompt_from_context($mentor_context);
+        $learning_meta = fcc_coach_learning_metadata($mentor_context, array_reverse($recent));
+        $learning_meta['memory']=$history_packet['coverage'];
+    } else {
+        $system_prompt = fcc_ai_build_internal_coach_system_prompt($context, $assistant);
+    }
+    $system_prompt .= "\n\n" . fcc_ai_locale_instruction((string) ($context['language'] ?? $conversation->language ?? 'en'));
     $messages = fcc_ai_build_conversation_model_messages($conversation, $system_prompt, 18, ['welcome', 'chat']);
-
+    if(!empty($history_packet['recent'])) {
+        $messages=[['role'=>'system','content'=>$system_prompt]];
+        foreach($history_packet['recent'] as $row)$messages[]=['role'=>$row['role'],'content'=>$row['content']];
+    }
     if(count($messages) < 2) {
         return [
             'success' => false,
@@ -27387,15 +28190,46 @@ function fcc_ai_try_generate_internal_coach_model_reply(object $conversation, ar
         ];
     }
 
-    return fcc_ai_send_openai_chat_messages(
+    $model = fcc_ai_spend_model((int) ($conversation->user_id ?? 0), 'coach', $model);
+    if(isset($mentor_context)) $messages = fcc_ai_cacheable_coach_messages($messages);
+    // Only the selected Luna path adds bounded delivery requirements before locale.
+    $messages[] = ['role'=>'system','content'=>($model === 'gpt-6-luna' && isset($mentor_context) && function_exists('fcc_coach_delivery_instructions') ? fcc_coach_delivery_instructions($mentor_context, $history_packet['recent'] ?? []) . "\n\n" : '') . fcc_ai_locale_instruction((string) ($context['language'] ?? $conversation->language ?? 'en'))];
+
+    $result = fcc_ai_send_openai_chat_messages(
         $model,
         $messages,
-        'fcc_ai_internal_user_id:' . (int) ($conversation->user_id ?? 0) . '|conversation:' . (string) ($conversation->public_id ?? '')
+        'fcc_ai_internal_user_id:' . (int) ($conversation->user_id ?? 0) . '|conversation:' . (string) ($conversation->public_id ?? ''),
+        array_merge(fcc_ai_workload_options('coach', $model), $model === 'gpt-6-luna' ? ['reasoning_effort'=>'none'] : [], isset($mentor_context) ? ['response_format'=>($model === 'gpt-6-luna' && function_exists('fcc_coach_luna_response_format') ? fcc_coach_luna_response_format() : fcc_coach_response_format())] : [], ['spend_user_id' => (int) ($conversation->user_id ?? 0), 'spend_channel' => 'coach', 'spend_luna_instructions' => isset($mentor_context) && function_exists('fcc_coach_delivery_instructions') ? fcc_coach_delivery_instructions($mentor_context, $history_packet['recent'] ?? []) : ''])
     );
+    if(isset($mentor_context) && !empty($result['success'])) {
+        $decoded=fcc_coach_decode_reply((string)$result['content'],$mentor_context);
+        $issues=$decoded?fcc_coach_reply_issues($decoded,$mentor_context):['invalid_json_or_ungrounded_link'];
+        if($issues) {
+            // One bounded correction. Never show a failed medical draft as a fallback.
+            $messages[]=['role'=>'assistant','content'=>(string)$result['content']];
+            $messages[]=['role'=>'system','content'=>'Popravi prethodni JSON odgovor. invalid_json_or_ungrounded_link znači vrati točno guidance i recipient_message te koristi samo točne URL adrese iz konteksta, bez mijenjanja parametara, fragmenata ili referala. unsolicited_recipient_message znači da osoba pita za sebe, uči ili traži podršku: odgovori potpuno u guidance, a recipient_message ostavi prazno. Provjera je otkrila: '.implode(', ',$issues).'. Za webinar preuzmi date_label i weekday_local iz konteksta točne pozivnice. Pogrešan dan u tjednu ispravi ili izostavi, nemoj ga računati napamet. Zadrži točne tražene nazive, kratke neutralne opise i dopuštene osobne linkove. U zdravstvenoj situaciji ukloni naslov Preporučeni proizvodi, pozive na kupnju, popuste, isprobavanje i tvrdnje o koristi za bolest. Provjeru deklaracije s liječnikom prije uzimanja napiši jednom jasno, ne kao ako želiš ili ako je potrebno. Ukloni ponavljanje, zadrži prirodan ton i razliku između pomoći suradniku i poruke primatelju. Vrati isti JSON oblik.'];
+            $messages[]=['role'=>'system','content'=>fcc_ai_locale_instruction((string) ($context['language'] ?? $conversation->language ?? 'en'))];
+            $repaired=fcc_ai_send_openai_chat_messages($model,$messages,'fcc_ai_internal_user_id:'.(int)$conversation->user_id.'|conversation:'.(string)$conversation->public_id,array_merge(fcc_ai_workload_options('coach', $model), $model === 'gpt-6-luna' ? ['reasoning_effort'=>'none'] : [], ['response_format'=>($model === 'gpt-6-luna' && function_exists('fcc_coach_luna_response_format') ? fcc_coach_luna_response_format() : fcc_coach_response_format()), 'spend_user_id' => (int) $conversation->user_id, 'spend_channel' => 'coach', 'spend_luna_instructions' => function_exists('fcc_coach_delivery_instructions') ? fcc_coach_delivery_instructions($mentor_context, $history_packet['recent'] ?? []) : '']));
+            $reviewed=!empty($repaired['success']) ? fcc_coach_decode_reply((string)$repaired['content'],$mentor_context) : null;
+            $repaired=fcc_ai_combine_attempt_usage($result,$repaired);
+            if(!$reviewed || fcc_coach_reply_issues($reviewed,$mentor_context)) return array_merge($repaired,['success'=>false,'reason'=>'coach_response_review_failed','learning_meta'=>$learning_meta]);
+            $result=$repaired;
+            $result['quality_repaired']=true;
+            $decoded=$reviewed;
+        }
+        $result=array_merge($result,$decoded);
+        $result['learning_meta']=$learning_meta;
+    }
+    return $result;
 }
 
 function fcc_ai_generate_internal_coach_reply(string $message, array $context = []): array {
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'auto'), $message);
+    // FCC product education lane. Business and platform requests retain their existing route.
+    require_once APP_PATH . 'helpers/fcc_product_education_coach_bridge.php';
+    $education_reply = fcc_product_education_coach_bridge_reply($message, array_replace($context, ['language' => $language]));
+    if($education_reply !== null) return $education_reply;
+
     $page = is_array($context['page'] ?? null) ? $context['page'] : [];
     $ai_plan = is_array($context['ai_plan'] ?? null) ? $context['ai_plan'] : [];
     $suggestions = fcc_ai_get_internal_coach_suggestions([
@@ -27547,6 +28381,24 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
     $reply_mode = 'general';
     $one_next_step = '';
 
+    // Health context must take priority over old deterministic aloe/tea routines.
+    // The model receives the same-contact communication policy; this is only its safe fallback.
+    if(fcc_ai_is_internal_coach_personal_health_product_request($message, $recent_coach_context)
+        || fcc_ai_contains_keywords($message."\n".$recent_coach_context, ['bubreg','bubrez','bubrež','kidney','nephro','nefro','dijaliz','dialysis','ledvic'])) {
+        return [
+            'content' => $language === 'en'
+                ? 'We can stay with this contact and prepare information for their clinician. You could write: "Hi, would you like me to send the ingredients and product information so you can check them with your doctor before taking anything?" Which exact product do you mean?'
+                : ($language === 'sl'
+                    ? 'Ostaniva pri tej osebi in ji pomagajva pripraviti informacije za zdravnika. Lahko napišeš: "Živjo, želiš, da ti pošljem sestavo in informacije o izdelku, da jih pred uporabo preveriš s svojim zdravnikom?" Kateri izdelek imaš v mislih?'
+                    : 'Možemo ostati uz tu osobu i pomoći joj pripremiti informacije za liječnika. Možeš napisati: "Bok, želiš li da ti pošaljem sastav i informacije o proizvodu da ih prije uzimanja provjeriš sa svojim liječnikom?" Na koji točno proizvod misliš?'),
+            'language' => $language,
+            'knowledge_suggestions' => [],
+            'reply_mode' => 'coach_health_product_boundary',
+            'force_local_preview' => false,
+            'next_step' => '',
+        ];
+    }
+
     if(fcc_ai_is_internal_coach_nutrition_comparison_draft($message)) {
         $content = fcc_ai_build_internal_coach_nutrition_comparison_reply($message, $language);
 
@@ -27673,42 +28525,6 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
         ];
     }
 
-    if(fcc_ai_is_internal_coach_personal_health_product_request($message, $recent_coach_context)) {
-        $content = $language === 'en'
-            ? implode("\n\n", [
-                'I would make a small safety cut here: Coach should not build a personal product routine for a health issue or present products as treatment.',
-                'For a personal health situation, the safest first lane is a doctor, pharmacist or specialist who knows the full context. Inside FCC, the clean next step is to use the public FCC Recommendation chat/product flow, where the person can explain the situation directly and leave contact if a partner should follow up.',
-                'As Coach, I can help you with the communication, not with prescribing. A safe DM line would be: "I do not want to guess around a health issue, but I can send you the FCC Recommendation direction and connect you for a personal follow-up."',
-                'Best next step now: send them to the public FCC Recommendation flow, or give me the exact public message you want to send and I will make it short and compliant.',
-            ])
-            : ($language === 'sl'
-                ? implode("\n\n", [
-                    'Tukaj bi naredil majhen varnostni rez: Coach naj ne sestavlja osebne rutine izdelkov za zdravstveno težavo in izdelkov ne sme predstaviti kot zdravljenje.',
-                    'Pri osebni zdravstveni situaciji je najvarnejši prvi korak zdravnik, farmacevt ali specialist, ki pozna celoten kontekst. Znotraj FCC je najčistejši naslednji korak javni FCC Priporočilo chat oziroma produktni tok, kjer lahko oseba neposredno opiše situacijo in pusti kontakt za nadaljevanje.',
-                    'Kot Coach ti lahko pomagam s komunikacijo, ne s predpisovanjem. Varna DM poved je: "Pri zdravstveni težavi ne želim ugibati, lahko pa ti pošljem FCC priporočilo in te povežem za osebni nadaljnji pogovor."',
-                    'Najboljša naslednja poteza zdaj: usmeri osebo v javni FCC Priporočilo tok ali mi pošlji točno javno sporočilo, ki ga želiš poslati, pa ga skrajšam in uskladim.',
-                ])
-                : implode("\n\n", [
-                    'Ovdje bih napravio mali sigurni rez: Coach ne treba slagati osobnu rutinu proizvoda za zdravstveni problem niti proizvode predstavljati kao liječenje.',
-                    'Za osobnu zdravstvenu situaciju prvi siguran smjer su liječnik, ljekarnik ili stručnjak koji poznaje cijeli kontekst. Unutar FCC-a najčišći sljedeći korak je javni FCC Preporuka chat ili produktni tok, gdje osoba može direktno opisati situaciju i ostaviti kontakt ako želi da joj se partner javi.',
-                    'Kao Coach mogu pomoći s komunikacijom, ne s propisivanjem. Sigurna DM rečenica bila bi: "Ne želim nagađati oko zdravstvenog problema, ali mogu ti poslati FCC Preporuku i povezati te za osobni nastavak."',
-                    'Najbolji sljedeći korak sada: pošalji osobu u javni FCC Preporuka tok ili mi daj točnu javnu poruku koju želiš poslati pa ću je skratiti i uskladiti.',
-                ]));
-
-        return [
-            'content' => $content,
-            'language' => $language,
-            'knowledge_suggestions' => [],
-            'reply_mode' => 'coach_health_product_boundary',
-            'force_local_preview' => true,
-            'next_step' => $language === 'en'
-                ? 'Use the public FCC Recommendation flow or send me the public DM text to refine.'
-                : ($language === 'sl'
-                    ? 'Uporabi javni FCC Priporočilo tok ali mi pošlji javno DM besedilo za dodelavo.'
-                    : 'Koristi javni FCC Preporuka tok ili mi pošalji javnu DM poruku za doradu.'),
-        ];
-    }
-
     if(fcc_ai_is_internal_coach_weekly_outcome_location_request($message)) {
         $content = $language === 'en'
             ? implode("\n\n", [
@@ -27761,7 +28577,7 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 
     if(fcc_ai_internal_coach_is_event_content_context($message)) {
         $event_language = fcc_ai_resolve_public_reply_language('auto', $message);
-        $event_language = in_array($event_language, ['hr', 'sl', 'en'], true) ? $event_language : $language;
+        $event_language = in_array($event_language, ['hr', 'sl', 'en', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','pl','ro'], true) ? $event_language : $language;
         $content = fcc_ai_get_internal_coach_event_content_explainer($event_language);
 
         return [
@@ -28179,8 +28995,8 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
         $access_label = trim((string) ($access_summary['label'] ?? ''));
         if(!$is_pro) {
             $blocks[] = $language === 'en'
-                ? 'Right now you are on Beginner with Beginner Coach and the basic intelligence package. PRO or a free trial switches you to VIP Coach and the strongest intelligence package.'
-                : 'Trenutno si na Beginner paketu s Beginner Coachom i osnovnim paketom inteligencije. PRO ili besplatni trial te prebacuju na VIP Coach i najjači paket inteligencije.';
+                ? 'Right now you are on Beginner with Beginner Coach and the basic intelligence package. PRO or a free trial switches you to VIP Coach and personal support for the FCC tools available in your plan.'
+                : 'Trenutno si na Beginner paketu s Beginner Coachom i osnovnim paketom inteligencije. PRO ili besplatni trial te prebacuju na VIP Coach i osobnu podršku za FCC alate dostupne u tvojem paketu.';
         } else {
             $blocks[] = $language === 'en'
                 ? 'PRO is active, so VIP Coach is already on. Your current growth status is: ' . ($access_label !== '' ? $access_label : 'PRO active') . '.'
@@ -28393,8 +29209,8 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
             ]);
     } elseif(!$is_pro && ($is_content_request || $is_review_request || $is_pro_status_request || $is_product_referral_request)) {
         $blocks[] = $language === 'en'
-            ? 'If you want deeper app analysis, weekly AI plans, and VIP Coach on the strongest intelligence package, activate PRO or at least the free trial.'
-            : 'Ako želiš dublju AI analizu aplikacije, tjedne AI planove i VIP Coach na najjačem paketu inteligencije, aktiviraj PRO ili barem besplatni trial.';
+            ? 'If you want deeper app analysis, weekly AI plans, and VIP Coach with personal support for the FCC tools available in your plan, activate PRO or at least the free trial.'
+            : 'Ako želiš dublju AI analizu aplikacije, tjedne AI planove i VIP Coach s osobnom podrškom za FCC alate dostupne u tvojem paketu, aktiviraj PRO ili barem besplatni trial.';
     }
 
     if($public_top_performer) {
@@ -28510,6 +29326,20 @@ function fcc_ai_generate_internal_coach_reply(string $message, array $context = 
 }
 
 function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array $payload = []): array {
+    // Two opening tabs must resume the same first conversation after activation.
+    $lock = 'fcc_coach_workspace_' . (int)$user->user_id;
+    $acquired = db()->rawQueryOne('SELECT GET_LOCK(?, 5) AS acquired', [$lock]);
+    if((int)($acquired->acquired ?? 0) !== 1) {
+        throw new \RuntimeException(fcc_t('Coach se upravo otvara. Pokušaj ponovno za trenutak.'));
+    }
+    try {
+        return fcc_ai_create_or_resume_internal_coach_conversation_locked($user, $payload);
+    } finally {
+        db()->rawQueryOne('SELECT RELEASE_LOCK(?) AS released', [$lock]);
+    }
+}
+
+function fcc_ai_create_or_resume_internal_coach_conversation_locked(object $user, array $payload = []): array {
     fcc_ai_ensure_tables();
 
     if(!fcc_ai_user_has_coach_access($user)) {
@@ -28530,6 +29360,9 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
             ->where('scope', $scope)
             ->getOne('fcc_ai_conversations');
 
+        if($conversation && !fcc_ai_internal_coach_workspace_matches($conversation, (int)$user->user_id)) {
+            $conversation = null;
+        }
         if($conversation) {
             $resume_source = 'client_thread';
         }
@@ -28543,7 +29376,8 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
         }
     }
 
-    $language = fcc_ai_normalize_language((string) ($payload['language'] ?? ($conversation->language ?? 'auto')));
+    $language = fcc_ai_normalize_language((string) ($payload['language'] ?? $user->language ?? 'en'));
+    if(!in_array($language, array_values(\Altum\Language::$active_languages), true)) $language = fcc_locale((string) ($user->language ?? 'en'));
     $resolved_language = fcc_ai_resolve_public_reply_language($language);
     $page = fcc_ai_get_internal_coach_page_context($payload, $resolved_language);
     $ai_plan = fcc_ai_get_user_ai_plan_summary($user, $resolved_language);
@@ -28557,7 +29391,8 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
         'source_page_slug' => (string) ($page['slug'] ?? ''),
         'source_page_title' => (string) ($page['title'] ?? ''),
         'source_page_section' => (string) ($page['section'] ?? ''),
-        'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+        'context_storage_key' => fcc_ai_get_internal_context_storage_key((int)$user->user_id),
+        'coach_workspace' => fcc_ai_internal_coach_workspace((int)$user->user_id),
     ];
 
     if($conversation) {
@@ -28603,8 +29438,8 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
             'scope' => $scope,
             'owner_name' => (string) ($user->name ?? ''),
             'language' => $resolved_language,
-            'storage_key' => fcc_ai_get_internal_storage_key(),
-            'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+            'storage_key' => fcc_ai_get_internal_storage_key((int)$user->user_id),
+            'context_storage_key' => fcc_ai_get_internal_context_storage_key((int)$user->user_id),
             'is_resumed' => true,
             'resume_source' => $resume_source,
             'coach_mode' => $ai_plan['coach_summary'] ?? [],
@@ -28665,8 +29500,8 @@ function fcc_ai_create_or_resume_internal_coach_conversation(object $user, array
         'scope' => $scope,
         'owner_name' => (string) ($user->name ?? ''),
         'language' => $resolved_language,
-        'storage_key' => fcc_ai_get_internal_storage_key(),
-        'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+        'storage_key' => fcc_ai_get_internal_storage_key((int)$user->user_id),
+        'context_storage_key' => fcc_ai_get_internal_context_storage_key((int)$user->user_id),
         'is_resumed' => false,
         'resume_source' => $resume_source,
         'coach_mode' => $ai_plan['coach_summary'] ?? [],
@@ -28680,7 +29515,7 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
     $message = trim((string) ($payload['message'] ?? ''));
 
     if($message === '') {
-        throw new \RuntimeException('Poruka ne može biti prazna.');
+        throw new \RuntimeException(fcc_t('Poruka ne može biti prazna.'));
     }
 
     $conversation_state = fcc_ai_create_or_resume_internal_coach_conversation($user, $payload);
@@ -28692,24 +29527,27 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         ->getOne('fcc_ai_conversations');
 
     if(!$conversation) {
-        throw new \RuntimeException('Nije moguće spremiti coach poruku bez valjanog razgovora.');
+        throw new \RuntimeException(fcc_t('Nije moguće spremiti coach poruku bez valjanog razgovora.'));
     }
 
     $assistant = fcc_ai_get_assistant_by_id((int) ($conversation->fcc_ai_assistant_id ?? 0));
     $resolved_language = (string) ($conversation_state['language'] ?? $conversation->language ?? 'hr');
+    $language_state=fcc_coach_reply_language_state($message,$resolved_language,fcc_ai_to_array($conversation->meta??'{}'),fcc_coach_history_rows($conversation));
+    $resolved_language=$language_state['coach_reply_language'];
     $page = fcc_ai_get_internal_coach_page_context($payload, $resolved_language);
     $ai_plan = fcc_ai_get_user_ai_plan_summary($user, $resolved_language);
 
     db()->where('fcc_ai_conversation_id', (int) $conversation->fcc_ai_conversation_id)->update('fcc_ai_conversations', [
         'meta' => json_encode(array_merge(
             fcc_ai_to_array($conversation->meta ?? '{}'),
+            $language_state,
             [
                 'source_context' => trim((string) ($payload['source_context'] ?? 'FCC Coach popup')),
                 'source_page_url' => (string) ($page['url'] ?? ''),
                 'source_page_slug' => (string) ($page['slug'] ?? ''),
                 'source_page_title' => (string) ($page['title'] ?? ''),
                 'source_page_section' => (string) ($page['section'] ?? ''),
-                'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+                'context_storage_key' => fcc_ai_get_internal_context_storage_key((int)$user->user_id),
             ]
         )),
         'last_datetime' => get_date(),
@@ -28717,6 +29555,8 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
 
     fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'user', $message, [
         'message_type' => 'chat',
+        'coach_prompt_version' => FCC_COACH_MENTOR_VERSION,
+        'communication_style_hash' => substr(hash_file('sha256',__DIR__.'/../config/fcc_communication_style.hr.txt'),0,12),
         'model' => 'fcc-user-message',
         'source_page_route' => (string) ($page['route'] ?? ''),
         'source_page_section' => (string) ($page['section'] ?? ''),
@@ -28729,9 +29569,12 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         'page' => $page,
         'ai_plan' => $ai_plan,
         'user_name' => (string) ($user->name ?? ''),
+        'user_id' => (int) $user->user_id,
     ]);
 
-    $force_local_preview = !empty($reply['force_local_preview']);
+    $mentor_enabled = fcc_journey_enabled((int)$user->user_id);
+    $is_product_education = ($reply['reply_mode'] ?? '') === 'product_education';
+    $force_local_preview = $is_product_education || (!$mentor_enabled && !empty($reply['force_local_preview']));
     $model_attempt = [
         'success' => false,
         'reason' => $force_local_preview ? 'coach_guardrail_local' : 'local_preview',
@@ -28766,32 +29609,59 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         ];
     }
 
+    $reply_meta = array_merge($reply_meta, fcc_ai_usage_metadata($model_attempt));
     $premium_content_context = !empty($reply['premium_content_context'])
         || fcc_ai_contains_keywords($message, ['premium', 'luksuz', 'luskuz', 'elegant']);
 
-    if($premium_content_context && !fcc_ai_contains_keywords((string) ($reply['content'] ?? ''), ['premium'])) {
+    if(!$mentor_enabled && $premium_content_context && !fcc_ai_contains_keywords((string) ($reply['content'] ?? ''), ['premium'])) {
         $premium_prefix = $resolved_language === 'en'
             ? 'Premium version:'
-            : ($resolved_language === 'sl' ? 'Premium verzija:' : 'Premium verzija:');
+            : ($resolved_language === 'de' ? 'Premiumversion:' : 'Premium verzija:');
         $reply['content'] = trim($premium_prefix . "\n" . trim((string) ($reply['content'] ?? '')));
     }
 
+    if($mentor_enabled && !$is_product_education) {
+        $reply_meta['quality_repaired']=!empty($model_attempt['quality_repaired']);
+        $reply['reply_mode']='mentor_context';
+        $reply['recipient_message']=!empty($model_attempt['success'])?(string)($model_attempt['recipient_message']??''):'';
+        $reply['guidance']=!empty($model_attempt['success'])?(string)($model_attempt['guidance']??''):'';
+        $reply['knowledge_suggestions']=[];
+        $reply['next_step']='';
+        if(empty($model_attempt['success']) && !$force_local_preview) {
+            $reply['content']=fcc_t('Trenutačno ne mogu pripremiti osobni odgovor. Pokušaj ponovno za nekoliko trenutaka; primjer i pomoć uz tvoj zadatak ostaju dostupni.', [], $resolved_language);
+        }
+    }
+    if(!$mentor_enabled && !$is_product_education && in_array($resolved_language,['de','sr','sq','cnr','fr','es','sv','hu','pl','ro'],true) && empty($model_attempt['success'])) {
+        $reply['content']=fcc_t('Trenutačno ne mogu pripremiti osobni odgovor. Pokušaj ponovno za nekoliko trenutaka; primjer i pomoć uz tvoj zadatak ostaju dostupni.',[],$resolved_language);
+        $reply['next_step']='';
+    }
+    $reply['language']=$resolved_language;
     $reply['meta'] = $reply_meta;
 
-    fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'assistant', (string) ($reply['content'] ?? ''), [
+    fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'assistant', (string) ($reply['content'] ?? ''), array_merge([
         'message_type' => 'chat',
+        'coach_prompt_version' => $mentor_enabled ? FCC_COACH_MENTOR_VERSION : 'legacy',
+        'learning' => $mentor_enabled ? ($model_attempt['learning_meta'] ?? []) : [],
+        'recipient_message' => $reply['recipient_message'] ?? '',
+        'guidance' => $reply['guidance'] ?? '',
+        'communication_style_hash' => substr(hash_file('sha256',__DIR__.'/../config/fcc_communication_style.hr.txt'),0,12),
         'model' => (string) ($reply_meta['model'] ?? 'fcc-local-preview'),
         'provider' => (string) ($reply_meta['provider'] ?? 'local_preview'),
         'input_tokens' => (int) ($reply_meta['input_tokens'] ?? 0),
         'output_tokens' => (int) ($reply_meta['output_tokens'] ?? 0),
         'api_response_time' => (int) ($reply_meta['api_response_time'] ?? 0),
         'fallback_reason' => (string) ($reply_meta['fallback_reason'] ?? ''),
+        'usage' => fcc_ai_usage_metadata($model_attempt),
+        'quality_repaired' => !empty($model_attempt['quality_repaired']),
+        'reply_language' => $resolved_language,
         'knowledge_suggestions' => $reply['knowledge_suggestions'] ?? [],
+        'product_education' => $reply['product_education'] ?? null,
+        'product_education_share' => $reply['product_education_share'] ?? null,
         'source_page_route' => (string) ($page['route'] ?? ''),
         'source_page_section' => (string) ($page['section'] ?? ''),
         'reply_mode' => (string) ($reply['reply_mode'] ?? ''),
         'next_step' => (string) ($reply['next_step'] ?? ''),
-    ]);
+    ], fcc_ai_usage_metadata($model_attempt)));
     fcc_ai_increment_daily_stats((int) $user->user_id, 'coach', 'internal_coach', [
         'user_messages' => 1,
         'assistant_messages' => 1,
@@ -28828,8 +29698,8 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         'language' => (string) ($reply['language'] ?? 'hr'),
         'reply' => $reply,
         'messages' => fcc_ai_get_conversation_messages((int) $conversation->fcc_ai_conversation_id, 120, fcc_ai_build_feedback_actor('owner', (string) $user->user_id, (int) $user->user_id)),
-        'storage_key' => fcc_ai_get_internal_storage_key(),
-        'context_storage_key' => fcc_ai_get_internal_context_storage_key(),
+        'storage_key' => fcc_ai_get_internal_storage_key((int)$user->user_id),
+        'context_storage_key' => fcc_ai_get_internal_context_storage_key((int)$user->user_id),
         'coach_mode' => $ai_plan['coach_summary'] ?? [],
     ];
 }
@@ -28847,6 +29717,9 @@ function fcc_ai_capture_public_message_feedback(array $payload): array {
         'source_context' => (string) ($payload['source_context'] ?? ''),
         'source_page_url' => (string) ($payload['source_page_url'] ?? ''),
         'source_page_slug' => (string) ($payload['source_page_slug'] ?? ''),
+        'source_page_title' => (string) ($payload['source_page_title'] ?? ''),
+        'source_page_section' => (string) ($payload['source_page_section'] ?? ''),
+        'market_code' => (string) ($payload['market_code'] ?? ''),
         'visitor_key' => (string) ($payload['visitor_key'] ?? ''),
     ];
 
@@ -28854,10 +29727,13 @@ function fcc_ai_capture_public_message_feedback(array $payload): array {
     $context = fcc_ai_resolve_public_owner_context([
         'conversation_public_id' => (string) ($conversation_state['conversation_public_id'] ?? ''),
         'link_id' => (int) ($payload['link_id'] ?? 0),
+        'visitor_key' => (string) ($payload['visitor_key'] ?? ''),
+        'assistant_type' => (string) ($payload['assistant_type'] ?? ''),
+        'scope' => (string) ($payload['scope'] ?? ''),
     ]);
 
     if(!$context || empty($context['conversation'])) {
-        throw new \RuntimeException('Nije moguće spremiti feedback bez valjanog razgovora.');
+        throw new \RuntimeException(fcc_t('Nije moguće spremiti feedback bez valjanog razgovora.'));
     }
 
     $conversation = $context['conversation'];
@@ -28904,7 +29780,7 @@ function fcc_ai_capture_internal_coach_feedback(object $user, array $payload): a
         ->getOne('fcc_ai_conversations');
 
     if(!$conversation) {
-        throw new \RuntimeException('Coach razgovor za feedback nije pronađen.');
+        throw new \RuntimeException(fcc_t('Coach razgovor za feedback nije pronađen.'));
     }
 
     $actor = fcc_ai_build_feedback_actor('owner', (string) $user->user_id, (int) $user->user_id);
@@ -28931,61 +29807,109 @@ function fcc_ai_capture_internal_coach_feedback(object $user, array $payload): a
     ];
 }
 
-function fcc_ai_capture_public_lead(array $payload): array {
+function fcc_ai_capture_public_lead(array $payload, bool $run_operational_followup = true): array {
     fcc_ai_ensure_tables();
 
-    $conversation_payload = [
-        'assistant_type' => (string) ($payload['assistant_type'] ?? ''),
-        'scope' => (string) ($payload['scope'] ?? ''),
-        'conversation_public_id' => (string) ($payload['conversation_public_id'] ?? ''),
-        'link_id' => (int) ($payload['link_id'] ?? 0),
-        'blog_post_id' => !empty($payload['blog_post_id']) ? (int) $payload['blog_post_id'] : null,
-        'language' => (string) ($payload['language'] ?? ''),
-        'source_context' => (string) ($payload['source_context'] ?? ''),
-        'source_page_url' => (string) ($payload['source_page_url'] ?? ''),
-        'source_page_slug' => (string) ($payload['source_page_slug'] ?? ''),
-        'visitor_key' => (string) ($payload['visitor_key'] ?? ''),
-    ];
+    if(!array_key_exists('consent_contact', $payload) || (string) $payload['consent_contact'] !== '1') {
+        throw new \RuntimeException(fcc_t('Za slanje kontakta potrebna je izričita privola.'));
+    }
 
-    $conversation_payload['assistant_type'] = $conversation_payload['assistant_type'] !== ''
-        ? $conversation_payload['assistant_type']
-        : 'product_advisor';
+    /* lead_type is server-owned in the persisted offer. Reject old or tampered
+     * clients instead of silently normalizing an attacker-selected value. */
+    if(array_key_exists('lead_type', $payload) && trim((string) $payload['lead_type']) !== '') {
+        throw new \RuntimeException(fcc_t('Vrsta kontakta nije prihvaćena.'));
+    }
 
-    $conversation_state = fcc_ai_create_or_resume_public_conversation($conversation_payload);
+    $conversation_public_id = trim((string) ($payload['conversation_public_id'] ?? ''));
+    $visitor_key = trim((string) ($payload['visitor_key'] ?? ''));
+    $requested_link_id = (int) ($payload['link_id'] ?? 0);
+    $requested_assistant_type = mb_strtolower(trim((string) ($payload['assistant_type'] ?? '')));
+    $requested_scope = mb_strtolower(trim((string) ($payload['scope'] ?? '')));
+    $lead_offer_id = mb_strtolower(trim((string) ($payload['lead_offer_id'] ?? '')));
+
+    if(
+        $conversation_public_id === ''
+        || $visitor_key === ''
+        || $requested_link_id <= 0
+        || $requested_assistant_type !== 'product_advisor'
+        || $requested_scope === ''
+        || preg_match('/^[a-f0-9]{32,64}$/D', $lead_offer_id) !== 1
+    ) {
+        throw new \RuntimeException(fcc_t('Kontakt nije povezan s valjanim razgovorom.'));
+    }
+
+    /* Lead submission may only resume an existing server conversation. It must
+     * never create a conversation from client-supplied owner/link fields. */
     $context = fcc_ai_resolve_public_owner_context([
-        'conversation_public_id' => $conversation_state['conversation_public_id'],
-        'link_id' => (int) ($payload['link_id'] ?? 0),
+        'conversation_public_id' => $conversation_public_id,
+        'link_id' => $requested_link_id,
+        'visitor_key' => $visitor_key,
+        'assistant_type' => $requested_assistant_type,
+        'scope' => $requested_scope,
     ]);
 
     if(!$context || empty($context['conversation']) || empty($context['user'])) {
-        throw new \RuntimeException('Nije moguce spremiti AI lead bez valjanog razgovora.');
+        throw new \RuntimeException(fcc_t('Nije moguce spremiti AI lead bez valjanog razgovora.'));
     }
 
     $conversation = $context['conversation'];
     $user = $context['user'];
     $link = $context['link'];
 
-    $lead_type = fcc_ai_normalize_lead_type((string) ($payload['lead_type'] ?? ''));
+    if(
+        (int) ($conversation->link_id ?? 0) !== $requested_link_id
+        || (string) ($conversation->assistant_type ?? '') !== 'product_advisor'
+        || mb_strtolower((string) ($conversation->scope ?? '')) !== $requested_scope
+        || !$link
+        || (int) ($link->link_id ?? 0) !== $requested_link_id
+        || (int) ($link->user_id ?? 0) !== (int) ($user->user_id ?? 0)
+    ) {
+        throw new \RuntimeException(fcc_t('Kontakt nije povezan s valjanim vlasnikom aplikacije.'));
+    }
+
+    $lead_offer = fcc_ai_find_public_lead_offer((int) $conversation->fcc_ai_conversation_id, $lead_offer_id);
+    if(!$lead_offer) {
+        throw new \RuntimeException(fcc_t('Ponuda za kontakt nije važeća ili je istekla.'));
+    }
+
+    $lead_type = (string) $lead_offer['lead_type'];
     $name = input_clean((string) ($payload['name'] ?? ''), 128);
     $email = input_clean_email((string) ($payload['email'] ?? ''));
     $phone = input_clean((string) ($payload['phone'] ?? ''), 32);
     $phone_country_code = input_clean((string) ($payload['phone_country_code'] ?? 'HR'), 8);
     $preferred_contact_channel = fcc_ai_normalize_preferred_contact_channel((string) ($payload['preferred_contact_channel'] ?? 'whatsapp'));
     $country_code = input_clean((string) ($payload['country_code'] ?? ''), 8);
-    $message = input_clean((string) ($payload['message'] ?? ''), 1000);
+    /* Free-form chat/health context is deliberately not copied into contact
+     * records. Purpose comes from the server-owned offer, not from user chat. */
+    $message = '';
     $assistant_type = (string) $conversation->assistant_type;
     $scope = (string) $conversation->scope;
 
-    if($name === '' && $email === '' && $phone === '') {
-        throw new \RuntimeException('Potrebno je ostaviti barem ime i jedan kontakt podatak.');
+    if($email === '' && $phone === '') {
+        throw new \RuntimeException(fcc_t('Potrebno je ostaviti barem email ili telefon.'));
+    }
+
+    if($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        throw new \RuntimeException(fcc_t('Email nije u valjanom formatu.'));
     }
 
     $normalized_phone = fcc_ai_normalize_phone($phone, $phone_country_code);
     if($phone !== '' && !$normalized_phone['is_valid']) {
-        throw new \RuntimeException('Telefon nije u valjanom formatu.');
+        throw new \RuntimeException(fcc_t('Telefon nije u valjanom formatu.'));
     }
 
-    $lead_score = fcc_ai_calculate_lead_score($lead_type, $email, $phone, $message);
+    if($phone === '' && $email !== '') {
+        $preferred_contact_channel = 'email';
+    } elseif($email === '' && $preferred_contact_channel === 'email') {
+        $preferred_contact_channel = 'whatsapp';
+    }
+
+    $lead_score = fcc_ai_calculate_lead_score($lead_type, $email, $phone, '');
+    $consent_at = get_date();
+    $retention_until = date('Y-m-d H:i:s', time() + ((int) $lead_offer['retention_days'] * 86400));
+    $conversation_meta = fcc_ai_to_array($conversation->meta ?? []);
+    $source_page_url = mb_substr(trim((string) ($conversation_meta['source_page_url'] ?? '')), 0, 2048);
+    $source_page_slug = mb_substr(trim((string) ($conversation_meta['source_page_slug'] ?? '')), 0, 128);
 
     $lead = [
         'assistant_type' => $assistant_type,
@@ -28998,101 +29922,812 @@ function fcc_ai_capture_public_lead(array $payload): array {
         'phone_dial_code' => $normalized_phone['dial_code'],
         'preferred_contact_channel' => $preferred_contact_channel,
         'country_code' => $country_code,
-        'message' => $message,
+        'message' => '',
         'lead_score' => $lead_score,
     ];
 
     $data_payload = fcc_ai_build_data_payload($lead, [
         'conversation_public_id' => (string) $conversation->public_id,
         'scope' => $scope,
-        'source_page_url' => trim((string) ($payload['source_page_url'] ?? '')),
-        'source_page_slug' => trim((string) ($payload['source_page_slug'] ?? '')),
-        'blog_post_id' => !empty($payload['blog_post_id']) ? (int) $payload['blog_post_id'] : (int) ($conversation->blog_post_id ?? 0),
+        'source_page_url' => $source_page_url,
+        'source_page_slug' => $source_page_slug,
+        'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
         'link_id' => (int) ($link->link_id ?? $conversation->link_id ?? 0),
+    ]);
+    $data_payload = array_merge($data_payload, [
+        'lead_offer_id' => $lead_offer_id,
+        'consent_at' => $consent_at,
+        'consent_text' => (string) $lead_offer['consent_text'],
+        'consent_version' => (string) $lead_offer['consent_version'],
+        'consent_purpose' => (string) $lead_offer['purpose'],
+        'consent_source' => (string) $lead_offer['consent_source'],
+        'privacy_url' => (string) $lead_offer['privacy_url'],
+        'retention_until' => $retention_until,
+        'lifecycle_status' => 'active',
     ]);
 
     $resolved_link_id = !empty($link->link_id) ? (int) $link->link_id : (!empty($conversation->link_id) ? (int) $conversation->link_id : null);
     $resolved_project_id = !empty($link->project_id) ? (int) $link->project_id : (!empty($conversation->project_id) ? (int) $conversation->project_id : null);
 
-    $datum_id = db()->insert('data', [
-        'biolink_block_id' => null,
-        'link_id' => $resolved_link_id,
-        'project_id' => $resolved_project_id,
-        'user_id' => (int) $user->user_id,
-        'type' => 'ai_chat_lead',
-        'data' => json_encode($data_payload),
-        'datetime' => get_date(),
-    ]);
+    $datum_id = 0;
+    $lead_id = 0;
+    db()->startTransaction();
 
-    if(!$datum_id) {
-        throw new \RuntimeException('AI lead nije uspjesno upisan u kontakte.');
+    try {
+        $locked_conversation = db()
+            ->setQueryOption('FOR UPDATE')
+            ->where('fcc_ai_conversation_id', (int) $conversation->fcc_ai_conversation_id)
+            ->getOne('fcc_ai_conversations');
+
+        if(
+            !$locked_conversation
+            || !hash_equals($conversation_public_id, (string) ($locked_conversation->public_id ?? ''))
+            || !hash_equals($visitor_key, (string) ($locked_conversation->visitor_key ?? ''))
+            || (int) ($locked_conversation->user_id ?? 0) !== (int) ($user->user_id ?? 0)
+            || (int) ($locked_conversation->link_id ?? 0) !== $requested_link_id
+            || (string) ($locked_conversation->assistant_type ?? '') !== 'product_advisor'
+            || mb_strtolower((string) ($locked_conversation->scope ?? '')) !== $requested_scope
+            || (string) ($locked_conversation->status ?? '') !== 'active'
+        ) {
+            throw new \RuntimeException(fcc_t('Razgovor više nije važeći za slanje kontakta.'));
+        }
+
+        $locked_link = db()
+            ->setQueryOption('FOR UPDATE')
+            ->where('link_id', $requested_link_id)
+            ->getOne('links', ['link_id', 'user_id', 'project_id']);
+        $locked_user = db()
+            ->setQueryOption('FOR UPDATE')
+            ->where('user_id', (int) $locked_conversation->user_id)
+            ->getOne('users', ['user_id', 'status']);
+        if(
+            !$locked_link
+            || !$locked_user
+            || (int) ($locked_link->user_id ?? 0) !== (int) ($locked_conversation->user_id ?? 0)
+            || (int) ($locked_user->status ?? 0) !== 1
+        ) {
+            throw new \RuntimeException(fcc_t('Vlasnik aplikacije više nije važeći za slanje kontakta.'));
+        }
+
+        $locked_meta = fcc_ai_to_array($locked_conversation->meta ?? []);
+        $consumed_offer_hashes = array_values(array_filter(array_map('strval', (array) ($locked_meta['consumed_lead_offer_hashes'] ?? []))));
+        $offer_hash = hash('sha256', $lead_offer_id);
+        $active_offer = fcc_ai_to_array($locked_meta['active_lead_offer'] ?? []);
+        if(
+            !hash_equals('active', (string) ($locked_meta['lead_offer_state'] ?? ''))
+            || !hash_equals($lead_offer_id, (string) ($active_offer['offer_id'] ?? ''))
+            || !hash_equals($offer_hash, (string) ($active_offer['offer_hash'] ?? ''))
+            || (int) ($active_offer['server_message_id'] ?? 0) <= 0
+            || (int) ($active_offer['reply_to_user_message_id'] ?? 0) <= 0
+            || (int) ($active_offer['expires_at'] ?? 0) < time()
+            || !hash_equals((string) $lead_offer['purpose'], (string) ($active_offer['purpose'] ?? ''))
+            || !hash_equals((string) $lead_offer['lead_type'], (string) ($active_offer['lead_type'] ?? ''))
+        ) {
+            throw new \RuntimeException(fcc_t('Ponuda za kontakt više nije aktivna.'));
+        }
+
+        $existing_lead = db()
+            ->where('fcc_ai_conversation_id', (int) $locked_conversation->fcc_ai_conversation_id)
+            ->getOne('fcc_ai_leads', ['fcc_ai_lead_id']);
+
+        if(
+            (string) ($locked_conversation->lead_status ?? 'none') === 'captured'
+            || $existing_lead
+            || in_array($offer_hash, $consumed_offer_hashes, true)
+        ) {
+            throw new \RuntimeException(fcc_t('Kontakt je za ovaj razgovor već poslan.'));
+        }
+
+        /* Re-read the persisted offer while the conversation lock is held. */
+        $locked_offer = fcc_ai_find_public_lead_offer(
+            (int) $locked_conversation->fcc_ai_conversation_id,
+            $lead_offer_id,
+            true
+        );
+        if(
+            !$locked_offer
+            || !hash_equals((string) $lead_offer['purpose'], (string) $locked_offer['purpose'])
+            || (int) ($locked_offer['server_message_id'] ?? 0) !== (int) ($active_offer['server_message_id'] ?? 0)
+            || (int) ($locked_offer['reply_to_user_message_id'] ?? 0) !== (int) ($active_offer['reply_to_user_message_id'] ?? 0)
+        ) {
+            throw new \RuntimeException(fcc_t('Ponuda za kontakt više nije važeća.'));
+        }
+
+        $datum_id = (int) db()->insert('data', [
+            'biolink_block_id' => null,
+            'link_id' => $resolved_link_id,
+            'project_id' => $resolved_project_id,
+            'user_id' => (int) $user->user_id,
+            'type' => 'ai_chat_lead',
+            'data' => json_encode($data_payload),
+            'datetime' => get_date(),
+        ]);
+
+        if($datum_id <= 0) {
+            throw new \RuntimeException(fcc_t('Kontakt nije uspješno upisan.'));
+        }
+
+        $lead_meta = [
+            'conversation_public_id' => (string) $conversation->public_id,
+            'source_page_url' => $source_page_url,
+            'source_page_slug' => $source_page_slug,
+            'lead_offer_id' => $lead_offer_id,
+            'consent_at' => $consent_at,
+            'consent_text' => (string) $lead_offer['consent_text'],
+            'consent_version' => (string) $lead_offer['consent_version'],
+            'consent_purpose' => (string) $lead_offer['purpose'],
+            'consent_source' => (string) $lead_offer['consent_source'],
+            'privacy_url' => (string) $lead_offer['privacy_url'],
+            'retention_until' => $retention_until,
+            'lifecycle_status' => 'active',
+        ];
+        $lead_insert = [
+            'fcc_ai_conversation_id' => (int) $conversation->fcc_ai_conversation_id,
+            'datum_id' => $datum_id,
+            'user_id' => (int) $user->user_id,
+            'assistant_type' => $assistant_type,
+            'lead_type' => $lead_type,
+            'status' => 'new',
+            'lead_score' => $lead_score,
+            'name' => $name ?: null,
+            'email' => $email ?: null,
+            'phone' => $normalized_phone['e164'] ?: ($phone ?: null),
+            'preferred_contact_channel' => $preferred_contact_channel,
+            'country_code' => $country_code ?: null,
+            'message' => null,
+            'meta' => json_encode($lead_meta),
+            'datetime' => get_date(),
+            'last_datetime' => get_date(),
+        ];
+        $optional_columns = fcc_ai_get_public_lead_optional_consent_columns();
+        foreach([
+            'lead_offer_id' => $lead_offer_id,
+            'consent_at' => $consent_at,
+            'consent_text' => (string) $lead_offer['consent_text'],
+            'consent_version' => (string) $lead_offer['consent_version'],
+            'consent_purpose' => (string) $lead_offer['purpose'],
+            'consent_source' => (string) $lead_offer['consent_source'],
+            'privacy_url' => (string) $lead_offer['privacy_url'],
+            'retention_until' => $retention_until,
+            'lifecycle_status' => 'active',
+        ] as $column => $value) {
+            if(!empty($optional_columns[$column])) {
+                $lead_insert[$column] = $value;
+            }
+        }
+        $lead_id = (int) db()->insert('fcc_ai_leads', $lead_insert);
+
+        if($lead_id <= 0) {
+            throw new \RuntimeException(fcc_t('Kontakt nije uspješno povezan s razgovorom.'));
+        }
+
+        $locked_meta['consumed_lead_offer_hashes'] = array_slice(array_values(array_unique(array_merge(
+            $consumed_offer_hashes,
+            [$offer_hash]
+        ))), -20);
+        $locked_meta['lead_consent_version'] = (string) $lead_offer['consent_version'];
+        $locked_meta['lead_consent_at'] = $consent_at;
+        unset($locked_meta['active_lead_offer']);
+        $locked_meta['lead_offer_state'] = 'consumed';
+        $locked_meta['lead_offer_consumed_at'] = $consent_at;
+        $locked_meta['lead_offer_consumed_message_id'] = (int) ($locked_offer['server_message_id'] ?? 0);
+
+        $conversation_updated = db()->where('fcc_ai_conversation_id', (int) $conversation->fcc_ai_conversation_id)->update('fcc_ai_conversations', [
+            'latest_datum_id' => $datum_id,
+            'lead_status' => 'captured',
+            'meta' => json_encode($locked_meta),
+            'last_datetime' => get_date(),
+        ]);
+        if(!$conversation_updated) {
+            throw new \RuntimeException(fcc_t('Razgovor nije ažuriran nakon slanja kontakta.'));
+        }
+
+        fcc_ai_log_event([
+            'fcc_ai_conversation_id' => (int) $conversation->fcc_ai_conversation_id,
+            'user_id' => (int) $user->user_id,
+            'assistant_type' => $assistant_type,
+            'event_type' => 'lead_consent_accepted',
+            'link_id' => (int) ($link->link_id ?? $conversation->link_id ?? 0),
+            'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
+            'datum_id' => $datum_id,
+            'meta' => [
+                'lead_type' => $lead_type,
+                'purpose' => (string) $lead_offer['purpose'],
+                'consent_version' => (string) $lead_offer['consent_version'],
+                'consent_source' => (string) $lead_offer['consent_source'],
+                'retention_until' => $retention_until,
+                'offer_hash' => $offer_hash,
+            ],
+        ]);
+
+        db()->commit();
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        throw $exception;
     }
 
-    $lead_id = db()->insert('fcc_ai_leads', [
-        'fcc_ai_conversation_id' => (int) $conversation->fcc_ai_conversation_id,
-        'datum_id' => (int) $datum_id,
-        'user_id' => (int) $user->user_id,
-        'assistant_type' => $assistant_type,
-        'lead_type' => $lead_type,
-        'status' => 'new',
-        'lead_score' => $lead_score,
-        'name' => $name ?: null,
-        'email' => $email ?: null,
-        'phone' => $normalized_phone['e164'] ?: ($phone ?: null),
-        'preferred_contact_channel' => $preferred_contact_channel,
-        'country_code' => $country_code ?: null,
-        'message' => $message ?: null,
-        'meta' => json_encode([
-            'conversation_public_id' => (string) $conversation->public_id,
-            'source_page_url' => trim((string) ($payload['source_page_url'] ?? '')),
-            'source_page_slug' => trim((string) ($payload['source_page_slug'] ?? '')),
-        ]),
-        'datetime' => get_date(),
-        'last_datetime' => get_date(),
-    ]);
-
-    db()->where('fcc_ai_conversation_id', (int) $conversation->fcc_ai_conversation_id)->update('fcc_ai_conversations', [
-        'latest_datum_id' => (int) $datum_id,
-        'lead_status' => 'captured',
-        'last_datetime' => get_date(),
-    ]);
-
-    fcc_ai_log_event([
-        'fcc_ai_conversation_id' => (int) $conversation->fcc_ai_conversation_id,
-        'user_id' => (int) $user->user_id,
-        'assistant_type' => $assistant_type,
-        'event_type' => 'lead_captured',
-        'link_id' => (int) ($link->link_id ?? $conversation->link_id ?? 0),
-        'blog_post_id' => (int) ($conversation->blog_post_id ?? 0),
-        'datum_id' => (int) $datum_id,
-        'meta' => [
-            'lead_id' => (int) $lead_id,
-            'lead_type' => $lead_type,
-            'preferred_contact_channel' => $preferred_contact_channel,
-            'lead_score' => $lead_score,
-        ],
-    ]);
-    fcc_ai_increment_daily_stats((int) $user->user_id, $assistant_type, $scope, [
-        'leads' => 1,
-        'business_leads' => in_array($lead_type, ['business_interest', 'mixed_interest'], true) ? 1 : 0,
-        'handoffs' => 1,
-    ], [
-        'event_type' => 'lead_captured',
-    ]);
-
-    fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'system', 'Lead captured for human follow-up.', [
-        'message_type' => 'lead_capture',
-        'lead_id' => (int) $lead_id,
-        'datum_id' => (int) $datum_id,
-    ]);
-    fcc_ai_refresh_conversation_insight((int) $conversation->fcc_ai_conversation_id);
-    fcc_ai_notify_lead_captured($conversation, (int) $datum_id, $lead_type, $lead_score);
+    /* Operational follow-up is best effort after the atomic privacy write. */
+    if($run_operational_followup) {
+        try {
+            fcc_ai_increment_daily_stats((int) $user->user_id, $assistant_type, $scope, [
+                'leads' => 1,
+                'business_leads' => in_array($lead_type, ['business_interest', 'mixed_interest'], true) ? 1 : 0,
+                'handoffs' => 1,
+            ], [
+                'event_type' => 'lead_captured',
+            ]);
+            fcc_ai_log_message((int) $conversation->fcc_ai_conversation_id, 'system', fcc_ai_get_public_lead_saved_note((string)$conversation->language, (string)$user->name), [
+                'message_type' => 'lead_capture',
+                'consent_version' => (string) $lead_offer['consent_version'],
+            ]);
+            fcc_ai_refresh_conversation_insight((int) $conversation->fcc_ai_conversation_id);
+            fcc_ai_notify_lead_captured($conversation, $datum_id, $lead_type, $lead_score);
+        } catch(\Throwable $exception) {
+            error_log('[fcc_ai_lead] followup_failed fingerprint=' . substr(hash('sha256', $exception->getMessage()), 0, 16));
+        }
+    }
 
     return [
-        'lead_id' => (int) $lead_id,
-        'datum_id' => (int) $datum_id,
-        'conversation_public_id' => (string) $conversation->public_id,
-        'lead_score' => $lead_score,
-        'data_url' => url('data?datum_id=' . (int) $datum_id),
+        'accepted' => true,
+        'lead_status' => 'captured',
     ];
+}
+
+/**
+ * Delete a contact and every duplicate PII copy in fcc_ai_leads.
+ * Non-PII consent/replay hashes remain in the conversation audit metadata so a
+ * deleted contact cannot be recreated by replaying the old public offer.
+ */
+function fcc_ai_delete_public_lead_contact_for_user(int $datum_id, int $user_id): bool {
+    if($datum_id <= 0 || $user_id <= 0) {
+        return false;
+    }
+
+    fcc_ai_ensure_tables();
+    db()->startTransaction();
+
+    try {
+        $datum = db()
+            ->setQueryOption('FOR UPDATE')
+            ->where('datum_id', $datum_id)
+            ->where('user_id', $user_id)
+            ->getOne('data', ['datum_id']);
+
+        if(!$datum) {
+            db()->rollback();
+            return false;
+        }
+
+        $lead_rows = db()
+            ->where('datum_id', $datum_id)
+            ->where('user_id', $user_id)
+            ->get('fcc_ai_leads', null, ['fcc_ai_conversation_id']);
+        $conversation_ids = array_values(array_unique(array_filter(array_map(
+            static fn($row): int => (int) ($row->fcc_ai_conversation_id ?? 0),
+            (array) $lead_rows
+        ))));
+
+        $leads_deleted = db()->where('datum_id', $datum_id)->where('user_id', $user_id)->delete('fcc_ai_leads');
+        if($lead_rows && !$leads_deleted) {
+            throw new \RuntimeException(fcc_t('Duplicirani AI kontakt nije uklonjen.'));
+        }
+        $deleted = db()->where('datum_id', $datum_id)->where('user_id', $user_id)->delete('data');
+
+        if(!$deleted) {
+            throw new \RuntimeException(fcc_t('Kontakt nije uklonjen.'));
+        }
+
+        foreach($conversation_ids as $conversation_id) {
+            $conversation = db()
+                ->setQueryOption('FOR UPDATE')
+                ->where('fcc_ai_conversation_id', $conversation_id)
+                ->where('user_id', $user_id)
+                ->getOne('fcc_ai_conversations');
+            if(!$conversation) {
+                continue;
+            }
+
+            $meta = fcc_ai_to_array($conversation->meta ?? []);
+            $meta['lead_contact_deleted_at'] = get_date();
+            $meta['lead_lifecycle_status'] = 'withdrawn';
+            $update = [
+                'lead_status' => 'withdrawn',
+                'meta' => json_encode($meta),
+                'last_datetime' => get_date(),
+            ];
+            if((int) ($conversation->latest_datum_id ?? 0) === $datum_id) {
+                $update['latest_datum_id'] = null;
+            }
+
+            db()->where('fcc_ai_conversation_id', $conversation_id)->where('user_id', $user_id)->update('fcc_ai_conversations', $update);
+        }
+
+        db()->commit();
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        throw $exception;
+    }
+
+    foreach($conversation_ids as $conversation_id) {
+        try {
+            fcc_ai_log_event([
+                'fcc_ai_conversation_id' => $conversation_id,
+                'user_id' => $user_id,
+                'assistant_type' => 'product_advisor',
+                'event_type' => 'lead_contact_deleted',
+                'meta' => [
+                    'lifecycle_status' => 'withdrawn',
+                    'pii_copies_deleted' => true,
+                ],
+            ]);
+        } catch(\Throwable $exception) {
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Remove expired public-lead PII while retaining a minimal lifecycle audit.
+ *
+ * This operation is idempotent and transaction-scoped per lead. The source
+ * `data` row is deleted and the duplicate `fcc_ai_leads` row is scrubbed in the
+ * same transaction, so a scheduled runner cannot leave only one PII copy.
+ */
+function fcc_ai_expire_public_lead_pii(int $lead_id, string $as_of_datetime): bool {
+    if($lead_id <= 0) {
+        return false;
+    }
+
+    $as_of_timestamp = strtotime($as_of_datetime);
+    if($as_of_timestamp === false) {
+        throw new \InvalidArgumentException(fcc_t('Invalid public lead retention timestamp.'));
+    }
+    $as_of_datetime = date('Y-m-d H:i:s', $as_of_timestamp);
+
+    fcc_ai_ensure_tables();
+    $optional_columns = fcc_ai_get_public_lead_optional_consent_columns();
+    $snapshot = db()->where('fcc_ai_lead_id', $lead_id)->getOne('fcc_ai_leads', [
+        'fcc_ai_lead_id',
+        'datum_id',
+        'user_id',
+    ]);
+    if(!$snapshot) {
+        return false;
+    }
+
+    $snapshot_datum_id = (int) ($snapshot->datum_id ?? 0);
+    db()->startTransaction();
+
+    try {
+        /* Keep lock order aligned with owner-triggered deletion: data first,
+         * then lead, then conversation. */
+        $datum = null;
+        if($snapshot_datum_id > 0) {
+            $datum = db()
+                ->setQueryOption('FOR UPDATE')
+                ->where('datum_id', $snapshot_datum_id)
+                ->getOne('data', ['datum_id', 'user_id', 'type']);
+        }
+
+        $lead = db()
+            ->setQueryOption('FOR UPDATE')
+            ->where('fcc_ai_lead_id', $lead_id)
+            ->getOne('fcc_ai_leads');
+        if(!$lead) {
+            db()->rollback();
+            return false;
+        }
+
+        if((int) ($lead->datum_id ?? 0) !== $snapshot_datum_id) {
+            throw new \RuntimeException(fcc_t('Lead source changed during retention cleanup.'));
+        }
+        if(
+            $datum
+            && (
+                (int) ($datum->user_id ?? 0) !== (int) ($lead->user_id ?? 0)
+                || !hash_equals('ai_chat_lead', (string) ($datum->type ?? ''))
+            )
+        ) {
+            throw new \RuntimeException(fcc_t('Lead source does not match the retention target.'));
+        }
+
+        $lead_meta = fcc_ai_to_array($lead->meta ?? []);
+        $retention_until = !empty($optional_columns['retention_until'])
+            ? trim((string) ($lead->retention_until ?? ''))
+            : '';
+        if($retention_until === '') {
+            $retention_until = trim((string) ($lead_meta['retention_until'] ?? ''));
+        }
+        $retention_timestamp = $retention_until !== '' ? strtotime($retention_until) : false;
+        $lifecycle_status = !empty($optional_columns['lifecycle_status'])
+            ? trim((string) ($lead->lifecycle_status ?? ''))
+            : trim((string) ($lead_meta['lifecycle_status'] ?? ''));
+
+        if(
+            $lifecycle_status !== 'active'
+            || $retention_timestamp === false
+            || $retention_timestamp > $as_of_timestamp
+        ) {
+            db()->rollback();
+            return false;
+        }
+
+        $expired_at = get_date();
+        $audit_id = fcc_ai_generate_public_id(16);
+        $audit_meta = [
+            'audit_id' => $audit_id,
+            'lifecycle_status' => 'expired',
+            'expired_at' => $expired_at,
+            'retention_until' => date('Y-m-d H:i:s', $retention_timestamp),
+            'consent_at' => trim((string) ($lead_meta['consent_at'] ?? ($lead->consent_at ?? ''))),
+            'consent_version' => trim((string) ($lead_meta['consent_version'] ?? ($lead->consent_version ?? ''))),
+            'consent_purpose' => trim((string) ($lead_meta['consent_purpose'] ?? ($lead->consent_purpose ?? ''))),
+            'consent_source' => trim((string) ($lead_meta['consent_source'] ?? ($lead->consent_source ?? ''))),
+            'pii_erased' => true,
+        ];
+
+        $lead_update = [
+            'fcc_ai_conversation_id' => null,
+            'datum_id' => null,
+            'status' => 'expired',
+            'lead_score' => 0,
+            'name' => null,
+            'email' => null,
+            'phone' => null,
+            'preferred_contact_channel' => null,
+            'country_code' => null,
+            'message' => null,
+            'meta' => json_encode($audit_meta),
+            'last_datetime' => $expired_at,
+        ];
+        foreach([
+            'lead_offer_id' => null,
+            'consent_text' => null,
+            'privacy_url' => null,
+            'lifecycle_status' => 'expired',
+        ] as $column => $value) {
+            if(!empty($optional_columns[$column])) {
+                $lead_update[$column] = $value;
+            }
+        }
+
+        $lead_updated = db()->where('fcc_ai_lead_id', $lead_id)->update('fcc_ai_leads', $lead_update);
+        $lead_update_count = (int) db()->count;
+        if($lead_updated === false || $lead_update_count !== 1) {
+            throw new \RuntimeException(fcc_t('Expired lead audit could not be scrubbed.'));
+        }
+
+        if($datum) {
+            $datum_deleted = db()
+                ->where('datum_id', $snapshot_datum_id)
+                ->where('user_id', (int) $lead->user_id)
+                ->where('type', 'ai_chat_lead')
+                ->delete('data');
+            $datum_delete_count = (int) db()->count;
+            if(!$datum_deleted || $datum_delete_count !== 1) {
+                throw new \RuntimeException(fcc_t('Expired source contact could not be deleted.'));
+            }
+        }
+
+        $conversation_id = (int) ($lead->fcc_ai_conversation_id ?? 0);
+        if($conversation_id > 0) {
+            $conversation = db()
+                ->setQueryOption('FOR UPDATE')
+                ->where('fcc_ai_conversation_id', $conversation_id)
+                ->where('user_id', (int) $lead->user_id)
+                ->getOne('fcc_ai_conversations');
+            if($conversation) {
+                $conversation_meta = fcc_ai_to_array($conversation->meta ?? []);
+                unset(
+                    $conversation_meta['active_lead_offer'],
+                    $conversation_meta['consumed_lead_offer_hashes'],
+                    $conversation_meta['lead_offer_consumed_at'],
+                    $conversation_meta['lead_offer_consumed_message_id'],
+                    $conversation_meta['lead_consent_version'],
+                    $conversation_meta['lead_consent_at'],
+                    $conversation_meta['lead_offer_updated_at'],
+                    $conversation_meta['lead_offer_revoked_at'],
+                    $conversation_meta['lead_offer_revoked_message_id'],
+                    $conversation_meta['lead_offer_pending_user_message_id']
+                );
+                $conversation_meta['lead_offer_state'] = 'expired';
+                $conversation_meta['lead_lifecycle_status'] = 'expired';
+                $conversation_meta['lead_retention_expired_at'] = $expired_at;
+                $conversation_update = [
+                    'lead_status' => 'expired',
+                    'meta' => json_encode($conversation_meta),
+                    'last_datetime' => $expired_at,
+                ];
+                if((int) ($conversation->latest_datum_id ?? 0) === $snapshot_datum_id) {
+                    $conversation_update['latest_datum_id'] = null;
+                }
+                $conversation_updated = db()
+                    ->where('fcc_ai_conversation_id', $conversation_id)
+                    ->where('user_id', (int) $lead->user_id)
+                    ->update('fcc_ai_conversations', $conversation_update);
+                $conversation_update_count = (int) db()->count;
+                if($conversation_updated === false || $conversation_update_count !== 1) {
+                    throw new \RuntimeException(fcc_t('Expired lead conversation could not be updated.'));
+                }
+            }
+
+            /* The original consent event held both transcript and datum IDs
+             * plus the same offer hash. Once retention expires, delete that
+             * exact join record atomically; the scrubbed lead row is the
+             * remaining non-contact lifecycle audit. */
+            if($snapshot_datum_id > 0) {
+                $consent_events = db()
+                    ->setQueryOption('FOR UPDATE')
+                    ->where('fcc_ai_conversation_id', $conversation_id)
+                    ->where('datum_id', $snapshot_datum_id)
+                    ->where('event_type', 'lead_consent_accepted')
+                    ->get('fcc_ai_events', null, ['fcc_ai_event_id']);
+                if($consent_events) {
+                    $consent_event_ids = array_values(array_filter(array_map(
+                        static fn($event): int => (int) ($event->fcc_ai_event_id ?? 0),
+                        (array) $consent_events
+                    )));
+                    if($consent_event_ids) {
+                        $events_deleted = db()
+                            ->where('fcc_ai_event_id', $consent_event_ids, 'IN')
+                            ->delete('fcc_ai_events');
+                        $events_delete_count = (int) db()->count;
+                        if(!$events_deleted || $events_delete_count !== count($consent_event_ids)) {
+                            throw new \RuntimeException(fcc_t('Expired consent correlation event could not be removed.'));
+                        }
+                    }
+                }
+            }
+        }
+
+        fcc_ai_log_event([
+            /* Do not retain a transcript, datum or offer correlation key after
+             * the contact retention period. */
+            'fcc_ai_conversation_id' => null,
+            'user_id' => (int) $lead->user_id,
+            'assistant_type' => 'product_advisor',
+            'event_type' => 'lead_retention_expired',
+            'meta' => [
+                'audit_id' => $audit_id,
+                'lifecycle_status' => 'expired',
+                'retention_until' => date('Y-m-d H:i:s', $retention_timestamp),
+                'expired_at' => $expired_at,
+                'pii_erased' => true,
+            ],
+        ]);
+
+        db()->commit();
+        return true;
+    } catch(\Throwable $exception) {
+        db()->rollback();
+        throw $exception;
+    }
+}
+
+/**
+ * Backfill retention for rows captured before the additive columns existed.
+ *
+ * Priority is the server-written JSON deadline, then consent time, then the
+ * lead creation time. If every timestamp is malformed, privacy fails closed by
+ * making the row immediately eligible instead of retaining PII indefinitely.
+ */
+function fcc_ai_backfill_public_lead_retention(
+    int $limit = 100,
+    array $only_lead_ids = []
+): array {
+    fcc_ai_ensure_tables();
+    $optional_columns = fcc_ai_get_public_lead_optional_consent_columns();
+    if(empty($optional_columns['retention_until']) || empty($optional_columns['lifecycle_status'])) {
+        throw new \RuntimeException(fcc_t('Public lead retention migration is required before backfill.'));
+    }
+
+    $limit = max(1, min(500, $limit));
+    $only_lead_ids = array_slice(array_values(array_unique(array_filter(array_map(
+        'intval',
+        $only_lead_ids
+    ), static fn(int $lead_id): bool => $lead_id > 0))), 0, 500);
+    $query = db()
+        ->where('assistant_type', 'product_advisor')
+        ->where('lifecycle_status', 'active')
+        ->where('retention_until', null, 'IS');
+    if($only_lead_ids) {
+        $query->where('fcc_ai_lead_id', $only_lead_ids, 'IN');
+    }
+    $rows = $query
+        ->orderBy('fcc_ai_lead_id', 'ASC')
+        ->get('fcc_ai_leads', $limit, [
+            'fcc_ai_lead_id',
+            'consent_at',
+            'meta',
+            'datetime',
+        ]) ?: [];
+
+    $parse_datetime = static function($value): ?int {
+        $value = trim((string) $value);
+        if(preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $value) !== 1) {
+            return null;
+        }
+        $timestamp = strtotime($value);
+        return $timestamp !== false ? $timestamp : null;
+    };
+    $result = ['examined' => count($rows), 'backfilled' => 0, 'skipped' => 0, 'failed' => 0];
+
+    foreach($rows as $row) {
+        $lead_id = (int) ($row->fcc_ai_lead_id ?? 0);
+        if($lead_id <= 0) {
+            $result['skipped']++;
+            continue;
+        }
+
+        try {
+            $meta = fcc_ai_to_array($row->meta ?? []);
+            $retention_timestamp = $parse_datetime($meta['retention_until'] ?? '');
+            if($retention_timestamp === null) {
+                $consent_timestamp = $parse_datetime($row->consent_at ?? ($meta['consent_at'] ?? ''));
+                if($consent_timestamp !== null) {
+                    $retention_timestamp = strtotime('+180 days', $consent_timestamp) ?: null;
+                }
+            }
+            if($retention_timestamp === null) {
+                $created_timestamp = $parse_datetime($row->datetime ?? '');
+                if($created_timestamp !== null) {
+                    $retention_timestamp = strtotime('+180 days', $created_timestamp) ?: null;
+                }
+            }
+            if($retention_timestamp === null) {
+                $retention_timestamp = time();
+            }
+
+            $updated = db()
+                ->where('fcc_ai_lead_id', $lead_id)
+                ->where('lifecycle_status', 'active')
+                ->where('retention_until', null, 'IS')
+                ->update('fcc_ai_leads', [
+                    'retention_until' => date('Y-m-d H:i:s', $retention_timestamp),
+                    'last_datetime' => get_date(),
+                ]);
+            $updated_count = (int) db()->count;
+            if($updated === false) {
+                throw new \RuntimeException(fcc_t('Legacy public lead retention could not be backfilled.'));
+            }
+            if($updated_count === 1) {
+                $result['backfilled']++;
+            } else {
+                $result['skipped']++;
+            }
+        } catch(\Throwable $exception) {
+            $result['failed']++;
+        }
+    }
+
+    return $result;
+}
+
+/** Defer an unsafe expiry target without disabling scheduled retries. */
+function fcc_ai_defer_public_lead_purge_failure(int $lead_id, string $error_fingerprint): bool {
+    if($lead_id <= 0 || preg_match('/^[a-f0-9]{16}$/D', $error_fingerprint) !== 1) {
+        return false;
+    }
+
+    $lead = db()
+        ->where('fcc_ai_lead_id', $lead_id)
+        ->where('lifecycle_status', 'active')
+        ->getOne('fcc_ai_leads', ['status', 'meta']);
+    if(!$lead) {
+        return false;
+    }
+    $meta = fcc_ai_to_array($lead->meta ?? []);
+    $previous_status = trim((string) ($lead->status ?? 'new'));
+    $meta['retention_purge_failure'] = [
+        'fingerprint' => $error_fingerprint,
+        'failed_at' => get_date(),
+        'previous_status' => $previous_status !== 'purge_retry' ? $previous_status : (string) ($meta['retention_purge_failure']['previous_status'] ?? 'new'),
+        'requires_review' => true,
+    ];
+
+    $updated = db()
+        ->where('fcc_ai_lead_id', $lead_id)
+        ->where('lifecycle_status', 'active')
+        ->update('fcc_ai_leads', [
+            'status' => 'purge_retry',
+            'meta' => json_encode($meta),
+            'last_datetime' => get_date(),
+        ]);
+
+    return $updated !== false && (int) db()->count === 1;
+}
+
+/**
+ * Scheduled-safe batch consumer for public lead retention.
+ *
+ * `$only_lead_ids` exists for isolated maintenance/tests; normal runners omit
+ * it. The batch is deterministic, bounded and safe to rerun after interruption.
+ */
+function fcc_ai_purge_expired_public_lead_pii(
+    int $limit = 100,
+    ?string $as_of_datetime = null,
+    array $only_lead_ids = []
+): array {
+    fcc_ai_ensure_tables();
+
+    $limit = max(1, min(500, $limit));
+    $as_of_timestamp = $as_of_datetime !== null && trim($as_of_datetime) !== ''
+        ? strtotime($as_of_datetime)
+        : time();
+    if($as_of_timestamp === false) {
+        throw new \InvalidArgumentException(fcc_t('Invalid public lead purge timestamp.'));
+    }
+    $as_of_datetime = date('Y-m-d H:i:s', $as_of_timestamp);
+    $only_lead_ids = array_slice(array_values(array_unique(array_filter(array_map(
+        'intval',
+        $only_lead_ids
+    ), static fn(int $lead_id): bool => $lead_id > 0))), 0, 500);
+
+    $optional_columns = fcc_ai_get_public_lead_optional_consent_columns();
+    if(empty($optional_columns['retention_until']) || empty($optional_columns['lifecycle_status'])) {
+        throw new \RuntimeException(fcc_t('Public lead retention migration is required before running the purge.'));
+    }
+
+    $backfill_result = fcc_ai_backfill_public_lead_retention($limit, $only_lead_ids);
+
+    $candidate_query = db()
+        ->where('assistant_type', 'product_advisor')
+        ->where('lifecycle_status', 'active')
+        ->where('retention_until', $as_of_datetime, '<=');
+    if($only_lead_ids) {
+        $candidate_query->where('fcc_ai_lead_id', $only_lead_ids, 'IN');
+    }
+    /* Failures do not consume purge capacity. Overfetch a bounded safety page;
+     * failures remain active/retryable but last_datetime moves them behind
+     * untouched rows, preventing poison-page starvation across runs. */
+    $scan_limit = min(500, $limit + 100);
+    $rows = $candidate_query
+        ->orderBy('FIELD(`status`, "purge_retry")', 'ASC')
+        ->orderBy('retention_until', 'ASC')
+        ->orderBy('fcc_ai_lead_id', 'ASC')
+        ->get('fcc_ai_leads', $scan_limit, ['fcc_ai_lead_id']) ?: [];
+
+    $result = [
+        'as_of' => $as_of_datetime,
+        'examined' => 0,
+        'purged' => 0,
+        'skipped' => 0,
+        'failed' => (int) ($backfill_result['failed'] ?? 0),
+        'error_fingerprints' => [],
+        'backfill_examined' => (int) ($backfill_result['examined'] ?? 0),
+        'backfilled' => (int) ($backfill_result['backfilled'] ?? 0),
+        'backfill_failed' => (int) ($backfill_result['failed'] ?? 0),
+        'deferred_for_retry' => 0,
+    ];
+
+    foreach($rows as $row) {
+        if(($result['purged'] + $result['skipped']) >= $limit) {
+            break;
+        }
+        $result['examined']++;
+        $lead_id = (int) ($row->fcc_ai_lead_id ?? 0);
+        if($lead_id <= 0) {
+            $result['skipped']++;
+            continue;
+        }
+
+        try {
+            if(fcc_ai_expire_public_lead_pii($lead_id, $as_of_datetime)) {
+                $result['purged']++;
+            } else {
+                $result['skipped']++;
+            }
+        } catch(\Throwable $exception) {
+            $result['failed']++;
+            $fingerprint = substr(hash('sha256', get_class($exception) . ':' . $exception->getMessage()), 0, 16);
+            $result['error_fingerprints'][] = $fingerprint;
+            if(fcc_ai_defer_public_lead_purge_failure($lead_id, $fingerprint)) {
+                $result['deferred_for_retry']++;
+            }
+        }
+    }
+
+    $result['error_fingerprints'] = array_values(array_unique($result['error_fingerprints']));
+    return $result;
 }

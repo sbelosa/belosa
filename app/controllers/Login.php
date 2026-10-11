@@ -41,7 +41,7 @@ class Login extends Controller {
         $values = [
             'email' => isset($_GET['email']) && is_string($_GET['email']) ? query_clean($_GET['email']) : '',
             'password' => '',
-            'rememberme' => isset($_POST['rememberme']) || settings()->users->login_rememberme_checkbox_is_checked,
+            'rememberme' => empty($_POST) || isset($_POST['rememberme']),
         ];
 
         //ALTUMCODE:DEMO if(DEMO) {$values['email'] = 'admin'; $values['password'] = 'admin';$user=(object)['twofa_secret' => null];}
@@ -65,7 +65,7 @@ class Login extends Controller {
             }
 
             if($user->status != 1) {
-                Alerts::add_error(l('login.error_message.user_not_active'));
+                Alerts::add_error(l((int) $user->status === 0 ? 'login.error_message.pending_admin_approval' : 'login.error_message.user_not_active'));
                 redirect('login' . $redirect_append);
             }
 
@@ -402,7 +402,7 @@ class Login extends Controller {
                 } else {
 
                     if($user->status != 1) {
-                        Alerts::add_error(l('login.error_message.user_not_active'));
+                        Alerts::add_error(l((int) $user->status === 0 ? 'login.error_message.pending_admin_approval' : 'login.error_message.user_not_active'));
                     } else
 
                         if(!password_verify($_POST['password'], $user->password)) {
@@ -450,9 +450,8 @@ class Login extends Controller {
                         db()->where('user_id', $user->user_id)->update('users', ['token_code' => $token_code]);
                     }
 
-                    setcookie('user_id', $user->user_id, time()+60*60*24* (settings()->users->login_rememberme_cookie_days ?? 30), COOKIE_PATH);
-                    setcookie('token_code', $token_code, time()+60*60*24* (settings()->users->login_rememberme_cookie_days ?? 30), COOKIE_PATH);
-                    setcookie('user_password_hash', md5($user->password), time()+60*60*24* (settings()->users->login_rememberme_cookie_days ?? 30), COOKIE_PATH);
+                    \Altum\Authentication::remember($user,(string)$token_code);
+
                 }
 
                 session_unset_key('twofa_required');
@@ -541,14 +540,14 @@ class Login extends Controller {
                     }
                 }
 
+                /* FCC approval is an administrator action, not identity verification. */
+                if((int) $user->status !== 1) {
+                    Alerts::add_error(l((int) $user->status === 0 ? 'login.error_message.pending_admin_approval' : 'login.error_message.user_not_active'));
+                    redirect('login');
+                }
+
                 /* Make sure the user has a password set before letting the user login */
                 (new User())->verify_null_password($user->user_id, $user->email, $user->password);
-
-                /* Make sure the account is activated / confirmed */
-                if($user->status == 0) {
-                    db()->where('user_id', $user->user_id)->update('users', ['status' => 1]);
-                    $user->status = 1;
-                }
 
                 session_set('user_id', $user->user_id);
                 session_set('user_password_hash', md5($user->password));
@@ -565,120 +564,11 @@ class Login extends Controller {
                 }
             }
 
-            /* Create a new account */
+            /* New FCC members complete the web form and await admin approval.
+               Social identity alone does not supply the required Forever profile. */
             else {
-                /* Determine what plan is set by default */
-                $plan_id = 'free';
-                $plan_settings = json_encode(settings()->plan_free->settings ?? '');
-                $plan_expiration_date = get_date();
-                $lost_password_code = md5(uniqid('', true) . random_bytes(16));
-                $password = settings()->users->register_social_login_require_password ? null : md5(uniqid('', true) . random_bytes(16));
-
-                $registered_user = (new User())->create(
-                    $email,
-                    $password,
-                    $name,
-                    1,
-                    $method,
-                    null,
-                    $lost_password_code,
-                    false,
-                    $plan_id,
-                    $plan_settings,
-                    $plan_expiration_date,
-                    settings()->main->default_timezone,
-                    [
-                        'initial_social_method' => $method,
-                        'initial_social_id' => $id,
-                    ]
-                );
-
-                /* Log the action */
-                Logger::users($registered_user['user_id'], 'register.' . $method . '.success');
-
-                /* Send a welcome email if needed */
-                if(settings()->users->welcome_email_is_enabled) {
-
-                    $email_template = get_email_template(
-                        [],
-                        l('global.emails.user_welcome.subject'),
-                        [
-                            '{{NAME}}' => $name,
-                            '{{URL}}' => url(),
-                            '{{DASHBOARD_LINK}}' => url('dashboard'),
-                        ],
-                        l('global.emails.user_welcome.body')
-                    );
-
-                    send_mail($email, $email_template->subject, $email_template->body);
-
-                }
-
-                /* Send notification to admin if needed */
-                if(settings()->email_notifications->new_user && !empty(settings()->email_notifications->emails)) {
-
-                    $email_template = get_email_template(
-                        [],
-                        l('global.emails.admin_new_user_notification.subject'),
-                        [
-                            '{{NAME}}' => $name,
-                            '{{EMAIL}}' => $email,
-                            '{{SOURCE}}' => $registered_user['source'],
-                            '{{IP}}' => $registered_user['ip'],
-                            '{{COUNTRY_NAME}}' => $registered_user['country'] ? get_country_from_country_code($registered_user['country']) : l('global.unknown'),
-                            '{{CITY_NAME}}' => $registered_user['city_name'] ?? l('global.unknown'),
-                            '{{DEVICE_TYPE}}' => l('global.device.' . $registered_user['device_type']),
-                            '{{OS_NAME}}' => $registered_user['os_name'],
-                            '{{BROWSER_NAME}}' => $registered_user['browser_name'],
-                            '{{USER_LINK}}' => url('admin/user-view/' . $registered_user['user_id']),
-                        ],
-                        l('global.emails.admin_new_user_notification.body')
-                    );
-
-                    send_mail(explode(',', settings()->email_notifications->emails), $email_template->subject, $email_template->body);
-
-                }
-
-                /* Send webhook notification if needed */
-                if(settings()->webhooks->user_new) {
-                    fire_and_forget('post', settings()->webhooks->user_new, [
-                        'user_id' => $registered_user['user_id'],
-                        'email' => $email,
-                        'name' => $name,
-                        'source' => $method,
-                        'is_newsletter_subscribed' => false,
-                        'datetime' => get_date()
-                    ], signature: true);
-                }
-
-                /* Send internal notification if needed */
-                if(settings()->internal_notifications->admins_is_enabled && settings()->internal_notifications->new_user) {
-                    db()->insert('internal_notifications', [
-                        'for_who' => 'admin',
-                        'from_who' => 'system',
-                        'icon' => 'fas fa-user',
-                        'title' => l('global.notifications.new_user.title'),
-                        'description' => sprintf(l('global.notifications.new_user.description'), $name, $email),
-                        'url' => 'admin/user-view/' . $registered_user['user_id'],
-                        'datetime' => get_date(),
-                    ]);
-                }
-
-                if($password) {
-                    /* Login the user */
-                    session_set('user_id', $registered_user['user_id']);
-                    session_set('user_password_hash', md5($registered_user['password']));
-
-                    (new User())->login_aftermath_update($registered_user['user_id'], $method);
-
-                    /* Set a nice success message */
-                    Alerts::add_success(l('register.success_message.login'));
-
-                    redirect($redirect . '?welcome=' . $registered_user['user_id']);
-                } else {
-                    /* Redirect the newly created user to set a new password */
-                    redirect('reset-password/' . md5($email) . '/' . $lost_password_code . '?redirect=' . $redirect . '&welcome=' . $registered_user['user_id']);
-                }
+                Alerts::add_info(l('register.info_message.web_approval_required'));
+                redirect('register');
             }
         }
     }

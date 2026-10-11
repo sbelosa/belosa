@@ -1737,29 +1737,29 @@ $ai_progress_signal = trim((string) ($ai_report['progress_signal'] ?? ''));
 $ai_period_comparison_summary = trim((string) ($ai_report['period_comparison_summary'] ?? ''));
 $ai_what_to_stop_pushing = trim((string) ($ai_report['what_to_stop_pushing'] ?? ''));
 $ai_admin_note = trim((string) (($ai_report['admin_note'] ?? '') ?: ($mentor_actions['mentor_note'] ?? '')));
-$ai_report_generated_label = !empty($ai_report['generated_at']) ? \Altum\Date::get($ai_report['generated_at'], 2) : 'AI analiza još nije generirana';
-$ai_report_status_label = $ai_report ? 'Zadnji AI izvještaj je spreman' : 'Još nema generiranog AI izvještaja';
-$integrity_level_label = (string) (($fraud_intelligence['level_label'] ?? '') ?: ($behavior_anomaly['level_label'] ?? '') ?: 'Nema izraženog rizika');
+$ai_report_generated_label = !empty($ai_report['generated_at']) ? \Altum\Date::get($ai_report['generated_at'], 2) : fcc_t('AI analiza još nije generirana');
+$ai_report_status_label = $ai_report ? fcc_t('Zadnji AI izvještaj je spreman') : fcc_t('Još nema generiranog AI izvještaja');
+$integrity_level_label = (string) (($fraud_intelligence['level_label'] ?? '') ?: ($behavior_anomaly['level_label'] ?? '') ?: fcc_t('Nema izraženog rizika'));
 $integrity_level_class = (string) (($fraud_intelligence['level_class'] ?? '') ?: ($behavior_anomaly['level_class'] ?? '') ?: 'status-success');
-$integrity_top_concern = (string) (($fraud_intelligence['top_concern'] ?? '') ?: ($behavior_anomaly['top_concern'] ?? '') ?: 'Nema izraženog rizika u prometu.');
-$integrity_action_text = (string) (($fraud_action['text'] ?? '') ?: ($behavior_anomaly['signals'][0]['action'] ?? '') ?: 'Nije potrebna posebna intervencija. Samo nastavi pratiti signal.');
+$integrity_top_concern = (string) (($fraud_intelligence['top_concern'] ?? '') ?: ($behavior_anomaly['top_concern'] ?? '') ?: fcc_t('Nema izraženog rizika u prometu.'));
+$integrity_action_text = (string) (($fraud_action['text'] ?? '') ?: ($behavior_anomaly['signals'][0]['action'] ?? '') ?: fcc_t('Nije potrebna posebna intervencija. Samo nastavi pratiti signal.'));
 $blog_forever = $selected['blog_forever'] ?? [];
 $ai_focus_summary = trim((string) (($ai_text_detail['focus_summary'] ?? '') ?: ($selected['next_step'] ?? '')));
 $ai_blocker_summary = trim((string) (($ai_text_detail['main_blocker_now'] ?? '') ?: $main_risk_label));
-$ai_weekly_context_summary = trim((string) (($ai_text_detail['weekly_context'] ?? '') ?: 'Nema dovoljno AI open-text signala za dublji sažetak.'));
+$ai_weekly_context_summary = trim((string) (($ai_text_detail['weekly_context'] ?? '') ?: fcc_t('Nema dovoljno AI open-text signala za dublji sažetak.')));
 
 if($ai_progress_signal === '') {
     $growth_difference = (int) ($selected['growth_difference'] ?? 0);
     $ai_progress_signal = $growth_difference > 0
-        ? 'Suradnik trenutno pokazuje rast u odnosu na prethodni isti period.'
+        ? fcc_t('Suradnik trenutno pokazuje rast u odnosu na prethodni isti period.')
         : ($growth_difference < 0
-            ? 'Suradnik trenutno pokazuje pad u odnosu na prethodni isti period.'
-            : 'Signal je trenutno ravan i nema jasnog rasta u odnosu na prethodni isti period.');
+            ? fcc_t('Suradnik trenutno pokazuje pad u odnosu na prethodni isti period.')
+            : fcc_t('Signal je trenutno ravan i nema jasnog rasta u odnosu na prethodni isti period.'));
 }
 
 if($ai_period_comparison_summary === '') {
     $ai_period_comparison_summary = sprintf(
-        '7d: %s klikova / %s registracija · 30d: %s / %s · 90d: %s / %s.',
+        fcc_t('7d: %s klikova / %s registracija · 30d: %s / %s · 90d: %s / %s.'),
         nr((int) ($compare_7d['forever_shop_clicks_period'] ?? 0)),
         nr((int) ($compare_7d['forever_registration_clicks_period'] ?? 0)),
         nr((int) ($compare_30d['forever_shop_clicks_period'] ?? 0)),
@@ -1770,7 +1770,7 @@ if($ai_period_comparison_summary === '') {
 }
 
 if($ai_what_to_stop_pushing === '') {
-    $ai_what_to_stop_pushing = 'Ne širiti fokus na previše smjerova dok se ne ojača glavni put do rezultata.';
+    $ai_what_to_stop_pushing = fcc_t('Ne širiti fokus na previše smjerova dok se ne ojača glavni put do rezultata.');
 }
 
 $render_detail_help = static function(string $tooltip): void {
@@ -1791,15 +1791,15 @@ $render_detail_help = static function(string $tooltip): void {
                     <?= $detail ? ($detail['name'] ?: $detail['email']) : l('admin_leader_operating_system.leader.no_user') ?>
                 </h2>
                 <p class="text-muted mb-0">
-                    <?= $detail ? l('admin_leader_operating_system.leader.selected_user') . ': #' . $detail['user_id'] . ' · ' . $detail['email'] . ' · Forever ID: ' . $detail['forever_id'] : l('admin_leader_operating_system.leader.missing') ?>
+                    <?= $detail ? l('admin_leader_operating_system.leader.selected_user') . ': #' . $detail['user_id'] . ' · ' . $detail['email'] . fcc_t(' · Forever ID: ') . $detail['forever_id'] : l('admin_leader_operating_system.leader.missing') ?>
                 </p>
                 <div class="leader-os-cockpit-tags">
                     <span class="leader-os-detail-status status-<?= htmlspecialchars((string) ($selected['status_class'] ?? 'dark'), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($selected['status_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
                     <?php if(!empty($consistency)): ?>
-                        <span class="leader-os-detail-chip is-subtle">Dosljednost · <?= nr((int) ($consistency['score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars(fcc_t('Dosljednost ·'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($consistency['score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></span>
                     <?php endif ?>
-                    <span class="leader-os-detail-chip is-subtle">AI prioritet · <?= htmlspecialchars((string) (($ai_plan_admin['priority']['label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
-                    <span class="leader-os-detail-chip is-subtle">Naplata · <?= htmlspecialchars((string) (($stripe_billing['billing_state'] ?? '') ? l('admin_billing_risk.state_' . $stripe_billing['billing_state']) : l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars(fcc_t('AI prioritet ·'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) (($ai_plan_admin['priority']['label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars(fcc_t('Naplata ·'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) (($stripe_billing['billing_state'] ?? '') ? l('admin_billing_risk.state_' . $stripe_billing['billing_state']) : l('global.none')), ENT_QUOTES, 'UTF-8') ?></span>
                     <?php if(!empty($stripe_billing['plan_name'])): ?>
                         <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars((string) $stripe_billing['plan_name'], ENT_QUOTES, 'UTF-8') ?></span>
                     <?php endif ?>
@@ -1819,15 +1819,15 @@ $render_detail_help = static function(string $tooltip): void {
                     <a href="<?= $data->overview_url ?>" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.back') ?></a>
                     <a href="<?= htmlspecialchars((string) ($detail['admin_user_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm leader-os-detail-action"><?= l('admin_leader_operating_system.leader.open_profile_user') ?></a>
                     <?php if(!empty($app_live_url)): ?>
-                        <a href="<?= htmlspecialchars((string) $app_live_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori live aplikaciju</a>
+                        <a href="<?= htmlspecialchars((string) $app_live_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= htmlspecialchars(fcc_t('Otvori live aplikaciju'), ENT_QUOTES, 'UTF-8') ?></a>
                     <?php endif ?>
                     <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing"><?= l('admin_leader_operating_system.leader.open_stripe_billing') ?></button>
-                    <button type="button" class="btn btn-sm leader-os-ai-button leader-os-scroll-link" data-scroll-target="leader-os-ai-report">Pokreni / otvori AI analizu</button>
-                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Struktura aplikacije</button>
+                    <button type="button" class="btn btn-sm leader-os-ai-button leader-os-scroll-link" data-scroll-target="leader-os-ai-report"><?= htmlspecialchars(fcc_t('Pokreni / otvori AI analizu'), ENT_QUOTES, 'UTF-8') ?></button>
+                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-app-structure"><?= htmlspecialchars(fcc_t('Struktura aplikacije'), ENT_QUOTES, 'UTF-8') ?></button>
                     <?php if(!empty($featured_profile_admin['exists'])): ?>
-                        <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-featured-profile">FCC sponsor profil</button>
+                        <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-featured-profile"><?= htmlspecialchars(fcc_t('FCC sponsor profil'), ENT_QUOTES, 'UTF-8') ?></button>
                     <?php endif ?>
-                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Pošalji poruku suradniku</button>
+                    <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel"><?= htmlspecialchars(fcc_t('Pošalji poruku suradniku'), ENT_QUOTES, 'UTF-8') ?></button>
                 </div>
             </div>
         </div>
@@ -1835,22 +1835,22 @@ $render_detail_help = static function(string $tooltip): void {
         <div class="leader-os-cockpit-grid mt-4">
             <div class="leader-os-cockpit-card">
                 <div class="leader-os-cockpit-label">
-                    Trenutno stanje
-                    <?php $render_detail_help('Što je: brzi pregled poslovnog zdravlja suradnika. | Kako se računa: kombinira LOS rezultat, status, consistency i zadnju aktivnost. | Kako koristiš: odmah vidiš je li osoba stabilna, pada ili traži brzu reakciju.'); ?>
+                    <?= htmlspecialchars(fcc_t('Trenutno stanje'), ENT_QUOTES, 'UTF-8') ?>
+                    <?php $render_detail_help(fcc_t('Što je: brzi pregled poslovnog zdravlja suradnika. | Kako se računa: kombinira LOS rezultat, status, consistency i zadnju aktivnost. | Kako koristiš: odmah vidiš je li osoba stabilna, pada ili traži brzu reakciju.')); ?>
                 </div>
                 <div class="leader-os-cockpit-value"><?= nr((int) ($selected['leader_os_score'] ?? 0)) ?>/100</div>
-                <div class="leader-os-cockpit-meta"><?= htmlspecialchars((string) ($selected['status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?> · Zadnji klik: <?= !empty($selected['last_click_at']) ? \Altum\Date::get($selected['last_click_at'], 2) : l('global.none') ?></div>
+                <div class="leader-os-cockpit-meta"><?= htmlspecialchars((string) ($selected['status_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars(fcc_t('· Zadnji klik:'), ENT_QUOTES, 'UTF-8') ?> <?= !empty($selected['last_click_at']) ? \Altum\Date::get($selected['last_click_at'], 2) : l('global.none') ?></div>
                 <div class="leader-os-cockpit-list">
                     <div class="leader-os-cockpit-item">
-                        <span>Dosljednost</span>
+                        <span><?= htmlspecialchars(fcc_t('Dosljednost'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= !empty($consistency) ? (nr((int) ($consistency['score'] ?? 0)) . ' · ' . htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8')) : l('global.none') ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Aktivni dani</span>
+                        <span><?= htmlspecialchars(fcc_t('Aktivni dani'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= nr((int) ($selected['active_days_total'] ?? 0)) ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Coaching signal</span>
+                        <span><?= htmlspecialchars(fcc_t('Coaching signal'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) ($coaching_roi['signal_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                 </div>
@@ -1858,22 +1858,22 @@ $render_detail_help = static function(string $tooltip): void {
 
             <div class="leader-os-cockpit-card">
                 <div class="leader-os-cockpit-label">
-                    Prodajni signal
-                    <?php $render_detail_help('Što je: mjeri stvarni put od interesa do Forever rezultata. | Kako se računa: gleda webshop klikove, registracije, stopu registracije i izvore prometa u odabranom periodu. | Kako koristiš: vidiš ima li suradnik promet bez rezultata ili rezultat koji treba skalirati.'); ?>
+                    <?= htmlspecialchars(fcc_t('Prodajni signal'), ENT_QUOTES, 'UTF-8') ?>
+                    <?php $render_detail_help(fcc_t('Što je: mjeri stvarni put od interesa do Forever rezultata. | Kako se računa: gleda webshop klikove, registracije, stopu registracije i izvore prometa u odabranom periodu. | Kako koristiš: vidiš ima li suradnik promet bez rezultata ili rezultat koji treba skalirati.')); ?>
                 </div>
                 <div class="leader-os-cockpit-value"><?= nr((int) ($selected['forever_shop_clicks_period'] ?? 0)) ?></div>
-                <div class="leader-os-cockpit-meta">Klikovi prema Foreveru · Registracije <?= nr((int) ($selected['forever_registration_clicks_period'] ?? 0)) ?> · Stopa <?= nr((float) ($selected['registration_rate_percent'] ?? 0)) ?>%</div>
+                <div class="leader-os-cockpit-meta"><?= htmlspecialchars(fcc_t('Klikovi prema Foreveru · Registracije'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($selected['forever_registration_clicks_period'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· Stopa'), ENT_QUOTES, 'UTF-8') ?> <?= nr((float) ($selected['registration_rate_percent'] ?? 0)) ?>%</div>
                 <div class="leader-os-cockpit-list">
                     <div class="leader-os-cockpit-item">
-                        <span>Delta prema prošlom periodu</span>
+                        <span><?= htmlspecialchars(fcc_t('Delta prema prošlom periodu'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= (($selected['growth_difference'] ?? 0) > 0 ? '+' : '') . nr((int) ($selected['growth_difference'] ?? 0)) ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Najjači izvor</span>
+                        <span><?= htmlspecialchars(fcc_t('Najjači izvor'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) ($selected['top_source_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Najjače tržište</span>
+                        <span><?= htmlspecialchars(fcc_t('Najjače tržište'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) ($selected['top_country_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                 </div>
@@ -1881,22 +1881,22 @@ $render_detail_help = static function(string $tooltip): void {
 
             <div class="leader-os-cockpit-card">
                 <div class="leader-os-cockpit-label">
-                    AI i coaching ritam
-                    <?php $render_detail_help('Što je: pokazuje prolazi li suradnik kroz AI ciklus i admin coaching. | Kako se računa: gleda AI profil, zadnji check-in, plan, outcome, admin status i zadnji kontakt. | Kako koristiš: brzo vidiš je li osoba zapela prije plana, u provedbi ili u follow-upu.'); ?>
+                    <?= htmlspecialchars(fcc_t('AI i coaching ritam'), ENT_QUOTES, 'UTF-8') ?>
+                    <?php $render_detail_help(fcc_t('Što je: pokazuje prolazi li suradnik kroz AI ciklus i admin coaching. | Kako se računa: gleda AI profil, zadnji check-in, plan, outcome, admin status i zadnji kontakt. | Kako koristiš: brzo vidiš je li osoba zapela prije plana, u provedbi ili u follow-upu.')); ?>
                 </div>
                 <div class="leader-os-cockpit-value"><?= htmlspecialchars((string) (($ai_plan_admin['priority']['label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
-                <div class="leader-os-cockpit-meta">Admin status · <?= htmlspecialchars((string) $mentor_status_label, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-cockpit-meta"><?= htmlspecialchars(fcc_t('Admin status ·'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) $mentor_status_label, ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-cockpit-list">
                     <div class="leader-os-cockpit-item">
-                        <span>Zadnji check-in</span>
+                        <span><?= htmlspecialchars(fcc_t('Zadnji check-in'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $last_checkin_label, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Zadnji plan / outcome</span>
+                        <span><?= htmlspecialchars(fcc_t('Zadnji plan / outcome'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $latest_plan_label, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) $latest_outcome_label, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Zadnji kontakt / sljedeći korak</span>
+                        <span><?= htmlspecialchars(fcc_t('Zadnji kontakt / sljedeći korak'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $last_contacted_label, ENT_QUOTES, 'UTF-8') ?><br><?= htmlspecialchars((string) (($mentor_actions['next_action'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                 </div>
@@ -1904,29 +1904,29 @@ $render_detail_help = static function(string $tooltip): void {
 
             <div class="leader-os-cockpit-card">
                 <div class="leader-os-cockpit-label">
-                    Billing i plan
-                    <?php $render_detail_help('Što je: sažetak pretplate i billing zdravlja. | Kako se računa: koristi Stripe customer/subscription podatke, recovery stanje i broj neuspjelih pokušaja. | Kako koristiš: odmah vidiš je li poslovni pad možda billing problem, a ne promet ili AI.'); ?>
+                    <?= htmlspecialchars(fcc_t('Billing i plan'), ENT_QUOTES, 'UTF-8') ?>
+                    <?php $render_detail_help(fcc_t('Što je: sažetak pretplate i billing zdravlja. | Kako se računa: koristi Stripe customer/subscription podatke, recovery stanje i broj neuspjelih pokušaja. | Kako koristiš: odmah vidiš je li poslovni pad možda billing problem, a ne promet ili AI.')); ?>
                 </div>
                 <div class="leader-os-cockpit-value"><?= htmlspecialchars((string) (($stripe_billing['plan_name'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-cockpit-meta"><?= htmlspecialchars((string) (($stripe_billing['status'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) (($stripe_billing['plan_price_label'] ?? '') ?: ''), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-cockpit-list">
                     <div class="leader-os-cockpit-item">
-                        <span>Kraj tekućeg perioda</span>
+                        <span><?= htmlspecialchars(fcc_t('Kraj tekućeg perioda'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $billing_period_label, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Otkazivanje na kraju perioda</span>
+                        <span><?= htmlspecialchars(fcc_t('Otkazivanje na kraju perioda'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= !empty($stripe_billing['cancel_at_period_end']) ? l('global.yes') : l('global.no') ?></strong>
                     </div>
                     <div class="leader-os-cockpit-item">
-                        <span>Neuspjeli pokušaji</span>
+                        <span><?= htmlspecialchars(fcc_t('Neuspjeli pokušaji'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= nr((int) ($stripe_billing['failed_attempts'] ?? 0)) ?></strong>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="leader-os-detail-note mt-3">Kako čitaš ovaj vrh: prvo pogledaj <strong>Trenutno stanje</strong>, zatim <strong>Prodajni signal</strong>, pa <strong>AI i coaching ritam</strong> i tek onda provjeri je li problem možda u <strong>billingu</strong>. Tako najbrže vidiš je li suradnik zapinje u prometu, konverziji, provedbi ili naplati.</div>
+        <div class="leader-os-detail-note mt-3"><?= htmlspecialchars(fcc_t('Kako čitaš ovaj vrh: prvo pogledaj'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Trenutno stanje'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t(', zatim'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Prodajni signal'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t(', pa'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('AI i coaching ritam'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('i tek onda provjeri je li problem možda u'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('billingu'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t('. Tako najbrže vidiš je li suradnik zapinje u prometu, konverziji, provedbi ili naplati.'), ENT_QUOTES, 'UTF-8') ?></div>
     </div>
 </div>
 
@@ -1947,71 +1947,71 @@ $render_detail_help = static function(string $tooltip): void {
     ];
     $public_profile_summary_label = !empty($featured_profile_admin['exists'])
         ? (!empty($featured_profile_admin['is_recommended_sponsor'])
-            ? 'Live kao preporučeni sponsor'
-            : (!empty($featured_profile_admin['is_featured_listed']) ? 'Live na Featured Apps' : 'Javni profil još nije spreman'))
-        : 'Nema aktivnog javnog FCC profila';
+            ? fcc_t('Live kao preporučeni sponsor')
+            : (!empty($featured_profile_admin['is_featured_listed']) ? fcc_t('Live na Featured Apps') : fcc_t('Javni profil još nije spreman')))
+        : fcc_t('Nema aktivnog javnog FCC profila');
     $public_profile_summary_text = !empty($featured_profile_admin['exists'])
         ? sprintf(
-            '15+ / 30d: %s · 50+ / 30d: %s · Sales link: %s.',
+            fcc_t('15+ / 30d: %s · 50+ / 30d: %s · Sales link: %s.'),
             (string) (($featured_profile_admin['featured_status_label'] ?? '') ?: 'Ne'),
             (string) (($featured_profile_admin['sponsor_status_label'] ?? '') ?: 'Ne'),
             (string) (($featured_profile_admin['sales_link_status_label'] ?? '') ?: l('global.none'))
         )
-        : 'Kad suradnik dobije dovoljno javnog signala, ovdje ćeš odmah vidjeti Featured i sponsor status.';
+        : fcc_t('Kad suradnik dobije dovoljno javnog signala, ovdje ćeš odmah vidjeti Featured i sponsor status.');
     ?>
     <div class="card leader-os-detail-shell mb-4">
         <div class="card-body">
             <div class="leader-os-zone-shell">
                 <div class="leader-os-zone-header">
                     <div class="leader-os-zone-copy">
-                        <div class="leader-os-zone-eyebrow">Radna mapa suradnika</div>
-                        <h3 class="h5 mb-1">Sve je složeno po zonama, ne po slučajnim panelima</h3>
-                        <div class="leader-os-zone-note">Kreni od zone <strong>Prioriteti i akcije</strong>, zatim otvori <strong>Mentorstvo i follow-up</strong>, pa <strong>Javni profil i aplikaciju</strong>. Tek nakon toga gledaj <strong>AI i chatove</strong> i na kraju <strong>dubinsku analitiku</strong>.</div>
+                        <div class="leader-os-zone-eyebrow"><?= htmlspecialchars(fcc_t('Radna mapa suradnika'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Sve je složeno po zonama, ne po slučajnim panelima'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="leader-os-zone-note"><?= htmlspecialchars(fcc_t('Kreni od zone'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Prioriteti i akcije'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t(', zatim otvori'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Mentorstvo i follow-up'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t(', pa'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('Javni profil i aplikaciju'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t('. Tek nakon toga gledaj'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('AI i chatove'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('i na kraju'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('dubinsku analitiku'), ENT_QUOTES, 'UTF-8') ?></strong>.</div>
                     </div>
                     <span class="leader-os-detail-chip is-subtle"><?= l('admin_leader_operating_system.period_' . $data->selected_period) ?></span>
                 </div>
 
                 <div class="leader-os-zone-grid">
                     <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-traffic">
-                        <span class="leader-os-zone-card-tag">1. Prioriteti</span>
-                        <div class="leader-os-zone-card-title">Što je važno sada</div>
-                        <div class="leader-os-zone-card-copy">Operativni sažetak, AI analiza i prvi najbolji admin potez za ovog suradnika.</div>
+                        <span class="leader-os-zone-card-tag"><?= htmlspecialchars(fcc_t('1. Prioriteti'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <div class="leader-os-zone-card-title"><?= htmlspecialchars(fcc_t('Što je važno sada'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-zone-card-copy"><?= htmlspecialchars(fcc_t('Operativni sažetak, AI analiza i prvi najbolji admin potez za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </button>
 
                     <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-phase4">
-                        <span class="leader-os-zone-card-tag">2. Mentorstvo</span>
-                        <div class="leader-os-zone-card-title">Coach i follow-up</div>
-                        <div class="leader-os-zone-card-copy">Tjedni AI plan, mentor status, coaching ROI i što trebaš komunicirati suradniku.</div>
+                        <span class="leader-os-zone-card-tag"><?= htmlspecialchars(fcc_t('2. Mentorstvo'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <div class="leader-os-zone-card-title"><?= htmlspecialchars(fcc_t('Coach i follow-up'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-zone-card-copy"><?= htmlspecialchars(fcc_t('Tjedni AI plan, mentor status, coaching ROI i što trebaš komunicirati suradniku.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </button>
 
                     <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-app-structure">
-                        <span class="leader-os-zone-card-tag">3. Javni sloj</span>
-                        <div class="leader-os-zone-card-title">Profil i aplikacija</div>
-                        <div class="leader-os-zone-card-copy">Javni AI profil, Featured / sponsor status i struktura glavne aplikacije.</div>
+                        <span class="leader-os-zone-card-tag"><?= htmlspecialchars(fcc_t('3. Javni sloj'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <div class="leader-os-zone-card-title"><?= htmlspecialchars(fcc_t('Profil i aplikacija'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-zone-card-copy"><?= htmlspecialchars(fcc_t('Javni AI profil, Featured / sponsor status i struktura glavne aplikacije.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </button>
 
                     <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-ai-dossier">
-                        <span class="leader-os-zone-card-tag">4. AI i chatovi</span>
-                        <div class="leader-os-zone-card-title">Razgovori i signali</div>
-                        <div class="leader-os-zone-card-copy">Dossier, review inbox, sumnjivi threadovi i stvarni AI uvid u osobu i publiku.</div>
+                        <span class="leader-os-zone-card-tag"><?= htmlspecialchars(fcc_t('4. AI i chatovi'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <div class="leader-os-zone-card-title"><?= htmlspecialchars(fcc_t('Razgovori i signali'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-zone-card-copy"><?= htmlspecialchars(fcc_t('Dossier, review inbox, sumnjivi threadovi i stvarni AI uvid u osobu i publiku.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </button>
 
                     <button type="button" class="leader-os-zone-card leader-os-scroll-link" data-scroll-target="leader-os-deep-dive">
-                        <span class="leader-os-zone-card-tag">5. Deep dive</span>
-                        <div class="leader-os-zone-card-title">Analitika i usporedbe</div>
-                        <div class="leader-os-zone-card-copy">Billing, trendovi, score povijest, cohort usporedba i detaljni breakdowni klikova.</div>
+                        <span class="leader-os-zone-card-tag"><?= htmlspecialchars(fcc_t('5. Deep dive'), ENT_QUOTES, 'UTF-8') ?></span>
+                        <div class="leader-os-zone-card-title"><?= htmlspecialchars(fcc_t('Analitika i usporedbe'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="leader-os-zone-card-copy"><?= htmlspecialchars(fcc_t('Billing, trendovi, score povijest, cohort usporedba i detaljni breakdowni klikova.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </button>
                 </div>
 
                 <div class="leader-os-section-nav mt-3">
-                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-ai-report">AI analiza</button>
-                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Poruke i izvještaji</button>
-                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-app-structure">Aplikacija</button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-ai-report"><?= htmlspecialchars(fcc_t('AI analiza'), ENT_QUOTES, 'UTF-8') ?></button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel"><?= htmlspecialchars(fcc_t('Poruke i izvještaji'), ENT_QUOTES, 'UTF-8') ?></button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-app-structure"><?= htmlspecialchars(fcc_t('Aplikacija'), ENT_QUOTES, 'UTF-8') ?></button>
                     <?php if(!empty($featured_profile_admin['exists'])): ?>
-                        <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-featured-profile">FCC sponsor profil</button>
+                        <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-featured-profile"><?= htmlspecialchars(fcc_t('FCC sponsor profil'), ENT_QUOTES, 'UTF-8') ?></button>
                     <?php endif ?>
-                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-chat-review-inbox">Chat inbox</button>
-                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing">Naplata</button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-chat-review-inbox"><?= htmlspecialchars(fcc_t('Chat inbox'), ENT_QUOTES, 'UTF-8') ?></button>
+                    <button type="button" class="leader-os-section-link leader-os-scroll-link" data-scroll-target="leader-os-stripe-billing"><?= htmlspecialchars(fcc_t('Naplata'), ENT_QUOTES, 'UTF-8') ?></button>
                 </div>
             </div>
         </div>
@@ -2020,39 +2020,39 @@ $render_detail_help = static function(string $tooltip): void {
     <div class="leader-os-zone-shell mb-4" id="leader-os-priority-zone">
         <div class="leader-os-zone-header">
             <div class="leader-os-zone-copy">
-                <div class="leader-os-zone-eyebrow">Zona 1</div>
-                <h3 class="h5 mb-1">Prioriteti i akcije</h3>
-                <div class="leader-os-zone-note">Ovo je radni vrh detalja suradnika. Ovdje prvo vidiš što trenutno radi, gdje zapinje i koji je sljedeći admin potez, bez kopanja po svim donjim blokovima.</div>
+                <div class="leader-os-zone-eyebrow"><?= htmlspecialchars(fcc_t('Zona 1'), ENT_QUOTES, 'UTF-8') ?></div>
+                <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Prioriteti i akcije'), ENT_QUOTES, 'UTF-8') ?></h3>
+                <div class="leader-os-zone-note"><?= htmlspecialchars(fcc_t('Ovo je radni vrh detalja suradnika. Ovdje prvo vidiš što trenutno radi, gdje zapinje i koji je sljedeći admin potez, bez kopanja po svim donjim blokovima.'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
-            <span class="leader-os-detail-status status-info">Operativni cockpit</span>
+            <span class="leader-os-detail-status status-info"><?= htmlspecialchars(fcc_t('Operativni cockpit'), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
 
         <div class="leader-os-priority-grid">
             <div class="leader-os-priority-card">
-                <div class="leader-os-cockpit-label">Što trenutno radi</div>
+                <div class="leader-os-cockpit-label"><?= htmlspecialchars(fcc_t('Što trenutno radi'), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-priority-card-copy">
-                    <strong><?= htmlspecialchars((string) ($main_opportunity_label ?: 'Fokus'), ENT_QUOTES, 'UTF-8') ?></strong><br>
+                    <strong><?= htmlspecialchars((string) ($main_opportunity_label ?: fcc_t('Fokus')), ENT_QUOTES, 'UTF-8') ?></strong><br>
                     <?= htmlspecialchars((string) ($ai_focus_summary ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?>
                 </div>
-                <div class="leader-os-priority-card-meta">Status: <?= htmlspecialchars((string) ($selected['status_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?> · Dosljednost: <?= !empty($consistency) ? nr((int) ($consistency['score'] ?? 0)) . ' · ' . htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') : l('global.none') ?></div>
+                <div class="leader-os-priority-card-meta"><?= htmlspecialchars(fcc_t('Status:'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) ($selected['status_label'] ?? l('global.none')), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars(fcc_t('· Dosljednost:'), ENT_QUOTES, 'UTF-8') ?> <?= !empty($consistency) ? nr((int) ($consistency['score'] ?? 0)) . ' · ' . htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8') : l('global.none') ?></div>
             </div>
 
             <div class="leader-os-priority-card">
-                <div class="leader-os-cockpit-label">Što admin radi sada</div>
+                <div class="leader-os-cockpit-label"><?= htmlspecialchars(fcc_t('Što admin radi sada'), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-priority-card-copy">
-                    <strong>Admin akcija</strong><br>
+                    <strong><?= htmlspecialchars(fcc_t('Admin akcija'), ENT_QUOTES, 'UTF-8') ?></strong><br>
                     <?= htmlspecialchars((string) ($ai_admin_action_now ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?>
                 </div>
-                <div class="leader-os-priority-card-meta">Suradnik ovaj tjedan: <?= htmlspecialchars((string) ($ai_collaborator_action_this_week ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-priority-card-meta"><?= htmlspecialchars(fcc_t('Suradnik ovaj tjedan:'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) ($ai_collaborator_action_this_week ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
 
             <div class="leader-os-priority-card">
-                <div class="leader-os-cockpit-label">Javni status i setup</div>
+                <div class="leader-os-cockpit-label"><?= htmlspecialchars(fcc_t('Javni status i setup'), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="leader-os-priority-card-copy">
                     <strong><?= htmlspecialchars((string) $public_profile_summary_label, ENT_QUOTES, 'UTF-8') ?></strong><br>
                     <?= htmlspecialchars((string) $public_profile_summary_text, ENT_QUOTES, 'UTF-8') ?>
                 </div>
-                <div class="leader-os-priority-card-meta">Billing: <?= htmlspecialchars((string) (($stripe_billing['plan_name'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?> · Najjači izvor: <?= htmlspecialchars((string) ($selected['top_source_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="leader-os-priority-card-meta"><?= htmlspecialchars(fcc_t('Billing:'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) (($stripe_billing['plan_name'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars(fcc_t('· Najjači izvor:'), ENT_QUOTES, 'UTF-8') ?> <?= htmlspecialchars((string) ($selected['top_source_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
         </div>
     </div>
@@ -2061,48 +2061,48 @@ $render_detail_help = static function(string $tooltip): void {
     <?php if(!empty($featured_profile_admin['exists'])): ?>
         <?php
         $featured_profile_status_label = !empty($featured_profile_admin['is_recommended_sponsor'])
-            ? 'Live kao preporučeni sponsor'
+            ? fcc_t('Live kao preporučeni sponsor')
             : (!empty($featured_profile_admin['is_featured_listed'])
-                ? 'Live na Featured Apps'
-                : 'Javni profil još gradi uvjete');
+                ? fcc_t('Live na Featured Apps')
+                : fcc_t('Javni profil još gradi uvjete'));
         $featured_profile_generated_label = !empty($featured_profile_admin['generated_at'])
             ? \Altum\Date::get($featured_profile_admin['generated_at'], 2)
-            : 'Još nema spremljenog AI generiranja';
+            : fcc_t('Još nema spremljenog AI generiranja');
         ?>
         <div class="row mb-3" id="leader-os-featured-profile">
             <div class="col-12 col-xl-5 mb-3">
                 <div class="leader-os-detail-panel">
                     <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
                         <div>
-                            <h3 class="h5 mb-1">FCC sponsor profil</h3>
-                            <div class="text-muted small">Ovdje vidiš i uređuješ javni AI profil koji FCC koristi za Featured Apps, preporučene sponsore i javne profile. AI generirani opis ima prioritet nad ručno upisanim tekstom i promjene ovdje idu odmah live.</div>
+                            <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('FCC sponsor profil'), ENT_QUOTES, 'UTF-8') ?></h3>
+                            <div class="text-muted small"><?= htmlspecialchars(fcc_t('Ovdje vidiš i uređuješ javni AI profil koji FCC koristi za Featured Apps, preporučene sponsore i javne profile. AI generirani opis ima prioritet nad ručno upisanim tekstom i promjene ovdje idu odmah live.'), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
                         <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars($featured_profile_status_label, ENT_QUOTES, 'UTF-8') ?></span>
                     </div>
 
                     <div class="leader-os-detail-list">
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Glavna FCC aplikacija</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Glavna FCC aplikacija'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars((string) (($featured_profile_admin['main_biolink_url'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">15+ / 30d Featured Apps</span>
-                            <strong><?= !empty($featured_profile_admin['featured_threshold_reached']) ? 'Da' : 'Ne' ?> · signal <?= nr((int) ($featured_profile_admin['growth_signal_30d'] ?? 0)) ?></strong>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('15+ / 30d Featured Apps'), ENT_QUOTES, 'UTF-8') ?></span>
+                            <strong><?= !empty($featured_profile_admin['featured_threshold_reached']) ? fcc_t('Da') : fcc_t('Ne') ?> <?= htmlspecialchars(fcc_t('· signal'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($featured_profile_admin['growth_signal_30d'] ?? 0)) ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">50+ / 30d Preporučeni sponsor</span>
-                            <strong><?= !empty($featured_profile_admin['recommended_threshold_reached']) ? 'Da' : 'Ne' ?> · 7d provjera <?= nr((int) ($featured_profile_admin['growth_signal_7d'] ?? 0)) ?></strong>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('50+ / 30d Preporučeni sponsor'), ENT_QUOTES, 'UTF-8') ?></span>
+                            <strong><?= !empty($featured_profile_admin['recommended_threshold_reached']) ? fcc_t('Da') : fcc_t('Ne') ?> <?= htmlspecialchars(fcc_t('· 7d provjera'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($featured_profile_admin['growth_signal_7d'] ?? 0)) ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Forever prodajni link</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Forever prodajni link'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars((string) (($featured_profile_admin['sales_link_status_label'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Javni prikaz / odobrenje</span>
-                            <strong><?= !empty($featured_profile_admin['opt_in_enabled']) ? 'Javno uključeno' : 'Javno isključeno' ?> · <?= !empty($featured_profile_admin['is_approved']) ? 'Odobreno' : 'Čeka odobrenje' ?></strong>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Javni prikaz / odobrenje'), ENT_QUOTES, 'UTF-8') ?></span>
+                            <strong><?= !empty($featured_profile_admin['opt_in_enabled']) ? fcc_t('Javno uključeno') : fcc_t('Javno isključeno') ?> · <?= !empty($featured_profile_admin['is_approved']) ? fcc_t('Odobreno') : fcc_t('Čeka odobrenje') ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Zadnji AI profil</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Zadnji AI profil'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars($featured_profile_generated_label, ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                     </div>
@@ -2115,20 +2115,20 @@ $render_detail_help = static function(string $tooltip): void {
                         </div>
                     <?php endif ?>
 
-                    <div class="leader-os-detail-note mt-3">Logika je sada jednostavna: 15+ signala u 30 dana stavlja glavnu aplikaciju na Featured Apps, a 50+ u 30 dana i valjan Forever prodajni link dižu suradnika u preporučene sponsore i naslovnicu. Ovaj panel ti daje jedno mjesto s kojeg možeš odmah doraditi javni AI profil.</div>
+                    <div class="leader-os-detail-note mt-3"><?= htmlspecialchars(fcc_t('Logika je sada jednostavna: 15+ signala u 30 dana stavlja glavnu aplikaciju na Featured Apps, a 50+ u 30 dana i valjan Forever prodajni link dižu suradnika u preporučene sponsore i naslovnicu. Ovaj panel ti daje jedno mjesto s kojeg možeš odmah doraditi javni AI profil.'), ENT_QUOTES, 'UTF-8') ?></div>
 
                     <div class="d-flex flex-wrap mt-3" style="gap:.6rem;">
                         <?php if(!empty($featured_profile_admin['public_app_url'])): ?>
-                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['public_app_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori live aplikaciju</a>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['public_app_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= htmlspecialchars(fcc_t('Otvori live aplikaciju'), ENT_QUOTES, 'UTF-8') ?></a>
                         <?php endif ?>
                         <?php if(!empty($featured_profile_admin['featured_apps_url'])): ?>
-                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['featured_apps_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori Featured Apps</a>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['featured_apps_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= htmlspecialchars(fcc_t('Otvori Featured Apps'), ENT_QUOTES, 'UTF-8') ?></a>
                         <?php endif ?>
                         <?php if(!empty($featured_profile_admin['profile_url'])): ?>
-                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['profile_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Otvori sponsor profil</a>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['profile_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= htmlspecialchars(fcc_t('Otvori sponsor profil'), ENT_QUOTES, 'UTF-8') ?></a>
                         <?php endif ?>
                         <?php if(!empty($featured_profile_admin['sales_link_editor_url'])): ?>
-                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['sales_link_editor_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action">Uredi sales link</a>
+                            <a href="<?= htmlspecialchars((string) $featured_profile_admin['sales_link_editor_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm leader-os-detail-action"><?= htmlspecialchars(fcc_t('Uredi sales link'), ENT_QUOTES, 'UTF-8') ?></a>
                         <?php endif ?>
                     </div>
                 </div>
@@ -2139,10 +2139,10 @@ $render_detail_help = static function(string $tooltip): void {
                     <details class="leader-os-collapsible" open>
                         <summary>
                             <div>
-                                <div class="h5 mb-1">Uredi javni AI profil</div>
-                                <div class="leader-os-collapsible-copy">Ovo su javni tekstovi za Featured Apps, preporučene sponsore i sponsor profil. Ostavio sam ih u posebnom editoru da ne guše ostatak detalja suradnika.</div>
+                                <div class="h5 mb-1"><?= htmlspecialchars(fcc_t('Uredi javni AI profil'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Ovo su javni tekstovi za Featured Apps, preporučene sponsore i sponsor profil. Ostavio sam ih u posebnom editoru da ne guše ostatak detalja suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
                             </div>
-                            <span class="leader-os-detail-chip is-subtle">AI prioritet aktivan</span>
+                            <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars(fcc_t('AI prioritet aktivan'), ENT_QUOTES, 'UTF-8') ?></span>
                         </summary>
 
                         <div class="leader-os-collapsible-body">
@@ -2151,35 +2151,35 @@ $render_detail_help = static function(string $tooltip): void {
 
                                 <div class="form-row">
                                     <div class="form-group col-12">
-                                        <label class="small text-muted d-block mb-2">Kako koristi FCC</label>
+                                        <label class="small text-muted d-block mb-2"><?= htmlspecialchars(fcc_t('Kako koristi FCC'), ENT_QUOTES, 'UTF-8') ?></label>
                                         <input type="text" name="fcc_featured_public_use_case" class="form-control" maxlength="128" value="<?= htmlspecialchars((string) ($featured_profile_admin['public_use_case'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
                                     </div>
                                 </div>
 
                                 <div class="form-row">
                                     <div class="form-group col-12">
-                                        <label class="small text-muted d-block mb-2">Kratki javni opis</label>
+                                        <label class="small text-muted d-block mb-2"><?= htmlspecialchars(fcc_t('Kratki javni opis'), ENT_QUOTES, 'UTF-8') ?></label>
                                         <textarea name="fcc_featured_public_summary" rows="4" class="form-control" maxlength="420"><?= htmlspecialchars((string) ($featured_profile_admin['public_summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                                     </div>
                                 </div>
 
                                 <div class="form-row">
                                     <div class="form-group col-12">
-                                        <label class="small text-muted d-block mb-2">Dulji intro za sponsor profil</label>
+                                        <label class="small text-muted d-block mb-2"><?= htmlspecialchars(fcc_t('Dulji intro za sponsor profil'), ENT_QUOTES, 'UTF-8') ?></label>
                                         <textarea name="fcc_featured_profile_intro" rows="6" class="form-control" maxlength="880"><?= htmlspecialchars((string) ($featured_profile_admin['profile_intro'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                                     </div>
                                 </div>
 
                                 <div class="form-row">
                                     <div class="form-group col-12">
-                                        <label class="small text-muted d-block mb-2">Meta opis za Google i AI indeksaciju</label>
+                                        <label class="small text-muted d-block mb-2"><?= htmlspecialchars(fcc_t('Meta opis za Google i AI indeksaciju'), ENT_QUOTES, 'UTF-8') ?></label>
                                         <textarea name="fcc_featured_meta_description" rows="3" class="form-control" maxlength="180"><?= htmlspecialchars((string) ($featured_profile_admin['meta_description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                                     </div>
                                 </div>
 
-                                <div class="leader-os-detail-note mb-3">Ovdje uređuješ finalnu javnu verziju. Ako korisnik generira novi AI profil, ova verzija i dalje ostaje prioritet dok je ne promijeniš ili očistiš.</div>
+                                <div class="leader-os-detail-note mb-3"><?= htmlspecialchars(fcc_t('Ovdje uređuješ finalnu javnu verziju. Ako korisnik generira novi AI profil, ova verzija i dalje ostaje prioritet dok je ne promijeniš ili očistiš.'), ENT_QUOTES, 'UTF-8') ?></div>
 
-                                <button type="submit" name="save_featured_profile_admin" value="1" class="btn btn-sm leader-os-ai-button">Spremi FCC sponsor profil</button>
+                                <button type="submit" name="save_featured_profile_admin" value="1" class="btn btn-sm leader-os-ai-button"><?= htmlspecialchars(fcc_t('Spremi FCC sponsor profil'), ENT_QUOTES, 'UTF-8') ?></button>
                             </form>
                         </div>
                     </details>
@@ -2194,8 +2194,8 @@ $render_detail_help = static function(string $tooltip): void {
             <div class="leader-os-detail-panel h-100">
                 <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
                     <div>
-                        <h3 class="h5 mb-1">Operativni sažetak suradnika</h3>
-                        <div class="text-muted small">Najvažnije poslovne činjenice, glavni rizik i najbolji sljedeći potez na jednom mjestu.</div>
+                        <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Operativni sažetak suradnika'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="text-muted small"><?= htmlspecialchars(fcc_t('Najvažnije poslovne činjenice, glavni rizik i najbolji sljedeći potez na jednom mjestu.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                     <span class="leader-os-detail-chip is-subtle"><?= l('admin_leader_operating_system.period_' . $data->selected_period) ?></span>
                 </div>
@@ -2203,12 +2203,12 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="leader-os-cockpit-summary-grid">
                     <div>
                         <div class="leader-os-cockpit-spotlight">
-                            <div class="leader-os-cockpit-spotlight-title">Što trenutno radi</div>
+                            <div class="leader-os-cockpit-spotlight-title"><?= htmlspecialchars(fcc_t('Što trenutno radi'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-cockpit-spotlight-text"><?= htmlspecialchars((string) ($ai_focus_summary ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
 
                         <div class="leader-os-cockpit-spotlight">
-                            <div class="leader-os-cockpit-spotlight-title">Gdje najviše zapinje</div>
+                            <div class="leader-os-cockpit-spotlight-title"><?= htmlspecialchars(fcc_t('Gdje najviše zapinje'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-cockpit-spotlight-text">
                                 <strong><?= htmlspecialchars((string) $main_risk_label, ENT_QUOTES, 'UTF-8') ?></strong><br>
                                 <?= htmlspecialchars((string) $main_risk_text, ENT_QUOTES, 'UTF-8') ?>
@@ -2216,7 +2216,7 @@ $render_detail_help = static function(string $tooltip): void {
                         </div>
 
                         <div class="leader-os-cockpit-spotlight">
-                            <div class="leader-os-cockpit-spotlight-title">Što prvo promijeniti</div>
+                            <div class="leader-os-cockpit-spotlight-title"><?= htmlspecialchars(fcc_t('Što prvo promijeniti'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-cockpit-spotlight-text">
                                 <strong><?= htmlspecialchars((string) $main_opportunity_label, ENT_QUOTES, 'UTF-8') ?></strong><br>
                                 <?= htmlspecialchars((string) $main_opportunity_text, ENT_QUOTES, 'UTF-8') ?>
@@ -2227,28 +2227,28 @@ $render_detail_help = static function(string $tooltip): void {
                     <div>
                         <div class="leader-os-detail-list">
                             <div class="leader-os-detail-list-item">
-                                <span class="text-muted">Ukupni klikovi</span>
+                                <span class="text-muted"><?= htmlspecialchars(fcc_t('Ukupni klikovi'), ENT_QUOTES, 'UTF-8') ?></span>
                                 <strong><?= nr((int) ($selected['clicks_total_period'] ?? 0)) ?></strong>
                             </div>
                             <div class="leader-os-detail-list-item">
-                                <span class="text-muted">Kvaliteta aplikacije</span>
+                                <span class="text-muted"><?= htmlspecialchars(fcc_t('Kvaliteta aplikacije'), ENT_QUOTES, 'UTF-8') ?></span>
                                 <strong><?= nr((int) ($selected['app_quality_score'] ?? 0)) ?> · <?= htmlspecialchars((string) ($selected['app_quality_stage_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                             </div>
                             <div class="leader-os-detail-list-item">
-                                <span class="text-muted">Shop share / registracije</span>
+                                <span class="text-muted"><?= htmlspecialchars(fcc_t('Shop share / registracije'), ENT_QUOTES, 'UTF-8') ?></span>
                                 <strong><?= nr((float) ($selected['shop_share_percent'] ?? 0)) ?>% · <?= nr((float) ($selected['registration_rate_percent'] ?? 0)) ?>%</strong>
                             </div>
                             <div class="leader-os-detail-list-item">
-                                <span class="text-muted">App signal</span>
-                                <strong>Shop <?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?> · WA <?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?> · Funnel <?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?> · AI chat <?= nr((int) ($selected['app_ai_chat_leads_period'] ?? 0)) ?></strong>
+                                <span class="text-muted"><?= htmlspecialchars(fcc_t('App signal'), ENT_QUOTES, 'UTF-8') ?></span>
+                                <strong><?= htmlspecialchars(fcc_t('Shop'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($selected['app_shop_contacts_period'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· WA'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($selected['app_whatsapp_contacts_period'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· Funnel'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($selected['app_funnel_registrations_period'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· AI chat'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($selected['app_ai_chat_leads_period'] ?? 0)) ?></strong>
                             </div>
                             <div class="leader-os-detail-list-item">
-                                <span class="text-muted">Top grad / jezik</span>
+                                <span class="text-muted"><?= htmlspecialchars(fcc_t('Top grad / jezik'), ENT_QUOTES, 'UTF-8') ?></span>
                                 <strong><?= htmlspecialchars((string) (($selected['top_cities'][0]['label'] ?? '-') . ' · ' . ($selected['top_language_label'] ?? '-')), ENT_QUOTES, 'UTF-8') ?></strong>
                             </div>
                             <div class="leader-os-detail-list-item">
-                                <span class="text-muted">Funnel aktivnost</span>
-                                <strong><?= nr((int) ($selected['funnel']['total_leads'] ?? 0)) ?> leadova · <?= nr((float) ($selected['funnel']['conversion_rate'] ?? 0)) ?>%</strong>
+                                <span class="text-muted"><?= htmlspecialchars(fcc_t('Funnel aktivnost'), ENT_QUOTES, 'UTF-8') ?></span>
+                                <strong><?= nr((int) ($selected['funnel']['total_leads'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('leadova ·'), ENT_QUOTES, 'UTF-8') ?> <?= nr((float) ($selected['funnel']['conversion_rate'] ?? 0)) ?>%</strong>
                             </div>
                         </div>
                     </div>
@@ -2260,21 +2260,21 @@ $render_detail_help = static function(string $tooltip): void {
             <div class="leader-os-detail-panel h-100">
                 <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
                     <div>
-                        <h3 class="h5 mb-1" id="leader-os-ai-report">AI analiza i akcijski centar</h3>
-                        <div class="text-muted small">Ovdje pokrećeš individualnu AI analizu, vidiš zadnju verziju izvještaja i iz istog mjesta pripremaš poruku ili follow-up.</div>
+                        <h3 class="h5 mb-1" id="leader-os-ai-report"><?= htmlspecialchars(fcc_t('AI analiza i akcijski centar'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="text-muted small"><?= htmlspecialchars(fcc_t('Ovdje pokrećeš individualnu AI analizu, vidiš zadnju verziju izvještaja i iz istog mjesta pripremaš poruku ili follow-up.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                     <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars((string) $ai_report_status_label, ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
 
                 <div class="leader-os-ai-launch">
                     <div>
-                        <div class="leader-os-compact-title mb-2">Pokretanje AI analize</div>
+                        <div class="leader-os-compact-title mb-2"><?= htmlspecialchars(fcc_t('Pokretanje AI analize'), ENT_QUOTES, 'UTF-8') ?></div>
                         <div class="leader-os-ai-launch-meta">
-                            Zadnji izvještaj: <strong><?= htmlspecialchars((string) $ai_report_generated_label, ENT_QUOTES, 'UTF-8') ?></strong>
+                            <?= htmlspecialchars(fcc_t('Zadnji izvještaj:'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars((string) $ai_report_generated_label, ENT_QUOTES, 'UTF-8') ?></strong>
                             <?php if(!empty($ai_report['model'])): ?>
-                                · Model: <strong><?= htmlspecialchars((string) $ai_report['model'], ENT_QUOTES, 'UTF-8') ?></strong>
+                                <?= htmlspecialchars(fcc_t('· Model:'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars((string) $ai_report['model'], ENT_QUOTES, 'UTF-8') ?></strong>
                             <?php endif ?>
-                            <br>Ovo je glavno mjesto za pokretanje i pregled AI izvještaja za ovog suradnika.
+                            <br><?= htmlspecialchars(fcc_t('Ovo je glavno mjesto za pokretanje i pregled AI izvještaja za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     </div>
 
@@ -2291,23 +2291,23 @@ $render_detail_help = static function(string $tooltip): void {
                                 <button type="submit" name="generate_ai_report" value="1" class="btn btn-sm leader-os-ai-button"><?= l('admin_leader_operating_system.leader.ai_generate') ?></button>
                             </form>
                         <?php endif ?>
-                        <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel">Pošalji poruku</button>
+                        <button type="button" class="btn btn-sm leader-os-detail-action leader-os-scroll-link" data-scroll-target="leader-os-outreach-panel"><?= htmlspecialchars(fcc_t('Pošalji poruku'), ENT_QUOTES, 'UTF-8') ?></button>
                     </div>
                 </div>
 
-                <div class="leader-os-detail-note mb-3">Prvo pročitaj <strong>headline</strong> i <strong>sažetak</strong>, zatim pogledaj <strong>glavni rizik</strong>, <strong>glavnu priliku</strong> i <strong>što admin radi sada</strong>. Tako najbrže dobiješ jasan smjer što dalje.</div>
+                <div class="leader-os-detail-note mb-3"><?= htmlspecialchars(fcc_t('Prvo pročitaj'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('headline'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('i'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('sažetak'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t(', zatim pogledaj'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('glavni rizik'), ENT_QUOTES, 'UTF-8') ?></strong>, <strong><?= htmlspecialchars(fcc_t('glavnu priliku'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('i'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('što admin radi sada'), ENT_QUOTES, 'UTF-8') ?></strong><?= htmlspecialchars(fcc_t('. Tako najbrže dobiješ jasan smjer što dalje.'), ENT_QUOTES, 'UTF-8') ?></div>
 
                 <div class="leader-os-detail-list mb-3">
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Admin status</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Admin status'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $mentor_status_label, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Treba follow-up</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Treba follow-up'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= !empty($mentor_actions['needs_follow_up']) ? l('global.yes') : l('global.no') ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Mentoriran ovaj tjedan</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Mentoriran ovaj tjedan'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= !empty($mentor_actions['mentored_this_week']) ? l('global.yes') : l('global.no') ?></strong>
                     </div>
                 </div>
@@ -2315,16 +2315,16 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="leader-os-cockpit-summary-grid mb-3">
                     <div class="leader-os-cockpit-spotlight mt-0">
                         <div class="leader-os-cockpit-label mb-2">
-                            Admin akcija sada
-                            <?php $render_detail_help('Što je: jedna konkretna stvar koju ti kao admin trebaš napraviti odmah. | Kako se računa: AI uzima u obzir promet, AI disciplinu, coaching status, billing i strukturu aplikacije. | Kako koristiš: ne razmišljaš od nule, nego odmah vidiš prvi najbolji potez.'); ?>
+                            <?= htmlspecialchars(fcc_t('Admin akcija sada'), ENT_QUOTES, 'UTF-8') ?>
+                            <?php $render_detail_help(fcc_t('Što je: jedna konkretna stvar koju ti kao admin trebaš napraviti odmah. | Kako se računa: AI uzima u obzir promet, AI disciplinu, coaching status, billing i strukturu aplikacije. | Kako koristiš: ne razmišljaš od nule, nego odmah vidiš prvi najbolji potez.')); ?>
                         </div>
                         <div class="leader-os-cockpit-spotlight-text"><?= htmlspecialchars((string) ($ai_admin_action_now ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
 
                     <div class="leader-os-cockpit-spotlight mt-0">
                         <div class="leader-os-cockpit-label mb-2">
-                            Fokus suradnika ovaj tjedan
-                            <?php $render_detail_help('Što je: glavni tjedni zadatak koji suradnik treba provesti. | Kako se računa: AI bira jednu najvažniju akciju na temelju analitike, aplikacije i trenutnog smjera. | Kako koristiš: odmah znaš što tražiš od osobe ovaj tjedan.'); ?>
+                            <?= htmlspecialchars(fcc_t('Fokus suradnika ovaj tjedan'), ENT_QUOTES, 'UTF-8') ?>
+                            <?php $render_detail_help(fcc_t('Što je: glavni tjedni zadatak koji suradnik treba provesti. | Kako se računa: AI bira jednu najvažniju akciju na temelju analitike, aplikacije i trenutnog smjera. | Kako koristiš: odmah znaš što tražiš od osobe ovaj tjedan.')); ?>
                         </div>
                         <div class="leader-os-cockpit-spotlight-text"><?= htmlspecialchars((string) ($ai_collaborator_action_this_week ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
@@ -2332,19 +2332,19 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-detail-list mb-3">
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Signal napretka</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Signal napretka'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $ai_progress_signal, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Usporedba 7d / 30d / 90d</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Usporedba 7d / 30d / 90d'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $ai_period_comparison_summary, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Što sada ne gurati</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Što sada ne gurati'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) $ai_what_to_stop_pushing, ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="leader-os-detail-list-item">
-                        <span class="text-muted">Interna admin bilješka</span>
+                        <span class="text-muted"><?= htmlspecialchars(fcc_t('Interna admin bilješka'), ENT_QUOTES, 'UTF-8') ?></span>
                         <strong><?= htmlspecialchars((string) ($ai_admin_note ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                 </div>
@@ -2645,11 +2645,11 @@ $render_detail_help = static function(string $tooltip): void {
     <div class="leader-os-zone-shell mb-4" id="leader-os-mentor-zone">
         <div class="leader-os-zone-header">
             <div class="leader-os-zone-copy">
-                <div class="leader-os-zone-eyebrow">Zona 2</div>
-                <h3 class="h5 mb-1">Mentorstvo i follow-up</h3>
-                <div class="leader-os-zone-note">Ovdje pratiš što je suradnik zadnje dobio od mentora, kako izgleda coaching ritam i kada mu šalješ poruku, izvještaj ili novi konkretan zadatak.</div>
+                <div class="leader-os-zone-eyebrow"><?= htmlspecialchars(fcc_t('Zona 2'), ENT_QUOTES, 'UTF-8') ?></div>
+                <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Mentorstvo i follow-up'), ENT_QUOTES, 'UTF-8') ?></h3>
+                <div class="leader-os-zone-note"><?= htmlspecialchars(fcc_t('Ovdje pratiš što je suradnik zadnje dobio od mentora, kako izgleda coaching ritam i kada mu šalješ poruku, izvještaj ili novi konkretan zadatak.'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
-            <span class="leader-os-detail-status status-warning">Mentorski rad</span>
+            <span class="leader-os-detail-status status-warning"><?= htmlspecialchars(fcc_t('Mentorski rad'), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
     </div>
 
@@ -2659,8 +2659,8 @@ $render_detail_help = static function(string $tooltip): void {
             <div class="row">
                 <div class="col-12 col-xl-7 mb-3 mb-xl-0">
                     <div class="leader-os-detail-panel" id="leader-os-outreach-panel">
-                        <h3 class="h5 mb-2">Pošalji poruku i AI izvještaj</h3>
-                        <div class="text-muted small mb-3">Ovdje koristiš zadnji AI nacrt, po potrebi ga urediš i šalješ suradniku kao privatnu poruku ili izvještaj.</div>
+                        <h3 class="h5 mb-2"><?= htmlspecialchars(fcc_t('Pošalji poruku i AI izvještaj'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="text-muted small mb-3"><?= htmlspecialchars(fcc_t('Ovdje koristiš zadnji AI nacrt, po potrebi ga urediš i šalješ suradniku kao privatnu poruku ili izvještaj.'), ENT_QUOTES, 'UTF-8') ?></div>
 
                         <?php if(empty($los_outreach['latest_report'])): ?>
                             <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.outreach_empty') ?></div>
@@ -2684,9 +2684,9 @@ $render_detail_help = static function(string $tooltip): void {
                                 <summary>
                                     <div>
                                         <div><?= l('admin_leader_operating_system.leader.outreach_send') ?></div>
-                                        <div class="leader-os-collapsible-copy">Otvori editor za slanje privatne poruke ili AI izvještaja suradniku.</div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Otvori editor za slanje privatne poruke ili AI izvještaja suradniku.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle">Email / poruka</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars(fcc_t('Email / poruka'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
 
                                 <div class="leader-os-collapsible-body">
@@ -2718,8 +2718,8 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="col-12 col-xl-5">
                     <div class="leader-os-detail-panel" id="leader-os-ai-history">
-                        <h3 class="h5 mb-2">Povijest AI izvještaja i slanja</h3>
-                        <div class="text-muted small mb-3">Ovdje vidiš sve generirane verzije izvještaja i zadnja slanja za ovog suradnika.</div>
+                        <h3 class="h5 mb-2"><?= htmlspecialchars(fcc_t('Povijest AI izvještaja i slanja'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="text-muted small mb-3"><?= htmlspecialchars(fcc_t('Ovdje vidiš sve generirane verzije izvještaja i zadnja slanja za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
 
                         <?php if(empty($report_history) && empty($send_history)): ?>
                             <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.outreach_history_empty') ?></div>
@@ -2727,10 +2727,10 @@ $render_detail_help = static function(string $tooltip): void {
                             <details class="leader-os-collapsible" open>
                                 <summary>
                                     <div>
-                                        <div>Povijest izvještaja i slanja</div>
-                                        <div class="leader-os-collapsible-copy">Otvori kad želiš uzeti stari AI nacrt, usporediti verzije ili vidjeti što je točno poslano suradniku.</div>
+                                        <div><?= htmlspecialchars(fcc_t('Povijest izvještaja i slanja'), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Otvori kad želiš uzeti stari AI nacrt, usporediti verzije ili vidjeti što je točno poslano suradniku.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) (count($report_history) + count($send_history))) ?> zapisa</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) (count($report_history) + count($send_history))) ?> <?= htmlspecialchars(fcc_t('zapisa'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
 
                                 <div class="leader-os-collapsible-body">
@@ -2803,11 +2803,11 @@ $render_detail_help = static function(string $tooltip): void {
     <div class="leader-os-zone-shell mb-4" id="leader-os-profile-zone">
         <div class="leader-os-zone-header">
             <div class="leader-os-zone-copy">
-                <div class="leader-os-zone-eyebrow">Zona 3</div>
-                <h3 class="h5 mb-1">Javni profil i aplikacija</h3>
-                <div class="leader-os-zone-note">Ovdje uređuješ javnu sliku suradnika i provjeravaš podržava li glavna aplikacija stvarni rast: sponsor status, javni AI profil, strukturu i CTA logiku.</div>
+                <div class="leader-os-zone-eyebrow"><?= htmlspecialchars(fcc_t('Zona 3'), ENT_QUOTES, 'UTF-8') ?></div>
+                <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Javni profil i aplikacija'), ENT_QUOTES, 'UTF-8') ?></h3>
+                <div class="leader-os-zone-note"><?= htmlspecialchars(fcc_t('Ovdje uređuješ javnu sliku suradnika i provjeravaš podržava li glavna aplikacija stvarni rast: sponsor status, javni AI profil, strukturu i CTA logiku.'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
-            <span class="leader-os-detail-status status-info">Javni sloj</span>
+            <span class="leader-os-detail-status status-info"><?= htmlspecialchars(fcc_t('Javni sloj'), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
     </div>
 
@@ -2947,7 +2947,7 @@ $render_detail_help = static function(string $tooltip): void {
 
                                 <?php if(!empty($app_structure['page_review']['has_preview']) && !empty($app_structure['page_review']['public_url'])): ?>
                                     <div class="leader-os-preview-frame">
-                                        <iframe src="<?= htmlspecialchars((string) $app_structure['page_review']['public_url'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" title="<?= htmlspecialchars((string) ($app_structure['page_review']['preview_title'] ?? 'App preview'), ENT_QUOTES, 'UTF-8') ?>"></iframe>
+                                        <iframe src="<?= htmlspecialchars((string) $app_structure['page_review']['public_url'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" title="<?= htmlspecialchars((string) ($app_structure['page_review']['preview_title'] ?? fcc_t('App preview')), ENT_QUOTES, 'UTF-8') ?>"></iframe>
                                     </div>
                                 <?php else: ?>
                                     <div class="text-muted small mb-0"><?= l('admin_leader_operating_system.leader.preview_empty') ?></div>
@@ -3012,8 +3012,8 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="leader-os-detail-panel mb-3">
                     <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
                         <div>
-                            <h3 class="h5 mb-1">Coaching ROI</h3>
-                            <div class="text-muted small">Rani signal pomaka nakon zadnjeg mentoring kontakta i score snapshotova.</div>
+                            <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Coaching ROI'), ENT_QUOTES, 'UTF-8') ?></h3>
+                            <div class="text-muted small"><?= htmlspecialchars(fcc_t('Rani signal pomaka nakon zadnjeg mentoring kontakta i score snapshotova.'), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
                         <span class="leader-os-detail-status <?= htmlspecialchars((string) ($data->coaching_roi['signal_class'] ?? 'status-dark'), ENT_QUOTES, 'UTF-8') ?>">
                             <?= htmlspecialchars((string) ($data->coaching_roi['signal_label'] ?? '-'), ENT_QUOTES, 'UTF-8') ?>
@@ -3022,15 +3022,15 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="leader-os-detail-list">
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Zadnji coaching touch</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Zadnji coaching touch'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= !empty($data->coaching_roi['anchor_at']) ? \Altum\Date::get($data->coaching_roi['anchor_at'], 2) : '-' ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Dana od kontakta</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Dana od kontakta'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= $data->coaching_roi['days_since_touch'] !== null ? nr((int) $data->coaching_roi['days_since_touch']) : '-' ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">LOS score prije / sada</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('LOS score prije / sada'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong>
                                 <?= $data->coaching_roi['score_before'] !== null ? nr((int) $data->coaching_roi['score_before']) : '-' ?>
                                 /
@@ -3038,11 +3038,11 @@ $render_detail_help = static function(string $tooltip): void {
                             </strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Delta score</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Delta score'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= $data->coaching_roi['score_delta'] !== null ? (($data->coaching_roi['score_delta'] > 0 ? '+' : '') . nr((int) $data->coaching_roi['score_delta'])) : '-' ?></strong>
                         </div>
                         <div class="leader-os-detail-list-item">
-                            <span class="text-muted">Risk prije / sada</span>
+                            <span class="text-muted"><?= htmlspecialchars(fcc_t('Risk prije / sada'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong>
                                 <?= $data->coaching_roi['risk_before'] !== null ? nr((int) $data->coaching_roi['risk_before']) : '-' ?>
                                 /
@@ -3103,9 +3103,9 @@ $render_detail_help = static function(string $tooltip): void {
                                 <summary>
                                     <div>
                                         <div><?= l('admin_leader_operating_system.leader.ai_plan_mentor_actions') ?></div>
-                                        <div class="leader-os-collapsible-copy">Otvori za uređivanje follow-up statusa, admin bilješke, AI guidancea i pregleda povijesti mentoriranja.</div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Otvori za uređivanje follow-up statusa, admin bilješke, AI guidancea i pregleda povijesti mentoriranja.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) ($ai_plan_admin['history_total'] ?? 0)) ?> zapisa</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) ($ai_plan_admin['history_total'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('zapisa'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
 
                                 <div class="leader-os-collapsible-body">
@@ -3210,7 +3210,7 @@ $render_detail_help = static function(string $tooltip): void {
                                                         <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($history_item['details'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php endif ?>
                                                     <div class="leader-os-phase4-history-meta">
-                                                        <span><?= !empty($history_item['admin_name']) ? htmlspecialchars((string) $history_item['admin_name'], ENT_QUOTES, 'UTF-8') : 'Admin' ?></span>
+                                                        <span><?= !empty($history_item['admin_name']) ? htmlspecialchars((string) $history_item['admin_name'], ENT_QUOTES, 'UTF-8') : fcc_t('Admin') ?></span>
                                                         <span><?= !empty($history_item['created_at']) ? \Altum\Date::get($history_item['created_at'], 2) : '-' ?></span>
                                                     </div>
                                                 </div>
@@ -3342,11 +3342,11 @@ $render_detail_help = static function(string $tooltip): void {
     <div class="leader-os-zone-shell mb-4" id="leader-os-ai-zone">
         <div class="leader-os-zone-header">
             <div class="leader-os-zone-copy">
-                <div class="leader-os-zone-eyebrow">Zona 4</div>
-                <h3 class="h5 mb-1">AI i chat inteligencija</h3>
-                <div class="leader-os-zone-note">Ovdje vidiš što suradnik traži od Coacha, što publika pita javni AI, gdje postoje leadovi, review slučajevi ili sumnjivi threadovi te što iz toga trebaš promijeniti.</div>
+                <div class="leader-os-zone-eyebrow"><?= htmlspecialchars(fcc_t('Zona 4'), ENT_QUOTES, 'UTF-8') ?></div>
+                <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('AI i chat inteligencija'), ENT_QUOTES, 'UTF-8') ?></h3>
+                <div class="leader-os-zone-note"><?= htmlspecialchars(fcc_t('Ovdje vidiš što suradnik traži od Coacha, što publika pita javni AI, gdje postoje leadovi, review slučajevi ili sumnjivi threadovi te što iz toga trebaš promijeniti.'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
-            <span class="leader-os-detail-status status-info">AI signali</span>
+            <span class="leader-os-detail-status status-info"><?= htmlspecialchars(fcc_t('AI signali'), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
     </div>
 
@@ -3355,10 +3355,10 @@ $render_detail_help = static function(string $tooltip): void {
             <div class="card-body">
                 <div class="leader-os-section-heading">
                     <div class="leader-os-section-heading-copy">
-                        <h3 class="h5 mb-1">AI dossier i chat inteligencija</h3>
-                        <div class="text-muted small">Operativni sažetak iz Coach i javnih AI razgovora: gdje osoba zapinje, što već radi dobro i što admin treba promijeniti odmah.</div>
+                        <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('AI dossier i chat inteligencija'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="text-muted small"><?= htmlspecialchars(fcc_t('Operativni sažetak iz Coach i javnih AI razgovora: gdje osoba zapinje, što već radi dobro i što admin treba promijeniti odmah.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
-                    <span class="leader-os-detail-status status-info">Chat intelligence</span>
+                    <span class="leader-os-detail-status status-info"><?= htmlspecialchars(fcc_t('Chat intelligence'), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
 
                 <div class="leader-os-detail-note mb-3">
@@ -3372,12 +3372,12 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="row mb-3">
                     <div class="col-12 col-xl-6 mb-3 mb-xl-0">
                         <div class="leader-os-exec-card">
-                            <div class="leader-os-ai-title">AI Executive Report</div>
-                            <div class="h6 mb-2"><?= htmlspecialchars((string) ($fcc_ai_exec['headline'] ?? 'AI executive report'), ENT_QUOTES, 'UTF-8') ?></div>
-                            <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_exec['summary'] ?? 'Ovdje dobivaš sažetak što gori, što radi i koji su najvažniji potezi za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('AI Executive Report'), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="h6 mb-2"><?= htmlspecialchars((string) ($fcc_ai_exec['headline'] ?? fcc_t('AI executive report')), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_exec['summary'] ?? fcc_t('Ovdje dobivaš sažetak što gori, što radi i koji su najvažniji potezi za ovog suradnika.')), ENT_QUOTES, 'UTF-8') ?></div>
 
                             <?php if(empty($fcc_ai_exec['alerts']) && empty($fcc_ai_exec['opportunities'])): ?>
-                                <div class="text-muted small mb-0">Kad se skupi još malo svježih chat signala, ovdje ćeš dobiti konkretne alerte i prilike za ovu osobu.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Kad se skupi još malo svježih chat signala, ovdje ćeš dobiti konkretne alerte i prilike za ovu osobu.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-exec-list">
                                     <?php foreach(array_slice((array) ($fcc_ai_exec['alerts'] ?? []), 0, 3) as $alert_row): ?>
@@ -3406,12 +3406,12 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-6">
                         <div class="leader-os-exec-card">
-                            <div class="leader-os-ai-title">Admin digest za ovu osobu</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Admin digest za ovu osobu'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_exec['next_moves']) && empty($fcc_ai_exec['working']) && empty($fcc_ai_exec['blocking'])): ?>
-                                <div class="text-muted small mb-0">Još nema dovoljno signala za kraći admin digest ove osobe.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno signala za kraći admin digest ove osobe.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <?php if(!empty($fcc_ai_exec['working'])): ?>
-                                    <div class="leader-os-ai-title mb-2">Što radi</div>
+                                    <div class="leader-os-ai-title mb-2"><?= htmlspecialchars(fcc_t('Što radi'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <ul class="leader-os-ai-list mb-3">
                                         <?php foreach(($fcc_ai_exec['working'] ?? []) as $row): ?>
                                             <li><?= htmlspecialchars((string) $row, ENT_QUOTES, 'UTF-8') ?></li>
@@ -3420,7 +3420,7 @@ $render_detail_help = static function(string $tooltip): void {
                                 <?php endif ?>
 
                                 <?php if(!empty($fcc_ai_exec['blocking'])): ?>
-                                    <div class="leader-os-ai-title mb-2">Što koči</div>
+                                    <div class="leader-os-ai-title mb-2"><?= htmlspecialchars(fcc_t('Što koči'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <ul class="leader-os-ai-list mb-3">
                                         <?php foreach(($fcc_ai_exec['blocking'] ?? []) as $row): ?>
                                             <li><?= htmlspecialchars((string) $row, ENT_QUOTES, 'UTF-8') ?></li>
@@ -3429,11 +3429,11 @@ $render_detail_help = static function(string $tooltip): void {
                                 <?php endif ?>
 
                                 <?php if(!empty($fcc_ai_exec['next_moves'])): ?>
-                                    <div class="leader-os-ai-title mb-2">Što radiš sljedeće</div>
+                                    <div class="leader-os-ai-title mb-2"><?= htmlspecialchars(fcc_t('Što radiš sljedeće'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="leader-os-detail-list">
                                         <?php foreach(($fcc_ai_exec['next_moves'] ?? []) as $move_row): ?>
                                             <div class="leader-os-detail-list-item">
-                                                <span>Prioritet</span>
+                                                <span><?= htmlspecialchars(fcc_t('Prioritet'), ENT_QUOTES, 'UTF-8') ?></span>
                                                 <strong><?= htmlspecialchars((string) $move_row, ENT_QUOTES, 'UTF-8') ?></strong>
                                             </div>
                                         <?php endforeach ?>
@@ -3447,14 +3447,14 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="row mb-3">
                     <div class="col-12 col-xl-6 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Što admin treba napraviti sada</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Što admin treba napraviti sada'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_dossier['admin_changes'])): ?>
-                                <div class="text-muted small mb-0">Kad se skupi još malo chat signala, ovdje će se pojaviti prioritetne promjene.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Kad se skupi još malo chat signala, ovdje će se pojaviti prioritetne promjene.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-detail-list">
                                     <?php foreach(($fcc_ai_dossier['admin_changes'] ?? []) as $change_row): ?>
                                         <div class="leader-os-detail-list-item">
-                                            <span>Prioritet</span>
+                                            <span><?= htmlspecialchars(fcc_t('Prioritet'), ENT_QUOTES, 'UTF-8') ?></span>
                                             <strong><?= htmlspecialchars((string) $change_row, ENT_QUOTES, 'UTF-8') ?></strong>
                                         </div>
                                     <?php endforeach ?>
@@ -3465,13 +3465,13 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-6">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Jake i slabe strane iz chatova</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Jake i slabe strane iz chatova'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="row">
                                 <div class="col-12 col-lg-6 mb-3 mb-lg-0">
                                     <div class="leader-os-cockpit-spotlight mt-0">
-                                        <div class="leader-os-cockpit-label mb-2">Jake strane</div>
+                                        <div class="leader-os-cockpit-label mb-2"><?= htmlspecialchars(fcc_t('Jake strane'), ENT_QUOTES, 'UTF-8') ?></div>
                                         <?php if(empty($fcc_ai_dossier['strengths'])): ?>
-                                            <div class="text-muted small mb-0">Još nema dovoljno signala za pouzdane jake strane.</div>
+                                            <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno signala za pouzdane jake strane.'), ENT_QUOTES, 'UTF-8') ?></div>
                                         <?php else: ?>
                                             <ul class="leader-os-ai-list mb-0">
                                                 <?php foreach(($fcc_ai_dossier['strengths'] ?? []) as $strength_row): ?>
@@ -3483,9 +3483,9 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <div class="col-12 col-lg-6">
                                     <div class="leader-os-cockpit-spotlight mt-0">
-                                        <div class="leader-os-cockpit-label mb-2">Slabe strane</div>
+                                        <div class="leader-os-cockpit-label mb-2"><?= htmlspecialchars(fcc_t('Slabe strane'), ENT_QUOTES, 'UTF-8') ?></div>
                                         <?php if(empty($fcc_ai_dossier['weaknesses'])): ?>
-                                            <div class="text-muted small mb-0">Trenutno nema izraženih slabosti iz chat signala.</div>
+                                            <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema izraženih slabosti iz chat signala.'), ENT_QUOTES, 'UTF-8') ?></div>
                                         <?php else: ?>
                                             <ul class="leader-os-ai-list mb-0">
                                                 <?php foreach(($fcc_ai_dossier['weaknesses'] ?? []) as $weakness_row): ?>
@@ -3503,26 +3503,26 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="row mb-3">
                     <div class="col-12 col-xl-6 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Coach signal</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Coach signal'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_dossier['coach']['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
 
                             <div class="leader-os-detail-list mb-3">
                                 <div class="leader-os-detail-list-item">
-                                    <span>Glavni blocker</span>
+                                    <span><?= htmlspecialchars(fcc_t('Glavni blocker'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['coach']['blocker'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                                 <div class="leader-os-detail-list-item">
-                                    <span>Admin potez</span>
+                                    <span><?= htmlspecialchars(fcc_t('Admin potez'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['coach']['next_admin_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                                 <div class="leader-os-detail-list-item">
-                                    <span>Potez suradnika</span>
+                                    <span><?= htmlspecialchars(fcc_t('Potez suradnika'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['coach']['next_user_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                             </div>
 
                             <?php if(!empty($fcc_ai_dossier['coach']['top_topics'])): ?>
-                                <div class="leader-os-ai-title mb-2">Top Coach teme</div>
+                                <div class="leader-os-ai-title mb-2"><?= htmlspecialchars(fcc_t('Top Coach teme'), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="leader-os-detail-list mb-3">
                                     <?php foreach(($fcc_ai_dossier['coach']['top_topics'] ?? []) as $topic_row): ?>
                                         <div class="leader-os-detail-list-item">
@@ -3536,14 +3536,14 @@ $render_detail_help = static function(string $tooltip): void {
                             <details class="leader-os-collapsible mt-3">
                                 <summary>
                                     <div>
-                                        <div>Zadnji Coach threadovi</div>
-                                        <div class="leader-os-collapsible-copy">Otvori detalje tek kad želiš vidjeti što se točno vrti u razgovorima i gdje osoba zapinje.</div>
+                                        <div><?= htmlspecialchars(fcc_t('Zadnji Coach threadovi'), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Otvori detalje tek kad želiš vidjeti što se točno vrti u razgovorima i gdje osoba zapinje.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['coach']['threads'] ?? [])) ?> threadova</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['coach']['threads'] ?? [])) ?> <?= htmlspecialchars(fcc_t('threadova'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
                                 <div class="leader-os-collapsible-body">
                                     <?php if(empty($fcc_ai_dossier['coach']['threads'])): ?>
-                                        <div class="text-muted small mb-0">Još nema dovoljno Coach razgovora u odabranom periodu.</div>
+                                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno Coach razgovora u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php else: ?>
                                         <div class="leader-os-phase4-history">
                                             <?php foreach(($fcc_ai_dossier['coach']['threads'] ?? []) as $thread_row): ?>
@@ -3556,13 +3556,13 @@ $render_detail_help = static function(string $tooltip): void {
                                                             <?= htmlspecialchars((string) (($thread_row['outcome_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
                                                         </span>
                                                     </div>
-                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? fcc_t('Opće')), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <div class="text-muted small mt-2"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php if(!empty($thread_row['core_issue'])): ?>
-                                                        <div class="text-muted small mt-2"><strong>Zapinjanje:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                        <div class="text-muted small mt-2"><strong><?= htmlspecialchars(fcc_t('Zapinjanje:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php endif ?>
                                                     <div class="leader-os-phase4-history-meta">
-                                                        <span>U: <?= nr((int) ($thread_row['total_user_messages'] ?? 0)) ?> · A: <?= nr((int) ($thread_row['total_assistant_messages'] ?? 0)) ?></span>
+                                                        <span><?= htmlspecialchars(fcc_t('U:'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($thread_row['total_user_messages'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· A:'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($thread_row['total_assistant_messages'] ?? 0)) ?></span>
                                                         <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
                                                     </div>
                                                 </div>
@@ -3576,26 +3576,26 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-6">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">AI za ljude</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('AI za ljude'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="text-muted small mb-3"><?= htmlspecialchars((string) ($fcc_ai_dossier['public_ai']['summary'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
 
                             <div class="leader-os-detail-list mb-3">
                                 <div class="leader-os-detail-list-item">
-                                    <span>Glavni blocker</span>
+                                    <span><?= htmlspecialchars(fcc_t('Glavni blocker'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['public_ai']['blocker'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                                 <div class="leader-os-detail-list-item">
-                                    <span>Admin potez</span>
+                                    <span><?= htmlspecialchars(fcc_t('Admin potez'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['public_ai']['next_admin_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                                 <div class="leader-os-detail-list-item">
-                                    <span>Potez suradnika</span>
+                                    <span><?= htmlspecialchars(fcc_t('Potez suradnika'), ENT_QUOTES, 'UTF-8') ?></span>
                                     <strong><?= htmlspecialchars((string) (($fcc_ai_dossier['public_ai']['next_user_move'] ?? '') ?: '-'), ENT_QUOTES, 'UTF-8') ?></strong>
                                 </div>
                             </div>
 
                             <?php if(!empty($fcc_ai_dossier['public_ai']['top_topics'])): ?>
-                                <div class="leader-os-ai-title mb-2">Top teme publike</div>
+                                <div class="leader-os-ai-title mb-2"><?= htmlspecialchars(fcc_t('Top teme publike'), ENT_QUOTES, 'UTF-8') ?></div>
                                 <div class="leader-os-detail-list mb-3">
                                     <?php foreach(($fcc_ai_dossier['public_ai']['top_topics'] ?? []) as $topic_row): ?>
                                         <div class="leader-os-detail-list-item">
@@ -3609,14 +3609,14 @@ $render_detail_help = static function(string $tooltip): void {
                             <details class="leader-os-collapsible mt-3">
                                 <summary>
                                     <div>
-                                        <div>Zadnji javni AI threadovi</div>
-                                        <div class="leader-os-collapsible-copy">Ovdje otvaraš konkretne teme publike tek kad želiš ući u sadržaj, leadove ili suspektne upite.</div>
+                                        <div><?= htmlspecialchars(fcc_t('Zadnji javni AI threadovi'), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Ovdje otvaraš konkretne teme publike tek kad želiš ući u sadržaj, leadove ili suspektne upite.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['public_ai']['threads'] ?? [])) ?> threadova</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['public_ai']['threads'] ?? [])) ?> <?= htmlspecialchars(fcc_t('threadova'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
                                 <div class="leader-os-collapsible-body">
                                     <?php if(empty($fcc_ai_dossier['public_ai']['threads'])): ?>
-                                        <div class="text-muted small mb-0">Još nema dovoljno javnih AI razgovora u odabranom periodu.</div>
+                                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno javnih AI razgovora u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php else: ?>
                                         <div class="leader-os-phase4-history">
                                             <?php foreach(($fcc_ai_dossier['public_ai']['threads'] ?? []) as $thread_row): ?>
@@ -3632,10 +3632,10 @@ $render_detail_help = static function(string $tooltip): void {
                                                             <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
                                                         <?php endif ?>
                                                     </div>
-                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? fcc_t('Opće')), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <div class="text-muted small mt-2"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php if(!empty($thread_row['core_issue'])): ?>
-                                                        <div class="text-muted small mt-2"><strong>Glavni problem:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                        <div class="text-muted small mt-2"><strong><?= htmlspecialchars(fcc_t('Glavni problem:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php endif ?>
                                                     <div class="leader-os-phase4-history-meta">
                                                         <span><?= htmlspecialchars((string) ($thread_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
@@ -3654,18 +3654,18 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="row">
                     <div class="col-12 col-xl-6 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Suspektni i rizični chatovi</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Suspektni i rizični chatovi'), ENT_QUOTES, 'UTF-8') ?></div>
                             <details class="leader-os-collapsible mt-3">
                                 <summary>
                                     <div>
-                                        <div>Rizični threadovi</div>
-                                        <div class="leader-os-collapsible-copy">Otvaraš ih kad želiš procijeniti posebne upite, sumnjive obrasce ili temu koja traži brzu provjeru.</div>
+                                        <div><?= htmlspecialchars(fcc_t('Rizični threadovi'), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Otvaraš ih kad želiš procijeniti posebne upite, sumnjive obrasce ili temu koja traži brzu provjeru.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['risky_threads'] ?? [])) ?> slučajeva</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['risky_threads'] ?? [])) ?> <?= htmlspecialchars(fcc_t('slučajeva'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
                                 <div class="leader-os-collapsible-body">
                                     <?php if(empty($fcc_ai_dossier['risky_threads'])): ?>
-                                        <div class="text-muted small mb-0">Trenutno nema rizičnih ili suspektnih razgovora u zadnjem periodu.</div>
+                                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema rizičnih ili suspektnih razgovora u zadnjem periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php else: ?>
                                         <div class="leader-os-phase4-history">
                                             <?php foreach(($fcc_ai_dossier['risky_threads'] ?? []) as $thread_row): ?>
@@ -3678,11 +3678,11 @@ $render_detail_help = static function(string $tooltip): void {
                                                             <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
                                                         <?php endif ?>
                                                     </div>
-                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? fcc_t('Opće')), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <div class="text-muted small mt-2"><?= htmlspecialchars((string) (($thread_row['core_issue'] ?? '') ?: ($thread_row['summary'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php if(!empty($thread_row['suspicion']['flags'])): ?>
                                                         <div class="text-muted small mt-2">
-                                                            <strong>Rizik:</strong>
+                                                            <strong><?= htmlspecialchars(fcc_t('Rizik:'), ENT_QUOTES, 'UTF-8') ?></strong>
                                                             <?= htmlspecialchars((string) implode(', ', array_map(static function($flag) {
                                                                 return (string) ($flag['label'] ?? '');
                                                             }, $thread_row['suspicion']['flags'] ?? [])), ENT_QUOTES, 'UTF-8') ?>
@@ -3703,31 +3703,31 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-6">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Lošiji chatovi i review queue</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Lošiji chatovi i review queue'), ENT_QUOTES, 'UTF-8') ?></div>
                             <details class="leader-os-collapsible mt-3">
                                 <summary>
                                     <div>
-                                        <div>Review slučajevi</div>
-                                        <div class="leader-os-collapsible-copy">Otvori kad želiš pregledati lošije odgovore, otvorene review oznake i posebne slučajeve za ručnu odluku.</div>
+                                        <div><?= htmlspecialchars(fcc_t('Review slučajevi'), ENT_QUOTES, 'UTF-8') ?></div>
+                                        <div class="leader-os-collapsible-copy"><?= htmlspecialchars(fcc_t('Otvori kad želiš pregledati lošije odgovore, otvorene review oznake i posebne slučajeve za ručnu odluku.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
-                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['review_threads'] ?? [])) ?> slučajeva</span>
+                                    <span class="leader-os-detail-chip is-subtle"><?= nr((int) count($fcc_ai_dossier['review_threads'] ?? [])) ?> <?= htmlspecialchars(fcc_t('slučajeva'), ENT_QUOTES, 'UTF-8') ?></span>
                                 </summary>
                                 <div class="leader-os-collapsible-body">
                                     <?php if(empty($fcc_ai_dossier['review_threads'])): ?>
-                                        <div class="text-muted small mb-0">Trenutno nema otvorenih review slučajeva.</div>
+                                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema otvorenih review slučajeva.'), ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php else: ?>
                                         <div class="leader-os-phase4-history">
                                             <?php foreach(($fcc_ai_dossier['review_threads'] ?? []) as $review_row): ?>
                                                 <div class="leader-os-phase4-history-item">
                                                     <div class="font-weight-bold">
-                                                        <?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: 'Review'), ENT_QUOTES, 'UTF-8') ?>
+                                                        <?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: fcc_t('Review')), ENT_QUOTES, 'UTF-8') ?>
                                                         <?php if(!empty($review_row['scope_label'])): ?>
                                                             · <?= htmlspecialchars((string) ($review_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                         <?php endif ?>
                                                     </div>
                                                     <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($review_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php if(!empty($review_row['note'])): ?>
-                                                        <div class="text-muted small mt-2"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                        <div class="text-muted small mt-2"><strong><?= htmlspecialchars(fcc_t('Napomena:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php endif ?>
                                                     <div class="leader-os-phase4-history-meta">
                                                         <span><?= htmlspecialchars((string) ($review_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
@@ -3762,10 +3762,10 @@ $render_detail_help = static function(string $tooltip): void {
             <div class="card-body">
                 <div class="leader-os-section-heading">
                     <div class="leader-os-section-heading-copy">
-                        <h3 class="h5 mb-1">Chat Review Inbox</h3>
-                        <div class="text-muted small">Odvojeni pregled Coach, javnih AI, suspektnih, review i conversion razgovora s brzim thread uvidom.</div>
+                        <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Chat Review Inbox'), ENT_QUOTES, 'UTF-8') ?></h3>
+                        <div class="text-muted small"><?= htmlspecialchars(fcc_t('Odvojeni pregled Coach, javnih AI, suspektnih, review i conversion razgovora s brzim thread uvidom.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
-                    <span class="leader-os-detail-status status-info">Inbox</span>
+                    <span class="leader-os-detail-status status-info"><?= htmlspecialchars(fcc_t('Inbox'), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
 
                 <div class="leader-os-inbox-tabs" data-inbox-root="leader-os-chat-review-inbox">
@@ -3780,12 +3780,12 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'coach' ? 'is-active' : '' ?>" data-inbox-panel="coach">
                     <?php if(empty($fcc_ai_inbox['coach_threads'])): ?>
-                        <div class="text-muted small mb-0">Još nema Coach threadova u odabranom periodu.</div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema Coach threadova u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                     <?php else: ?>
                         <?php foreach(($fcc_ai_inbox['coach_threads'] ?? []) as $thread_row): ?>
                             <div class="leader-os-thread-card">
                                 <div class="leader-os-thread-card-header">
-                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? fcc_t('Opće')), ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="leader-os-thread-card-meta">
                                         <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
                                             <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
@@ -3797,19 +3797,19 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php if(!empty($thread_row['core_issue'])): ?>
-                                    <div class="leader-os-thread-card-copy"><strong>Zapinjanje:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-copy"><strong><?= htmlspecialchars(fcc_t('Zapinjanje:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php endif ?>
                                 <div class="leader-os-phase4-history-meta">
-                                    <span>U: <?= nr((int) ($thread_row['total_user_messages'] ?? 0)) ?> · A: <?= nr((int) ($thread_row['total_assistant_messages'] ?? 0)) ?></span>
+                                    <span><?= htmlspecialchars(fcc_t('U:'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($thread_row['total_user_messages'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· A:'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($thread_row['total_assistant_messages'] ?? 0)) ?></span>
                                     <span><?= !empty($thread_row['activity_at']) ? \Altum\Date::get($thread_row['activity_at'], 2) : '-' ?></span>
                                 </div>
                                 <?php if(!empty($thread_row['thread_preview'])): ?>
                                     <details class="leader-os-ai-details mt-2">
-                                        <summary>Otvori thread</summary>
+                                        <summary><?= htmlspecialchars(fcc_t('Otvori thread'), ENT_QUOTES, 'UTF-8') ?></summary>
                                         <div class="leader-os-thread-preview">
                                             <?php foreach(($thread_row['thread_preview'] ?? []) as $message_row): ?>
                                                 <div class="leader-os-thread-preview-item">
-                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? fcc_t('Korisnik') : (($message_row['role'] ?? '') === 'assistant' ? fcc_t('AI') : fcc_t('Sustav'))), ENT_QUOTES, 'UTF-8') ?>:</strong>
                                                     <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                 </div>
                                             <?php endforeach ?>
@@ -3823,12 +3823,12 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'public_ai' ? 'is-active' : '' ?>" data-inbox-panel="public_ai">
                     <?php if(empty($fcc_ai_inbox['public_threads'])): ?>
-                        <div class="text-muted small mb-0">Još nema javnih AI threadova u odabranom periodu.</div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema javnih AI threadova u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                     <?php else: ?>
                         <?php foreach(($fcc_ai_inbox['public_threads'] ?? []) as $thread_row): ?>
                             <div class="leader-os-thread-card">
                                 <div class="leader-os-thread-card-header">
-                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? fcc_t('Opće')), ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="leader-os-thread-card-meta">
                                         <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
                                             <?= htmlspecialchars((string) (($thread_row['quality_badge']['label'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
@@ -3843,10 +3843,10 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['summary'] ?? '') ?: ($thread_row['last_user_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php if(!empty($thread_row['core_issue'])): ?>
-                                    <div class="leader-os-thread-card-copy"><strong>Glavni problem:</strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-copy"><strong><?= htmlspecialchars(fcc_t('Glavni problem:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($thread_row['core_issue'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php endif ?>
                                 <?php if(!empty($thread_row['source_page_title'])): ?>
-                                    <div class="leader-os-thread-card-copy"><strong>Izvor:</strong> <?= htmlspecialchars((string) ($thread_row['source_page_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-copy"><strong><?= htmlspecialchars(fcc_t('Izvor:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($thread_row['source_page_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php endif ?>
                                 <div class="leader-os-phase4-history-meta">
                                     <span><?= htmlspecialchars((string) ($thread_row['assistant_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
@@ -3854,11 +3854,11 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <?php if(!empty($thread_row['thread_preview'])): ?>
                                     <details class="leader-os-ai-details mt-2">
-                                        <summary>Otvori thread</summary>
+                                        <summary><?= htmlspecialchars(fcc_t('Otvori thread'), ENT_QUOTES, 'UTF-8') ?></summary>
                                         <div class="leader-os-thread-preview">
                                             <?php foreach(($thread_row['thread_preview'] ?? []) as $message_row): ?>
                                                 <div class="leader-os-thread-preview-item">
-                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? fcc_t('Korisnik') : (($message_row['role'] ?? '') === 'assistant' ? fcc_t('AI') : fcc_t('Sustav'))), ENT_QUOTES, 'UTF-8') ?>:</strong>
                                                     <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                 </div>
                                             <?php endforeach ?>
@@ -3872,12 +3872,12 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'suspicious' ? 'is-active' : '' ?>" data-inbox-panel="suspicious">
                     <?php if(empty($fcc_ai_inbox['suspicious_threads'])): ?>
-                        <div class="text-muted small mb-0">Trenutno nema suspektnih threadova.</div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema suspektnih threadova.'), ENT_QUOTES, 'UTF-8') ?></div>
                     <?php else: ?>
                         <?php foreach(($fcc_ai_inbox['suspicious_threads'] ?? []) as $thread_row): ?>
                             <div class="leader-os-thread-card">
                                 <div class="leader-os-thread-card-header">
-                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? 'Opće'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) ($thread_row['primary_topic_label'] ?? fcc_t('Opće')), ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="leader-os-thread-card-meta">
                                         <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($thread_row['suspicion']['top_label'] ?? 'Suspektno'), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="leader-os-detail-status <?= htmlspecialchars((string) (($thread_row['quality_badge']['class'] ?? 'status-dark')), ENT_QUOTES, 'UTF-8') ?>">
@@ -3887,7 +3887,7 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) (($thread_row['core_issue'] ?? '') ?: ($thread_row['summary'] ?? '')), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php if(!empty($thread_row['suspicion']['flags'])): ?>
-                                    <div class="leader-os-thread-card-copy"><strong>Rizici:</strong> <?= htmlspecialchars((string) implode(', ', array_map(static function($flag) {
+                                    <div class="leader-os-thread-card-copy"><strong><?= htmlspecialchars(fcc_t('Rizici:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) implode(', ', array_map(static function($flag) {
                                         return (string) ($flag['label'] ?? '');
                                     }, $thread_row['suspicion']['flags'] ?? [])), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php endif ?>
@@ -3897,11 +3897,11 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <?php if(!empty($thread_row['thread_preview'])): ?>
                                     <details class="leader-os-ai-details mt-2">
-                                        <summary>Otvori thread</summary>
+                                        <summary><?= htmlspecialchars(fcc_t('Otvori thread'), ENT_QUOTES, 'UTF-8') ?></summary>
                                         <div class="leader-os-thread-preview">
                                             <?php foreach(($thread_row['thread_preview'] ?? []) as $message_row): ?>
                                                 <div class="leader-os-thread-preview-item">
-                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? fcc_t('Korisnik') : (($message_row['role'] ?? '') === 'assistant' ? fcc_t('AI') : fcc_t('Sustav'))), ENT_QUOTES, 'UTF-8') ?>:</strong>
                                                     <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                 </div>
                                             <?php endforeach ?>
@@ -3915,12 +3915,12 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'review' ? 'is-active' : '' ?>" data-inbox-panel="review">
                     <?php if(empty($fcc_ai_inbox['review_threads'])): ?>
-                        <div class="text-muted small mb-0">Trenutno nema otvorenih review slučajeva.</div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema otvorenih review slučajeva.'), ENT_QUOTES, 'UTF-8') ?></div>
                     <?php else: ?>
                         <?php foreach(($fcc_ai_inbox['review_threads'] ?? []) as $review_row): ?>
                             <div class="leader-os-thread-card">
                                 <div class="leader-os-thread-card-header">
-                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: 'Review'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) (($review_row['reason_label'] ?? '') ?: fcc_t('Review')), ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="leader-os-thread-card-meta">
                                         <?php if(!empty($review_row['scope_label'])): ?>
                                             <span class="leader-os-detail-status status-warning"><?= htmlspecialchars((string) ($review_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
@@ -3929,15 +3929,15 @@ $render_detail_help = static function(string $tooltip): void {
                                 </div>
                                 <div class="leader-os-thread-card-copy"><?= htmlspecialchars((string) ($review_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php if(!empty($review_row['note'])): ?>
-                                    <div class="leader-os-thread-card-copy"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-copy"><strong><?= htmlspecialchars(fcc_t('Napomena:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($review_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                 <?php endif ?>
                                 <?php if(!empty($review_row['thread_preview'])): ?>
                                     <details class="leader-os-ai-details mt-2">
-                                        <summary>Otvori thread</summary>
+                                        <summary><?= htmlspecialchars(fcc_t('Otvori thread'), ENT_QUOTES, 'UTF-8') ?></summary>
                                         <div class="leader-os-thread-preview">
                                             <?php foreach(($review_row['thread_preview'] ?? []) as $message_row): ?>
                                                 <div class="leader-os-thread-preview-item">
-                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? 'Korisnik' : (($message_row['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                    <strong><?= htmlspecialchars((string) (($message_row['role'] ?? '') === 'user' ? fcc_t('Korisnik') : (($message_row['role'] ?? '') === 'assistant' ? fcc_t('AI') : fcc_t('Sustav'))), ENT_QUOTES, 'UTF-8') ?>:</strong>
                                                     <?= htmlspecialchars((string) ($message_row['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                 </div>
                                             <?php endforeach ?>
@@ -3955,14 +3955,14 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-inbox-panel <?= $active_inbox_tab === 'leads' ? 'is-active' : '' ?>" data-inbox-panel="leads">
                     <?php if(empty($fcc_ai_inbox['lead_threads'])): ?>
-                        <div class="text-muted small mb-0">Još nema AI lead / conversion signala u odabranom periodu.</div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema AI lead / conversion signala u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                     <?php else: ?>
                         <?php foreach(($fcc_ai_inbox['lead_threads'] ?? []) as $lead_row): ?>
                             <div class="leader-os-thread-card">
                                 <div class="leader-os-thread-card-header">
-                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) (($lead_row['lead_type_label'] ?? '') ?: 'AI lead'), ENT_QUOTES, 'UTF-8') ?></div>
+                                    <div class="leader-os-thread-card-title"><?= htmlspecialchars((string) (($lead_row['lead_type_label'] ?? '') ?: fcc_t('AI lead')), ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="leader-os-thread-card-meta">
-                                        <span class="leader-os-detail-status status-success">Score <?= nr((int) ($lead_row['lead_score'] ?? 0)) ?></span>
+                                        <span class="leader-os-detail-status status-success"><?= htmlspecialchars(fcc_t('Score'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($lead_row['lead_score'] ?? 0)) ?></span>
                                         <?php if(!empty($lead_row['scope_label'])): ?>
                                             <span class="leader-os-detail-status status-info"><?= htmlspecialchars((string) ($lead_row['scope_label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
                                         <?php endif ?>
@@ -3994,72 +3994,72 @@ $render_detail_help = static function(string $tooltip): void {
         <div class="card-body">
             <div class="leader-os-section-heading">
                 <div class="leader-os-section-heading-copy">
-                    <h3 class="h5 mb-1">FCC AI chatovi</h3>
-                    <div class="text-muted small">Pregled kako suradnik koristi coach i javne AI asistente, koliko razgovora vodi i dovodi li AI stvarne leadove.</div>
+                    <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('FCC AI chatovi'), ENT_QUOTES, 'UTF-8') ?></h3>
+                    <div class="text-muted small"><?= htmlspecialchars(fcc_t('Pregled kako suradnik koristi coach i javne AI asistente, koliko razgovora vodi i dovodi li AI stvarne leadove.'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
                 <span class="leader-os-detail-status <?= !empty($fcc_ai_detail['is_available']) ? 'status-success' : 'status-dark' ?>">
-                    <?= !empty($fcc_ai_detail['is_available']) ? 'AI live' : 'AI offline' ?>
+                    <?= !empty($fcc_ai_detail['is_available']) ? fcc_t('AI live') : fcc_t('AI offline') ?>
                 </span>
             </div>
 
             <?php if(empty($fcc_ai_detail['is_available'])): ?>
-                <div class="text-muted small mb-0">FCC AI tablice još nisu dostupne na ovom okruženju.</div>
+                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('FCC AI tablice još nisu dostupne na ovom okruženju.'), ENT_QUOTES, 'UTF-8') ?></div>
             <?php else: ?>
                 <div class="row mb-3">
                     <div class="col-6 col-xl-3 mb-3">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Razgovori</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Razgovori'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['conversations'] ?? 0)) ?></div>
-                            <div class="text-muted small">Coach <?= nr((int) ($fcc_ai_detail['totals']['coach_conversations'] ?? 0)) ?> · javni AI <?= nr((int) ($fcc_ai_detail['totals']['public_conversations'] ?? 0)) ?></div>
+                            <div class="text-muted small"><?= htmlspecialchars(fcc_t('Coach'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($fcc_ai_detail['totals']['coach_conversations'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· javni AI'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($fcc_ai_detail['totals']['public_conversations'] ?? 0)) ?></div>
                         </div>
                     </div>
                     <div class="col-6 col-xl-3 mb-3">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Poruke</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Poruke'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['messages'] ?? 0)) ?></div>
-                            <div class="text-muted small">user <?= nr((int) ($fcc_ai_detail['totals']['user_messages'] ?? 0)) ?> · assistant <?= nr((int) ($fcc_ai_detail['totals']['assistant_messages'] ?? 0)) ?></div>
+                            <div class="text-muted small"><?= htmlspecialchars(fcc_t('user'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($fcc_ai_detail['totals']['user_messages'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· assistant'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($fcc_ai_detail['totals']['assistant_messages'] ?? 0)) ?></div>
                         </div>
                     </div>
                     <div class="col-6 col-xl-3 mb-3">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">AI leadovi</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('AI leadovi'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['leads'] ?? 0)) ?></div>
-                            <div class="text-muted small">business <?= nr((int) ($fcc_ai_detail['totals']['business_leads'] ?? 0)) ?> · hot <?= nr((int) ($fcc_ai_detail['totals']['hot_leads'] ?? 0)) ?></div>
+                            <div class="text-muted small"><?= htmlspecialchars(fcc_t('business'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($fcc_ai_detail['totals']['business_leads'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· hot'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($fcc_ai_detail['totals']['hot_leads'] ?? 0)) ?></div>
                         </div>
                     </div>
                     <div class="col-6 col-xl-3 mb-3">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Captured threadovi</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Captured threadovi'), ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="leader-os-compact-value"><?= nr((int) ($fcc_ai_detail['totals']['captured_threads'] ?? 0)) ?></div>
-                            <div class="text-muted small">Razgovori u kojima je AI već uhvatio lead ili handoff signal.</div>
+                            <div class="text-muted small"><?= htmlspecialchars(fcc_t('Razgovori u kojima je AI već uhvatio lead ili handoff signal.'), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="leader-os-inline-note mb-3">
-                    Pozitivni signali:
+                    <?= htmlspecialchars(fcc_t('Pozitivni signali:'), ENT_QUOTES, 'UTF-8') ?>
                     <strong class="text-white"><?= nr((int) ($fcc_ai_detail['totals']['positive_feedback'] ?? 0)) ?></strong>
-                    · odgovori za provjeru:
+                    <?= htmlspecialchars(fcc_t('· odgovori za provjeru:'), ENT_QUOTES, 'UTF-8') ?>
                     <strong class="text-white"><?= nr((int) ($fcc_ai_detail['totals']['negative_feedback'] ?? 0)) ?></strong>
-                    · threadovi za review:
+                    <?= htmlspecialchars(fcc_t('· threadovi za review:'), ENT_QUOTES, 'UTF-8') ?>
                     <strong class="text-white"><?= nr((int) ($fcc_ai_detail['totals']['review_conversations'] ?? 0)) ?></strong>
                 </div>
 
                 <div class="row">
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Po asistentu</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Po asistentu'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['assistant_breakdown'])): ?>
-                                <div class="text-muted small mb-0">Još nema dovoljno aktivnosti za breakdown.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno aktivnosti za breakdown.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-detail-list">
                                     <?php foreach(($fcc_ai_detail['assistant_breakdown'] ?? []) as $assistant_row): ?>
                                         <div class="leader-os-detail-list-item">
                                             <span><?= htmlspecialchars((string) ($assistant_row['label'] ?? ''), ENT_QUOTES, 'UTF-8') ?></span>
                                             <strong>
-                                                <?= nr((int) ($assistant_row['conversations'] ?? 0)) ?> chatova
-                                                · <?= nr((int) ($assistant_row['leads'] ?? 0)) ?> leadova
-                                                · review <?= nr((int) ($assistant_row['negative_feedback'] ?? 0)) ?>
+                                                <?= nr((int) ($assistant_row['conversations'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('chatova
+                                                ·'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($assistant_row['leads'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('leadova
+                                                · review'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($assistant_row['negative_feedback'] ?? 0)) ?>
                                             </strong>
                                         </div>
                                     <?php endforeach ?>
@@ -4070,9 +4070,9 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Zadnji razgovori</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Zadnji razgovori'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['recent_conversations'])): ?>
-                                <div class="text-muted small mb-0">Još nema AI razgovora u odabranom periodu.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema AI razgovora u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-phase4-history">
                                     <?php foreach(($fcc_ai_detail['recent_conversations'] ?? []) as $conversation_row): ?>
@@ -4085,7 +4085,7 @@ $render_detail_help = static function(string $tooltip): void {
                                                 <?= htmlspecialchars((string) (($conversation_row['last_user_preview'] ?? '') !== '' ? ($conversation_row['last_user_preview'] ?? '') : ($conversation_row['last_assistant_preview'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
                                             </div>
                                             <div class="leader-os-phase4-history-meta">
-                                                <span>U: <?= nr((int) ($conversation_row['total_user_messages'] ?? 0)) ?> · A: <?= nr((int) ($conversation_row['total_assistant_messages'] ?? 0)) ?></span>
+                                                <span><?= htmlspecialchars(fcc_t('U:'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($conversation_row['total_user_messages'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('· A:'), ENT_QUOTES, 'UTF-8') ?> <?= nr((int) ($conversation_row['total_assistant_messages'] ?? 0)) ?></span>
                                                 <span><?= !empty($conversation_row['activity_at']) ? \Altum\Date::get($conversation_row['activity_at'], 2) : '-' ?></span>
                                             </div>
                                         </div>
@@ -4097,9 +4097,9 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-4">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Zadnji AI leadovi</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Zadnji AI leadovi'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['recent_leads'])): ?>
-                                <div class="text-muted small mb-0">Još nema AI leadova u odabranom periodu.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema AI leadova u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-phase4-history">
                                     <?php foreach(($fcc_ai_detail['recent_leads'] ?? []) as $lead_row): ?>
@@ -4132,9 +4132,9 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="row mt-3">
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Top teme</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Top teme'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['top_topics'])): ?>
-                                <div class="text-muted small mb-0">Još nema dovoljno AI signala za pouzdan pregled tema.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno AI signala za pouzdan pregled tema.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-detail-list">
                                     <?php foreach(($fcc_ai_detail['top_topics'] ?? []) as $topic_row): ?>
@@ -4150,9 +4150,9 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-8">
                         <div class="leader-os-detail-panel" id="leader-os-ai-reviews">
-                            <div class="leader-os-ai-title">Odgovori za provjeru</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Odgovori za provjeru'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['recent_negative_feedback'])): ?>
-                                <div class="text-muted small mb-0">Trenutno nema prijavljenih loših AI odgovora u odabranom periodu.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema prijavljenih loših AI odgovora u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-phase4-history">
                                     <?php foreach(($fcc_ai_detail['recent_negative_feedback'] ?? []) as $feedback_row): ?>
@@ -4165,13 +4165,13 @@ $render_detail_help = static function(string $tooltip): void {
                                                 <?= htmlspecialchars((string) ($feedback_row['message_excerpt'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                             </div>
                                             <?php if(!empty($feedback_row['note'])): ?>
-                                                <div class="text-muted small mt-2"><strong>Napomena:</strong> <?= htmlspecialchars((string) ($feedback_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
+                                                <div class="text-muted small mt-2"><strong><?= htmlspecialchars(fcc_t('Napomena:'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars((string) ($feedback_row['note'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php endif ?>
                                             <?php if(!empty($feedback_row['thread_preview'])): ?>
                                                 <div class="mt-2 pl-2 border-left border-dark">
                                                     <?php foreach(($feedback_row['thread_preview'] ?? []) as $thread_message): ?>
                                                         <div class="text-muted small mb-2">
-                                                            <strong><?= htmlspecialchars((string) (($thread_message['role'] ?? '') === 'user' ? 'Korisnik' : (($thread_message['role'] ?? '') === 'assistant' ? 'AI' : 'Sustav')), ENT_QUOTES, 'UTF-8') ?>:</strong>
+                                                            <strong><?= htmlspecialchars((string) (($thread_message['role'] ?? '') === 'user' ? fcc_t('Korisnik') : (($thread_message['role'] ?? '') === 'assistant' ? fcc_t('AI') : fcc_t('Sustav'))), ENT_QUOTES, 'UTF-8') ?>:</strong>
                                                             <?= htmlspecialchars((string) ($thread_message['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                         </div>
                                                     <?php endforeach ?>
@@ -4199,9 +4199,9 @@ $render_detail_help = static function(string $tooltip): void {
                 <div class="row mt-3">
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Korisno sada</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Korisno sada'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['useful_items'])): ?>
-                                <div class="text-muted small mb-0">Kad se skupi još malo AI aktivnosti, ovdje će se pojaviti najkorisniji sljedeći potezi za ovog suradnika.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Kad se skupi još malo AI aktivnosti, ovdje će se pojaviti najkorisniji sljedeći potezi za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-detail-list">
                                     <?php foreach(($fcc_ai_detail['useful_items'] ?? []) as $useful_row): ?>
@@ -4217,9 +4217,9 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-4 mb-3 mb-xl-0">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">Rastuće teme</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('Rastuće teme'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['rising_topics'])): ?>
-                                <div class="text-muted small mb-0">Još nema dovoljno podataka za izdvajanje tema u rastu kod ovog suradnika.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Još nema dovoljno podataka za izdvajanje tema u rastu kod ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-detail-list">
                                     <?php foreach(($fcc_ai_detail['rising_topics'] ?? []) as $topic_row): ?>
@@ -4235,9 +4235,9 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="col-12 col-xl-4">
                         <div class="leader-os-detail-panel">
-                            <div class="leader-os-ai-title">AI obavijesti</div>
+                            <div class="leader-os-ai-title"><?= htmlspecialchars(fcc_t('AI obavijesti'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php if(empty($fcc_ai_detail['recent_alerts'])): ?>
-                                <div class="text-muted small mb-0">Trenutno nema novih AI obavijesti za ovog suradnika.</div>
+                                <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Trenutno nema novih AI obavijesti za ovog suradnika.'), ENT_QUOTES, 'UTF-8') ?></div>
                             <?php else: ?>
                                 <div class="leader-os-phase4-history">
                                     <?php foreach(($fcc_ai_detail['recent_alerts'] ?? []) as $alert_row): ?>
@@ -4245,7 +4245,7 @@ $render_detail_help = static function(string $tooltip): void {
                                             <div class="font-weight-bold"><?= htmlspecialchars((string) ($alert_row['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                             <div class="text-muted small mt-2"><?= htmlspecialchars((string) ($alert_row['description'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                             <div class="leader-os-phase4-history-meta">
-                                                <span><?= !empty($alert_row['is_read']) ? 'Pregledano' : 'Novo' ?></span>
+                                                <span><?= !empty($alert_row['is_read']) ? fcc_t('Pregledano') : fcc_t('Novo') ?></span>
                                                 <span><?= !empty($alert_row['datetime']) ? \Altum\Date::get($alert_row['datetime'], 2) : '-' ?></span>
                                             </div>
                                         </div>
@@ -4262,11 +4262,11 @@ $render_detail_help = static function(string $tooltip): void {
     <div class="leader-os-zone-shell mb-4" id="leader-os-deep-dive-zone">
         <div class="leader-os-zone-header">
             <div class="leader-os-zone-copy">
-                <div class="leader-os-zone-eyebrow">Zona 5</div>
-                <h3 class="h5 mb-1">Dubinska analitika i kontrola kvalitete</h3>
-                <div class="leader-os-zone-note">Ovo je analitički podrum: billing, trendovi, score povijest, cohort usporedbe i breakdowni prometa. Gledaš ga tek kad gore već znaš glavni prioritet.</div>
+                <div class="leader-os-zone-eyebrow"><?= htmlspecialchars(fcc_t('Zona 5'), ENT_QUOTES, 'UTF-8') ?></div>
+                <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Dubinska analitika i kontrola kvalitete'), ENT_QUOTES, 'UTF-8') ?></h3>
+                <div class="leader-os-zone-note"><?= htmlspecialchars(fcc_t('Ovo je analitički podrum: billing, trendovi, score povijest, cohort usporedbe i breakdowni prometa. Gledaš ga tek kad gore već znaš glavni prioritet.'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
-            <span class="leader-os-detail-status status-dark">Deep dive</span>
+            <span class="leader-os-detail-status status-dark"><?= htmlspecialchars(fcc_t('Deep dive'), ENT_QUOTES, 'UTF-8') ?></span>
         </div>
     </div>
 
@@ -4277,8 +4277,8 @@ $render_detail_help = static function(string $tooltip): void {
         <div class="card-body">
             <div class="leader-os-section-heading">
                 <div class="leader-os-section-heading-copy">
-                    <h3 class="h5 mb-1">Signal discipline i integritet</h3>
-                    <div class="text-muted small">Sažeti pregled AI ritma, sadržajnog smjera i stanja integriteta prometa bez velikih fraud panela.</div>
+                    <h3 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Signal discipline i integritet'), ENT_QUOTES, 'UTF-8') ?></h3>
+                    <div class="text-muted small"><?= htmlspecialchars(fcc_t('Sažeti pregled AI ritma, sadržajnog smjera i stanja integriteta prometa bez velikih fraud panela.'), ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
                 <span class="leader-os-detail-status <?= htmlspecialchars($integrity_level_class, ENT_QUOTES, 'UTF-8') ?>">
                     <?= htmlspecialchars($integrity_level_label, ENT_QUOTES, 'UTF-8') ?>
@@ -4288,8 +4288,8 @@ $render_detail_help = static function(string $tooltip): void {
             <div class="leader-os-compact-grid">
                 <div class="leader-os-compact-card">
                     <div class="leader-os-compact-title">
-                        Dosljednost i AI ritam
-                        <?php $render_detail_help('Što je: pokazuje kontinuitet rada kroz AI check-in, plan i provedbu. | Kako se računa: koristi consistency score, zadnji check-in i zadnji plan/outcome. | Kako koristiš: vidiš radi li suradnik redovito ili zapinje između AI ciklusa.'); ?>
+                        <?= htmlspecialchars(fcc_t('Dosljednost i AI ritam'), ENT_QUOTES, 'UTF-8') ?>
+                        <?php $render_detail_help(fcc_t('Što je: pokazuje kontinuitet rada kroz AI check-in, plan i provedbu. | Kako se računa: koristi consistency score, zadnji check-in i zadnji plan/outcome. | Kako koristiš: vidiš radi li suradnik redovito ili zapinje između AI ciklusa.')); ?>
                     </div>
                     <div class="leader-os-compact-value">
                         <?= !empty($consistency) ? (nr((int) ($consistency['score'] ?? 0)) . ' · ' . htmlspecialchars((string) ($consistency['state_label'] ?? '-'), ENT_QUOTES, 'UTF-8')) : l('global.none') ?>
@@ -4298,15 +4298,15 @@ $render_detail_help = static function(string $tooltip): void {
 
                     <div class="leader-os-mini-list">
                         <div class="leader-os-mini-item">
-                            <span>Zadnji check-in</span>
+                            <span><?= htmlspecialchars(fcc_t('Zadnji check-in'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars((string) $last_checkin_label, ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                         <div class="leader-os-mini-item">
-                            <span>Glavni blocker</span>
+                            <span><?= htmlspecialchars(fcc_t('Glavni blocker'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars((string) ($ai_blocker_summary ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                         <div class="leader-os-mini-item">
-                            <span>Zadnji plan / outcome</span>
+                            <span><?= htmlspecialchars(fcc_t('Zadnji plan / outcome'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars((string) $latest_plan_label, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars((string) $latest_outcome_label, ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                     </div>
@@ -4314,23 +4314,23 @@ $render_detail_help = static function(string $tooltip): void {
 
                 <div class="leader-os-compact-card">
                     <div class="leader-os-compact-title">
-                        Integritet prometa i sadržaj
-                        <?php $render_detail_help('Što je: jedan sažetak kvalitete prometa i koliko sadržaj vodi prema Foreveru. | Kako se računa: koristi blog klikove prema Foreveru, accepted/blocked pokušaje i glavni integrity signal. | Kako koristiš: brzo vidiš treba li ti posebna provjera ili je promet zdrav.'); ?>
+                        <?= htmlspecialchars(fcc_t('Integritet prometa i sadržaj'), ENT_QUOTES, 'UTF-8') ?>
+                        <?php $render_detail_help(fcc_t('Što je: jedan sažetak kvalitete prometa i koliko sadržaj vodi prema Foreveru. | Kako se računa: koristi blog klikove prema Foreveru, accepted/blocked pokušaje i glavni integrity signal. | Kako koristiš: brzo vidiš treba li ti posebna provjera ili je promet zdrav.')); ?>
                     </div>
                     <div class="leader-os-compact-value"><?= htmlspecialchars((string) $integrity_top_concern, ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="leader-os-compact-text"><?= htmlspecialchars((string) $integrity_action_text, ENT_QUOTES, 'UTF-8') ?></div>
 
                     <div class="leader-os-mini-list">
                         <div class="leader-os-mini-item">
-                            <span>Blog -> Forever</span>
-                            <strong><?= nr((int) ($blog_forever['total_clicks'] ?? 0)) ?> klikova · <?= nr((float) ($blog_forever['share_percent'] ?? 0)) ?>%</strong>
+                            <span><?= htmlspecialchars(fcc_t('Blog -> Forever'), ENT_QUOTES, 'UTF-8') ?></span>
+                            <strong><?= nr((int) ($blog_forever['total_clicks'] ?? 0)) ?> <?= htmlspecialchars(fcc_t('klikova ·'), ENT_QUOTES, 'UTF-8') ?> <?= nr((float) ($blog_forever['share_percent'] ?? 0)) ?>%</strong>
                         </div>
                         <div class="leader-os-mini-item">
-                            <span>Prihvaćeni / blokirani</span>
+                            <span><?= htmlspecialchars(fcc_t('Prihvaćeni / blokirani'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= nr((int) ($fraud_intelligence['accepted_clicks_total'] ?? 0)) ?> / <?= nr((int) ($fraud_intelligence['blocked_attempts_total'] ?? 0)) ?></strong>
                         </div>
                         <div class="leader-os-mini-item">
-                            <span>Top blog članak</span>
+                            <span><?= htmlspecialchars(fcc_t('Top blog članak'), ENT_QUOTES, 'UTF-8') ?></span>
                             <strong><?= htmlspecialchars((string) (($blog_forever['top_article_title'] ?? '') ?: l('global.none')), ENT_QUOTES, 'UTF-8') ?></strong>
                         </div>
                     </div>
@@ -4340,8 +4340,8 @@ $render_detail_help = static function(string $tooltip): void {
     </div>
 
     <div class="leader-os-section-divider" id="leader-os-deep-dive">
-        <h3 class="h5">Povijest i usporedbe</h3>
-        <span class="leader-os-detail-chip is-subtle">Dublja usporedba, score promjene i breakdown detalji</span>
+        <h3 class="h5"><?= htmlspecialchars(fcc_t('Povijest i usporedbe'), ENT_QUOTES, 'UTF-8') ?></h3>
+        <span class="leader-os-detail-chip is-subtle"><?= htmlspecialchars(fcc_t('Dublja usporedba, score promjene i breakdown detalji'), ENT_QUOTES, 'UTF-8') ?></span>
     </div>
 
     <!-- Custom code: FC-2026-03-31: LOS score snapshot panel -->
@@ -4540,14 +4540,14 @@ $render_detail_help = static function(string $tooltip): void {
 
     <?php $breakdown_map = [
         'top_countries' => l('admin_leader_operating_system.leader.breakdown_countries'),
-        'top_cities' => 'Top gradovi',
+        'top_cities' => fcc_t('Top gradovi'),
         'top_sources' => l('admin_leader_operating_system.leader.breakdown_sources'),
         'top_languages' => 'Jezici',
         'top_devices' => l('admin_leader_operating_system.leader.breakdown_devices'),
         'top_browsers' => l('admin_leader_operating_system.leader.breakdown_browsers'),
     ]; ?>
 
-    <div class="leader-os-detail-note mb-3">Klik na bilo koju breakdown karticu otvara popup s punim detaljima za taj segment. Tako brzo vidiš sažetak na stranici, a tek po potrebi ulaziš u detaljniji prikaz zemalja, gradova, izvora, jezika, uređaja ili preglednika.</div>
+    <div class="leader-os-detail-note mb-3"><?= htmlspecialchars(fcc_t('Klik na bilo koju breakdown karticu otvara popup s punim detaljima za taj segment. Tako brzo vidiš sažetak na stranici, a tek po potrebi ulaziš u detaljniji prikaz zemalja, gradova, izvora, jezika, uređaja ili preglednika.'), ENT_QUOTES, 'UTF-8') ?></div>
 
     <div class="row">
         <?php foreach($breakdown_map as $breakdown_key => $breakdown_title): ?>

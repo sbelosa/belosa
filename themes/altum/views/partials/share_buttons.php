@@ -121,7 +121,7 @@ $fcc_share_is_allowed = static function(string $key) use ($fcc_share_include, $f
     <?php endif ?>
 
     <?php if($fcc_share_is_allowed('microsoft_teams') && settings()->socials->share_buttons->microsoft_teams): ?>
-        <a href="https://teams.microsoft.com/share?href=<?= $fcc_share_href_value('microsoft_teams') ?>" target="_blank" class="<?= $data->class ?> rounded-2x" data-share-button="microsoft_teams" style="color: #464EB8; background-color: rgba(70, 78, 184, 0.1);" data-toggle="tooltip" title="<?= sprintf(l('global.share_via'), 'Microsoft Teams') ?>">
+        <a href="https://teams.microsoft.com/share?href=<?= $fcc_share_href_value('microsoft_teams') ?>" target="_blank" class="<?= $data->class ?> rounded-2x" data-share-button="microsoft_teams" style="color: #464EB8; background-color: rgba(70, 78, 184, 0.1);" data-toggle="tooltip" title="<?= sprintf(l('global.share_via'), fcc_t('Microsoft Teams')) ?>">
             <i class="fab fa-fw fa-microsoft"></i>
         </a>
     <?php endif ?>
@@ -205,7 +205,7 @@ $fcc_share_is_allowed = static function(string $key) use ($fcc_share_include, $f
     <?php endif ?>
 
     <?php if($fcc_share_is_allowed('microsoft_teams') && settings()->socials->share_buttons->microsoft_teams): ?>
-        <a href="https://teams.microsoft.com/share?href=<?= $fcc_share_href_value('microsoft_teams') ?>" target="_blank" class="<?= $data->class ?> rounded-2x" style="color: #464EB8; background-color: rgba(70, 78, 184, 0.1);" title="<?= sprintf(l('global.share_via'), 'Microsoft Teams') ?>">
+        <a href="https://teams.microsoft.com/share?href=<?= $fcc_share_href_value('microsoft_teams') ?>" target="_blank" class="<?= $data->class ?> rounded-2x" style="color: #464EB8; background-color: rgba(70, 78, 184, 0.1);" title="<?= sprintf(l('global.share_via'), fcc_t('Microsoft Teams')) ?>">
             <div class="svg-sm d-flex"><?= include_view(ASSETS_PATH . '/images/icons/teams.svg') ?></div>
         </a>
     <?php endif ?>

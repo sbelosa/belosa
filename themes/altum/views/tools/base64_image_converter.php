@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
             <li class="active" aria-current="page"><?= l('tools.base64_image_converter.name') ?></li>
@@ -49,7 +49,7 @@
                 <div class="form-group" data-type="image_to_base64">
                     <label for="image"><i class="fas fa-fw fa-sm fa-image text-muted mr-1"></i> <?= l('global.image') ?></label>
                     <input id="image" type="file" name="image" accept=".gif, .png, .jpg, .jpeg, .svg" class="form-control-file altum-file-input" />
-                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), '.gif, .png, .jpg, .jpeg, .svg') . ' ' . sprintf(l('global.accessibility.file_size_limit'), get_max_upload()) ?></small>
+                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), fcc_t('.gif, .png, .jpg, .jpeg, .svg')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), get_max_upload()) ?></small>
                 </div>
 
                 <button type="submit" name="submit" class="btn btn-block btn-primary"><?= l('global.submit') ?></button>
@@ -96,10 +96,10 @@
                                     </button>
 
                                     <div class="dropdown-menu">
-                                        <a href="data:image/png;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.png' ?>">PNG</a>
-                                        <a href="data:image/jpg;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.jpg' ?>">JPG</a>
-                                        <a href="data:image/webp;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.webp' ?>">WEBP</a>
-                                        <a href="data:image/gif;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.gif' ?>">GIF</a>
+                                        <a href="data:image/png;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.png' ?>"><?= htmlspecialchars('PNG', ENT_QUOTES, 'UTF-8') ?></a>
+                                        <a href="data:image/jpg;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.jpg' ?>"><?= htmlspecialchars('JPG', ENT_QUOTES, 'UTF-8') ?></a>
+                                        <a href="data:image/webp;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.webp' ?>"><?= htmlspecialchars('WEBP', ENT_QUOTES, 'UTF-8') ?></a>
+                                        <a href="data:image/gif;base64,<?= $data->result['base64'] ?>" class="dropdown-item" download="<?= l('global.image') . '.gif' ?>"><?= htmlspecialchars('GIF', ENT_QUOTES, 'UTF-8') ?></a>
                                     </div>
                                 </div>
                             </div>

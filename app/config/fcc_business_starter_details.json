@@ -1,0 +1,99 @@
+{
+  "hr": {
+    "destination": "https://foreverliving.com/join/hrv/hr-hr/welcome",
+    "reviewed_at": "2026-09-27T17:58:00+00:00",
+    "review_until": "2026-10-27T17:58:00+00:00",
+    "source": "https://foreverliving.com/join/hrv/hr-hr/products/692v-start-your-journey-pack",
+    "policy_source": "https://cdn.foreverliving.com/content/MarketingConfigurableContent/HRV/Poslovna%20politika/Poslovna%20politika.pdf",
+    "once_before_assistant_supervisor": true,
+    "qualification_cc": 2,
+    "qualification_requires_opt_in": true,
+    "price": {
+      "amount": "360.00",
+      "currency": "EUR",
+      "variant": "Best Sellers C9 Vanilla",
+      "sku": "6931",
+      "checked_at": "2026-09-27T17:58:00+00:00",
+      "source": "https://foreverliving.com/join/hrv/hr-hr/products/692v-start-your-journey-pack"
+    }
+  },
+  "ba": {
+    "destination": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/start-your-journey-best-sellers-vanilla/",
+    "reviewed_at": "2026-09-29T21:07:30+00:00",
+    "review_until": "2026-10-29T21:07:30+00:00",
+    "source": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/start-your-journey-best-sellers-vanilla/",
+    "once_before_assistant_supervisor": true,
+    "qualification_cc": 2,
+    "price": {
+      "amount": "740.63",
+      "currency": "BAM",
+      "variant": "Best Sellers C9 Vanilla",
+      "sku": "6931",
+      "checked_at": "2026-09-29T21:07:30+00:00",
+      "source": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/start-your-journey-best-sellers-vanilla/"
+    }
+  },
+  "rs": {
+    "destination": "https://foreverliving.com/join/scg/sr-cyrl-rs/welcome",
+    "reviewed_at": "2026-09-29T21:07:30+00:00",
+    "review_until": "2026-10-29T21:07:30+00:00",
+    "source": "https://foreverliving.com/join/scg/sr-cyrl-rs/products/Start-Your-Journey-Pack",
+    "once_before_assistant_supervisor": true,
+    "qualification_cc": 2,
+    "price": {
+      "amount": "42231.43",
+      "currency": "RSD",
+      "variant": "Sport & Wellness",
+      "sku": "692",
+      "checked_at": "2026-09-29T21:07:30+00:00",
+      "source": "https://foreverliving.com/join/scg/sr-cyrl-rs/products/Start-Your-Journey-Pack"
+    }
+  },
+  "si": {
+    "destination": "https://foreverliving.com/join/svn/sl-si/welcome",
+    "reviewed_at": "2026-09-29T21:07:30+00:00",
+    "review_until": "2026-10-29T21:07:30+00:00",
+    "source": "https://foreverliving.com/join/svn/sl-si/products/6931-SYJP-BEST-SELLERS-C9-VANILLA",
+    "once_before_assistant_supervisor": true,
+    "qualification_cc": 2,
+    "price": {
+      "amount": "360.00",
+      "currency": "EUR",
+      "variant": "Best Sellers C9 Vanilla",
+      "sku": "6931",
+      "checked_at": "2026-09-29T21:07:30+00:00",
+      "source": "https://foreverliving.com/join/svn/sl-si/products/6931-SYJP-BEST-SELLERS-C9-VANILLA"
+    }
+  },
+  "al": {
+    "destination": "https://www.foreveralbania.com/produktet/produktet-me-pike/paketat-forever/start-your-journey-pak-best-sellers-c9-chocolate/",
+    "reviewed_at": "2026-09-29T21:07:30+00:00",
+    "review_until": "2026-10-29T21:07:30+00:00",
+    "source": "https://www.foreveralbania.com/produktet/produktet-me-pike/paketat-forever/start-your-journey-pak-best-sellers-c9-chocolate/",
+    "once_before_assistant_supervisor": false,
+    "qualification_cc": 2,
+    "price": {
+      "amount": "359.75",
+      "currency": "EUR",
+      "variant": "Best Sellers C9 Chocolate",
+      "sku": "6932",
+      "checked_at": "2026-09-29T21:07:30+00:00",
+      "source": "https://www.foreveralbania.com/produktet/produktet-me-pike/paketat-forever/start-your-journey-pak-best-sellers-c9-chocolate/"
+    }
+  },
+  "de": {
+    "destination": "https://foreverliving.com/join/deu/de-de/welcome",
+    "reviewed_at": "2026-09-29T21:09:27.263967+00:00",
+    "review_until": "2026-10-29T21:09:27.263967+00:00",
+    "source": "https://foreverliving.com/join/deu/de-de/products/692-SYJ-SPORT-WELLNESS-TOUCH",
+    "qualification_cc": 2,
+    "price": {
+      "amount": "345.00",
+      "currency": "EUR",
+      "variant": "Sport & Wellness",
+      "sku": "692",
+      "checked_at": "2026-09-29T21:09:27.263967+00:00",
+      "source": "https://foreverliving.com/join/deu/de-de/products/692-SYJ-SPORT-WELLNESS-TOUCH"
+    }
+  }
+}

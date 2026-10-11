@@ -1,6 +1,15 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php
+require_once APP_PATH . 'helpers/fcc_plan_comparison.php';
+$fccComparison = fcc_plan_comparison_model(null, $this->user ?? null);
+if(function_exists('fcc_partner_enabled') && fcc_partner_enabled() && $fccComparison['beginner'] && $fccComparison['pro']): ?>
+<div class="container">
+    <?= \Altum\Alerts::output_alerts() ?>
+    <?= (new \Altum\View('partials/fcc_plan_comparison', (array) $this))->run([]) ?>
+</div>
+<?php else: ?>
+<?php
 /* Custom code: FC-2026-02-27: premium plan localized copy */
 $fcc_plan_eyebrow = l('plan.hero_eyebrow');
 $fcc_plan_subtitle = l('plan.hero_default_subtitle');
@@ -13,7 +22,7 @@ $fcc_plan_stats_secondary_label = l('plan.hero_stat_support_included');
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li class="active" aria-current="page"><?= l('plan.breadcrumb') ?></li>
@@ -364,3 +373,5 @@ foreach($plan_language_keys as $key) {
     </style>
     <!-- /Custom code: FC-2026-02-27 -->
 <?php \Altum\Event::add_content(ob_get_clean(), 'head') ?>
+
+<?php endif ?>

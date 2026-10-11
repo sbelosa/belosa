@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
     <ol class="custom-breadcrumbs small">
         <li>
             <a href="<?= url('admin/templates') ?>"><?= l('admin_templates.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -89,8 +89,8 @@
                                 <div class="form-group col-lg">
                                     <label for="<?= 'input_type_' . $input_key ?>"><i class="fas fa-fw fa-sm fa-fingerprint text-muted mr-1"></i> <?= l('admin_templates.main.input.type') ?></label>
                                     <select id="<?= 'input_type_' . $input_key ?>" name="inputs[<?= $input_key ?>][type]" class="custom-select">
-                                        <option value="input" <?= $input->type == 'input' ? 'selected="selected"' : null ?>>input</option>
-                                        <option value="textarea" <?= $input->type == 'textarea' ? 'selected="selected"' : null ?>>textarea</option>
+                                        <option value="input" <?= $input->type == 'input' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('input'), ENT_QUOTES, 'UTF-8') ?></option>
+                                        <option value="textarea" <?= $input->type == 'textarea' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('textarea'), ENT_QUOTES, 'UTF-8') ?></option>
                                     </select>
                                 </div>
 
@@ -179,8 +179,8 @@
             <div class="form-group col-lg">
                 <label for="input_type_INCREMENT"><i class="fas fa-fw fa-sm fa-fingerprint text-muted mr-1"></i> <?= l('admin_templates.main.input.type') ?></label>
                 <select id="input_type_INCREMENT" name="inputs[INCREMENT][type]" class="custom-select">
-                    <option value="input">input</option>
-                    <option value="textarea">textarea</option>
+                    <option value="input"><?= htmlspecialchars(fcc_t('input'), ENT_QUOTES, 'UTF-8') ?></option>
+                    <option value="textarea"><?= htmlspecialchars(fcc_t('textarea'), ENT_QUOTES, 'UTF-8') ?></option>
                 </select>
             </div>
 
@@ -197,7 +197,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text"><?= $language_name ?></span>
                     </div>
-                    <input type="text" id="<?= 'input_translation_' . $language_name . '_name_INCREMENT' ?>" name="<?= 'inputs[INCREMENT][translations][' . $language_name . '][name]' ?>" class="form-control" maxlength="128" required="required" />
+                    <input type="text" id="<?= 'input_translation_' . $language_name . '_name_INCREMENT' ?>" name="<?= fcc_t('inputs[INCREMENT][translations][') . $language_name . '][name]' ?>" class="form-control" maxlength="128" required="required" />
                 </div>
             </div>
         <?php endforeach ?>
@@ -209,7 +209,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text"><?= $language_name ?></span>
                     </div>
-                    <input type="text" id="<?= 'input_translation_' . $language_name . '_placeholder_INCREMENT' ?>" name="<?= 'inputs[INCREMENT][translations][' . $language_name . '][placeholder]' ?>" class="form-control" maxlength="128" />
+                    <input type="text" id="<?= 'input_translation_' . $language_name . '_placeholder_INCREMENT' ?>" name="<?= fcc_t('inputs[INCREMENT][translations][') . $language_name . '][placeholder]' ?>" class="form-control" maxlength="128" />
                 </div>
             </div>
         <?php endforeach ?>
@@ -221,7 +221,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text"><?= $language_name ?></span>
                     </div>
-                    <input type="text" id="<?= 'input_translation_' . $language_name . '_help_INCREMENT' ?>" name="<?= 'inputs[INCREMENT][translations][' . $language_name . '][help]' ?>" class="form-control" maxlength="128" />
+                    <input type="text" id="<?= 'input_translation_' . $language_name . '_help_INCREMENT' ?>" name="<?= fcc_t('inputs[INCREMENT][translations][') . $language_name . '][help]' ?>" class="form-control" maxlength="128" />
                 </div>
             </div>
         <?php endforeach ?>

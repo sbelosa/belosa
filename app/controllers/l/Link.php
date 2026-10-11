@@ -119,6 +119,22 @@ class Link extends Controller {
 			throw_404();
 		}
 
+        /* Partner previews belong to the signed-in card owner. The legacy MD5
+           parameter alone is not authorization to view an unpublished card. */
+        if(fcc_partner_enabled() && isset($_GET['preview'])) {
+            $skip_authentication = \Altum\Router::$controller_settings['no_authentication_check'];
+            \Altum\Router::$controller_settings['no_authentication_check'] = false;
+            try {
+                $preview_allowed = \Altum\Authentication::check()
+                    && (int) \Altum\Authentication::$user_id === (int) $this->link->user_id;
+            } finally {
+                \Altum\Router::$controller_settings['no_authentication_check'] = $skip_authentication;
+            }
+            if(!$preview_allowed) throw_404();
+            header("Content-Security-Policy: frame-ancestors 'self';");
+            header('Cache-Control: no-store, private');
+        }
+
 		/* If a preview is asked for, make sure it is correct - BIOLINK PAGES */
 		if($this->link->type == 'biolink' && isset($_GET['preview']) && $_GET['preview'] == md5($this->link->user_id)) {
 			$this->is_preview = true;
@@ -142,6 +158,16 @@ class Link extends Controller {
 		if($this->link->type != 'static' && isset($this->params[1])) {
 			throw_404();
 		}
+
+        // Old saved block URLs share the same country and owner resolver as new cards.
+        if($this->type==='biolink_block'&&in_array($this->link->type,['link_forever_webshop_reg','link_forever_shop','link_discount','link_forever_living_bih','link_forever_living_alb_kosovo'],true)) {
+            if(isset($_GET['no_redirect'])) { http_response_code(204); return; }
+            header('Cache-Control: private, no-store');
+            $target=fcc_forever_entry_url('', 'shop', (int)$this->link->biolink_block_id);
+            $market=fcc_forever_country_code($_GET['market']??null);
+            if($market)$target.='&market='.rawurlencode($market);
+            header('Location: '.$target,true,302);return;
+        }
 
 		/* Get the owner details */
 		$this->user = (new User())->get_user_by_user_id($this->link->user_id);
@@ -246,7 +272,7 @@ class Link extends Controller {
 				|| (isset($current_clicks) && $current_clicks >= $this->link->settings->clicks_limit)
 			) {
 				if($this->link->settings->expiration_url) {
-					header('Location: ' . $this->link->settings->expiration_url, true, $this->link->settings->http_status_code ?? 301);
+					header('Location: ' . $this->owned_forever_destination((string) $this->link->settings->expiration_url), true, $this->link->settings->http_status_code ?? 301);
 					die();
 				} else {
 					throw_404();
@@ -651,9 +677,45 @@ class Link extends Controller {
 	}
 
 	private function redirect_tracked_location($location_url, $cloaking = false, $app_linking = false) {
+		$location_url = $this->owned_forever_destination((string) $location_url);
 		$this->process_monitored_forever_outbound_click((string) $location_url);
 		$this->redirect_to($location_url, $cloaking, $app_linking);
 	}
+
+    private function forever_reserved_query_parameters(): array {
+        return ['ref', 'fboId', 'id', 'distribID', 'blog_post_id', 'block', 'destination', 'kind', 'discountConfigType', 'uniqueExtRefID', 'referralUuid'];
+    }
+
+    /** Preserve the configured product and block while retaining ordinary campaign parameters. */
+    private function append_tracked_target_query(string $location_url, string $append_query): string {
+        if($append_query === '' || !fcc_forever_owned_destination_recognized($location_url)) return $location_url . $append_query;
+        $parts = parse_url($location_url);
+        $query = [];
+        parse_str($parts['query'] ?? '', $query);
+        parse_str(ltrim($append_query, '?&'), $forwarded);
+        foreach($this->forever_reserved_query_parameters() as $key) unset($forwarded[$key]);
+        $query = array_merge($query, $forwarded);
+        $base = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') . ($parts['path'] ?? '/');
+        return $base . ($query ? '?' . http_build_query($query) : '') . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
+    }
+
+    /** Every targeting branch shares the card owner and visitor market contract. */
+    private function owned_forever_destination(string $location_url): string {
+        if(!fcc_forever_owned_destination_recognized($location_url)) return $location_url;
+        $card = null;
+        if($this->type === 'biolink_block') {
+            $card = db()->where('link_id', (int) $this->link->link_id)->where('user_id', (int) $this->user->user_id)->where('type', 'biolink')->where('is_enabled', 1)->getOne('links', ['url']);
+        } elseif(($this->link->type ?? '') === 'biolink') {
+            $card = $this->link;
+        } else {
+            $id = \Altum\Link::get_user_main_biolink_id((int) $this->user->user_id, false);
+            if($id > 0) $card = db()->where('link_id', $id)->where('user_id', (int) $this->user->user_id)->where('type', 'biolink')->where('is_enabled', 1)->getOne('links', ['url']);
+        }
+        $ref = trim((string) ($card->url ?? ''));
+        $destination = fcc_forever_owned_destination($location_url, $ref, $this->user->preferences ?? null);
+        if($destination !== $location_url && $ref === '') throw_404();
+        return $destination;
+    }
 
 	private function process_biolink() {
 
@@ -972,6 +1034,11 @@ class Link extends Controller {
 		$append_query = null;
 		if($this->link->settings->forward_query_parameters_is_enabled && \Altum\Router::$original_request_query) {
 			$append_query = \Altum\Router::$original_request_query;
+            if(fcc_forever_owned_destination_recognized((string) $this->link->location_url)) {
+                parse_str($append_query, $forwarded_query);
+                foreach($this->forever_reserved_query_parameters() as $key) unset($forwarded_query[$key]);
+                $append_query = http_build_query($forwarded_query);
+            }
 		}
 
 		if($this->user->plan_settings->utm) {
@@ -1011,7 +1078,7 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($continent_code == $value->key) {
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1032,7 +1099,7 @@ class Link extends Controller {
 					if($country_code == $value->key) {
 						/* Redirection */
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1052,7 +1119,7 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($city_name == $value->key) {
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1067,7 +1134,7 @@ class Link extends Controller {
 					if($device_type == $value->key) {
 						/* Redirection */
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1084,7 +1151,7 @@ class Link extends Controller {
 					if($os_name == $value->key) {
 						/* Redirection */
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1100,7 +1167,7 @@ class Link extends Controller {
 				foreach($this->link->settings->{'targeting_' . $this->link->settings->targeting_type} as $value) {
 					if($browser_name == $value->key) {
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->link_user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1115,7 +1182,7 @@ class Link extends Controller {
 					if($browser_language == $value->key) {
 						/* Redirection */
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1141,7 +1208,7 @@ class Link extends Controller {
 
 					if($chosen_winner >= $start && $chosen_winner < $end) {
 							$this->redirect_tracked_location(
-								$value->value . $append_query,
+								$this->append_tracked_target_query((string) $value->value, (string) $append_query),
 								$this->user->plan_settings->cloaking_is_enabled && $this->link->settings->cloaking_is_enabled ? $this->link->settings : false,
 								$this->user->plan_settings->app_linking_is_enabled && $this->link->settings->app_linking_is_enabled && $this->link->settings->app_linking->app ? $this->link->settings->app_linking : false,
 						);
@@ -1161,6 +1228,7 @@ class Link extends Controller {
 	}
 
 	private function redirect_to($location_url, $cloaking = false, $app_linking = false) {
+		$location_url = $this->owned_forever_destination((string) $location_url);
 		if(!count($this->link->pixels_ids) && !$cloaking && !$app_linking) {
 
 			/* Classic redirect */
@@ -1182,6 +1250,7 @@ class Link extends Controller {
 				if($os_name == 'Android') {
 					$app_linking_location_url = $app_linking->android_location_url;
 				}
+                if($app_linking_location_url) $app_linking_location_url = $this->owned_forever_destination((string) $app_linking_location_url);
 			}
 
 			if(count($this->link->pixels_ids)) {

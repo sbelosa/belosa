@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-    <nav aria-label="breadcrumb">
+    <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li>
                 <a href="<?= url('admin/biolinks-themes') ?>"><?= l('admin_biolinks_themes.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -193,7 +193,7 @@
                     <div class="input-group">
                         <input id="biolink_font_size" type="number" min="14" max="22" name="biolink_font_size" class="form-control" value="<?= $data->biolink_theme->settings->biolink->font_size ?>" />
                         <div class="input-group-append">
-                            <span class="input-group-text">px</span>
+                            <span class="input-group-text"><?= htmlspecialchars('px', ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     </div>
                 </div>

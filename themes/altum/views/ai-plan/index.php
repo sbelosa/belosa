@@ -633,20 +633,20 @@
             || (in_array($action, ['keep_top', 'keep_after_primary'], true) && $position_delta >= 2);
 
         if($is_hidden) {
-            $badges[] = ['label' => 'Privremeno niže', 'class' => 'is-hide'];
+            $badges[] = ['label' => fcc_t('Privremeno niže'), 'class' => 'is-hide'];
         } elseif($is_missing) {
             $badges[] = ['label' => 'Dodaje se', 'class' => 'is-add'];
         } elseif($is_meaningful_reorder) {
-            $badges[] = ['label' => 'Novi redoslijed', 'class' => 'is-shift'];
+            $badges[] = ['label' => fcc_t('Novi redoslijed'), 'class' => 'is-shift'];
         } else {
-            $badges[] = ['label' => 'Zadržava se', 'class' => 'is-keep'];
+            $badges[] = ['label' => fcc_t('Zadržava se'), 'class' => 'is-keep'];
         }
 
         $status = trim((string) ($item['status'] ?? ''));
         if(in_array($status, ['high_signal', 'contributing'], true)) {
             $badges[] = ['label' => 'Donosi rezultat', 'class' => 'is-keep'];
         } elseif($status === 'supporting') {
-            $badges[] = ['label' => 'Trust / podrška', 'class' => 'is-shift'];
+            $badges[] = ['label' => fcc_t('Trust / podrška'), 'class' => 'is-shift'];
         }
 
         return $badges;
@@ -759,7 +759,7 @@
                     <details class="ai-plan-review-disclosure" data-accordion-item="app-review-details">
                         <summary><?= l('ai_plan.app_review_block_order') ?></summary>
                         <div class="ai-plan-review-disclosure-body">
-                            <p class="ai-plan-review-disclosure-note mb-3">Ovo je točan popis blokova koje će AI editor stvarno slagati i mijenjati na aplikaciji, redom kako trebaju stajati nakon importa. Ako se neki postojeći blok privremeno spušta ili miče iz fokusa, razlog je napisan odmah ispod njega.</p>
+                            <p class="ai-plan-review-disclosure-note mb-3"><?= htmlspecialchars(fcc_t('Ovo je točan popis blokova koje će AI editor stvarno slagati i mijenjati na aplikaciji, redom kako trebaju stajati nakon importa. Ako se neki postojeći blok privremeno spušta ili miče iz fokusa, razlog je napisan odmah ispod njega.'), ENT_QUOTES, 'UTF-8') ?></p>
                             <div class="ai-plan-review-order mb-0">
                                 <?php if(!empty($final_block_plan)): ?>
                                     <?php foreach($final_block_plan as $index => $item): ?>
@@ -791,7 +791,7 @@
                                             <div class="ai-plan-review-order-copy">
                                                 <div class="ai-plan-review-order-top">
                                                     <span class="ai-plan-review-order-name"><?= htmlspecialchars((string) $item, ENT_QUOTES, 'UTF-8') ?></span>
-                                                    <span class="ai-plan-review-order-badge is-shift">Glavni redoslijed</span>
+                                                    <span class="ai-plan-review-order-badge is-shift"><?= htmlspecialchars(fcc_t('Glavni redoslijed'), ENT_QUOTES, 'UTF-8') ?></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1108,32 +1108,32 @@
 
     if(!$is_profile_complete) {
         $summary_text = l('ai_plan.app_review_locked_profile');
-        $reason_text = 'Prvo dovrši profil kako bi AI znao cilj, publiku i fokus aplikacije.';
+        $reason_text = fcc_t('Prvo dovrši profil kako bi AI znao cilj, publiku i fokus aplikacije.');
     } elseif($intro_app_review_available) {
-        $summary_text = 'Početni PRO unlock je aktivan. Jednu početnu AI analizu aplikacije možeš pokrenuti odmah.';
+        $summary_text = fcc_t('Početni PRO unlock je aktivan. Jednu početnu AI analizu aplikacije možeš pokrenuti odmah.');
         $reason_text = $intro_weekly_available
-            ? 'Nakon ove analize otvara ti se i prvi tjedni plan, a Coach iz toga dobiva puno jači kontekst za sljedećih 7 dana.'
-            : 'Coach će iz ove analize dobiti jasniji kontekst za tvoje sljedeće poteze i put prema 15+ signalu.';
+            ? fcc_t('Nakon ove analize otvara ti se i prvi tjedni plan, a Coach iz toga dobiva puno jači kontekst za sljedećih 7 dana.')
+            : fcc_t('Coach će iz ove analize dobiti jasniji kontekst za tvoje sljedeće poteze i put prema 15+ signalu.');
     } elseif(!$is_accessible) {
         $summary_text = $locked_reason;
         $reason_text = !$is_pro
-            ? 'AI analiza aplikacije dostupna je unutar aktivnog PRO paketa.'
-            : 'Klikovi, prijave i AI chat kontakti trenutno su na ' . nr($growth_signal_30d) . ' od potrebnih 15.';
+            ? fcc_t('AI analiza aplikacije dostupna je unutar aktivnog PRO paketa.')
+            : fcc_t('Klikovi, prijave i AI chat kontakti trenutno su na ') . nr($growth_signal_30d) . ' od potrebnih 15.';
     } elseif($is_pro && !$is_signal_qualified) {
         $summary_text = $latest_review
-            ? 'PRO je aktivan, ali nova analiza se ponovno otključava kad dođeš na 15+ klikova i kontakata u zadnjih 30 dana.'
-            : 'PRO je aktivan. Kad dođeš na 15+ klikova i kontakata u zadnjih 30 dana, otključavaš AI analizu aplikacije jednom tjedno.';
-        $reason_text = 'Coach te sada vodi prema 15+ kako bi se otvorio puni AI ciklus.';
+            ? fcc_t('PRO je aktivan, ali nova analiza se ponovno otključava kad dođeš na 15+ klikova i kontakata u zadnjih 30 dana.')
+            : fcc_t('PRO je aktivan. Kad dođeš na 15+ klikova i kontakata u zadnjih 30 dana, otključavaš AI analizu aplikacije jednom tjedno.');
+        $reason_text = fcc_t('Coach te sada vodi prema 15+ kako bi se otvorio puni AI ciklus.');
     } elseif(in_array($tier, ['qualified', 'top', 'admin'], true)) {
-        $cadence_text = in_array($tier, ['qualified', 'top'], true) ? 'svakih 7 dana' : 'bez ograničenja u testnom modu';
+        $cadence_text = in_array($tier, ['qualified', 'top'], true) ? 'svakih 7 dana' : fcc_t('bez ograničenja u testnom modu');
         $summary_text = $latest_review
             ? ($is_app_review_locked
-                ? 'Zadnja analiza je spremljena. Nova analiza aplikacije otključava se ' . $cadence_text . '.'
-                : 'Analiza aplikacije je aktivna. Ovdje možeš pregledati zadnje preporuke i odmah pokrenuti novu analizu.')
-            : 'Analiza aplikacije je otključana. Pokreni pregled kako bi AI provjerio redoslijed blokova i glavni put prema kontaktu.';
+                ? fcc_t('Zadnja analiza je spremljena. Nova analiza aplikacije otključava se ') . $cadence_text . '.'
+                : fcc_t('Analiza aplikacije je aktivna. Ovdje možeš pregledati zadnje preporuke i odmah pokrenuti novu analizu.'))
+            : fcc_t('Analiza aplikacije je otključana. Pokreni pregled kako bi AI provjerio redoslijed blokova i glavni put prema kontaktu.');
         $reason_text = $tier === 'top'
-            ? 'Tvoj AI status sada je u zoni preporučenih sponzora za naslovnicu, a analiza aplikacije ostaje dostupna ' . $cadence_text . '.'
-            : 'Tvoj AI status sada uključuje novu analizu aplikacije ' . $cadence_text . '.';
+            ? fcc_t('Tvoj AI status sada je u zoni preporučenih sponzora za naslovnicu, a analiza aplikacije ostaje dostupna ') . $cadence_text . '.'
+            : fcc_t('Tvoj AI status sada uključuje novu analizu aplikacije ') . $cadence_text . '.';
     }
 
     ob_start();
@@ -1284,19 +1284,19 @@
     <div class="ai-plan-cycle-panel mb-3">
         <div class="ai-plan-cycle-head">
             <div>
-                <div class="ai-plan-cycle-title">Prije novog plana po želji osvježi smjer rada</div>
-                <p class="ai-plan-cycle-text">Prethodni ciklus je zatvoren. Ako u novom planu želiš drugi fokus, ponudu, ritam ili publiku, prvo ažuriraj Profil i smjer rada pa zatim ispuni novi tjedni unos.</p>
+                <div class="ai-plan-cycle-title"><?= htmlspecialchars(fcc_t('Prije novog plana po želji osvježi smjer rada'), ENT_QUOTES, 'UTF-8') ?></div>
+                <p class="ai-plan-cycle-text"><?= htmlspecialchars(fcc_t('Prethodni ciklus je zatvoren. Ako u novom planu želiš drugi fokus, ponudu, ritam ili publiku, prvo ažuriraj Profil i smjer rada pa zatim ispuni novi tjedni unos.'), ENT_QUOTES, 'UTF-8') ?></p>
             </div>
             <div class="ai-plan-cycle-next">
-                <div class="ai-plan-cycle-next-label">Opcionalno prije plana</div>
-                <div class="ai-plan-cycle-next-value">Profil i smjer rada</div>
+                <div class="ai-plan-cycle-next-label"><?= htmlspecialchars(fcc_t('Opcionalno prije plana'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="ai-plan-cycle-next-value"><?= htmlspecialchars(fcc_t('Profil i smjer rada'), ENT_QUOTES, 'UTF-8') ?></div>
             </div>
         </div>
         <div class="ai-plan-cycle-grid" style="grid-template-columns:minmax(0, 1fr);">
             <a href="<?= htmlspecialchars($profile_url, ENT_QUOTES, 'UTF-8') ?>" class="ai-plan-cycle-card current" style="text-decoration:none;color:inherit;">
-                <div class="ai-plan-cycle-step">Opcionalno prije novog plana</div>
-                <div class="ai-plan-cycle-card-title">Profil i smjer rada</div>
-                <div class="ai-plan-cycle-card-text">Otvori profil ako želiš promijeniti cilj, publiku, fokus ili način rada prije nego AI složi sljedeći plan za 7 dana.</div>
+                <div class="ai-plan-cycle-step"><?= htmlspecialchars(fcc_t('Opcionalno prije novog plana'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="ai-plan-cycle-card-title"><?= htmlspecialchars(fcc_t('Profil i smjer rada'), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="ai-plan-cycle-card-text"><?= htmlspecialchars(fcc_t('Otvori profil ako želiš promijeniti cilj, publiku, fokus ili način rada prije nego AI složi sljedeći plan za 7 dana.'), ENT_QUOTES, 'UTF-8') ?></div>
             </a>
         </div>
     </div>
@@ -1570,7 +1570,7 @@
 
             <div class="form-group">
                 <label for="completion_level" class="font-weight-bold"><?= l('ai_plan.outcome_completion_level') ?></label>
-                <select id="completion_level" name="completion_level" class="custom-select <?= \Altum\Alerts::has_field_errors('completion_level') ? 'is-invalid' : null ?>" data-ai-required="1" required>
+                <select data-is-not-custom-select id="completion_level" name="completion_level" class="custom-select <?= \Altum\Alerts::has_field_errors('completion_level') ? 'is-invalid' : null ?>" data-ai-required="1" required>
                     <option value=""><?= l('global.choose') ?></option>
                     <?php foreach(['strong_progress', 'partial_progress', 'low_execution', 'not_started'] as $option): ?>
                         <option value="<?= $option ?>" <?= ((($outcome['completion_level'] ?? '') === $option) ? 'selected="selected"' : null) ?>><?= l('ai_plan.option.completion_level.' . $option) ?></option>
@@ -1605,7 +1605,7 @@
 
             <div class="form-group mt-4">
                 <label for="palette_feedback" class="font-weight-bold"><?= l('ai_plan.outcome_palette_feedback') ?></label>
-                <select id="palette_feedback" name="palette_feedback" class="custom-select <?= \Altum\Alerts::has_field_errors('palette_feedback') ? 'is-invalid' : null ?>" data-ai-required="1" required>
+                <select data-is-not-custom-select id="palette_feedback" name="palette_feedback" class="custom-select <?= \Altum\Alerts::has_field_errors('palette_feedback') ? 'is-invalid' : null ?>" data-ai-required="1" required>
                     <option value=""><?= l('global.choose') ?></option>
                     <?php foreach(['love_keep', 'good_refine', 'new_direction', 'not_applied'] as $option): ?>
                         <option value="<?= $option ?>" <?= ((($outcome['palette_feedback'] ?? '') === $option) ? 'selected="selected"' : null) ?>><?= l('ai_plan.option.palette_feedback.' . $option) ?></option>
@@ -1708,7 +1708,7 @@
 <?php $ai_growth_intro_weekly = !empty($ai_growth_starter['weekly_plan_available']); ?>
 <?php $ai_growth_intro_cycle = $ai_growth_intro_app_review || $ai_growth_intro_weekly; ?>
 <?php $coach_mode_payload = (array) ($data->coach_mode_payload ?? []); ?>
-<?php $coach_mode_label = (string) (($coach_mode_payload['title'] ?? '') ?: ($ai_growth_is_pro ? 'VIP Coach' : 'Beginner Coach')); ?>
+<?php $coach_mode_label = (string) (($coach_mode_payload['title'] ?? '') ?: ($ai_growth_is_pro ? fcc_t('VIP Coach') : fcc_t('Beginner Coach'))); ?>
 <?php $coach_mode_badge = (string) ($coach_mode_payload['coach_badge'] ?? ''); ?>
 <?php $ai_plan_unlock_target = 15; ?>
 <?php $ai_plan_sponsor_target = (int) ($ai_growth_access['top_target'] ?? 50); ?>
@@ -1719,13 +1719,13 @@
 <?php $ai_plan_top_signal_missing = max(0, $ai_plan_weekly_check_target - $ai_growth_signal_7d); ?>
 <?php $ai_plan_tier_label = $ai_growth_is_pro ? 'PRO' : 'Beginner'; ?>
 <?php if($ai_growth_tier === 'admin') $ai_plan_tier_label = 'Admin test'; ?>
-<?php $ai_plan_access_summary = 'Beginner Coach koristi osnovni paket inteligencije. Aktiviraj PRO ili trial da se prebaciš na VIP Coach i otključaš puni AI ciklus.'; ?>
-<?php if($ai_growth_is_pro) $ai_plan_access_summary = 'VIP Coach je aktivan jer je PRO uključen. Tjedni AI plan i AI analiza aplikacije otključavaju se kad skupiš 15+ klikova i kontakata u 30 dana.'; ?>
-<?php if($ai_growth_is_pro && $ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = 'VIP Coach je aktivan. Kao početni PRO unlock sada možeš odmah napraviti jednu analizu aplikacije i jedan prvi tjedni AI plan, a nakon toga te Coach vodi prema 15+ u 30 dana.'; ?>
-<?php if($ai_growth_is_pro && !$ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = 'VIP Coach je aktivan. Početna analiza aplikacije je već iskorištena, a prvi tjedni AI plan možeš otvoriti odmah. Nakon toga te Coach vodi prema 15+ u 30 dana.'; ?>
-<?php if(in_array($ai_growth_tier, ['qualified', 'top'], true)) $ai_plan_access_summary = 'VIP Coach je aktivan, a AI analiza aplikacije i tjedni AI plan dostupni su jednom tjedno dok držiš 15+ signal u 30 dana. To te drži i na popisu Istaknutih aplikacija.'; ?>
-<?php if($ai_growth_tier === 'top') $ai_plan_access_summary = 'VIP Coach je aktivan, tjedni AI ciklus je otključan, a sada si i u 50+ / 30 dana zoni preporučenih sponzora za naslovnicu. Tvoj 15+ / 7 dana ostaje tjedna provjera ritma.'; ?>
-<?php if($ai_growth_tier === 'admin') $ai_plan_access_summary = 'Administratorski testni način ima puni pristup svim AI koracima.'; ?>
+<?php $ai_plan_access_summary = fcc_t('Beginner Coach koristi osnovni paket inteligencije. Aktiviraj PRO ili trial da se prebaciš na VIP Coach i otključaš puni AI ciklus.'); ?>
+<?php if($ai_growth_is_pro) $ai_plan_access_summary = fcc_t('VIP Coach je aktivan jer je PRO uključen. Tjedni AI plan i AI analiza aplikacije otključavaju se kad skupiš 15+ klikova i kontakata u 30 dana.'); ?>
+<?php if($ai_growth_is_pro && $ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = fcc_t('VIP Coach je aktivan. Kao početni PRO unlock sada možeš odmah napraviti jednu analizu aplikacije i jedan prvi tjedni AI plan, a nakon toga te Coach vodi prema 15+ u 30 dana.'); ?>
+<?php if($ai_growth_is_pro && !$ai_growth_intro_app_review && $ai_growth_intro_weekly) $ai_plan_access_summary = fcc_t('VIP Coach je aktivan. Početna analiza aplikacije je već iskorištena, a prvi tjedni AI plan možeš otvoriti odmah. Nakon toga te Coach vodi prema 15+ u 30 dana.'); ?>
+<?php if(in_array($ai_growth_tier, ['qualified', 'top'], true)) $ai_plan_access_summary = fcc_t('VIP Coach je aktivan, a AI analiza aplikacije i tjedni AI plan dostupni su jednom tjedno dok držiš 15+ signal u 30 dana. To te drži i na popisu Istaknutih aplikacija.'); ?>
+<?php if($ai_growth_tier === 'top') $ai_plan_access_summary = fcc_t('VIP Coach je aktivan, tjedni AI ciklus je otključan, a sada si i u 50+ / 30 dana zoni preporučenih sponzora za naslovnicu. Tvoj 15+ / 7 dana ostaje tjedna provjera ritma.'); ?>
+<?php if($ai_growth_tier === 'admin') $ai_plan_access_summary = fcc_t('Administratorski testni način ima puni pristup svim AI koracima.'); ?>
 <?php $ai_plan_guide_text = l('ai_plan.guide_profile_text'); ?>
 <?php if($ai_plan_recommended_section === 'weekly') $ai_plan_guide_text = $data->is_weekly_plan_eligible ? l('ai_plan.guide_weekly_text') : l('ai_plan.guide_weekly_locked_text'); ?>
 <?php if($ai_plan_recommended_section === 'plan') $ai_plan_guide_text = $data->latest_weekly_plan ? l('ai_plan.guide_outcome_text') : l('ai_plan.guide_plan_text'); ?>
@@ -1755,14 +1755,14 @@
 <?php if($ai_plan_current_step === 'app_review') $ai_plan_status_focus_value = l('ai_plan.onboarding_step_2_title'); ?>
 <?php if($ai_plan_current_step === 'weekly') $ai_plan_status_focus_value = l('ai_plan.onboarding_step_3_title'); ?>
 <?php if($ai_plan_current_step === 'plan') $ai_plan_status_focus_value = l('ai_plan.onboarding_step_4_title'); ?>
-<?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible) $ai_plan_status_text = $ai_growth_is_pro ? 'PRO je aktivan i VIP Coach je uključen. Kad dođeš do 15+ klikova i kontakata u zadnjih 30 dana, otključavaš puni tjedni AI plan i AI analizu aplikacije.' : 'Za tjedni AI plan i analizu aplikacije potreban je aktivan PRO paket ili trial.'; ?>
-<?php if($data->is_profile_complete && empty($data->latest_app_review)) $ai_plan_status_text = $ai_growth_intro_app_review ? 'Početni PRO unlock je aktivan. Sada prvo pokreni analizu aplikacije kako bi Coach dobio jasan smjer i bazu za prvi tjedni plan.' : l('ai_plan.onboarding_step_2_text'); ?>
-<?php if(!empty($data->latest_app_review) && $ai_growth_intro_weekly && !$data->latest_weekly_checkin) $ai_plan_status_text = 'Početna analiza je spremna. Sada pošalji prvi tjedni unos kako bi AI složio plan koji koristi i coach rezime i tvoju zadnju analizu.'; ?>
+<?php if($data->is_profile_complete && !$data->is_weekly_plan_eligible) $ai_plan_status_text = $ai_growth_is_pro ? fcc_t('PRO je aktivan i VIP Coach je uključen. Kad dođeš do 15+ klikova i kontakata u zadnjih 30 dana, otključavaš puni tjedni AI plan i AI analizu aplikacije.') : fcc_t('Za tjedni AI plan i analizu aplikacije potreban je aktivan PRO paket ili trial.'); ?>
+<?php if($data->is_profile_complete && empty($data->latest_app_review)) $ai_plan_status_text = $ai_growth_intro_app_review ? fcc_t('Početni PRO unlock je aktivan. Sada prvo pokreni analizu aplikacije kako bi Coach dobio jasan smjer i bazu za prvi tjedni plan.') : l('ai_plan.onboarding_step_2_text'); ?>
+<?php if(!empty($data->latest_app_review) && $ai_growth_intro_weekly && !$data->latest_weekly_checkin) $ai_plan_status_text = fcc_t('Početna analiza je spremna. Sada pošalji prvi tjedni unos kako bi AI složio plan koji koristi i coach rezime i tvoju zadnju analizu.'); ?>
 <?php if(!empty($data->latest_app_review) && $data->is_weekly_plan_eligible && !$data->latest_weekly_checkin && !$ai_growth_intro_weekly) $ai_plan_status_text = l('ai_plan.status_card_text_weekly'); ?>
 <?php if($data->latest_weekly_checkin && !$data->latest_weekly_plan) $ai_plan_status_text = l('ai_plan.status_card_text_plan_pending'); ?>
 <?php if($data->latest_weekly_plan && !$data->latest_weekly_outcome) $ai_plan_status_text = l('ai_plan.status_card_text_execute'); ?>
 <?php if($data->latest_weekly_outcome) $ai_plan_status_text = l('ai_plan.status_card_text_complete'); ?>
-<?php if($ai_plan_new_weekly_cycle_ready) $ai_plan_status_text = 'Prethodni ciklus je zatvoren. Novi tjedni unos je sada spreman i on je sljedeći korak.'; ?>
+<?php if($ai_plan_new_weekly_cycle_ready) $ai_plan_status_text = fcc_t('Prethodni ciklus je zatvoren. Novi tjedni unos je sada spreman i on je sljedeći korak.'); ?>
 <?php $ai_plan_current_phase = 1; ?>
 <?php $ai_plan_hero_title = l('ai_plan.onboarding_step_1_title'); ?>
 <?php $ai_plan_hero_text = l('ai_plan.onboarding_step_1_text'); ?>
@@ -1774,7 +1774,7 @@
 <?php if($data->is_profile_complete && empty($data->latest_app_review)): ?>
     <?php $ai_plan_current_phase = 2; ?>
     <?php $ai_plan_hero_title = l('ai_plan.onboarding_step_2_title'); ?>
-    <?php $ai_plan_hero_text = $ai_growth_intro_app_review ? 'Početni PRO unlock je aktivan. Napravi sada prvu AI analizu aplikacije kako bi Coach odmah dobio bolji pregled što si složio, što ti je najvažnije i što treba ući u prvi tjedni plan.' : l('ai_plan.onboarding_step_2_text'); ?>
+    <?php $ai_plan_hero_text = $ai_growth_intro_app_review ? fcc_t('Početni PRO unlock je aktivan. Napravi sada prvu AI analizu aplikacije kako bi Coach odmah dobio bolji pregled što si složio, što ti je najvažnije i što treba ući u prvi tjedni plan.') : l('ai_plan.onboarding_step_2_text'); ?>
     <?php $ai_plan_hero_status_class = 'active'; ?>
     <?php $ai_plan_hero_status_label = l('ai_plan.step_status_current'); ?>
     <?php $ai_plan_metric_unlock_value = $ai_plan_tier_label; ?>
@@ -1784,12 +1784,12 @@
 <?php if(!empty($data->latest_app_review) && !$data->latest_weekly_checkin): ?>
     <?php $ai_plan_current_phase = 3; ?>
     <?php $ai_plan_hero_title = l('ai_plan.onboarding_step_3_title'); ?>
-    <?php $ai_plan_hero_text = $data->is_weekly_plan_eligible ? ($ai_growth_intro_weekly ? 'Početna analiza je gotova. Sada pošalji prvi tjedni unos i AI će složiti plan koji koristi tvoju analizu aplikacije i rezime coach komunikacije.' : l('ai_plan.onboarding_step_3_text')) : l('ai_plan.guide_weekly_locked_text'); ?>
+    <?php $ai_plan_hero_text = $data->is_weekly_plan_eligible ? ($ai_growth_intro_weekly ? fcc_t('Početna analiza je gotova. Sada pošalji prvi tjedni unos i AI će složiti plan koji koristi tvoju analizu aplikacije i rezime coach komunikacije.') : l('ai_plan.onboarding_step_3_text')) : l('ai_plan.guide_weekly_locked_text'); ?>
     <?php $ai_plan_hero_status_class = $data->is_weekly_plan_eligible ? 'active' : 'locked'; ?>
     <?php $ai_plan_hero_status_label = $data->is_weekly_plan_eligible ? l('ai_plan.step_status_current') : l('ai_plan.step_status_locked'); ?>
     <?php $ai_plan_metric_unlock_value = $ai_plan_tier_label; ?>
     <?php $ai_plan_metric_next_value = $data->is_weekly_plan_eligible ? l('ai_plan.onboarding_step_3_title') : l('ai_plan.metric_next_after_signal'); ?>
-    <?php $ai_plan_metric_help_text = $data->is_weekly_plan_eligible ? $ai_plan_access_summary : ($ai_growth_is_pro ? 'Kad skupiš 15+ klikova i kontakata u 30 dana, otključavaš redovni tjedni AI ciklus i ulaziš na popis Istaknutih aplikacija. Za preporučene sponzore na naslovnici ciljaš ' . nr($ai_plan_sponsor_target) . '+ u 30 dana, dok je 15+ u 7 dana samo tjedna provjera ritma.' : $ai_plan_access_summary); ?>
+    <?php $ai_plan_metric_help_text = $data->is_weekly_plan_eligible ? $ai_plan_access_summary : ($ai_growth_is_pro ? fcc_t('Kad skupiš 15+ klikova i kontakata u 30 dana, otključavaš redovni tjedni AI ciklus i ulaziš na popis Istaknutih aplikacija. Za preporučene sponzore na naslovnici ciljaš ') . nr($ai_plan_sponsor_target) . fcc_t('+ u 30 dana, dok je 15+ u 7 dana samo tjedna provjera ritma.') : $ai_plan_access_summary); ?>
 <?php endif ?>
 <?php if($data->latest_weekly_checkin): ?>
     <?php $ai_plan_current_phase = 4; ?>
@@ -1803,10 +1803,10 @@
 <?php endif ?>
 <?php if($ai_plan_new_weekly_cycle_ready): ?>
     <?php $ai_plan_current_phase = 4; ?>
-    <?php $ai_plan_hero_title = 'Novi tjedni unos je spreman'; ?>
-    <?php $ai_plan_hero_text = 'Prethodni tjedan je zatvoren. Sada prvo ispuni novi tjedni unos kako bi AI izradio sljedeći plan rada.'; ?>
+    <?php $ai_plan_hero_title = fcc_t('Novi tjedni unos je spreman'); ?>
+    <?php $ai_plan_hero_text = fcc_t('Prethodni tjedan je zatvoren. Sada prvo ispuni novi tjedni unos kako bi AI izradio sljedeći plan rada.'); ?>
     <?php $ai_plan_hero_status_class = 'active'; ?>
-    <?php $ai_plan_hero_status_label = 'Spremno sada'; ?>
+    <?php $ai_plan_hero_status_label = fcc_t('Spremno sada'); ?>
     <?php $ai_plan_metric_unlock_value = $ai_plan_tier_label; ?>
     <?php $ai_plan_metric_next_value = l('ai_plan.onboarding_step_3_title'); ?>
     <?php $ai_plan_metric_help_text = $ai_plan_access_summary; ?>
@@ -1827,18 +1827,18 @@
     <?php $ai_plan_sidebar_next_step_text = $data->latest_weekly_plan && !$data->latest_weekly_outcome ? l('ai_plan.sidebar_next_step_outcome') : l('ai_plan.sidebar_next_step_plan'); ?>
 <?php endif ?>
 <?php if($ai_plan_new_weekly_cycle_ready): ?>
-    <?php $ai_plan_status_focus_value = 'Novi tjedni unos'; ?>
-    <?php $ai_plan_sidebar_next_step_value = 'Novi tjedni unos'; ?>
-    <?php $ai_plan_sidebar_next_step_text = 'Novi unos je sada otključan. Otvori ga i iz njega odmah kreće sljedeći plan.'; ?>
+    <?php $ai_plan_status_focus_value = fcc_t('Novi tjedni unos'); ?>
+    <?php $ai_plan_sidebar_next_step_value = fcc_t('Novi tjedni unos'); ?>
+    <?php $ai_plan_sidebar_next_step_text = fcc_t('Novi unos je sada otključan. Otvori ga i iz njega odmah kreće sljedeći plan.'); ?>
 <?php endif ?>
 
 <?php $ai_plan_review_unlock_value = l('ai_plan.sidebar_ready_now'); ?>
 <?php if(!$data->is_profile_complete): ?>
     <?php $ai_plan_review_unlock_value = l('ai_plan.sidebar_unlock_after_profile'); ?>
 <?php elseif($ai_growth_intro_app_review): ?>
-    <?php $ai_plan_review_unlock_value = 'Početni PRO unlock'; ?>
+    <?php $ai_plan_review_unlock_value = fcc_t('Početni PRO unlock'); ?>
 <?php elseif(!$app_review_is_accessible): ?>
-    <?php $ai_plan_review_unlock_value = $ai_growth_is_pro ? 'Na 15+ klikova i kontakata u 30 dana' : 'Samo za PRO'; ?>
+    <?php $ai_plan_review_unlock_value = $ai_growth_is_pro ? fcc_t('Na 15+ klikova i kontakata u 30 dana') : fcc_t('Samo za PRO'); ?>
 <?php elseif(!empty($data->latest_app_review) && $data->app_review_is_locked): ?>
     <?php $ai_plan_review_unlock_value = sprintf(l('ai_plan.sidebar_unlock_in_days'), nr(max(0, (int) ($data->app_review_countdown_days ?? 0)))); ?>
 <?php endif ?>
@@ -1849,7 +1849,7 @@
 <?php elseif(empty($data->latest_app_review)): ?>
     <?php $ai_plan_weekly_unlock_value = l('ai_plan.sidebar_unlock_after_app_review'); ?>
 <?php elseif(!$data->is_weekly_plan_eligible): ?>
-    <?php $ai_plan_weekly_unlock_value = $ai_growth_is_pro ? 'Čeka 15+ klikova i kontakata u 30 dana' : 'Samo za PRO'; ?>
+    <?php $ai_plan_weekly_unlock_value = $ai_growth_is_pro ? fcc_t('Čeka 15+ klikova i kontakata u 30 dana') : fcc_t('Samo za PRO'); ?>
 <?php elseif($data->weekly_is_locked): ?>
     <?php $ai_plan_weekly_unlock_value = sprintf(l('ai_plan.sidebar_unlock_in_days'), nr(max(0, (int) ($data->weekly_countdown_days ?? 0)))); ?>
 <?php endif ?>
@@ -1857,62 +1857,62 @@
 <?php
     $ai_plan_app_review_step_status_class = $ai_plan_app_review_status;
     $ai_plan_app_review_step_status_label = l('ai_plan.step_status_' . $ai_plan_app_review_status);
-    $ai_plan_app_review_step_title = '2. ' . ($data->latest_app_review ? 'Pregled plana promjena aplikacije' : 'Analiza glavne FCC aplikacije');
+    $ai_plan_app_review_step_title = '2. ' . ($data->latest_app_review ? fcc_t('Pregled plana promjena aplikacije') : fcc_t('Analiza glavne FCC aplikacije'));
     $ai_plan_app_review_step_text = $data->latest_app_review
-        ? 'Ovdje pregledavaš zadnju analizu i preporuke za glavnu FCC aplikaciju.'
-        : 'Prvi put ovdje pokrećeš analizu glavne FCC aplikacije i dobivaš jasan plan promjena.';
+        ? fcc_t('Ovdje pregledavaš zadnju analizu i preporuke za glavnu FCC aplikaciju.')
+        : fcc_t('Prvi put ovdje pokrećeš analizu glavne FCC aplikacije i dobivaš jasan plan promjena.');
     $ai_plan_app_review_step_meta_label = '';
     $ai_plan_app_review_step_meta_value = '';
     $ai_plan_app_review_step_meta_value_class = '';
 
     if(!$data->is_profile_complete) {
-        $ai_plan_app_review_step_title = '2. Analiza glavne FCC aplikacije';
-        $ai_plan_app_review_step_text = 'Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.';
+        $ai_plan_app_review_step_title = fcc_t('2. Analiza glavne FCC aplikacije');
+        $ai_plan_app_review_step_text = fcc_t('Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.');
     } elseif($ai_growth_intro_app_review) {
         $ai_plan_app_review_step_status_class = 'review-ready';
-        $ai_plan_app_review_step_status_label = 'Početni unlock';
-        $ai_plan_app_review_step_title = '2. Pokreni početnu AI analizu aplikacije';
-        $ai_plan_app_review_step_text = 'Ovdje sada koristiš početni PRO unlock. Prva analiza daje Coachu jasan pregled aplikacije i bolju bazu za prvi tjedni plan.';
-        $ai_plan_app_review_step_meta_label = 'Prva analiza';
-        $ai_plan_app_review_step_meta_value = 'Možeš pokrenuti odmah';
+        $ai_plan_app_review_step_status_label = fcc_t('Početni unlock');
+        $ai_plan_app_review_step_title = fcc_t('2. Pokreni početnu AI analizu aplikacije');
+        $ai_plan_app_review_step_text = fcc_t('Ovdje sada koristiš početni PRO unlock. Prva analiza daje Coachu jasan pregled aplikacije i bolju bazu za prvi tjedni plan.');
+        $ai_plan_app_review_step_meta_label = fcc_t('Prva analiza');
+        $ai_plan_app_review_step_meta_value = fcc_t('Možeš pokrenuti odmah');
         $ai_plan_app_review_step_meta_value_class = 'is-highlight';
     } elseif(!$app_review_is_accessible) {
         $ai_plan_app_review_step_status_class = 'locked';
-        $ai_plan_app_review_step_status_label = $ai_growth_is_pro ? 'Čeka signal' : 'Samo za PRO';
-        $ai_plan_app_review_step_title = '2. Analiza glavne FCC aplikacije';
+        $ai_plan_app_review_step_status_label = $ai_growth_is_pro ? fcc_t('Čeka signal') : fcc_t('Samo za PRO');
+        $ai_plan_app_review_step_title = fcc_t('2. Analiza glavne FCC aplikacije');
         $ai_plan_app_review_step_text = $ai_growth_is_pro
-            ? 'PRO je aktivan, ali nova analiza se otključava kad skupiš 15+ klikova i kontakata u zadnjih 30 dana.'
-            : 'AI analiza aplikacije dostupna je unutar aktivnog PRO paketa.';
-        $ai_plan_app_review_step_meta_label = 'Klikovi, prijave i AI chat kontakti';
+            ? fcc_t('PRO je aktivan, ali nova analiza se otključava kad skupiš 15+ klikova i kontakata u zadnjih 30 dana.')
+            : fcc_t('AI analiza aplikacije dostupna je unutar aktivnog PRO paketa.');
+        $ai_plan_app_review_step_meta_label = fcc_t('Klikovi, prijave i AI chat kontakti');
         $ai_plan_app_review_step_meta_value = nr($ai_growth_signal) . ' / ' . $ai_plan_unlock_target;
         $ai_plan_app_review_step_meta_value_class = 'is-waiting';
     } elseif($data->latest_app_review && !$data->app_review_is_locked) {
         $ai_plan_app_review_step_status_class = 'review-ready';
-        $ai_plan_app_review_step_status_label = 'Dostupno sada';
-        $ai_plan_app_review_step_title = '2. Pregledaj plan i izradi novu analizu';
-        $ai_plan_app_review_step_text = 'Tu pregledaš zadnje upute za promjene i odmah možeš pokrenuti novu analizu aplikacije.';
-        $ai_plan_app_review_step_meta_label = 'Nova analiza';
-        $ai_plan_app_review_step_meta_value = 'Možeš pokrenuti odmah';
+        $ai_plan_app_review_step_status_label = fcc_t('Dostupno sada');
+        $ai_plan_app_review_step_title = fcc_t('2. Pregledaj plan i izradi novu analizu');
+        $ai_plan_app_review_step_text = fcc_t('Tu pregledaš zadnje upute za promjene i odmah možeš pokrenuti novu analizu aplikacije.');
+        $ai_plan_app_review_step_meta_label = fcc_t('Nova analiza');
+        $ai_plan_app_review_step_meta_value = fcc_t('Možeš pokrenuti odmah');
         $ai_plan_app_review_step_meta_value_class = 'is-highlight';
     } elseif($data->latest_app_review && $data->app_review_is_locked) {
         $ai_plan_app_review_step_status_class = 'review-waiting';
-        $ai_plan_app_review_step_status_label = 'Plan spreman';
-        $ai_plan_app_review_step_title = '2. Pregledaj plan promjena aplikacije';
-        $ai_plan_app_review_step_text = 'Tu vidiš zadnju analizu i preporuke. Nova analiza se otključava svakih 7 dana.';
-        $ai_plan_app_review_step_meta_label = 'Nova analiza dostupna';
+        $ai_plan_app_review_step_status_label = fcc_t('Plan spreman');
+        $ai_plan_app_review_step_title = fcc_t('2. Pregledaj plan promjena aplikacije');
+        $ai_plan_app_review_step_text = fcc_t('Tu vidiš zadnju analizu i preporuke. Nova analiza se otključava svakih 7 dana.');
+        $ai_plan_app_review_step_meta_label = fcc_t('Nova analiza dostupna');
         $ai_plan_app_review_step_meta_value = !empty($data->app_review_next_at)
             ? \Altum\Date::get($data->app_review_next_at, 1)
-            : 'Čeka novi termin';
+            : fcc_t('Čeka novi termin');
         $ai_plan_app_review_step_meta_value_class = 'is-waiting';
     } elseif($data->latest_app_review) {
         $ai_plan_app_review_step_status_class = 'review-ready';
-        $ai_plan_app_review_step_status_label = 'Plan spreman';
-        $ai_plan_app_review_step_title = '2. Pregledaj plan promjena aplikacije';
-        $ai_plan_app_review_step_text = 'Ovdje ti je spremljen zadnji plan promjena i ulaz za novu analizu kada poželiš.';
+        $ai_plan_app_review_step_status_label = fcc_t('Plan spreman');
+        $ai_plan_app_review_step_title = fcc_t('2. Pregledaj plan promjena aplikacije');
+        $ai_plan_app_review_step_text = fcc_t('Ovdje ti je spremljen zadnji plan promjena i ulaz za novu analizu kada poželiš.');
         $ai_plan_app_review_step_meta_label = 'Zadnja analiza';
         $ai_plan_app_review_step_meta_value = !empty($data->latest_app_review['generated_at'])
             ? \Altum\Date::get($data->latest_app_review['generated_at'], 1)
-            : 'Spremno sada';
+            : fcc_t('Spremno sada');
     }
 
     $ai_plan_app_review_last_generated = !empty($data->latest_app_review['generated_at'])
@@ -1924,54 +1924,54 @@
     $ai_plan_onboarding_step_1_status_class = !$data->is_profile_complete ? 'current' : 'done';
     $ai_plan_onboarding_step_1_status_label = !$data->is_profile_complete ? 'Sada' : 'Gotovo';
     $ai_plan_onboarding_step_2_status_class = !$data->is_profile_complete ? 'locked' : (!empty($data->latest_app_review) ? 'done' : 'current');
-    $ai_plan_onboarding_step_2_status_label = !$data->is_profile_complete ? 'Čeka' : (!empty($data->latest_app_review) ? 'Gotovo' : 'Sada');
+    $ai_plan_onboarding_step_2_status_label = !$data->is_profile_complete ? fcc_t('Čeka') : (!empty($data->latest_app_review) ? 'Gotovo' : 'Sada');
     $ai_plan_onboarding_step_3_status_class = !$data->is_profile_complete ? 'locked' : (empty($data->latest_app_review) ? 'locked' : ((!$data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) ? 'locked' : (!$data->latest_weekly_checkin ? 'current' : 'done')));
-    $ai_plan_onboarding_step_3_status_label = !$data->is_profile_complete || empty($data->latest_app_review) || (!$data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) ? 'Čeka' : (!$data->latest_weekly_checkin ? 'Sada' : 'Gotovo');
+    $ai_plan_onboarding_step_3_status_label = !$data->is_profile_complete || empty($data->latest_app_review) || (!$data->is_weekly_plan_eligible && !$data->latest_weekly_checkin) ? fcc_t('Čeka') : (!$data->latest_weekly_checkin ? 'Sada' : 'Gotovo');
 
     $ai_plan_profile_card_status_class = 'done';
-    $ai_plan_profile_card_status_label = 'Profil spreman';
-    $ai_plan_profile_card_title = 'Profil i smjer rada';
-    $ai_plan_profile_card_text = 'Tu uređuješ cilj, publiku, fokus i smjer po kojem AI slaže ostale preporuke.';
-    $ai_plan_profile_card_meta = !empty($values['updated_at']) ? \Altum\Date::get($values['updated_at'], 1) : 'Spremno sada';
+    $ai_plan_profile_card_status_label = fcc_t('Profil spreman');
+    $ai_plan_profile_card_title = fcc_t('Profil i smjer rada');
+    $ai_plan_profile_card_text = fcc_t('Tu uređuješ cilj, publiku, fokus i smjer po kojem AI slaže ostale preporuke.');
+    $ai_plan_profile_card_meta = !empty($values['updated_at']) ? \Altum\Date::get($values['updated_at'], 1) : fcc_t('Spremno sada');
 
     $ai_plan_review_card_status_class = $ai_growth_intro_app_review ? 'review-ready' : (!$app_review_is_accessible ? 'locked' : (!$data->app_review_is_locked ? 'review-ready' : 'review-waiting'));
-    $ai_plan_review_card_status_label = $ai_growth_intro_app_review ? 'Početni unlock' : (!$app_review_is_accessible ? ($ai_growth_is_pro ? 'Čeka signal' : 'Samo za PRO') : (!$data->app_review_is_locked ? 'Dostupno sada' : 'Pregled spreman'));
-    $ai_plan_review_card_title = 'Analiza FCC aplikacije';
+    $ai_plan_review_card_status_label = $ai_growth_intro_app_review ? fcc_t('Početni unlock') : (!$app_review_is_accessible ? ($ai_growth_is_pro ? fcc_t('Čeka signal') : fcc_t('Samo za PRO')) : (!$data->app_review_is_locked ? fcc_t('Dostupno sada') : fcc_t('Pregled spreman')));
+    $ai_plan_review_card_title = fcc_t('Analiza FCC aplikacije');
     $ai_plan_review_card_text = $ai_growth_intro_app_review
-        ? 'Prva PRO analiza dostupna je odmah. Pokreni je sada kako bi AI i Coach dobili jasan plan promjena i bolju bazu za prvi tjedni plan.'
+        ? fcc_t('Prva PRO analiza dostupna je odmah. Pokreni je sada kako bi AI i Coach dobili jasan plan promjena i bolju bazu za prvi tjedni plan.')
         : (!$app_review_is_accessible
         ? ($ai_growth_is_pro
-            ? 'PRO je aktivan, ali analiza se otključava na 15+ klikova i kontakata u 30 dana.'
-            : 'AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa.')
+            ? fcc_t('PRO je aktivan, ali analiza se otključava na 15+ klikova i kontakata u 30 dana.')
+            : fcc_t('AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa.'))
         : (!$data->app_review_is_locked
-            ? 'Otvori zadnju analizu, pregledaj preporuke i po želji odmah pokreni novu.'
-            : 'Ovdje su spremljene zadnje preporuke, a nova analiza se otključava po isteku termina.'));
-    $ai_plan_review_card_last = $ai_plan_app_review_last_generated ?: 'Još nema analize';
+            ? fcc_t('Otvori zadnju analizu, pregledaj preporuke i po želji odmah pokreni novu.')
+            : fcc_t('Ovdje su spremljene zadnje preporuke, a nova analiza se otključava po isteku termina.')));
+    $ai_plan_review_card_last = $ai_plan_app_review_last_generated ?: fcc_t('Još nema analize');
     $ai_plan_review_card_next = $ai_growth_intro_app_review
-        ? 'Pokreni prvu analizu'
+        ? fcc_t('Pokreni prvu analizu')
         : (!$app_review_is_accessible
-        ? ($ai_growth_is_pro ? (nr($ai_growth_signal) . ' / ' . $ai_plan_unlock_target . ' signala') : 'Aktiviraj PRO')
+        ? ($ai_growth_is_pro ? (nr($ai_growth_signal) . ' / ' . $ai_plan_unlock_target . ' signala') : fcc_t('Aktiviraj PRO'))
         : (!$data->app_review_is_locked
-            ? 'Možeš pokrenuti odmah'
-            : (!empty($data->app_review_next_at) ? \Altum\Date::get($data->app_review_next_at, 1) : 'Čeka novi termin')));
+            ? fcc_t('Možeš pokrenuti odmah')
+            : (!empty($data->app_review_next_at) ? \Altum\Date::get($data->app_review_next_at, 1) : fcc_t('Čeka novi termin'))));
 
     $ai_plan_has_pending_outcome = !empty($data->latest_pending_outcome_plan);
     $ai_plan_weekly_card_status_class = $ai_plan_has_pending_outcome ? 'review-waiting' : ($data->latest_weekly_plan ? 'done' : 'current');
-    $ai_plan_weekly_card_status_label = $ai_plan_has_pending_outcome ? 'Zatvori tjedan' : ($data->latest_weekly_plan ? 'Zadnji plan' : 'U pripremi');
-    $ai_plan_weekly_card_title = 'Tjedni plan';
+    $ai_plan_weekly_card_status_label = $ai_plan_has_pending_outcome ? fcc_t('Zatvori tjedan') : ($data->latest_weekly_plan ? fcc_t('Zadnji plan') : fcc_t('U pripremi'));
+    $ai_plan_weekly_card_title = fcc_t('Tjedni plan');
     $ai_plan_weekly_card_text = $ai_plan_has_pending_outcome
-        ? 'Prije novog tjednog unosa ovdje prvo zatvaraš prošli tjedan i upisuješ što se stvarno dogodilo.'
+        ? fcc_t('Prije novog tjednog unosa ovdje prvo zatvaraš prošli tjedan i upisuješ što se stvarno dogodilo.')
         : ($data->latest_weekly_plan
-            ? 'Tu otvaraš plan za ovaj ciklus, pratiš fokus tjedna i dnevne zadatke.'
-            : 'Tjedni unos je spremljen. Ovdje ćeš vidjeti plan čim bude generiran.');
+            ? fcc_t('Tu otvaraš plan za ovaj ciklus, pratiš fokus tjedna i dnevne zadatke.')
+            : fcc_t('Tjedni unos je spremljen. Ovdje ćeš vidjeti plan čim bude generiran.'));
     $ai_plan_weekly_card_last = !empty($data->latest_weekly_plan['generated_at'])
         ? \Altum\Date::get($data->latest_weekly_plan['generated_at'], 1)
-        : (!empty($data->latest_weekly_checkin['submitted_at']) ? \Altum\Date::get($data->latest_weekly_checkin['submitted_at'], 1) : 'Još nema plana');
+        : (!empty($data->latest_weekly_checkin['submitted_at']) ? \Altum\Date::get($data->latest_weekly_checkin['submitted_at'], 1) : fcc_t('Još nema plana'));
     $ai_plan_weekly_card_next = $ai_plan_has_pending_outcome
-        ? 'Prvo spremi izvještaj'
+        ? fcc_t('Prvo spremi izvještaj')
         : (!empty($data->weekly_next_checkin_at)
         ? \Altum\Date::get($data->weekly_next_checkin_at, 1)
-        : 'Spremno sada');
+        : fcc_t('Spremno sada'));
     $ai_plan_weekly_block_url = $ai_plan_has_pending_outcome
         ? url('ai-plan?section=plan#ai-plan-weekly-outcome-start')
         : ($data->latest_weekly_plan ? $ai_plan_section_urls['plan'] : $ai_plan_section_urls['weekly']);
@@ -1987,49 +1987,49 @@
 
     <?= \Altum\Alerts::output_alerts() ?>
 
-    <div class="card ai-plan-card ai-plan-hero mb-4"><div class="card-body"><div class="row align-items-center"><div class="col-12 col-xl-8 mb-3 mb-xl-0"><div class="ai-plan-hero-copy"><div class="d-flex flex-wrap align-items-center mb-2" style="gap:.5rem;"><span class="ai-plan-chip active"><?= l('ai_plan.phase_label') ?> <?= $ai_plan_current_phase ?></span><span class="ai-plan-chip <?= $ai_plan_hero_status_class ?>"><?= $ai_plan_hero_status_label ?></span><?php if($data->latest_weekly_plan): ?><span class="ai-plan-chip success"><?= l('ai_plan.status_plan_ready') ?></span><?php elseif($data->weekly_is_locked && $data->latest_weekly_checkin): ?><span class="ai-plan-chip locked"><?= l('ai_plan.weekly_status_cooldown') ?></span><?php endif ?></div><h2 class="h4 mb-2"><?= $ai_plan_hero_title ?></h2><p class="text-muted mb-3"><?= $ai_plan_hero_text ?></p><?php if($data->is_profile_complete && $ai_growth_intro_cycle && !$data->latest_weekly_checkin): ?><div class="small text-muted mb-3"><?= empty($data->latest_app_review) ? 'Početni PRO unlock sada ti otvara prvu analizu aplikacije, a odmah nakon nje i prvi tjedni AI plan.' : 'Početna analiza je spremljena. Sada iskoristi prvi tjedni plan dok je početni PRO unlock još aktivan.' ?></div><?php elseif($data->is_profile_complete && !$data->is_weekly_plan_eligible): ?><div class="small text-muted mb-3"><?= $ai_growth_is_pro ? 'Za puni tjedni AI plan treba ti još ' . nr($ai_plan_signal_missing) . ' klikova, prijava i AI chat kontakata u zadnjih 30 dana.' : 'Za AI planove i analize aplikacije aktiviraj PRO paket.' ?></div><?php endif ?><a href="<?= $ai_plan_primary_cta_url ?>" class="btn btn-primary"><?= $ai_plan_primary_cta_label ?></a></div></div><div class="col-12 col-xl-4"><div class="ai-plan-card ai-plan-hero-summary p-3 h-100"><div class="ai-plan-stat-row"><span class="text-muted small">Klikovi, prijave i AI chat kontakti u 30 dana</span><strong><?= nr($ai_growth_signal) ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small">AI status</span><strong><?= $ai_plan_metric_unlock_value ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= $ai_plan_metric_next_label ?></span><strong><?= $ai_plan_metric_next_value ?></strong></div><div class="small text-muted mt-3 mb-0"><?= $ai_plan_metric_help_text ?></div></div></div></div></div></div>
+    <div class="card ai-plan-card ai-plan-hero mb-4"><div class="card-body"><div class="row align-items-center"><div class="col-12 col-xl-8 mb-3 mb-xl-0"><div class="ai-plan-hero-copy"><div class="d-flex flex-wrap align-items-center mb-2" style="gap:.5rem;"><span class="ai-plan-chip active"><?= l('ai_plan.phase_label') ?> <?= $ai_plan_current_phase ?></span><span class="ai-plan-chip <?= $ai_plan_hero_status_class ?>"><?= $ai_plan_hero_status_label ?></span><?php if($data->latest_weekly_plan): ?><span class="ai-plan-chip success"><?= l('ai_plan.status_plan_ready') ?></span><?php elseif($data->weekly_is_locked && $data->latest_weekly_checkin): ?><span class="ai-plan-chip locked"><?= l('ai_plan.weekly_status_cooldown') ?></span><?php endif ?></div><h2 class="h4 mb-2"><?= $ai_plan_hero_title ?></h2><p class="text-muted mb-3"><?= $ai_plan_hero_text ?></p><?php if($data->is_profile_complete && $ai_growth_intro_cycle && !$data->latest_weekly_checkin): ?><div class="small text-muted mb-3"><?= empty($data->latest_app_review) ? fcc_t('Početni PRO unlock sada ti otvara prvu analizu aplikacije, a odmah nakon nje i prvi tjedni AI plan.') : fcc_t('Početna analiza je spremljena. Sada iskoristi prvi tjedni plan dok je početni PRO unlock još aktivan.') ?></div><?php elseif($data->is_profile_complete && !$data->is_weekly_plan_eligible): ?><div class="small text-muted mb-3"><?= $ai_growth_is_pro ? fcc_t('Za puni tjedni AI plan treba ti još ') . nr($ai_plan_signal_missing) . fcc_t(' klikova, prijava i AI chat kontakata u zadnjih 30 dana.') : fcc_t('Za AI planove i analize aplikacije aktiviraj PRO paket.') ?></div><?php endif ?><a href="<?= $ai_plan_primary_cta_url ?>" class="btn btn-primary"><?= $ai_plan_primary_cta_label ?></a></div></div><div class="col-12 col-xl-4"><div class="ai-plan-card ai-plan-hero-summary p-3 h-100"><div class="ai-plan-stat-row"><span class="text-muted small"><?= htmlspecialchars(fcc_t('Klikovi, prijave i AI chat kontakti u 30 dana'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= nr($ai_growth_signal) ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= htmlspecialchars(fcc_t('AI status'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= $ai_plan_metric_unlock_value ?></strong></div><div class="ai-plan-stat-row"><span class="text-muted small"><?= $ai_plan_metric_next_label ?></span><strong><?= $ai_plan_metric_next_value ?></strong></div><div class="small text-muted mt-3 mb-0"><?= $ai_plan_metric_help_text ?></div></div></div></div></div></div>
 
             <div class="card ai-plan-card ai-plan-guide-card mb-4">
                 <div class="card-body">
                     <?php if(!$ai_plan_is_operational_mode): ?>
                         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
                             <div>
-                                <h2 class="h5 mb-1">Prvi prolaz kroz sustav</h2>
-                                <p class="text-muted mb-1">Prvo složi osnovu, zatim napravi analizu glavne aplikacije i pokreni prvi tjedan.</p>
-                                <p class="text-muted mb-0">Kad završiš ova 3 koraka, ovdje se otvara radni pregled analiza, plana i rezultata.</p>
+                                <h2 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Prvi prolaz kroz sustav'), ENT_QUOTES, 'UTF-8') ?></h2>
+                                <p class="text-muted mb-1"><?= htmlspecialchars(fcc_t('Prvo složi osnovu, zatim napravi analizu glavne aplikacije i pokreni prvi tjedan.'), ENT_QUOTES, 'UTF-8') ?></p>
+                                <p class="text-muted mb-0"><?= htmlspecialchars(fcc_t('Kad završiš ova 3 koraka, ovdje se otvara radni pregled analiza, plana i rezultata.'), ENT_QUOTES, 'UTF-8') ?></p>
                             </div>
                         </div>
 
                         <div class="ai-plan-step-grid">
                             <a href="<?= $ai_plan_step_profile_url ?>" class="ai-plan-step-card <?= $ai_plan_onboarding_step_1_status_class ?>">
                                 <span class="ai-plan-step-status <?= $ai_plan_onboarding_step_1_status_class ?>"><?= $ai_plan_onboarding_step_1_status_label ?></span>
-                                <div class="font-weight-bold">1. Postavi osnovu</div>
-                                <div class="text-muted small">AI prvo mora razumjeti što želiš postići, kome se obraćaš i koji ti je glavni fokus.</div>
+                                <div class="font-weight-bold"><?= htmlspecialchars(fcc_t('1. Postavi osnovu'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small"><?= htmlspecialchars(fcc_t('AI prvo mora razumjeti što želiš postići, kome se obraćaš i koji ti je glavni fokus.'), ENT_QUOTES, 'UTF-8') ?></div>
                             </a>
 
                             <a href="<?= htmlspecialchars($ai_plan_step_app_review_url, ENT_QUOTES, 'UTF-8') ?>" class="ai-plan-step-card <?= $ai_plan_onboarding_step_2_status_class ?> <?= $app_review_is_accessible ? '' : 'ai-plan-disabled-link disabled' ?>"<?= $app_review_is_accessible ? '' : ' data-tooltip title="' . htmlspecialchars($app_review_locked_reason, ENT_QUOTES, 'UTF-8') . '" onclick="event.preventDefault();"' ?>>
                                 <span class="ai-plan-step-status <?= $ai_plan_onboarding_step_2_status_class ?>"><?= $ai_plan_onboarding_step_2_status_label ?></span>
-                                <div class="font-weight-bold">2. Analiza glavne FCC aplikacije</div>
-                                <div class="text-muted small"><?= !$data->is_profile_complete ? 'Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.' : (!empty($data->latest_app_review) ? 'Analiza je napravljena i spremna za pregled preporuka.' : ($ai_growth_intro_app_review ? 'PRO je aktivan i početna analiza glavne FCC aplikacije dostupna ti je odmah.' : ($ai_growth_is_pro ? 'PRO je aktivan. Analiza glavne FCC aplikacije otključava se kad skupiš 15+ klikova i kontakata u zadnjih 30 dana.' : 'AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa ili triala.'))) ?></div>
+                                <div class="font-weight-bold"><?= htmlspecialchars(fcc_t('2. Analiza glavne FCC aplikacije'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small"><?= !$data->is_profile_complete ? fcc_t('Ovaj korak se otključava čim spremiš osnovu i odabereš glavni fokus.') : (!empty($data->latest_app_review) ? fcc_t('Analiza je napravljena i spremna za pregled preporuka.') : ($ai_growth_intro_app_review ? fcc_t('PRO je aktivan i početna analiza glavne FCC aplikacije dostupna ti je odmah.') : ($ai_growth_is_pro ? fcc_t('PRO je aktivan. Analiza glavne FCC aplikacije otključava se kad skupiš 15+ klikova i kontakata u zadnjih 30 dana.') : fcc_t('AI analiza aplikacije dostupna je samo unutar aktivnog PRO paketa ili triala.')))) ?></div>
                             </a>
 
                             <a href="<?= htmlspecialchars($ai_plan_step_weekly_url, ENT_QUOTES, 'UTF-8') ?>" class="ai-plan-step-card <?= $ai_plan_onboarding_step_3_status_class ?><?= $ai_plan_onboarding_step_3_status_class === 'locked' ? ' ai-plan-disabled-link disabled' : '' ?>"<?= $ai_plan_onboarding_step_3_status_class === 'locked' ? ' data-tooltip title="' . htmlspecialchars(l('ai_plan.onboarding_step_3_locked'), ENT_QUOTES, 'UTF-8') . '" onclick="event.preventDefault();"' : '' ?>>
                                 <span class="ai-plan-step-status <?= $ai_plan_onboarding_step_3_status_class ?>"><?= $ai_plan_onboarding_step_3_status_label ?></span>
-                                <div class="font-weight-bold">3. Pokreni prvi tjedan</div>
-                                <div class="text-muted small"><?= $ai_growth_is_pro ? ($ai_growth_intro_weekly ? 'VIP Coach je aktivan. Nakon prve analize odmah otključavaš i prvi tjedni AI plan, a poslije toga te Coach vodi prema 15+ u 30 dana.' : 'VIP Coach je aktivan jer imaš PRO. Kad skupiš 15+ klikova i kontakata u zadnjih 30 dana, otključavaš tjedni AI plan i AI analizu aplikacije jednom tjedno.') : 'Ispuni kratki tjedni unos i dobij jasan plan rada za sljedećih 7 dana. Za puni AI ciklus aktiviraj PRO ili trial.' ?></div>
+                                <div class="font-weight-bold"><?= htmlspecialchars(fcc_t('3. Pokreni prvi tjedan'), ENT_QUOTES, 'UTF-8') ?></div>
+                                <div class="text-muted small"><?= $ai_growth_is_pro ? ($ai_growth_intro_weekly ? fcc_t('VIP Coach je aktivan. Nakon prve analize odmah otključavaš i prvi tjedni AI plan, a poslije toga te Coach vodi prema 15+ u 30 dana.') : fcc_t('VIP Coach je aktivan jer imaš PRO. Kad skupiš 15+ klikova i kontakata u zadnjih 30 dana, otključavaš tjedni AI plan i AI analizu aplikacije jednom tjedno.')) : fcc_t('Ispuni kratki tjedni unos i dobij jasan plan rada za sljedećih 7 dana. Za puni AI ciklus aktiviraj PRO ili trial.') ?></div>
                             </a>
                         </div>
 
                         <div class="ai-plan-lock-box mt-3">
-                            <div class="font-weight-bold mb-1">Ne moraš sve odjednom</div>
-                            <div class="text-muted small mb-0">Fokusiraj se samo na sljedeći korak. Kad završiš prva 3 koraka, ovdje se automatski otvara radni pregled.</div>
+                            <div class="font-weight-bold mb-1"><?= htmlspecialchars(fcc_t('Ne moraš sve odjednom'), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Fokusiraj se samo na sljedeći korak. Kad završiš prva 3 koraka, ovdje se automatski otvara radni pregled.'), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
                     <?php else: ?>
                         <div class="d-flex justify-content-between align-items-start flex-wrap mb-3" style="gap:.75rem;">
                             <div>
-                                <h2 class="h5 mb-1">Radni pregled</h2>
-                                <p class="text-muted mb-1">Ovdje vidiš što je zadnje napravljeno, što možeš otvoriti sada i kada se otključava sljedeći termin.</p>
-                                <p class="text-muted mb-0">Klik na blok otvara detalje ispod. Status badge gore odmah pokazuje je li nešto spremno sada ili čeka novi termin.</p>
+                                <h2 class="h5 mb-1"><?= htmlspecialchars(fcc_t('Radni pregled'), ENT_QUOTES, 'UTF-8') ?></h2>
+                                <p class="text-muted mb-1"><?= htmlspecialchars(fcc_t('Ovdje vidiš što je zadnje napravljeno, što možeš otvoriti sada i kada se otključava sljedeći termin.'), ENT_QUOTES, 'UTF-8') ?></p>
+                                <p class="text-muted mb-0"><?= htmlspecialchars(fcc_t('Klik na blok otvara detalje ispod. Status badge gore odmah pokazuje je li nešto spremno sada ili čeka novi termin.'), ENT_QUOTES, 'UTF-8') ?></p>
                             </div>
                         </div>
 
@@ -2040,7 +2040,7 @@
                                 <div class="text-muted small"><?= $ai_plan_profile_card_text ?></div>
                                 <div class="ai-plan-step-meta">
                                     <div class="ai-plan-step-meta-row">
-                                        <span class="ai-plan-step-meta-label">Zadnje ažuriranje</span>
+                                        <span class="ai-plan-step-meta-label"><?= htmlspecialchars(fcc_t('Zadnje ažuriranje'), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="ai-plan-step-meta-value"><?= htmlspecialchars($ai_plan_profile_card_meta, ENT_QUOTES, 'UTF-8') ?></span>
                                     </div>
                                 </div>
@@ -2052,11 +2052,11 @@
                                 <div class="text-muted small"><?= $ai_plan_review_card_text ?></div>
                                 <div class="ai-plan-step-meta">
                                     <div class="ai-plan-step-meta-row">
-                                        <span class="ai-plan-step-meta-label">Zadnja analiza</span>
+                                        <span class="ai-plan-step-meta-label"><?= htmlspecialchars(fcc_t('Zadnja analiza'), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="ai-plan-step-meta-value"><?= htmlspecialchars($ai_plan_review_card_last, ENT_QUOTES, 'UTF-8') ?></span>
                                     </div>
                                     <div class="ai-plan-step-meta-row">
-                                        <span class="ai-plan-step-meta-label">Nova analiza</span>
+                                        <span class="ai-plan-step-meta-label"><?= htmlspecialchars(fcc_t('Nova analiza'), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="ai-plan-step-meta-value <?= !$data->app_review_is_locked ? 'is-highlight' : 'is-waiting' ?>"><?= htmlspecialchars($ai_plan_review_card_next, ENT_QUOTES, 'UTF-8') ?></span>
                                     </div>
                                 </div>
@@ -2068,11 +2068,11 @@
                                 <div class="text-muted small"><?= $ai_plan_weekly_card_text ?></div>
                                 <div class="ai-plan-step-meta">
                                     <div class="ai-plan-step-meta-row">
-                                        <span class="ai-plan-step-meta-label">Zadnji plan</span>
+                                        <span class="ai-plan-step-meta-label"><?= htmlspecialchars(fcc_t('Zadnji plan'), ENT_QUOTES, 'UTF-8') ?></span>
                                         <span class="ai-plan-step-meta-value"><?= htmlspecialchars($ai_plan_weekly_card_last, ENT_QUOTES, 'UTF-8') ?></span>
                                     </div>
                                     <div class="ai-plan-step-meta-row">
-                                        <span class="ai-plan-step-meta-label"><?= $ai_plan_has_pending_outcome ? 'Sljedeći korak' : 'Sljedeći unos' ?></span>
+                                        <span class="ai-plan-step-meta-label"><?= $ai_plan_has_pending_outcome ? fcc_t('Sljedeći korak') : fcc_t('Sljedeći unos') ?></span>
                                         <span class="ai-plan-step-meta-value <?= ($ai_plan_has_pending_outcome || !empty($data->weekly_next_checkin_at)) ? 'is-waiting' : 'is-highlight' ?>"><?= htmlspecialchars($ai_plan_weekly_card_next, ENT_QUOTES, 'UTF-8') ?></span>
                                     </div>
                                 </div>
@@ -2080,8 +2080,8 @@
                         </div>
 
                         <div class="ai-plan-lock-box mt-3">
-                            <div class="font-weight-bold mb-1">Sve je na jednom mjestu</div>
-                            <div class="text-muted small mb-0">Blokovi su sada radni centri. Otvori željeni blok, pregledaj zadnje preporuke i pokreni novu akciju kad status pokaže da je dostupna.</div>
+                            <div class="font-weight-bold mb-1"><?= htmlspecialchars(fcc_t('Sve je na jednom mjestu'), ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Blokovi su sada radni centri. Otvori željeni blok, pregledaj zadnje preporuke i pokreni novu akciju kad status pokaže da je dostupna.'), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
                     <?php endif ?>
                 </div>
@@ -2100,11 +2100,11 @@
 
                     <div class="form-group"><label class="font-weight-bold d-block"><?= l('ai_plan.active_channels') ?></label><div class="ai-plan-option-grid"><?php foreach($data->options['active_channels'] as $option): ?><div class="ai-plan-option"><input type="checkbox" id="active_channels_<?= $option ?>" name="active_channels[]" value="<?= $option ?>" <?= in_array($option, $values['active_channels'], true) ? 'checked="checked"' : null ?> /><label for="active_channels_<?= $option ?>"><?= l('ai_plan.option.active_channels.' . $option) ?></label></div><?php endforeach ?></div><?= \Altum\Alerts::output_field_error('active_channels') ?></div>
 
-                    <div class="form-row"><div class="col-12 col-md-6"><div class="form-group"><label for="available_time" class="font-weight-bold"><?= l('ai_plan.available_time') ?></label><select id="available_time" name="available_time" class="custom-select <?= \Altum\Alerts::has_field_errors('available_time') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['available_time'] as $option): ?><option value="<?= $option ?>" <?= $values['available_time'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.available_time.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('available_time') ?></div></div><div class="col-12 col-md-6"><div class="form-group"><label for="biggest_blocker" class="font-weight-bold"><?= l('ai_plan.biggest_blocker') ?></label><select id="biggest_blocker" name="biggest_blocker" class="custom-select <?= \Altum\Alerts::has_field_errors('biggest_blocker') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['biggest_blocker'] as $option): ?><option value="<?= $option ?>" <?= $values['biggest_blocker'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.biggest_blocker.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('biggest_blocker') ?></div></div></div>
+                    <div class="form-row"><div class="col-12 col-md-6"><div class="form-group"><label for="available_time" class="font-weight-bold"><?= l('ai_plan.available_time') ?></label><select data-is-not-custom-select id="available_time" name="available_time" class="custom-select <?= \Altum\Alerts::has_field_errors('available_time') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['available_time'] as $option): ?><option value="<?= $option ?>" <?= $values['available_time'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.available_time.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('available_time') ?></div></div><div class="col-12 col-md-6"><div class="form-group"><label for="biggest_blocker" class="font-weight-bold"><?= l('ai_plan.biggest_blocker') ?></label><select data-is-not-custom-select id="biggest_blocker" name="biggest_blocker" class="custom-select <?= \Altum\Alerts::has_field_errors('biggest_blocker') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['biggest_blocker'] as $option): ?><option value="<?= $option ?>" <?= $values['biggest_blocker'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.biggest_blocker.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('biggest_blocker') ?></div></div></div>
 
-                    <div class="form-row"><div class="col-12 col-md-6"><div class="form-group"><label for="communication_style" class="font-weight-bold"><?= l('ai_plan.communication_style') ?></label><select id="communication_style" name="communication_style" class="custom-select <?= \Altum\Alerts::has_field_errors('communication_style') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['communication_style'] as $option): ?><option value="<?= $option ?>" <?= $values['communication_style'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.communication_style.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('communication_style') ?></div></div><div class="col-12 col-md-6"><div class="form-group"><label for="follow_up_readiness" class="font-weight-bold"><?= l('ai_plan.follow_up_readiness') ?></label><select id="follow_up_readiness" name="follow_up_readiness" class="custom-select <?= \Altum\Alerts::has_field_errors('follow_up_readiness') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['follow_up_readiness'] as $option): ?><option value="<?= $option ?>" <?= $values['follow_up_readiness'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.follow_up_readiness.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('follow_up_readiness') ?></div></div></div>
+                    <div class="form-row"><div class="col-12 col-md-6"><div class="form-group"><label for="communication_style" class="font-weight-bold"><?= l('ai_plan.communication_style') ?></label><select data-is-not-custom-select id="communication_style" name="communication_style" class="custom-select <?= \Altum\Alerts::has_field_errors('communication_style') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['communication_style'] as $option): ?><option value="<?= $option ?>" <?= $values['communication_style'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.communication_style.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('communication_style') ?></div></div><div class="col-12 col-md-6"><div class="form-group"><label for="follow_up_readiness" class="font-weight-bold"><?= l('ai_plan.follow_up_readiness') ?></label><select data-is-not-custom-select id="follow_up_readiness" name="follow_up_readiness" class="custom-select <?= \Altum\Alerts::has_field_errors('follow_up_readiness') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['follow_up_readiness'] as $option): ?><option value="<?= $option ?>" <?= $values['follow_up_readiness'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.follow_up_readiness.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('follow_up_readiness') ?></div></div></div>
 
-                    <div class="form-group"><label for="weekly_change" class="font-weight-bold"><?= l('ai_plan.weekly_change') ?></label><select id="weekly_change" name="weekly_change" class="custom-select <?= \Altum\Alerts::has_field_errors('weekly_change') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['weekly_change'] as $option): ?><option value="<?= $option ?>" <?= $values['weekly_change'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.weekly_change.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('weekly_change') ?></div>
+                    <div class="form-group"><label for="weekly_change" class="font-weight-bold"><?= l('ai_plan.weekly_change') ?></label><select data-is-not-custom-select id="weekly_change" name="weekly_change" class="custom-select <?= \Altum\Alerts::has_field_errors('weekly_change') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->options['weekly_change'] as $option): ?><option value="<?= $option ?>" <?= $values['weekly_change'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.weekly_change.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('weekly_change') ?></div>
 
                     <div class="form-row"><div class="col-12 col-md-6"><div class="form-group"><label for="audience_focus" class="font-weight-bold"><?= l('ai_plan.audience_focus') ?></label><input id="audience_focus" type="text" name="audience_focus" class="form-control" maxlength="120" value="<?= htmlspecialchars($values['audience_focus'], ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('ai_plan.audience_focus_placeholder') ?>" /></div></div><div class="col-12 col-md-6"><div class="form-group"><label for="product_focus" class="font-weight-bold"><?= l('ai_plan.product_focus') ?></label><input id="product_focus" type="text" name="product_focus" class="form-control" maxlength="120" value="<?= htmlspecialchars($values['product_focus'], ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= l('ai_plan.product_focus_placeholder') ?>" /></div></div></div>
 
@@ -2128,7 +2128,7 @@
                     echo '<div class="card ai-plan-card ai-plan-tool-card"><div class="card-body"><div class="ai-plan-history-empty"><div class="font-weight-bold mb-1">'
                         . htmlspecialchars(l('ai_plan.optional_tool_title'), ENT_QUOTES, 'UTF-8')
                         . '</div><div class="small mb-0">'
-                        . htmlspecialchars('App Review sekcija trenutačno nije dostupna. Osvježi deploy paket i provjeri da je uključen AI Plan partial za App Review.', ENT_QUOTES, 'UTF-8')
+                        . htmlspecialchars(fcc_t('App Review sekcija trenutačno nije dostupna. Osvježi deploy paket i provjeri da je uključen AI Plan partial za App Review.'), ENT_QUOTES, 'UTF-8')
                         . '</div></div></div></div>';
                 }
             ?>
@@ -2175,7 +2175,7 @@
                 if($data->latest_weekly_checkin && !$data->latest_weekly_plan) $weekly_cycle_next_value = l('ai_plan.weekly_cycle_next_wait_plan');
                 if($data->latest_weekly_outcome) $weekly_cycle_next_value = l('ai_plan.weekly_cycle_next_done');
             ?>
-            <div class="card ai-plan-card ai-plan-form-card ai-plan-weekly-card"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;"><div><h2 class="h5 mb-1"><?= l('ai_plan.weekly_title') ?></h2><p class="text-muted mb-0"><?= $weekly_is_first_cycle ? l('ai_plan.weekly_text') : 'Prethodni ciklus je zatvoren. U ovom unosu postavljaš fokus za sljedećih 7 dana. Ako želiš, prije plana možeš prvo promijeniti Profil i smjer rada.' ?></p></div><?php if(!empty($data->latest_weekly_checkin['submitted_at'])): ?><div class="small text-muted"><?= l('ai_plan.last_updated') ?>: <?= \Altum\Date::get($data->latest_weekly_checkin['submitted_at'], 2) ?></div><?php endif ?></div>
+            <div class="card ai-plan-card ai-plan-form-card ai-plan-weekly-card"><div class="card-body"><div class="d-flex justify-content-between align-items-start mb-3 flex-wrap" style="gap:.75rem;"><div><h2 class="h5 mb-1"><?= l('ai_plan.weekly_title') ?></h2><p class="text-muted mb-0"><?= $weekly_is_first_cycle ? l('ai_plan.weekly_text') : fcc_t('Prethodni ciklus je zatvoren. U ovom unosu postavljaš fokus za sljedećih 7 dana. Ako želiš, prije plana možeš prvo promijeniti Profil i smjer rada.') ?></p></div><?php if(!empty($data->latest_weekly_checkin['submitted_at'])): ?><div class="small text-muted"><?= l('ai_plan.last_updated') ?>: <?= \Altum\Date::get($data->latest_weekly_checkin['submitted_at'], 2) ?></div><?php endif ?></div>
 
                 <?= $weekly_is_first_cycle ? $render_weekly_cycle_panel($weekly_cycle_steps, $weekly_cycle_next_value) : $render_weekly_refresh_panel($ai_plan_section_urls['profile']) ?>
 
@@ -2192,8 +2192,8 @@
                     <?php if(!$weekly_is_first_cycle && !empty($data->latest_weekly_outcome)): ?>
                         <?= $render_weekly_outcome_summary(
                             $data->latest_weekly_outcome,
-                            'Sažetak prošlotjednog izvještaja',
-                            'Prije ovog novog unosa ovdje vidiš što je spremljeno iz prošlog ciklusa. AI taj sažetak koristi za sljedeći plan.'
+                            fcc_t('Sažetak prošlotjednog izvještaja'),
+                            fcc_t('Prije ovog novog unosa ovdje vidiš što je spremljeno iz prošlog ciklusa. AI taj sažetak koristi za sljedeći plan.')
                         ) ?>
                     <?php endif ?>
 
@@ -2201,16 +2201,16 @@
                         <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
 
                         <div class="form-row">
-                            <div class="col-12 col-md-6"><div class="form-group"><label for="weekly_priority" class="font-weight-bold"><?= l('ai_plan.weekly_priority') ?></label><select id="weekly_priority" name="weekly_priority" class="custom-select <?= \Altum\Alerts::has_field_errors('weekly_priority') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['weekly_priority'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['weekly_priority'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.weekly_priority.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('weekly_priority') ?></div></div>
-                            <div class="col-12 col-md-6"><div class="form-group"><label for="weekly_energy" class="font-weight-bold"><?= l('ai_plan.weekly_energy') ?></label><select id="weekly_energy" name="weekly_energy" class="custom-select <?= \Altum\Alerts::has_field_errors('weekly_energy') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['weekly_energy'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['weekly_energy'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.weekly_energy.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('weekly_energy') ?></div></div>
+                            <div class="col-12 col-md-6"><div class="form-group"><label for="weekly_priority" class="font-weight-bold"><?= l('ai_plan.weekly_priority') ?></label><select data-is-not-custom-select id="weekly_priority" name="weekly_priority" class="custom-select <?= \Altum\Alerts::has_field_errors('weekly_priority') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['weekly_priority'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['weekly_priority'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.weekly_priority.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('weekly_priority') ?></div></div>
+                            <div class="col-12 col-md-6"><div class="form-group"><label for="weekly_energy" class="font-weight-bold"><?= l('ai_plan.weekly_energy') ?></label><select data-is-not-custom-select id="weekly_energy" name="weekly_energy" class="custom-select <?= \Altum\Alerts::has_field_errors('weekly_energy') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['weekly_energy'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['weekly_energy'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.weekly_energy.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('weekly_energy') ?></div></div>
                         </div>
 
                         <div class="form-row">
-                            <div class="col-12 col-md-6"><div class="form-group"><label for="content_commitment" class="font-weight-bold"><?= l('ai_plan.content_commitment') ?></label><select id="content_commitment" name="content_commitment" class="custom-select <?= \Altum\Alerts::has_field_errors('content_commitment') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['content_commitment'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['content_commitment'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.content_commitment.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('content_commitment') ?></div></div>
-                            <div class="col-12 col-md-6"><div class="form-group"><label for="follow_up_volume" class="font-weight-bold"><?= l('ai_plan.follow_up_volume') ?></label><select id="follow_up_volume" name="follow_up_volume" class="custom-select <?= \Altum\Alerts::has_field_errors('follow_up_volume') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['follow_up_volume'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['follow_up_volume'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.follow_up_volume.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('follow_up_volume') ?></div></div>
+                            <div class="col-12 col-md-6"><div class="form-group"><label for="content_commitment" class="font-weight-bold"><?= l('ai_plan.content_commitment') ?></label><select data-is-not-custom-select id="content_commitment" name="content_commitment" class="custom-select <?= \Altum\Alerts::has_field_errors('content_commitment') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['content_commitment'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['content_commitment'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.content_commitment.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('content_commitment') ?></div></div>
+                            <div class="col-12 col-md-6"><div class="form-group"><label for="follow_up_volume" class="font-weight-bold"><?= l('ai_plan.follow_up_volume') ?></label><select data-is-not-custom-select id="follow_up_volume" name="follow_up_volume" class="custom-select <?= \Altum\Alerts::has_field_errors('follow_up_volume') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['follow_up_volume'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['follow_up_volume'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.follow_up_volume.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('follow_up_volume') ?></div></div>
                         </div>
 
-                        <div class="form-group"><label for="ai_need" class="font-weight-bold"><?= l('ai_plan.ai_need') ?></label><select id="ai_need" name="ai_need" class="custom-select <?= \Altum\Alerts::has_field_errors('ai_need') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['ai_need'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['ai_need'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.ai_need.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('ai_need') ?></div>
+                        <div class="form-group"><label for="ai_need" class="font-weight-bold"><?= l('ai_plan.ai_need') ?></label><select data-is-not-custom-select id="ai_need" name="ai_need" class="custom-select <?= \Altum\Alerts::has_field_errors('ai_need') ? 'is-invalid' : null ?>"><option value=""><?= l('global.choose') ?></option><?php foreach($data->weekly_options['ai_need'] as $option): ?><option value="<?= $option ?>" <?= $weekly_values['ai_need'] === $option ? 'selected="selected"' : null ?>><?= l('ai_plan.option.ai_need.' . $option) ?></option><?php endforeach ?></select><?= \Altum\Alerts::output_field_error('ai_need') ?></div>
 
                         <div class="form-group"><label for="adaptive_answer" class="font-weight-bold"><?= $data->adaptive_question['label'] ?></label><textarea id="adaptive_answer" name="adaptive_answer" class="form-control <?= \Altum\Alerts::has_field_errors('adaptive_answer') ? 'is-invalid' : null ?>" rows="3" maxlength="1600" placeholder="<?= $data->adaptive_question['placeholder'] ?>"><?= htmlspecialchars($weekly_values['adaptive_answer'], ENT_QUOTES, 'UTF-8') ?></textarea><?= \Altum\Alerts::output_field_error('adaptive_answer') ?></div>
 
@@ -2233,14 +2233,14 @@
 
                 <?php if($weekly_requires_closing_report): ?>
                     <div class="ai-plan-review-highlight mb-3">
-                        <div class="font-weight-bold mb-2">Prvo zatvori prošli tjedan</div>
-                        <div class="text-muted small mb-0">Prije novog tjednog unosa trebaš kratko upisati što se stvarno dogodilo. Tek nakon toga otvara se sljedeći tjedni ciklus.</div>
+                        <div class="font-weight-bold mb-2"><?= htmlspecialchars(fcc_t('Prvo zatvori prošli tjedan'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Prije novog tjednog unosa trebaš kratko upisati što se stvarno dogodilo. Tek nakon toga otvara se sljedeći tjedni ciklus.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
 
                     <?= $render_weekly_outcome_form(
                         $ai_plan_section_urls['plan'],
                         $data->latest_pending_outcome ?? null,
-                        'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
+                        fcc_t('Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.'),
                         $data->latest_pending_outcome_plan ?? null,
                         [
                             'selected_link_id' => (int) ($data->app_review_selected_link_id ?? 0),
@@ -2310,14 +2310,14 @@
 
                 <?php if($plan_requires_closing_report): ?>
                     <div class="ai-plan-review-highlight mb-3" id="ai-plan-weekly-outcome-start">
-                        <div class="font-weight-bold mb-2">Prvo zatvori prošli tjedan</div>
-                        <div class="text-muted small mb-0">Prije novog tjednog unosa ovdje kratko upiši što je stvarno prošlo, što te kočilo i što mijenjaš dalje. Nakon spremanja izvještaja otvara ti se novi tjedni unos.</div>
+                        <div class="font-weight-bold mb-2"><?= htmlspecialchars(fcc_t('Prvo zatvori prošli tjedan'), ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="text-muted small mb-0"><?= htmlspecialchars(fcc_t('Prije novog tjednog unosa ovdje kratko upiši što je stvarno prošlo, što te kočilo i što mijenjaš dalje. Nakon spremanja izvještaja otvara ti se novi tjedni unos.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
 
                     <?= $render_weekly_outcome_form(
                         $ai_plan_section_urls['plan'],
                         $data->latest_pending_outcome ?? null,
-                        'Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.',
+                        fcc_t('Nakon spremanja izvještaja otvara se novi tjedni unos za sljedeći plan.'),
                         $data->latest_pending_outcome_plan ?? null,
                         [
                             'selected_link_id' => (int) ($data->app_review_selected_link_id ?? 0),

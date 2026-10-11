@@ -1,0 +1,292 @@
+{
+  "uploads/main/e0a45720cb85eeadcdb5f7fdb4041d10.png": {
+    "path": "uploads/fcc-optimized/d809155c994f2e88ad993523.webp",
+    "original_bytes": 2166083,
+    "bytes": 90518,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "1335566f957704b8e55cd8a50eb4af461078f99d4c155854f0b52374f64e1021"
+  },
+  "uploads/blog/7e87f6e09197a3746b3585aca4cf85b6.jpeg": {
+    "path": "uploads/fcc-optimized/69c9a6e8ab6a9e013b2ab037.webp",
+    "original_bytes": 165870,
+    "bytes": 83174,
+    "width": 800,
+    "height": 533,
+    "original_width": 800,
+    "original_height": 533,
+    "source_sha256": "88a382fe79a299e4015a668567a868de03cd1df8523415f1eb1b6524a88330aa"
+  },
+  "uploads/avatars/d28cc704398c14ff91b63b422626b8b6.jpg": {
+    "path": "uploads/fcc-optimized/cbca5c494ce8a1e17a5f9f26.webp",
+    "original_bytes": 248229,
+    "bytes": 14092,
+    "width": 320,
+    "height": 320,
+    "original_width": 1285,
+    "original_height": 1285,
+    "source_sha256": "2f68c50268631678dc575279f6dd4bf58e8a505356faecdabb2fd09c40a81214"
+  },
+  "uploads/blog/83526333b0dcb2478695148159c15e4b.png": {
+    "path": "uploads/fcc-optimized/011ae089a378989003111ec5.webp",
+    "original_bytes": 2570696,
+    "bytes": 202108,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "02febb695b2f1f0e46db89f89a2b6f5b62deab992559d289c88ebfd2138c0130"
+  },
+  "uploads/avatars/ce8e307842c0d2689978931eaf267eb5.jpg": {
+    "path": "uploads/fcc-optimized/0c627c3fdde70d86a35934d4.webp",
+    "original_bytes": 980707,
+    "bytes": 14408,
+    "width": 320,
+    "height": 320,
+    "original_width": 2230,
+    "original_height": 2230,
+    "source_sha256": "a24fb8f03febe2073aa09867f6b53d85f2ca6db4d77092fc0e6a4d86757166ba"
+  },
+  "uploads/avatars/1690edfaa292c951142b19f724f32f8c.png": {
+    "path": "uploads/fcc-optimized/888e1ae24183e3601a7cd0bb.webp",
+    "original_bytes": 220081,
+    "bytes": 10442,
+    "width": 320,
+    "height": 320,
+    "original_width": 500,
+    "original_height": 500,
+    "source_sha256": "2f3c67520e42f8806db95209744e52270644a0d0f21ce005207c19ba681d7582"
+  },
+  "uploads/blog/d6d9887c62e82582195f77f151bf986f.png": {
+    "path": "uploads/fcc-optimized/b282a68e363eb019299a88ad.webp",
+    "original_bytes": 156371,
+    "bytes": 27240,
+    "width": 540,
+    "height": 234,
+    "original_width": 540,
+    "original_height": 234,
+    "source_sha256": "e504b8e69d4104d435e5f9923c46c0903509ac0fdf27f4f1489550293f803b0e"
+  },
+  "themes/altum/assets/images/fcc-preporuka-launcher.png": {
+    "path": "uploads/fcc-optimized/9628842f98e69863dc41611e.webp",
+    "original_bytes": 206974,
+    "bytes": 32318,
+    "width": 768,
+    "height": 512,
+    "original_width": 768,
+    "original_height": 512,
+    "source_sha256": "30c9cd5302f9f891f94197b784b25888b2338332f965e2b4272078338e363efa"
+  },
+  "uploads/main/ai_asistenti_za_preporuku.png": {
+    "path": "uploads/fcc-optimized/bdc3a7ea7e109de8f21064ad.webp",
+    "original_bytes": 2318173,
+    "bytes": 116372,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "c3a298841b4ffbe00a58dd5b76b70d2d815f69d909c644d6a36870aa2006c261"
+  },
+  "uploads/avatars/ce9236d9dc7aff31a370e4745f9c7ec5.jpg": {
+    "path": "uploads/fcc-optimized/695534821a19bf0d874a2d59.webp",
+    "original_bytes": 792335,
+    "bytes": 7684,
+    "width": 256,
+    "height": 320,
+    "original_width": 2304,
+    "original_height": 2880,
+    "source_sha256": "a08df70f90c7599fe9aef10e62e8fa746edc1175db0d96ec4ede603b2ac9f28c"
+  },
+  "uploads/main/0bebc042dd971d0274181c4ed0a42063.png": {
+    "path": "uploads/fcc-optimized/7a2b6fea6d01d951e969b120.webp",
+    "original_bytes": 1653763,
+    "bytes": 78750,
+    "width": 900,
+    "height": 1600,
+    "original_width": 1080,
+    "original_height": 1920,
+    "source_sha256": "48687afb83ab7e81a541fbb15408504849a53778aa132c4b0dba3f0b932e3eca"
+  },
+  "uploads/blog/3fb555077cc8ecc2670dcaf89f467b10.jpeg": {
+    "path": "uploads/fcc-optimized/f78c094fe453430c4245041b.webp",
+    "original_bytes": 147055,
+    "bytes": 69944,
+    "width": 800,
+    "height": 533,
+    "original_width": 800,
+    "original_height": 533,
+    "source_sha256": "fc7ef887bf72212a96d2b1d3847e3b6d78ccff4bd460656863423581929faae4"
+  },
+  "uploads/main/b05bf64d8c40629b4aa1c165d3710773.png": {
+    "path": "uploads/fcc-optimized/87d79347aa5a8dfcc8b30c57.webp",
+    "original_bytes": 55426,
+    "bytes": 26902,
+    "width": 1160,
+    "height": 300,
+    "original_width": 1160,
+    "original_height": 300,
+    "source_sha256": "e9f8b510170ab2faaa21c1eadf8f0352b7c921625e7d690432f1bafb901a2361"
+  },
+  "uploads/blog/c3fc2a1f603b924ca96a788847f3c0df.png": {
+    "path": "uploads/fcc-optimized/110d34aaa8433a1cfa87a3bc.webp",
+    "original_bytes": 174996,
+    "bytes": 31336,
+    "width": 540,
+    "height": 234,
+    "original_width": 540,
+    "original_height": 234,
+    "source_sha256": "8b97c7a64c83cb9c56628a15ff93c33842985fe4f9fb0f80b8e1cd054b31666a"
+  },
+  "uploads/main/13b1c2673f7f6575b655e1fbb1761e2c.png": {
+    "path": "uploads/fcc-optimized/c81c823bc9d40a16248ad6f0.webp",
+    "original_bytes": 1757970,
+    "bytes": 90758,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "355b2368995b24c79dcfa24f09307867bbcbdfadc50a0c5b18ff045f66845e00"
+  },
+  "uploads/main/e746a8a07c742a820affab371826be0d.png": {
+    "path": "uploads/fcc-optimized/e1b50b049b99f27be5a9a364.webp",
+    "original_bytes": 1529872,
+    "bytes": 61886,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "8a5e38f0026be09081fa5a4e58e53cd5e1a04ba2e6c0be4946b181cde3a066fc"
+  },
+  "uploads/blog/3270ffc9dcd6a709c7fb8d0a227b9290.jpeg": {
+    "path": "uploads/fcc-optimized/30a271954f4ebe9f0aa43722.webp",
+    "original_bytes": 137314,
+    "bytes": 63096,
+    "width": 800,
+    "height": 533,
+    "original_width": 800,
+    "original_height": 533,
+    "source_sha256": "a178bd2f87a01ffd18d6e37a251e91de8068cab2230bf1664d3a12b4523a120c"
+  },
+  "uploads/blog/bdeb452f6c37091daac04b222da5ab74.png": {
+    "path": "uploads/fcc-optimized/ad9e1407a44b67b5ac93d4ec.webp",
+    "original_bytes": 71031,
+    "bytes": 11896,
+    "width": 540,
+    "height": 185,
+    "original_width": 540,
+    "original_height": 185,
+    "source_sha256": "5f8cd52758f1f58707b277b101b81fba63afdfc678b66faa148a32c7165c1f29"
+  },
+  "uploads/main/ae6da052d82ea916cb07433355cbd506.png": {
+    "path": "uploads/fcc-optimized/4c1d4db03387b74be3a78b96.webp",
+    "original_bytes": 1235592,
+    "bytes": 58686,
+    "width": 900,
+    "height": 1600,
+    "original_width": 1080,
+    "original_height": 1920,
+    "source_sha256": "9efd7ff29db7ba876ea95aadd6f3ec44c2d905cc96c3669518beddb2d59c8249"
+  },
+  "uploads/main/47adc7e89821e2b10c31146dbeb93a90.png": {
+    "path": "uploads/fcc-optimized/3f844dccebb389ee7da5e587.webp",
+    "original_bytes": 1868264,
+    "bytes": 82542,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "379323f095d073a96fad6cfc9b622ae04ee0243df30c62d99f0b47d9feedfa75"
+  },
+  "uploads/main/6131693c9902d4f4c591955acd035a83.png": {
+    "path": "uploads/fcc-optimized/2092b4238b54bda6572c1b69.webp",
+    "original_bytes": 2013764,
+    "bytes": 85750,
+    "width": 1280,
+    "height": 853,
+    "original_width": 1536,
+    "original_height": 1024,
+    "source_sha256": "a15a2772a27d88bc4219eac8ed1c67103eb8fc0b5021fcf96c637412ec3e4766"
+  },
+  "uploads/avatars/dc1a8df463b316ffa1fea466250019ff.jpg": {
+    "path": "uploads/fcc-optimized/ad20ad0bced4959f88149671.webp",
+    "original_bytes": 80666,
+    "bytes": 11140,
+    "width": 320,
+    "height": 320,
+    "original_width": 945,
+    "original_height": 945,
+    "source_sha256": "9d245701c0241aa772454cf97ff53f8ac44f770c3160b3fe56ab50c621fcbc8e"
+  },
+  "uploads/blog/33425aaba2473df284a6e73ad553b1da.jpeg": {
+    "path": "uploads/fcc-optimized/daeaa315341277807a2e4114.webp",
+    "original_bytes": 148359,
+    "bytes": 69072,
+    "width": 800,
+    "height": 533,
+    "original_width": 800,
+    "original_height": 533,
+    "source_sha256": "33e90a2efbddf849b40f8eec9ab0f85af73ec9f7fe050e5d39ae9fe2565399da"
+  },
+  "uploads/avatars/0af9c3883e1746a91b2698d72b619667.png": {
+    "path": "uploads/fcc-optimized/6149868c7e419d1e7905209b.webp",
+    "original_bytes": 319038,
+    "bytes": 6432,
+    "width": 320,
+    "height": 320,
+    "original_width": 864,
+    "original_height": 864,
+    "source_sha256": "5bc3db548231c73e43b052d269f8291c255d96aa4ac276bfc8402f5266ebabea"
+  },
+  "uploads/blog/0a4c22c79c0079c24c3bdd1affbbb3de.jpeg": {
+    "path": "uploads/fcc-optimized/8a558b3f389c3c934699d566.webp",
+    "original_bytes": 133115,
+    "bytes": 57770,
+    "width": 800,
+    "height": 533,
+    "original_width": 800,
+    "original_height": 533,
+    "source_sha256": "0a5d1afd94e6804df39f6eb18db8e1e6860a1c996f430af28be7abe2ad93c91e"
+  },
+  "uploads/blog/5f281fd1865b4676c3d3c5b41610e48c.jpeg": {
+    "path": "uploads/fcc-optimized/f839b454a2106c98232723b7.webp",
+    "original_bytes": 145566,
+    "bytes": 67572,
+    "width": 800,
+    "height": 533,
+    "original_width": 800,
+    "original_height": 533,
+    "source_sha256": "b547db8c5ada5234f011b94fbad575b52ac783df74407235bc3b9ff805737a9b"
+  },
+  "uploads/blog/4b907ebdffecda067d03bdb3726b20df.png": {
+    "path": "uploads/fcc-optimized/90f9ee77c4b9637950124e5d.webp",
+    "original_bytes": 77160,
+    "bytes": 10536,
+    "width": 540,
+    "height": 234,
+    "original_width": 540,
+    "original_height": 234,
+    "source_sha256": "7c74b468bad84abf28de773709fd710c5437e2e9b8082de8f355bf156ea72dd2"
+  },
+  "uploads/blog/052922c218534cfcdfb6ad569e830f50.png": {
+    "path": "uploads/fcc-optimized/74b585b6bc09c9e4f431e6c0.webp",
+    "original_bytes": 127072,
+    "bytes": 22854,
+    "width": 540,
+    "height": 234,
+    "original_width": 540,
+    "original_height": 234,
+    "source_sha256": "a0629a3c2ac8085069e0f897f8233575483f24d5f336da44e45280baa8cbd283"
+  },
+  "uploads/blog/8ebdffa8ba0fb7b73b35a2fd060714e2.png": {
+    "path": "uploads/fcc-optimized/64c0232a4a9dd35b3c6c21e9.webp",
+    "original_bytes": 80303,
+    "bytes": 11274,
+    "width": 540,
+    "height": 234,
+    "original_width": 540,
+    "original_height": 234,
+    "source_sha256": "cc4ef5c45b96e5023bffe689f280ce20a416c2ce5001a0c16015190de90496c8"
+  }
+}

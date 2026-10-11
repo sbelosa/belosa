@@ -74,14 +74,14 @@
             <div class="p-2 col-6 h-100">
                 <label class="btn btn-light btn-block font-size-small mb-0 text-truncate active">
                     <input type="radio" name="unit" value="celsius" class="custom-control-input" <?= $row->settings->unit == 'celsius' ? 'checked="checked"' : null ?> required="required" />
-                    Celsius
+                    <?= htmlspecialchars(fcc_t('Celsius'), ENT_QUOTES, 'UTF-8') ?>
                 </label>
             </div>
 
             <div class="p-2 col-6 h-100">
                 <label class="btn btn-light btn-block font-size-small mb-0 text-truncate">
                     <input type="radio" name="unit" value="fahrenheit" class="custom-control-input" <?= $row->settings->unit == 'fahrenheit' ? 'checked="checked"' : null ?> required="required" />
-                    Fahrenheit
+                    <?= htmlspecialchars(fcc_t('Fahrenheit'), ENT_QUOTES, 'UTF-8') ?>
                 </label>
             </div>
         </div>
@@ -304,7 +304,7 @@
         <div class="form-group">
             <label for="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-server fa-sm text-muted mr-1"></i> <?= l('biolink_link.display_operating_systems') ?></label>
             <select id="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>" name="display_operating_systems[]" class="custom-select" multiple="multiple">
-                <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                     <option value="<?= $os_name ?>" <?= in_array($os_name, $row->settings->display_operating_systems ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                 <?php endforeach ?>
             </select>

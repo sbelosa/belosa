@@ -26,6 +26,10 @@ trait Paramsable {
         /* Make the params available to the Controller */
         foreach($params as $key => $value) {
 
+            /* Array casts encode private/protected properties with NUL bytes.
+             * They are controller internals, never view parameters. */
+            if(str_contains((string) $key, "\0")) continue;
+
             /* Make sure they are not main keys */
             if(in_array($key, ['view', 'view_path'])) continue;
 

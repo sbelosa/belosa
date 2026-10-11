@@ -34,7 +34,7 @@ function forever_business_ensure_tables(): void {
     $schema_lock_result = database()->query("SELECT GET_LOCK('{$schema_lock_name}', 20) AS `acquired`");
     $schema_lock_row = $schema_lock_result ? $schema_lock_result->fetch_assoc() : null;
     if((int) ($schema_lock_row['acquired'] ?? 0) !== 1) {
-        throw new \RuntimeException('Forever Business schema provisioning is busy; try again shortly.');
+        throw new \RuntimeException(fcc_t('Forever Business schema provisioning is busy; try again shortly.'));
     }
 
     try {
@@ -344,7 +344,7 @@ function forever_business_ensure_tables(): void {
      * NULL until they are classified once from the complete evidence below. */
     $vip_enrollment_columns_result = database()->query("SHOW COLUMNS FROM `forever_business_vip_enrollments`");
     if(!$vip_enrollment_columns_result) {
-        throw new \RuntimeException('Forever Business VIP enrollment columns could not be audited.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP enrollment columns could not be audited.'));
     }
     $vip_enrollment_columns = [];
     while($vip_enrollment_column = $vip_enrollment_columns_result->fetch_assoc()) {
@@ -368,7 +368,7 @@ function forever_business_ensure_tables(): void {
     }
     if(!$vip_enrollment_verify_result
         || !isset($vip_enrollment_verify['starting_track_key'], $vip_enrollment_verify['starting_track_reason'], $vip_enrollment_verify['starting_track_decided_at'])) {
-        throw new \RuntimeException('Forever Business VIP starting-track columns could not be verified.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP starting-track columns could not be verified.'));
     }
 
     /* `NULL` means FLP360 has not supplied an official 4 CC result for this
@@ -378,7 +378,7 @@ function forever_business_ensure_tables(): void {
     $four_cc_column_result = database()->query("SHOW COLUMNS FROM `forever_business_metrics` LIKE 'is_4cc_active'");
     $four_cc_column = $four_cc_column_result ? $four_cc_column_result->fetch_assoc() : null;
     if(!$four_cc_column) {
-        throw new \RuntimeException('Forever Business 4 CC signal column could not be verified.');
+        throw new \RuntimeException(fcc_t('Forever Business 4 CC signal column could not be verified.'));
     }
     if($four_cc_column && mb_strtoupper((string) ($four_cc_column['Null'] ?? 'NO')) !== 'YES') {
         db()->rawQuery("ALTER TABLE `forever_business_metrics`
@@ -387,7 +387,7 @@ function forever_business_ensure_tables(): void {
         $four_cc_verify_result = database()->query("SHOW COLUMNS FROM `forever_business_metrics` LIKE 'is_4cc_active'");
         $four_cc_verify = $four_cc_verify_result ? $four_cc_verify_result->fetch_assoc() : null;
         if(!$four_cc_verify || mb_strtoupper((string) ($four_cc_verify['Null'] ?? 'NO')) !== 'YES') {
-            throw new \RuntimeException('Forever Business 4 CC signal column must allow NULL before imports can continue.');
+            throw new \RuntimeException(fcc_t('Forever Business 4 CC signal column must allow NULL before imports can continue.'));
         }
     }
 
@@ -395,7 +395,7 @@ function forever_business_ensure_tables(): void {
      * every historical completion remains valid and reportable. */
     $outcome_columns_result = database()->query("SHOW COLUMNS FROM `forever_business_daily_outcomes`");
     if(!$outcome_columns_result) {
-        throw new \RuntimeException('Forever Business outcome columns could not be audited.');
+        throw new \RuntimeException(fcc_t('Forever Business outcome columns could not be audited.'));
     }
     $outcome_columns = [];
     while($outcome_columns_result && $outcome_column = $outcome_columns_result->fetch_assoc()) {
@@ -431,7 +431,7 @@ function forever_business_ensure_tables(): void {
                 WHEN `action_key` = 'vip26_activator_d01' THEN NULL
                 WHEN `action_key` = 'vip26_activator_d01_biolink' THEN 1
                 WHEN `action_key` <> 'vip26_activator_d01'
-                 AND `action_key` REGEXP '^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[12][0-9]|30)$'
+                 AND `action_key` REGEXP '^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[1-5][0-9]|60)$'
                     THEN CAST(RIGHT(`action_key`, 2) AS UNSIGNED)
                 ELSE NULL
             END,
@@ -446,12 +446,12 @@ function forever_business_ensure_tables(): void {
             END
         WHERE (`action_key` IN ('vip26_activator_d01', 'vip26_activator_d01_biolink')
                OR (`action_key` <> 'vip26_activator_d01'
-                   AND `action_key` REGEXP '^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[12][0-9]|30)$'))
+                   AND `action_key` REGEXP '^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[1-5][0-9]|60)$'))
           AND (`action_key` = 'vip26_activator_d01'
                OR `sequence_position` IS NULL
                OR COALESCE(`outcome_type`, '') = '')");
     if(!$backfilled_sequence_positions) {
-        throw new \RuntimeException('Forever Business per-level outcome positions could not be backfilled.');
+        throw new \RuntimeException(fcc_t('Forever Business per-level outcome positions could not be backfilled.'));
     }
 
     /* VIP eligibility and CC remain attached to the Forever ID, while task
@@ -478,12 +478,12 @@ function forever_business_ensure_tables(): void {
         SET `outcome`.`recorded_by_user_id` = `unique_link`.`user_id`
         WHERE (`outcome`.`recorded_by_user_id` IS NULL OR `outcome`.`recorded_by_user_id` = 0)");
     if(!$backfilled_outcomes) {
-        throw new \RuntimeException('Forever Business participant backfill could not be completed safely.');
+        throw new \RuntimeException(fcc_t('Forever Business participant backfill could not be completed safely.'));
     }
 
     $outcome_indexes_result = database()->query("SHOW INDEX FROM `forever_business_daily_outcomes`");
     if(!$outcome_indexes_result) {
-        throw new \RuntimeException('Forever Business outcome indexes could not be audited.');
+        throw new \RuntimeException(fcc_t('Forever Business outcome indexes could not be audited.'));
     }
     $outcome_indexes = [];
     while($outcome_index = $outcome_indexes_result->fetch_assoc()) {
@@ -517,7 +517,7 @@ function forever_business_ensure_tables(): void {
     }
     if(!$outcome_columns_verify_result
         || !isset($outcome_columns_verify['result_type'], $outcome_columns_verify['difficulty'], $outcome_columns_verify['needs_help'], $outcome_columns_verify['completion_mode'], $outcome_columns_verify['sequence_position'])) {
-        throw new \RuntimeException('Forever Business structured outcome columns could not be provisioned.');
+        throw new \RuntimeException(fcc_t('Forever Business structured outcome columns could not be provisioned.'));
     }
 
     $outcome_indexes_verify_result = database()->query("SHOW INDEX FROM `forever_business_daily_outcomes`");
@@ -528,7 +528,7 @@ function forever_business_ensure_tables(): void {
     if(!$outcome_indexes_verify_result
         || !isset($outcome_indexes_verify['forever_business_outcome_user_daily_uq'], $outcome_indexes_verify['forever_business_outcome_user_progress_idx'], $outcome_indexes_verify['forever_business_outcome_fbo_idx'], $outcome_indexes_verify['forever_business_outcome_user_track_idx'])
         || isset($outcome_indexes_verify['forever_business_outcome_daily_uq'])) {
-        throw new \RuntimeException('Forever Business participant-scoped outcome indexes could not be provisioned.');
+        throw new \RuntimeException(fcc_t('Forever Business participant-scoped outcome indexes could not be provisioned.'));
     }
 
     $help_columns_result = database()->query("SHOW COLUMNS FROM `forever_business_vip_help_requests`");
@@ -542,7 +542,7 @@ function forever_business_ensure_tables(): void {
         'resolved_by_user_id', 'created_at', 'updated_at',
     ];
     if(!$help_columns_result || array_diff($required_help_columns, array_keys($help_columns))) {
-        throw new \RuntimeException('Forever Business VIP help-request columns could not be provisioned.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP help-request columns could not be provisioned.'));
     }
 
     $help_indexes_result = database()->query("SHOW INDEX FROM `forever_business_vip_help_requests`");
@@ -552,7 +552,7 @@ function forever_business_ensure_tables(): void {
     }
     if(!$help_indexes_result
         || !isset($help_indexes['PRIMARY'], $help_indexes['forever_business_vip_help_user_action_uq'], $help_indexes['forever_business_vip_help_status_idx'], $help_indexes['forever_business_vip_help_fbo_idx'])) {
-        throw new \RuntimeException('Forever Business VIP help-request indexes could not be provisioned.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP help-request indexes could not be provisioned.'));
     }
 
     /* Before help became its own lifecycle, a completed outcome could also
@@ -588,7 +588,7 @@ function forever_business_ensure_tables(): void {
                      OR (`later`.`action_date` = `outcome`.`action_date` AND `later`.`outcome_id` > `outcome`.`outcome_id`))
           )");
     if(!$legacy_help_migrated) {
-        throw new \RuntimeException('Legacy VIP help requests could not be preserved.');
+        throw new \RuntimeException(fcc_t('Legacy VIP help requests could not be preserved.'));
     }
     $legacy_help_verify_result = database()->query("SELECT COUNT(*) AS `total`
         FROM `forever_business_daily_outcomes` `outcome`
@@ -611,7 +611,7 @@ function forever_business_ensure_tables(): void {
           AND `request`.`request_id` IS NULL");
     $legacy_help_verify = $legacy_help_verify_result ? $legacy_help_verify_result->fetch_assoc() : null;
     if(!$legacy_help_verify || (int) ($legacy_help_verify['total'] ?? 0) > 0) {
-        throw new \RuntimeException('Legacy VIP help-request migration could not be verified.');
+        throw new \RuntimeException(fcc_t('Legacy VIP help-request migration could not be verified.'));
     }
 
     /* Preserve exactly the cohort admitted by the former August-only gate at
@@ -624,7 +624,7 @@ function forever_business_ensure_tables(): void {
         WHERE `migration_key` = '{$escaped_legacy_migration_key}'
         LIMIT 1");
     if(!$legacy_precheck_result) {
-        throw new \RuntimeException('Legacy VIP education migration marker could not be checked.');
+        throw new \RuntimeException(fcc_t('Legacy VIP education migration marker could not be checked.'));
     }
     $legacy_precheck = $legacy_precheck_result->fetch_assoc();
 
@@ -638,14 +638,14 @@ function forever_business_ensure_tables(): void {
                 (`migration_key`, `completed_at`) VALUES ('{$escaped_legacy_migration_key}', NULL)
                 ON DUPLICATE KEY UPDATE `migration_key` = VALUES(`migration_key`)");
             if(!$marker_ready) {
-                throw new \RuntimeException('Legacy VIP education migration marker could not be prepared.');
+                throw new \RuntimeException(fcc_t('Legacy VIP education migration marker could not be prepared.'));
             }
             $legacy_migration_result = database()->query("SELECT `completed_at`
                 FROM `forever_business_schema_migrations`
                 WHERE `migration_key` = '{$escaped_legacy_migration_key}'
                 LIMIT 1 FOR UPDATE");
             if(!$legacy_migration_result) {
-                throw new \RuntimeException('Legacy VIP education migration marker could not be locked.');
+                throw new \RuntimeException(fcc_t('Legacy VIP education migration marker could not be locked.'));
             }
             $legacy_migration = $legacy_migration_result->fetch_assoc();
 
@@ -659,7 +659,7 @@ function forever_business_ensure_tables(): void {
                     FROM `forever_business_metrics` metric
                     WHERE metric.period_month = '2026-08-01' AND metric.personal_cc >= 0.330");
                 if(!$legacy_inserted) {
-                    throw new \RuntimeException('Legacy VIP education cohort could not be copied.');
+                    throw new \RuntimeException(fcc_t('Legacy VIP education cohort could not be copied.'));
                 }
 
                 $legacy_verify_result = database()->query("SELECT COUNT(*) AS total
@@ -668,14 +668,14 @@ function forever_business_ensure_tables(): void {
                     WHERE metric.period_month = '2026-08-01' AND metric.personal_cc >= 0.330 AND enrollment.fbo_id IS NULL");
                 $legacy_verify_row = $legacy_verify_result ? $legacy_verify_result->fetch_assoc() : null;
                 if(!$legacy_verify_row || (int) ($legacy_verify_row['total'] ?? 0) > 0) {
-                    throw new \RuntimeException('Legacy VIP education cohort could not be preserved.');
+                    throw new \RuntimeException(fcc_t('Legacy VIP education cohort could not be preserved.'));
                 }
 
                 $marker_completed = database()->query("UPDATE `forever_business_schema_migrations`
                     SET `completed_at` = '{$migration_time}'
                     WHERE `migration_key` = '{$escaped_legacy_migration_key}' AND `completed_at` IS NULL");
                 if(!$marker_completed || database()->affected_rows !== 1) {
-                    throw new \RuntimeException('Legacy VIP education migration could not be finalized.');
+                    throw new \RuntimeException(fcc_t('Legacy VIP education migration could not be finalized.'));
                 }
             }
 
@@ -692,7 +692,7 @@ function forever_business_ensure_tables(): void {
         (`migration_key`, `completed_at`) VALUES ('{$escaped_runtime_schema_key}', '{$runtime_schema_time}')
         ON DUPLICATE KEY UPDATE `completed_at` = VALUES(`completed_at`)");
     if(!$runtime_schema_saved) {
-        throw new \RuntimeException('Forever Business runtime schema marker could not be saved.');
+        throw new \RuntimeException(fcc_t('Forever Business runtime schema marker could not be saved.'));
     }
     $ready = true;
     } finally {
@@ -824,7 +824,7 @@ function forever_business_read_csv(string $path): array {
     $handle = fopen($path, 'rb');
 
     if(!$handle) {
-        throw new \RuntimeException('CSV datoteku nije moguće otvoriti.');
+        throw new \RuntimeException(fcc_t('CSV datoteku nije moguće otvoriti.'));
     }
 
     $sample = fgets($handle);
@@ -868,7 +868,7 @@ function forever_business_read_xlsx(string $path): array {
     $zip = new \ZipArchive();
 
     if($zip->open($path) !== true) {
-        throw new \RuntimeException('Excel datoteku nije moguće otvoriti.');
+        throw new \RuntimeException(fcc_t('Excel datoteku nije moguće otvoriti.'));
     }
 
     $shared = [];
@@ -892,7 +892,7 @@ function forever_business_read_xlsx(string $path): array {
 
     if($workbook_raw === false || $relations_raw === false) {
         $zip->close();
-        throw new \RuntimeException('Excel struktura nije podržana.');
+        throw new \RuntimeException(fcc_t('Excel struktura nije podržana.'));
     }
 
     $workbook = simplexml_load_string($workbook_raw);
@@ -909,7 +909,7 @@ function forever_business_read_xlsx(string $path): array {
     $sheets = $workbook->xpath('//m:sheets/m:sheet') ?: [];
     if(empty($sheets)) {
         $zip->close();
-        throw new \RuntimeException('Excel nema radni list.');
+        throw new \RuntimeException(fcc_t('Excel nema radni list.'));
     }
 
     $relationship_attributes = $sheets[0]->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');
@@ -918,7 +918,7 @@ function forever_business_read_xlsx(string $path): array {
 
     if($target === '') {
         $zip->close();
-        throw new \RuntimeException('Excel radni list nije pronađen.');
+        throw new \RuntimeException(fcc_t('Excel radni list nije pronađen.'));
     }
 
     $sheet_path = str_starts_with($target, '/') ? ltrim($target, '/') : 'xl/' . ltrim($target, '/');
@@ -927,7 +927,7 @@ function forever_business_read_xlsx(string $path): array {
     $zip->close();
 
     if($sheet_raw === false) {
-        throw new \RuntimeException('Excel sadržaj nije pronađen.');
+        throw new \RuntimeException(fcc_t('Excel sadržaj nije pronađen.'));
     }
 
     $sheet = simplexml_load_string($sheet_raw);
@@ -983,14 +983,14 @@ function forever_business_read_report_file(string $path, string $original_name):
         return forever_business_read_xlsx($path);
     }
 
-    throw new \RuntimeException('Podržani su CSV i XLSX izvještaji. PDF ide u ručnu provjeru prije importa.');
+    throw new \RuntimeException(fcc_t('Podržani su CSV i XLSX izvještaji. PDF ide u ručnu provjeru prije importa.'));
 }
 
 function forever_business_parse_report(string $path, string $original_name, string $root_fbo_id = '', string $root_name = '', string $report_period = ''): array {
     $rows = forever_business_read_report_file($path, $original_name);
 
     if(count($rows) < 2) {
-        throw new \RuntimeException('Izvještaj nema podatkovne retke.');
+        throw new \RuntimeException(fcc_t('Izvještaj nema podatkovne retke.'));
     }
 
     $headers = array_map('forever_business_normalize_header', $rows[0]);
@@ -1004,7 +1004,7 @@ function forever_business_parse_report(string $path, string $original_name, stri
     $is_focus_group = isset($header_map['FBO ID'], $header_map['FBO NAME'], $header_map['CURRENT LEVEL'], $header_map['NEXT LEVEL'], $header_map['LAST PURCHASE DATE'], $header_map['NEEDED CC FOR NEXT LEVEL']);
 
     if(!$is_full && !$is_four_cc && !$is_focus_group) {
-        throw new \RuntimeException('Struktura izvještaja nije prepoznata. Očekuje se FLP360 downline CSV, 4 CC Active XLSX ili Focus Group XLSX.');
+        throw new \RuntimeException(fcc_t('Struktura izvještaja nije prepoznata. Očekuje se FLP360 downline CSV, 4 CC Active XLSX ili Focus Group XLSX.'));
     }
 
     $kind = $is_full ? 'downline' : ($is_four_cc ? 'four_cc_active' : 'focus_group');
@@ -1322,7 +1322,7 @@ function forever_business_import_report(array $report, string $file_sha256, int 
     foreach($report_periods_to_validate as $report_period_to_validate) {
         $metric_period = forever_business_period_from_label($report_period_to_validate) ?: '';
         if($metric_period !== '' && !forever_business_period_is_current_or_past($metric_period)) {
-            throw new \RuntimeException('Budući FLP360 mjesec još se ne može uvesti. Ponovi uvoz kada taj mjesec započne.');
+            throw new \RuntimeException(fcc_t('Budući FLP360 mjesec još se ne može uvesti. Ponovi uvoz kada taj mjesec započne.'));
         }
     }
 
@@ -1339,15 +1339,15 @@ function forever_business_import_report(array $report, string $file_sha256, int 
         return ['duplicate' => true, 'import_id' => (int) $existing->import_id, 'summary' => json_decode($existing->summary_json ?? '{}', true) ?: []];
     }
     if($existing && $existing->status === 'processing') {
-        throw new \RuntimeException('Isti FLP360 izvještaj već se obrađuje. Pričekaj završetak prije ponovnog pokušaja.');
+        throw new \RuntimeException(fcc_t('Isti FLP360 izvještaj već se obrađuje. Pričekaj završetak prije ponovnog pokušaja.'));
     }
     if($existing && $existing->status === 'failed') {
         $deleted_failed_import = db()->where('import_id', (int) $existing->import_id)->where('status', 'failed')->delete('forever_business_imports');
         if(!$deleted_failed_import || (int) database()->affected_rows !== 1) {
-            throw new \RuntimeException('Prethodni neuspjeli FLP360 uvoz nije moguće sigurno pripremiti za ponovni pokušaj.');
+            throw new \RuntimeException(fcc_t('Prethodni neuspjeli FLP360 uvoz nije moguće sigurno pripremiti za ponovni pokušaj.'));
         }
     } elseif($existing) {
-        throw new \RuntimeException('Isti FLP360 izvještaj već postoji u neočekivanom stanju i neće se ponovno obrađivati.');
+        throw new \RuntimeException(fcc_t('Isti FLP360 izvještaj već postoji u neočekivanom stanju i neće se ponovno obrađivati.'));
     }
 
     $periods = $report['periods'];
@@ -1375,7 +1375,7 @@ function forever_business_import_report(array $report, string $file_sha256, int 
             forever_business_record_sync_check($report, $dedupe_sha256, (int) $concurrent->import_id, true);
             return ['duplicate' => true, 'import_id' => (int) $concurrent->import_id, 'summary' => json_decode($concurrent->summary_json ?? '{}', true) ?: []];
         }
-        throw new \RuntimeException('Isti FLP360 izvještaj upravo se obrađuje. Pričekaj završetak prije ponovnog pokušaja.');
+        throw new \RuntimeException(fcc_t('Isti FLP360 izvještaj upravo se obrađuje. Pričekaj završetak prije ponovnog pokušaja.'));
     }
 
     db()->startTransaction();
@@ -1439,7 +1439,7 @@ function forever_business_import_report(array $report, string $file_sha256, int 
                 if((float) $metric['personal_cc'] >= .330
                     && forever_business_vip_eligibility_period_is_open((string) $metric['period_month'])
                     && !$enrollment_recorded) {
-                    throw new \RuntimeException('VIP education enrollment could not be persisted.');
+                    throw new \RuntimeException(fcc_t('VIP education enrollment could not be persisted.'));
                 }
             }
         }
@@ -1585,7 +1585,7 @@ function forever_business_extract_user_fbo_id($preferences): string {
  * caller can never inject a dynamic identifier into a query. */
 function forever_business_user_fbo_sql_expression(string $column = 'preferences', bool $normalized = true): string {
     if(!in_array($column, ['preferences', 'u.preferences'], true)) {
-        throw new \InvalidArgumentException('Unsupported preferences column.');
+        throw new \InvalidArgumentException(fcc_t('Unsupported preferences column.'));
     }
     $raw = "TRIM(COALESCE(
         JSON_UNQUOTE(JSON_EXTRACT({$column}, '$.meta.foreverId')),
@@ -1593,11 +1593,12 @@ function forever_business_user_fbo_sql_expression(string $column = 'preferences'
         JSON_UNQUOTE(JSON_EXTRACT({$column}, '$.meta.foreverID')),
         ''
     ))";
-    return $normalized ? "REPLACE({$raw}, '-', '')" : $raw;
+    return $normalized ? "REGEXP_REPLACE({$raw}, '[^0-9]', '')" : $raw;
 }
 
 /* Custom code: FC-2026-08-21: permanent rolling VIP education enrollment */
 function forever_business_resolve_unique_active_user_id_for_fbo(string $fbo_id): ?int {
+    $account_fbo_sql = forever_business_user_fbo_sql_expression();
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     if($fbo_id === '') return null;
 
@@ -1606,18 +1607,14 @@ function forever_business_resolve_unique_active_user_id_for_fbo(string $fbo_id):
         FROM users
         WHERE status = 1
           AND JSON_VALID(preferences) = 1
-          AND REPLACE(TRIM(COALESCE(
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
-              ''
-          )), '-', '') = '{$escaped_fbo_id}'");
+          AND {$account_fbo_sql} = '{$escaped_fbo_id}'");
     $row = $result ? $result->fetch_assoc() : null;
 
     return (int) ($row['total'] ?? 0) === 1 ? (int) ($row['user_id'] ?? 0) : null;
 }
 
 function forever_business_get_active_user_link_count_for_fbo(string $fbo_id): int {
+    $account_fbo_sql = forever_business_user_fbo_sql_expression();
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     if($fbo_id === '') return 0;
 
@@ -1626,12 +1623,7 @@ function forever_business_get_active_user_link_count_for_fbo(string $fbo_id): in
         FROM users
         WHERE status = 1
           AND JSON_VALID(preferences) = 1
-          AND REPLACE(TRIM(COALESCE(
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
-              ''
-          )), '-', '') = '{$escaped_fbo_id}'");
+          AND {$account_fbo_sql} = '{$escaped_fbo_id}'");
     $row = $result ? $result->fetch_assoc() : null;
     return (int) ($row['total'] ?? 0);
 }
@@ -1729,7 +1721,7 @@ function forever_business_record_vip_eligibility_metric(
                     SELECT 1 FROM `forever_business_daily_outcomes` `vip_started`
                     WHERE `vip_started`.`fbo_id` = `forever_business_vip_enrollments`.`fbo_id`
                       AND `vip_started`.`status` = 'done'
-                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[1-5][0-9]|60)$'
                 ),
                 NULL,
                 `starting_track_key`
@@ -1740,7 +1732,7 @@ function forever_business_record_vip_eligibility_metric(
                     SELECT 1 FROM `forever_business_daily_outcomes` `vip_started`
                     WHERE `vip_started`.`fbo_id` = `forever_business_vip_enrollments`.`fbo_id`
                       AND `vip_started`.`status` = 'done'
-                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[1-5][0-9]|60)$'
                 ),
                 NULL,
                 `starting_track_reason`
@@ -1751,7 +1743,7 @@ function forever_business_record_vip_eligibility_metric(
                     SELECT 1 FROM `forever_business_daily_outcomes` `vip_started`
                     WHERE `vip_started`.`fbo_id` = `forever_business_vip_enrollments`.`fbo_id`
                       AND `vip_started`.`status` = 'done'
-                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                      AND `vip_started`.`action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[1-5][0-9]|60)$'
                 ),
                 NULL,
                 `starting_track_decided_at`
@@ -1817,6 +1809,7 @@ function forever_business_safe_id_list(array $ids): string {
 }
 
 function forever_business_provision_fcc_members(?int $only_user_id = null): int {
+    $account_fbo_sql = forever_business_user_fbo_sql_expression();
     forever_business_ensure_tables();
     $now = database()->real_escape_string(get_date());
     $user_filter = $only_user_id !== null ? ' AND user_id = ' . max(0, $only_user_id) : '';
@@ -1825,23 +1818,13 @@ function forever_business_provision_fcc_members(?int $only_user_id = null): int 
          is_manager, is_privacy_requested, is_in_current_structure, email_hash, phone_hash,
          first_seen_import_id, last_seen_import_id, created_at, updated_at)
         SELECT
-            REPLACE(TRIM(COALESCE(
-                JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
-                JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
-                JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
-                ''
-            )), '-', ''),
+            {$account_fbo_sql},
             LEFT(name, 160), 'FCC suradnik', NULL, NULL, NULL, NULL, NULL,
             0, 0, 0, NULL, NULL, NULL, NULL, '{$now}', '{$now}'
         FROM users
-        WHERE type = 0 AND status = 1 AND JSON_VALID(preferences) = 1
+        WHERE status = 1 AND JSON_VALID(preferences) = 1
           {$user_filter}
-          AND REPLACE(TRIM(COALESCE(
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
-              JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
-              ''
-          )), '-', '') REGEXP '^[0-9]{12}$'");
+          AND {$account_fbo_sql} REGEXP '^[0-9]{12}$'");
     return $result ? max(0, (int) database()->affected_rows) : 0;
 }
 
@@ -1850,11 +1833,12 @@ function forever_business_provision_fcc_members(?int $only_user_id = null): int 
  * sync endpoint. Shared approved Forever IDs are intentionally collapsed to
  * one FLP360 lookup and remain valid for every linked active account. */
 function forever_business_get_registered_sync_accounts(string $period): array {
+    $account_fbo_sql = forever_business_user_fbo_sql_expression();
     forever_business_ensure_tables();
     forever_business_provision_fcc_members();
     $period = forever_business_period_from_label($period) ?: '';
     if($period === '' || !forever_business_period_is_current_or_past($period)) {
-        throw new \InvalidArgumentException('Neispravan mjesec za FCC account CC provjeru.');
+        throw new \InvalidArgumentException(fcc_t('Neispravan mjesec za FCC account CC provjeru.'));
     }
 
     $escaped_period = database()->real_escape_string($period);
@@ -1875,24 +1859,19 @@ function forever_business_get_registered_sync_accounts(string $period): array {
         FROM (
             SELECT user_id,
                    UPPER(TRIM(COALESCE(country, ''))) AS account_country_code,
-                   REPLACE(TRIM(COALESCE(
-                       JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
-                       JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
-                       JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
-                       ''
-                   )), '-', '') AS fbo_id
+                   {$account_fbo_sql} AS fbo_id
             FROM users
-            WHERE type = 0 AND status = 1 AND JSON_VALID(preferences) = 1
+            WHERE status = 1 AND JSON_VALID(preferences) = 1
         ) account
         LEFT JOIN forever_business_members member ON member.fbo_id = account.fbo_id
         LEFT JOIN forever_business_metrics metric ON metric.fbo_id = account.fbo_id AND metric.period_month = '{$escaped_period}'
         LEFT JOIN forever_business_yearly_metrics yearly ON yearly.fbo_id = account.fbo_id AND yearly.period_year = YEAR('{$escaped_period}')
         LEFT JOIN forever_business_vip_enrollments enrollment ON enrollment.fbo_id = account.fbo_id
-        WHERE account.fbo_id REGEXP '^360[0-9]{9}$'
+        WHERE account.fbo_id REGEXP '^[0-9]{12}$'
         GROUP BY account.fbo_id
         ORDER BY account.fbo_id ASC");
     if(!$result) {
-        throw new \RuntimeException('Aktivni FCC Forever ID-jevi nisu dostupni za sinkronizaciju.');
+        throw new \RuntimeException(fcc_t('Aktivni FCC Forever ID-jevi nisu dostupni za sinkronizaciju.'));
     }
 
     $accounts = [];
@@ -2289,6 +2268,7 @@ function forever_business_get_vip_program_state(int $user_id, ?\DateTimeInterfac
 
 /* Custom code: FC-2026-08-15: Full 30-step VIP education program */
 function forever_business_get_marketing_plan_state(?\DateTimeInterface $now = null): array {
+    if(function_exists('fcc_events_enabled')&&fcc_events_enabled())return fcc_event_marketing_state($now);
     $timezone = new \DateTimeZone('Europe/Zagreb');
     $current_time = $now
         ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
@@ -2500,6 +2480,7 @@ function forever_business_vip_send_notification_for_user(int $user_id, string $t
     }
 
     $message = forever_business_vip_build_email_message($user, $state, $event_key);
+    if($event_key==='approved_pending'||$trigger==='approved') $message['body'].=fcc_partner_install_email_content((string)($user->language??'Hrvatski'), (int)$user->user_id);
     $transport_result = send_mail($user->email, $message['subject'], $message['body'], [
         'is_system_email' => true,
         'anti_phishing_code' => $user->anti_phishing_code ?? null,
@@ -2611,11 +2592,11 @@ function forever_business_vip_task_meta(): array {
 
     $path = __DIR__ . '/../config/forever_business_vip_task_meta.php';
     if(!is_file($path)) {
-        throw new \RuntimeException('VIP task metadata is missing; the curriculum cannot be opened safely.');
+        throw new \RuntimeException(fcc_t('VIP task metadata is missing; the curriculum cannot be opened safely.'));
     }
     $loaded = require $path;
     if(!is_array($loaded)) {
-        throw new \RuntimeException('VIP task metadata is invalid; the curriculum cannot be opened safely.');
+        throw new \RuntimeException(fcc_t('VIP task metadata is invalid; the curriculum cannot be opened safely.'));
     }
 
     $result_types = forever_business_vip_result_type_options();
@@ -2867,6 +2848,27 @@ function forever_business_get_vip_task_catalog(): array {
         ];
     }
 
+    // Append new tasks without replacing historical task keys or content.
+    $extension = require __DIR__ . '/../config/forever_business_vip_extension.php';
+    foreach($definitions as $key => $definition) {
+        foreach($extension as $day => [$core,$title,$instruction,$success,$type,$target]) {
+            $context = match($key) {
+                'leader' => ' Kao voditelj, pokaži postupak jednom suradniku i provjeri može li ga sam ponoviti.',
+                'builder' => ' Nakon vlastite primjene podijeli jednu korisnu pouku sa suradnikom ili mentorom.',
+                'reactivation' => ' Ako obnavljaš stari kontakt, najprije pitaj želi li osoba ponovno razgovarati.',
+                default => '',
+            };
+            $catalog[$key][$day] = [
+                'core'=>$core,'title'=>$title,'instruction'=>$instruction.$context,
+                'task_text'=>$title.'. '.$instruction.$context,'success_definition'=>$success,
+                'target'=>$target,'quick_target'=>1,'expected_result_type'=>$type,
+                'allowed_result_types'=>array_values(array_unique(array_merge(forever_business_vip_allowed_result_types($type),['training']))),
+                'checklist'=>['Pročitaj cilj i izaberi osobu ili podatke koji su relevantni.', 'Napravi dogovorenu radnju uz poštovanje dozvole kontakta.', 'Zabilježi stvarni rezultat i sljedeći korak.'],
+                'fallback'=>'Ako nemaš odgovarajuću osobu ili podatke, s mentorom uvježbaj jedan primjer. Označi lakšu verziju i zabilježi vježbu, ne prodaju ili novog kupca.',
+                'message_example'=>'',
+            ];
+        }
+    }
     return $catalog;
 }
 
@@ -3004,11 +3006,11 @@ function forever_business_persist_vip_start(array $member): array {
         FROM `forever_business_daily_outcomes`
         WHERE `fbo_id` = '{$escaped_fbo_id}'
           AND `status` = 'done'
-          AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+          AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[1-5][0-9]|60)$'
         ORDER BY `action_date` ASC, `outcome_id` ASC
         LIMIT 1");
     if(!$started_result) {
-        throw new \RuntimeException('Forever Business VIP starting outcome could not be checked.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP starting outcome could not be checked.'));
     }
     $started = $started_result->fetch_assoc();
     $started_action_key = (string) ($started['action_key'] ?? '');
@@ -3068,7 +3070,7 @@ function forever_business_persist_vip_start(array $member): array {
           AND `qualifying_period` = '{$escaped_qualifying_period}'
           AND {$decision_where}");
     if(!$saved) {
-        throw new \RuntimeException('Forever Business VIP starting track could not be persisted.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP starting track could not be persisted.'));
     }
 
     $stored_result = database()->query("SELECT `starting_track_key`, `starting_track_reason`, `starting_track_decided_at`
@@ -3076,7 +3078,7 @@ function forever_business_persist_vip_start(array $member): array {
         WHERE `fbo_id` = '{$escaped_fbo_id}'
         LIMIT 1");
     if(!$stored_result) {
-        throw new \RuntimeException('Forever Business VIP starting track could not be verified.');
+        throw new \RuntimeException(fcc_t('Forever Business VIP starting track could not be verified.'));
     }
     $stored = $stored_result->fetch_assoc();
     if(!$stored) {
@@ -3299,12 +3301,12 @@ function forever_business_vip_action_key(string $track_key, int $day): string {
 
 function forever_business_vip_level_position(array $member, string $track_key, int $fallback = 0): int {
     $field = 'vip_' . $track_key . '_sequence_position';
-    return max(0, min(30, array_key_exists($field, $member) ? (int) $member[$field] : $fallback));
+    return max(0, min(60, array_key_exists($field, $member) ? (int) $member[$field] : $fallback));
 }
 
 function forever_business_get_action(array $member, ?array $metric, int $completed_total = 0, bool $sunday_done_today = false, ?\DateTimeInterface $now = null, bool $vip_done_today = false): array {
     $track = forever_business_get_vip_track($member);
-    /* Every level is a complete 30-step curriculum. Lifetime totals remain
+    /* Every level is a complete 60-step curriculum. Lifetime totals remain
      * available for analytics, but only the current level can choose the next
      * task or mark that level as complete. */
     $completed_total = forever_business_vip_level_position($member, (string) $track['key'], $completed_total);
@@ -3314,7 +3316,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         ? (new \DateTimeImmutable('@' . $now->getTimestamp()))->setTimezone($timezone)
         : new \DateTimeImmutable('now', $timezone);
 
-    if($vip_done_today && $completed_total < 30) {
+    if($vip_done_today && $completed_total < 60) {
         /* Every participant unlocks the next available step at the same Zagreb
          * calendar boundary. Sending both server timestamps keeps the visible
          * countdown independent of the browser's local timezone and clock. */
@@ -3334,8 +3336,8 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
             'server_now_iso' => $current_time->format(\DateTimeInterface::ATOM),
             'seconds_until_next_unlock' => $seconds_until_next_unlock,
             'next_unlock_time_label' => $next_unlock_at->format('H:i'),
-            'sequence_position' => min(30, max(1, $completed_total)),
-            'sequence_total' => 30,
+            'sequence_position' => min(60, max(1, $completed_total)),
+            'sequence_total' => 60,
             'track_key' => $track['key'],
             'track_label' => $track['label'],
             'track_goal' => $track['goal'],
@@ -3371,8 +3373,8 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
              * Sunday date alone can never unlock completion before the scheduled 90-minute event ends. */
             'can_complete' => !empty($marketing_plan['can_record_outcome']),
             'is_waiting_for_event_completion' => empty($marketing_plan['can_record_outcome']),
-            'sequence_position' => min(30, $completed_total + 1),
-            'sequence_total' => 30,
+            'sequence_position' => min(60, $completed_total + 1),
+            'sequence_total' => 60,
             'track_key' => $track['key'],
             'track_label' => $track['label'],
             'track_goal' => $track['goal'],
@@ -3382,19 +3384,19 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
         ];
     }
 
-    if($completed_total >= 30) {
+    if($completed_total >= 60) {
         return [
             'core' => 'Development',
             'key' => 'vip26_program_complete',
-            'title' => 'Dovršio/la si 30 koraka ove razine',
+            'title' => 'Dovršio/la si 60 koraka ove razine',
             'instruction' => 'Pregledaj napredak u ovom edukacijskom smjeru i nastavi primjenjivati ritam koji ti je donio najviše kvalitetnih razgovora, kupaca, gostiju i suradnika.',
             'checklist' => [],
             'success_definition' => 'Ova je razina završena. Nedjeljni Marketing plan i dalje će se prikazivati, a potvrđena viša razina otvorit će vlastiti 1. korak.',
             'target' => 0,
             'quick_target' => 0,
             'can_complete' => false,
-            'sequence_position' => 30,
-            'sequence_total' => 30,
+            'sequence_position' => 60,
+            'sequence_total' => 60,
             'track_key' => $track['key'],
             'track_label' => $track['label'],
             'track_goal' => $track['goal'],
@@ -3419,7 +3421,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
             'quick_target' => 0,
             'can_complete' => false,
             'sequence_position' => $day,
-            'sequence_total' => 30,
+            'sequence_total' => 60,
             'track_key' => $track['key'],
             'track_label' => $track['label'],
             'track_goal' => $track['goal'],
@@ -3430,7 +3432,7 @@ function forever_business_get_action(array $member, ?array $metric, int $complet
     $task['key'] = forever_business_vip_action_key($track['key'], $day);
     $task['can_complete'] = true;
     $task['sequence_position'] = $day;
-    $task['sequence_total'] = 30;
+    $task['sequence_total'] = 60;
     $task['track_key'] = $track['key'];
     $task['track_label'] = $track['label'];
     $task['track_goal'] = $track['goal'];
@@ -3466,10 +3468,10 @@ function forever_business_upsert_four_core_snapshot(string $fbo_id, string $peri
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $period = forever_business_period_from_label($period) ?: '';
     if($fbo_id === '' || !preg_match('/^360[0-9]{9}$/D', $fbo_id) || $period === '') {
-        throw new \InvalidArgumentException('Neispravan Forever ID ili razdoblje 4 Core snimke.');
+        throw new \InvalidArgumentException(fcc_t('Neispravan Forever ID ili razdoblje 4 Core snimke.'));
     }
     if(!forever_business_period_is_current_or_past($period)) {
-        throw new \InvalidArgumentException('Budući FLP360 mjesec još se ne može spremiti.');
+        throw new \InvalidArgumentException(fcc_t('Budući FLP360 mjesec još se ne može spremiti.'));
     }
 
     foreach(['open' => 'open', 'downline' => 'downline'] as $scope_key => $business_scope) {
@@ -3541,10 +3543,10 @@ function forever_business_upsert_total_cc_snapshot(string $fbo_id, string $perio
     $period = forever_business_period_from_label($period) ?: '';
     $country_scope = mb_strtoupper(trim($country_scope));
     if($fbo_id === '' || $period === '' || $country_scope === '') {
-        throw new \InvalidArgumentException('Neispravan Forever ID, razdoblje ili tržište Total CC snimke.');
+        throw new \InvalidArgumentException(fcc_t('Neispravan Forever ID, razdoblje ili tržište Total CC snimke.'));
     }
     if(!forever_business_period_is_current_or_past($period)) {
-        throw new \InvalidArgumentException('Budući FLP360 mjesec još se ne može spremiti.');
+        throw new \InvalidArgumentException(fcc_t('Budući FLP360 mjesec još se ne može spremiti.'));
     }
 
     db()->onDuplicate(['total_cc', 'is_closed', 'captured_at', 'source_note'])->insert('forever_business_total_cc_snapshots', [
@@ -3563,17 +3565,18 @@ function forever_business_upsert_total_cc_snapshot(string $fbo_id, string $perio
  * is_in_current_structure or any hierarchy edge. The active account linkage
  * is rechecked server-side for every write. */
 function forever_business_upsert_registered_member_live_cc(string $fbo_id, string $period, array $metrics): void {
+    $account_fbo_sql = forever_business_user_fbo_sql_expression();
     forever_business_ensure_tables();
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $period = forever_business_period_from_label($period) ?: '';
     if($fbo_id === '' || $period === '') {
-        throw new \InvalidArgumentException('Neispravan FCC Forever ID ili razdoblje live CC snimke.');
+        throw new \InvalidArgumentException(fcc_t('Neispravan FCC Forever ID ili razdoblje live CC snimke.'));
     }
     if(!forever_business_period_is_current_or_past($period)) {
-        throw new \InvalidArgumentException('Budući FLP360 mjesec još se ne može spremiti.');
+        throw new \InvalidArgumentException(fcc_t('Budući FLP360 mjesec još se ne može spremiti.'));
     }
     if(forever_business_get_active_user_link_count_for_fbo($fbo_id) < 1) {
-        throw new \InvalidArgumentException('Live CC strojni unos dopušten je samo za Forever ID aktivnog FCC računa.');
+        throw new \InvalidArgumentException(fcc_t('Live CC strojni unos dopušten je samo za Forever ID aktivnog FCC računa.'));
     }
 
     $number = static function(string $key, bool $required = false) use ($metrics): ?float {
@@ -3609,15 +3612,10 @@ function forever_business_upsert_registered_member_live_cc(string $fbo_id, strin
                 '{$escaped_fbo_id}', LEFT(name, 160), 'FCC suradnik', NULL, NULL, NULL, NULL, NULL,
                 0, 0, 0, NULL, NULL, NULL, NULL, '{$member_time}', '{$member_time}'
             FROM users
-            WHERE type = 0 AND status = 1 AND JSON_VALID(preferences) = 1
-              AND REPLACE(TRIM(COALESCE(
-                  JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverId')),
-                  JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.forever_id')),
-                  JSON_UNQUOTE(JSON_EXTRACT(preferences, '$.meta.foreverID')),
-                  ''
-              )), '-', '') = '{$escaped_fbo_id}'
+            WHERE status = 1 AND JSON_VALID(preferences) = 1
+              AND {$account_fbo_sql} = '{$escaped_fbo_id}'
             LIMIT 1");
-        if(!$member_ready) throw new \RuntimeException('FCC suradnik nije moguće pripremiti za live CC upis.');
+        if(!$member_ready) throw new \RuntimeException(fcc_t('FCC suradnik nije moguće pripremiti za live CC upis.'));
         $metric_update_columns = ['personal_cc', 'total_cc', 'total_active_cc', 'is_4cc_active', 'updated_at'];
         if($non_manager_cc !== null) $metric_update_columns[] = 'non_manager_cc';
         if($leadership_cc !== null) $metric_update_columns[] = 'leadership_cc';
@@ -3656,7 +3654,7 @@ function forever_business_upsert_registered_member_live_cc(string $fbo_id, strin
             'member_cc'
         );
         if($personal_cc >= .330 && forever_business_vip_eligibility_period_is_open($period) && !$enrollment_recorded) {
-            throw new \RuntimeException('VIP education enrollment aktivnog FCC računa nije moguće spremiti.');
+            throw new \RuntimeException(fcc_t('VIP education enrollment aktivnog FCC računa nije moguće spremiti.'));
         }
         db()->commit();
     } catch(\Throwable $exception) {
@@ -3672,11 +3670,11 @@ function forever_business_upsert_root_live_cc(string $fbo_id, string $period, ar
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $period = forever_business_period_from_label($period) ?: '';
     if($fbo_id === '' || $period === '') {
-        throw new \InvalidArgumentException('Neispravan glavni Forever ID ili razdoblje live CC snimke.');
+        throw new \InvalidArgumentException(fcc_t('Neispravan glavni Forever ID ili razdoblje live CC snimke.'));
     }
     $current_zagreb_period = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Zagreb')))->format('Y-m-01');
     if($period > $current_zagreb_period) {
-        throw new \InvalidArgumentException('Budući FLP360 mjesec još se ne može spremiti.');
+        throw new \InvalidArgumentException(fcc_t('Budući FLP360 mjesec još se ne može spremiti.'));
     }
 
     $number = static fn(string $key): float => max(0, forever_business_number($metrics[$key] ?? 0));
@@ -3717,7 +3715,7 @@ function forever_business_upsert_root_live_cc(string $fbo_id, string $period, ar
             'member_cc'
         );
         if($number('personal_cc') >= .330 && forever_business_vip_eligibility_period_is_open($period) && !$root_enrollment_recorded) {
-            throw new \RuntimeException('Root VIP education enrollment could not be persisted.');
+            throw new \RuntimeException(fcc_t('Root VIP education enrollment could not be persisted.'));
         }
         db()->commit();
     } catch(\Throwable $exception) {
@@ -3989,11 +3987,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS action_units_total,
                        SUM(status = 'done') AS actions_done_total,
                        SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%' AND action_key <> 'vip26_activator_d01') AS vip_actions_done_total,
-                       MAX(IF(status = 'done' AND outcome_type = 'starter' AND action_key LIKE 'vip26_starter_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_starter_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'reactivation' AND action_key LIKE 'vip26_reactivation_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_reactivation_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'activator' AND action_key LIKE 'vip26_activator_d%' AND action_key <> 'vip26_activator_d01' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_activator_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'builder' AND action_key LIKE 'vip26_builder_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_builder_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'leader' AND action_key LIKE 'vip26_leader_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_leader_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'starter' AND action_key LIKE 'vip26_starter_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_starter_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'reactivation' AND action_key LIKE 'vip26_reactivation_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_reactivation_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'activator' AND action_key LIKE 'vip26_activator_d%' AND action_key <> 'vip26_activator_d01' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_activator_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'builder' AND action_key LIKE 'vip26_builder_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_builder_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'leader' AND action_key LIKE 'vip26_leader_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_leader_sequence_position,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') AS vip_action_done_today,
                        MAX(CASE
@@ -4024,11 +4022,11 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
                        SUM(IF(action_date >= '{$seven_day_start}' AND status = 'done' AND action_key LIKE 'vip26\\_%', outcome_count, 0)) AS action_units_total,
                        SUM(status = 'done') AS actions_done_total,
                        SUM(status = 'done' AND action_key LIKE 'vip26\\_%' AND action_key NOT LIKE 'vip26\\_sunday\\_%' AND action_key <> 'vip26_activator_d01') AS vip_actions_done_total,
-                       MAX(IF(status = 'done' AND outcome_type = 'starter' AND action_key LIKE 'vip26_starter_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_starter_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'reactivation' AND action_key LIKE 'vip26_reactivation_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_reactivation_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'activator' AND action_key LIKE 'vip26_activator_d%' AND action_key <> 'vip26_activator_d01' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_activator_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'builder' AND action_key LIKE 'vip26_builder_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_builder_sequence_position,
-                       MAX(IF(status = 'done' AND outcome_type = 'leader' AND action_key LIKE 'vip26_leader_d%' AND sequence_position BETWEEN 1 AND 30, sequence_position, 0)) AS vip_leader_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'starter' AND action_key LIKE 'vip26_starter_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_starter_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'reactivation' AND action_key LIKE 'vip26_reactivation_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_reactivation_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'activator' AND action_key LIKE 'vip26_activator_d%' AND action_key <> 'vip26_activator_d01' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_activator_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'builder' AND action_key LIKE 'vip26_builder_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_builder_sequence_position,
+                       MAX(IF(status = 'done' AND outcome_type = 'leader' AND action_key LIKE 'vip26_leader_d%' AND sequence_position BETWEEN 1 AND 60, sequence_position, 0)) AS vip_leader_sequence_position,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key = CONCAT('vip26_sunday_', DATE_FORMAT('{$today}', '%Y%m%d'))) AS vip_sunday_done_today,
                        SUM(status = 'done' AND action_date = '{$today}' AND action_key LIKE 'vip26\\_%' AND action_key <> 'vip26_activator_d01') AS vip_action_done_today,
                        MAX(CASE
@@ -4061,7 +4059,7 @@ function forever_business_get_dashboard(int $user_id, bool $is_admin, string $re
         $result = database()->query($query);
         if(!$result) {
             error_log('Forever Business dashboard member query failed: ' . database()->error);
-            throw new \RuntimeException('Forever Business dashboard members could not be loaded.');
+            throw new \RuntimeException(fcc_t('Forever Business dashboard members could not be loaded.'));
         }
         while($result && $row = $result->fetch_assoc()) {
             $row = forever_business_normalize_current_month_metrics($row, $period, $zagreb_now);
@@ -4340,11 +4338,11 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
     if($action_key === 'vip26_activator_d01_biolink') {
         $action_track = 'activator';
         $sequence_position = 1;
-    } elseif(preg_match('/^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[12][0-9]|30)$/D', $action_key, $sequence_match)) {
+    } elseif(preg_match('/^vip26_(starter|reactivation|activator|builder|leader)_d(0[1-9]|[1-5][0-9]|60)$/D', $action_key, $sequence_match)) {
         $action_track = (string) ($sequence_match[1] ?? '');
         $sequence_position = (int) ($sequence_match[2] ?? 0);
     }
-    $entry_track = preg_match('/^vip26_(starter|reactivation)_d(?:0[1-9]|[12][0-9]|30)$/D', $action_key, $entry_match)
+    $entry_track = preg_match('/^vip26_(starter|reactivation)_d(?:0[1-9]|[1-5][0-9]|60)$/D', $action_key, $entry_match)
         ? (string) ($entry_match[1] ?? '')
         : '';
     if($action_key === '' || $action_key === 'vip26_activator_d01' || !str_starts_with($action_key, 'vip26_') || $outcome_count === null || $result_type === null || $difficulty === null || $completion_mode === null) {
@@ -4375,6 +4373,11 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
             throw new \RuntimeException('vip_participant_lock_failed');
         }
 
+        if(function_exists('fcc_j90_cycle') && fcc_j90_cycle($user_id)) {
+            db()->rollback();
+            return false; // New cycles (including rollback/read-only) never write legacy progress.
+        }
+
         if($entry_track !== '') {
             /* Entry-path completion and imports serialize on the shared FBO
              * enrollment row. Two linked accounts therefore cannot commit
@@ -4402,7 +4405,7 @@ function forever_business_record_daily_outcome(int $user_id, string $fbo_id, arr
                 FROM `forever_business_daily_outcomes`
                 WHERE `fbo_id` = '{$escaped_entry_fbo_id}'
                   AND `status` = 'done'
-                  AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[12][0-9]|30)$'
+                  AND `action_key` REGEXP '^vip26_(starter|reactivation)_d(0[1-9]|[1-5][0-9]|60)$'
                 ORDER BY `action_date` ASC, `outcome_id` ASC
                 LIMIT 1");
             if(!$existing_entry_result) {
@@ -4508,7 +4511,7 @@ function forever_business_request_vip_help(int $user_id, string $fbo_id, array $
     $fbo_id = forever_business_normalize_fbo_id($fbo_id);
     $action_key = mb_substr(preg_replace('/[^a-z0-9_\-]/i', '', (string) ($input['action_key'] ?? '')), 0, 48);
     $track_key = mb_substr(preg_replace('/[^a-z0-9_\-]/i', '', (string) ($input['track_key'] ?? '')), 0, 24);
-    $sequence_position = max(0, min(30, (int) ($input['sequence_position'] ?? 0)));
+    $sequence_position = max(0, min(60, (int) ($input['sequence_position'] ?? 0)));
     $difficulty = forever_business_normalize_difficulty($input['difficulty'] ?? 'hard');
     $note = mb_substr(input_clean($input['note'] ?? '', 500), 0, 500);
     if($fbo_id === '' || !in_array($fbo_id, $scope_ids, true) || !str_starts_with($action_key, 'vip26_') || $difficulty === null || mb_strlen(trim($note)) < 3) {

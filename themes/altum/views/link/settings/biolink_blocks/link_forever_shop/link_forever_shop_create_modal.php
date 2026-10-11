@@ -27,12 +27,12 @@
                     </div>
 
                     <div class="form-group">
-                        <?= l('create_biolink_link_modal.info') ?>
+                        <?= htmlspecialchars(fcc_forever_copy('business_help'),ENT_QUOTES,'UTF-8') ?>
                     </div>
 
                     <div class="form-group">
                         <label for="link_name"><i class="fa fa-fw fa-signature fa-sm text-muted mr-1"></i> <?= l('biolink_link.name') ?></label>
-                        <input id="link_name" type="text" name="name" maxlength="128" class="form-control" value="<?= l('create_biolink_link_modal.input.forever_shop') ?>" required="required" />
+                        <input id="link_name" type="text" name="name" maxlength="128" class="form-control" value="<?= htmlspecialchars(fcc_forever_copy('business'),ENT_QUOTES,'UTF-8') ?>" required="required" />
                     </div>
 
                     <div class="text-center mt-4">

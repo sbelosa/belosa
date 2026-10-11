@@ -108,6 +108,11 @@ class ForeverBusinessSync extends Controller {
         $period = $this->report_period();
         $metric = mb_strtolower(trim((string) ($_POST['metric'] ?? 'report')));
 
+        if($metric === 'cc_publish') {
+            try { $records=json_decode((string)($_POST['records']??''),true,512,JSON_THROW_ON_ERROR);$result=fcc_cc_publish($period,$records,(string)($_POST['batch_key']??''));$this->output(['status'=>'success','metric'=>'cc_publish']+$result); }
+            catch(\Throwable $e){$this->fail('cc_publish_failed',$e->getMessage(),422);}
+        }
+
         if($metric === 'status') {
             $dashboard = forever_business_get_dashboard(1, true, self::ROOT_FBO_ID, $period);
             $summary = $dashboard['summary'];
@@ -253,7 +258,7 @@ class ForeverBusinessSync extends Controller {
         try {
             $report = forever_business_parse_report((string) $file['tmp_name'], $original_name, self::ROOT_FBO_ID, 'Stjepan Beloša', $period);
             if(($report['kind'] ?? '') === 'focus_group' && empty($report['members'][self::ROOT_FBO_ID])) {
-                throw new \RuntimeException('Focus Group ne sadrži očekivani glavni Forever ID.');
+                throw new \RuntimeException(fcc_t('Focus Group ne sadrži očekivani glavni Forever ID.'));
             }
             $result = forever_business_import_report($report, hash_file('sha256', (string) $file['tmp_name']), 1);
             $summary = $result['summary'] ?? [];

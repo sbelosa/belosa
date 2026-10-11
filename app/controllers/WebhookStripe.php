@@ -422,6 +422,7 @@ class WebhookStripe extends Controller {
                     'stripe_status' => $session->status ?? null,
                     'current_period_end' => !empty($session->current_period_end) ? date('Y-m-d H:i:s', (int) $session->current_period_end) : null,
                     'next_retry_at' => !empty($session->next_pending_invoice_item_invoice) ? date('Y-m-d H:i:s', (int) $session->next_pending_invoice_item_invoice) : null,
+                    'cancel_at_period_end' => (bool) ($session->cancel_at_period_end ?? false),
                     'reason_code' => 'stripe_subscription_' . ($session->status ?? 'updated'),
                     'reason_text' => 'Stripe subscription status changed to ' . ($session->status ?? 'unknown'),
                     'occurred_at' => $event_occurred_at,

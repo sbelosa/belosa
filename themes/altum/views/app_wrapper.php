@@ -1,13 +1,25 @@
-<?php defined('ALTUMCODE') || die() ?>
+<?php defined('ALTUMCODE') || die();
+require_once APP_PATH . 'helpers/fcc_mobile_navigation.php';
+fcc_mobile_nav_assets();
+if(fcc_partner_enabled()) \Altum\ThemeStyle::$workspace_light = true;
+$fp_tool_context = fcc_partner_enabled() ? fcc_partner_tool_context(\Altum\Router::$controller_key, \Altum\Router::$path === 'admin') : null;
+// The card editor already has its own four focused views.
+if(\Altum\Router::$controller_key === 'link' && ($this->link->type ?? null) === 'biolink') $fp_tool_context = null;
+?>
 <!DOCTYPE html>
-<html lang="<?= \Altum\Language::$code ?>" dir="<?= l('direction') ?>">
+<html lang="<?= fcc_language_tag() ?>" dir="<?= l('direction') ?>">
 <head>
+    <?php fcc_i18n_assets(); ?>
+    <?php if(fcc_partner_enabled()): ?>
+    <meta name="theme-color" content="#155e51"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="<?= SITE_URL ?>partner-assets/manifest.php"><link rel="apple-touch-icon" href="<?= SITE_URL ?>partner-assets/fcc-app-192.png">
+    <?php header('Cache-Control: no-store, private'); endif ?>
     <title><?= \Altum\Title::get() ?></title>
     <base href="<?= SITE_URL; ?>">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no<?= fcc_partner_enabled() ? ', viewport-fit=cover' : '' ?>" />
 
-    <?php if(\Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled): ?>
+    <?php if(!fcc_partner_enabled() && \Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled): ?>
             <meta name="theme-color" content="<?= settings()->pwa->theme_color ?>"/>
 
             <?php if(settings()->pwa->is_fullscreen ?? true): ?>
@@ -22,16 +34,16 @@
         <?php endif ?>
 
     <?php if(\Altum\Meta::$description): ?>
-        <meta name="description" content="<?= \Altum\Meta::$description ?>" />
+        <meta name="description" content="<?= htmlspecialchars((string) \Altum\Meta::$description, ENT_QUOTES, 'UTF-8') ?>" />
     <?php endif ?>
     <?php if(\Altum\Meta::$keywords): ?>
-        <meta name="keywords" content="<?= \Altum\Meta::$keywords ?>" />
+        <meta name="keywords" content="<?= htmlspecialchars((string) \Altum\Meta::$keywords, ENT_QUOTES, 'UTF-8') ?>" />
     <?php endif ?>
 
     <?php \Altum\Meta::output() ?>
 
     <?php if(\Altum\Meta::$canonical): ?>
-        <link rel="canonical" href="<?= \Altum\Meta::$canonical ?>" />
+        <link rel="canonical" href="<?= htmlspecialchars((string) \Altum\Meta::$canonical, ENT_QUOTES, 'UTF-8') ?>" />
     <?php endif ?>
 
     <?php if(\Altum\Meta::$robots): ?>
@@ -41,9 +53,7 @@
     <link rel="alternate" href="<?= SITE_URL . \Altum\Router::$original_request ?>" hreflang="x-default" />
     <?php if(count(\Altum\Language::$active_languages) > 1): ?>
         <?php foreach(\Altum\Language::$active_languages as $language_name => $language_code): ?>
-            <?php if(settings()->main->default_language != $language_name): ?>
-                <link rel="alternate" href="<?= SITE_URL . $language_code . '/' . \Altum\Router::$original_request ?>" hreflang="<?= $language_code ?>" />
-            <?php endif ?>
+                <link rel="alternate" href="<?= htmlspecialchars(SITE_URL . (settings()->main->default_language === $language_name ? '' : $language_code . '/') . \Altum\Router::$original_request, ENT_QUOTES, 'UTF-8') ?>" hreflang="<?= fcc_language_tag($language_code) ?>" />
         <?php endforeach ?>
     <?php endif ?>
 
@@ -76,16 +86,25 @@
     <?php if(!empty(settings()->custom->head_css)): ?>
         <style><?= settings()->custom->head_css ?></style>
     <?php endif ?>
+<?php if(fcc_partner_enabled() && \Altum\Router::$controller_key === 'blog'): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/custom.css?v=<?= filemtime(ASSETS_PATH.'css/custom.css') ?>"><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner.css') ?>"><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-compat.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-compat.css') ?>"><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-premium.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-premium.css') ?>"><?php endif ?>
+<?php if(fcc_partner_enabled() && \Altum\Router::$controller_key === 'blog'): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-library.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-library.css') ?>"><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner-library.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner-library.js') ?>"></script><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-tools.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-tools.css') ?>"><?php endif ?>
+    <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-pro.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-pro.css') ?>">
+<?php if(fcc_help_enabled()): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-help-center.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-help-center.css') ?>"><?php endif ?>
+<?= \Altum\Event::get_content('fcc_styles') ?>
 </head>
 
-<body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> app <?= \Altum\ThemeStyle::get() == 'dark' ? 'cc--darkmode' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
+<body data-fcc-pro-active="<?= fcc_pro_has_access((int)$this->user->user_id) ? '1' : '0' ?>" data-fcc-page="<?= htmlspecialchars(\Altum\Router::$path==='admin'?'admin':\Altum\Router::$controller_key,ENT_QUOTES) ?>" class="<?= $fp_tool_context ? 'fp-tool-page' : '' ?> <?= fcc_partner_enabled() && \Altum\Router::$controller_key === 'blog' ? 'fcc-library-mode' : '' ?> <?= l('direction') == 'rtl' ? 'rtl' : null ?> app <?= fcc_partner_enabled() ? 'fcc-partner-mode' : '' ?> <?= \Altum\ThemeStyle::get() == 'dark' ? 'cc--darkmode' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
     <?php if(!empty(settings()->custom->body_content)): ?>
         <?= settings()->custom->body_content ?>
     <?php endif ?>
 
     <?php //ALTUMCODE:DEMO if(DEMO) echo include_view(THEME_PATH . 'views/partials/ac_banner.php', ['demo_url' => 'https://66biolinks.com/demo/', 'product_name' => PRODUCT_NAME, 'product_url' => PRODUCT_URL, 'product_buy_url' => PRODUCT_BUY_URL]) ?>
     <?php if(settings()->main->admin_spotlight_is_enabled || settings()->main->user_spotlight_is_enabled) require THEME_PATH . 'views/partials/spotlight.php' ?>
-    <?php if(\Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled && settings()->pwa->display_install_bar) require \Altum\Plugin::get('pwa')->path . 'views/partials/pwa.php' ?>
+    <?php if(!fcc_partner_enabled() && \Altum\Plugin::is_active('pwa') && settings()->pwa->is_enabled && settings()->pwa->display_install_bar) require \Altum\Plugin::get('pwa')->path . 'views/partials/pwa.php' ?>
 
     <div id="app_overlay" class="app-overlay" style="display: none"></div>
 
@@ -101,8 +120,9 @@
             <?php require THEME_PATH . 'views/partials/ad_blocker_detector.php' ?>
             <?php if(\Altum\Plugin::is_active('push-notifications') && settings()->push_notifications->is_enabled) require \Altum\Plugin::get('push-notifications')->path . 'views/partials/push_notifications_js.php' ?>
 
-            <div class="container">
+            <div class="container <?= fcc_partner_enabled() ? 'fp-topbar-host' : '' ?>">
                 <?= $this->views['app_menu'] ?>
+                <?php fcc_mobile_nav_render($this->user, 'member'); ?>
             </div>
 
             <div class="py-4 p-lg-5">
@@ -128,6 +148,10 @@
                 <?php endif ?>
 
                 <main class="altum-animate altum-animate-fill-none altum-animate-fade-in">
+                    <?php if($fp_tool_context) require THEME_PATH . 'views/partner/tool-context.php'; ?>
+                    <?php if(fcc_partner_enabled()&&function_exists('fcc_journey_team_group_joined')&&fcc_jp_schema())require THEME_PATH.'views/partner/journey-team-group.php'; ?>
+                    <?php if(fcc_partner_enabled())require THEME_PATH.'views/partner/device-notifications.php'; ?>
+                    <?php if(fcc_help_enabled())require THEME_PATH.'views/partner/help-context.php'; ?>
                     <?= $this->views['content'] ?>
                 </main>
 
@@ -144,16 +168,18 @@
         </section>
     </div>
 
+    <?php require THEME_PATH.'views/partner/pro-upgrade.php'; ?>
+    <script defer src="<?= ASSETS_FULL_URL ?>js/fcc-pro.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-pro.js') ?>"></script>
     <?= \Altum\Event::get_content('modals') ?>
 
     <?php require THEME_PATH . 'views/partials/js_global_variables.php' ?>
 
-    <?php foreach(['libraries/jquery.min.js', 'libraries/popper.min.js', 'libraries/bootstrap.min.js', 'custom.' . (DEBUG ? null : 'min.') . 'js', 'libraries/select2.min.js'] as $file): ?>
-        <script src="<?= ASSETS_FULL_URL ?>js/<?= $file ?>?v=<?= PRODUCT_CODE ?>"></script>
+    <?php foreach(['libraries/jquery.min.js', 'libraries/popper.min.js', 'libraries/bootstrap.min.js', (fcc_partner_enabled() ? 'custom.js' : 'custom.' . (DEBUG ? null : 'min.') . 'js'), 'libraries/select2.min.js'] as $file): ?>
+        <script src="<?= ASSETS_FULL_URL ?>js/<?= $file ?>?v=<?= str_starts_with($file,'custom.') ? filemtime(ASSETS_PATH.'js/'.$file) : PRODUCT_CODE ?>"></script>
     <?php endforeach ?>
 
     <?php foreach(['libraries/fontawesome.min.js', 'libraries/fontawesome-solid.min.js', 'libraries/fontawesome-brands.min.js'] as $file): ?>
-        <script src="<?= ASSETS_FULL_URL ?>js/<?= $file ?>?v=<?= PRODUCT_CODE ?>" defer></script>
+        <script src="<?= ASSETS_FULL_URL ?>js/<?= $file ?>?v=<?= str_starts_with($file,'custom.') ? filemtime(ASSETS_PATH.'js/'.$file) : PRODUCT_CODE ?>" defer></script>
     <?php endforeach ?>
 
     <!-- Custom code: FC-2026-02-24: help widget config injection -->
@@ -185,10 +211,10 @@
     <!-- /Custom code: FC-2026-02-24 -->
 
     <?php /* Custom code: FC-2026-04-10: internal FCC Coach popup */ ?>
-    <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user)): ?>
+    <?php if(is_logged_in() && fcc_ai_user_has_coach_access($this->user) && !(fcc_partner_enabled() && \Altum\Router::$controller_key === 'blog')): ?>
         <?php $fcc_internal_coach_ui = fcc_ai_get_internal_coach_ui_payload($this->user, \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr'); ?>
         <?php $fcc_internal_coach_ui_copy = []; ?>
-        <?php foreach(['hr', 'en', 'sl', 'bg'] as $fcc_internal_coach_ui_language): ?>
+        <?php foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','pl','ro'] as $fcc_internal_coach_ui_language): ?>
             <?php $fcc_internal_coach_ui_copy[$fcc_internal_coach_ui_language] = fcc_ai_get_internal_coach_ui_payload($this->user, $fcc_internal_coach_ui_language); ?>
         <?php endforeach ?>
         <?= include_view(THEME_PATH . 'views/l/partials/fcc_chat_extreme_popup.php', [
@@ -197,12 +223,12 @@
                 'scope' => 'internal_coach',
                 'owner_name' => (string) ($this->user->name ?? ''),
                 'language_code' => \Altum\Language::$code ?? \Altum\Language::$default_code ?? 'hr',
-                'source_context' => 'FCC Coach popup',
+                'source_context' => fcc_t('FCC Coach popup'),
                 'hide_without_context' => false,
                 'dom_id' => 'fcc-coach-chat-extreme',
-                'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? 'FCC Coach'),
-                'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? 'FCC Coach'),
-                'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? 'FCC Coach'),
+                'assistant_title' => (string) ($fcc_internal_coach_ui['assistant_title'] ?? fcc_t('FCC Coach')),
+                'intro_label' => (string) ($fcc_internal_coach_ui['intro_label'] ?? fcc_t('FCC Coach')),
+                'launcher_label' => (string) ($fcc_internal_coach_ui['launcher_label'] ?? fcc_t('FCC Coach')),
                 'coach_badge' => (string) ($fcc_internal_coach_ui['coach_badge'] ?? ''),
                 'coach_notice' => (string) ($fcc_internal_coach_ui['coach_notice'] ?? ''),
                 'coach_mode_key' => (string) ($fcc_internal_coach_ui['coach_mode_key'] ?? ''),
@@ -279,5 +305,9 @@
             }
         });
     </script>
+<?php if(fcc_partner_enabled()): ?><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner-install.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner-install.js') ?>"></script><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner.js') ?>"></script><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner-editor.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner-editor.js') ?>"></script><?php endif ?>
+<?php if(fcc_partner_enabled()): ?><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner-tools.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner-tools.js') ?>"></script><?php endif ?>
 </body>
 </html>

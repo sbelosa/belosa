@@ -107,7 +107,8 @@ class AdminDomains extends Controller {
                 case 'delete':
 
                     foreach($_POST['selected'] as $domain_id) {
-                        (new Domain())->delete($domain_id);
+                        if(fc_domain_has_nfc_link((int) $domain_id)) { Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked')); continue; }
+                            (new Domain())->delete($domain_id);
                     }
 
                     break;
@@ -139,6 +140,10 @@ class AdminDomains extends Controller {
 
         if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
 
+            if(fc_domain_has_nfc_link((int) $domain->domain_id)) {
+                Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked'));
+                redirect('admin/domains');
+            }
             (new Domain())->delete($domain->domain_id);
 
             /* Set a nice success message */

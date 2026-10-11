@@ -108,6 +108,10 @@ class AdminLinks extends Controller {
                 case 'delete':
 
                     foreach($_POST['selected'] as $link_id) {
+                        if(fc_is_nfc_link((int) $link_id)) {
+                            Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked'));
+                            continue;
+                        }
                         (new \Altum\Models\Link())->delete($link_id);
                     }
                     break;
@@ -135,6 +139,10 @@ class AdminLinks extends Controller {
 
         if(!$link = db()->where('link_id', $link_id)->getOne('links', ['link_id', 'url'])) {
             throw_404();
+        }
+
+        if(fc_is_nfc_link((int) $link_id)) {
+            Alerts::add_error(l('link_delete_modal.error_message.main_biolink_locked'));
         }
 
         if(!Alerts::has_field_errors() && !Alerts::has_errors()) {
@@ -166,6 +174,10 @@ class AdminLinks extends Controller {
 
         if(!$link = db()->where('link_id', $link_id)->getOne('links', ['link_id', 'user_id', 'url'])) {
             throw_404();
+        }
+
+        if(fc_is_nfc_link((int) $link_id)) {
+            Alerts::add_error(l('link.settings.url_help_main_biolink_locked'));
         }
 
         if(!$current_user = db()->where('user_id', $link->user_id)->getOne('users', ['user_id', 'email'])) {

@@ -1,0 +1,855 @@
+{
+  "locale": "sv",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Kom igång med FCC",
+      "summary": "Logga in, kontrollera ditt kort och hitta en aktivitet att börja med.",
+      "keywords": [
+        "kom igång",
+        "registreringar",
+        "språk",
+        "installation"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Det här har du tillgång till",
+          "paragraphs": [
+            "Du använder samma FCC-konto på datorn och mobilen. Free och PRO har olika funktioner, och åtkomst till programmet Min väg bekräftas separat."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Förbered din arbetsyta",
+          "steps": [
+            "Logga in med din befintliga e-postadress och ditt lösenord. Skapa inte ett andra konto för att installera appen.",
+            "Välj språk i det övre fältet. Det valet ändrar inte landet för Forever-butiken.",
+            "Öppna Mitt kort och kontrollera dina kontaktuppgifter, ditt Forever ID och den offentliga kortvyn.",
+            "Öppna Idag för ditt nästa steg eller Dela för en produkt, en företagspresentation eller en inbjudan.",
+            "Gå till Mer för att hitta FCC-instruktioner, appinstallation, paket och support."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Om du kör fast",
+          "questions": [
+            {
+              "question": "Varför ser jag ingen personlig daglig uppgift?",
+              "answer": "Kontrollera åtkomstvyn i Min väg och dina poäng. Obekräftade uppgifter är inget bevis på att du inte har gjort något. Supporten kan kontrollera kontokopplingen."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Idag och min resa",
+      "summary": "Lär dig en sak, använd den och anteckna noggrant vad du har gjort.",
+      "keywords": [
+        "idag",
+        "min resa",
+        "uppgift",
+        "4 Core",
+        "framsteg"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Ett sammanhängande program",
+          "paragraphs": [
+            "Min väg kopplar samman Rekrytering, Kundvård, Produktivitet och Utveckling. Tillgängligt steg, övning och kriterier för slutförande visas tillsammans med din uppgift. PRO ger tillgång till personlig hjälp från en coach."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Gå igenom ditt steg",
+          "steps": [
+            "Öppna Idag och läs målet och de föreslagna aktiviteterna för ditt steg.",
+            "Öppna det tillhörande verktyget eller materialet. Be vid behov om en enklare förklaring.",
+            "Utför den aktivitet som personen vill göra eller välj den föreslagna övningen om du inte har en lämplig situation.",
+            "Bekräfta endast det faktiska resultatet enligt kriterierna för steget. Ett klick och ett utkast innebär inte att ett samtal har ägt rum.",
+            "Gå igenom dina anteckningar under Mina framsteg och skriv i reflektionen vad som hjälpte eller var det körde fast."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Dagens steg handlar om ett samtal med en kund. Om du inte har en lämplig person som vill prata, gör den föreslagna övningen och markera den som en övning."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Vanlig fråga",
+          "questions": [
+            {
+              "question": "Räknas övning som en försäljning?",
+              "answer": "Nej. Övning och verklig tillämpning har olika markeringar. Att läsa en instruktion slutför inte i sig ett steg och bekräftar inte ett affärsresultat."
+            },
+            {
+              "question": "Ger PRO automatiskt tillgång till programmet Min väg?",
+              "answer": "Nej. Paketet och ett godkänt programintag är separata villkor. Öppna vyn över din åtkomst eller be supporten kontrollera den."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Redigera och kontrollera ditt kort",
+      "summary": "Koppla kontakt, innehåll och en personlig rekommendation på kortet du delar.",
+      "keywords": [
+        "kort",
+        "block",
+        "redigera",
+        "sociala medier"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Kortet som besökaren ser",
+          "paragraphs": [
+            "Mitt kort öppnar dina kort och redigeringsläget. Varje block redigeras separat, medan Utseende ändrar den övergripande vyn. Antalet kort och tillgängliga block beror på ditt paket."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Redigera en del och kontrollera sedan",
+          "steps": [
+            "Öppna Mitt kort, välj ditt kort och sedan Redigera.",
+            "Öppna Redigera i Innehåll eller välj pennan bredvid blocket du vill ändra.",
+            "Kontrollera namn, beskrivning, telefon och kanaler. Om fältet redan visar en domän skriver du bara den efterfrågade delen av adressen.",
+            "Om du vill lägga till nytt innehåll väljer du Lägg till block och läser noga beskrivningen av dess syfte.",
+            "Spara ändringen, öppna den offentliga förhandsvisningen och testa länken innan du delar den."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktisk fråga",
+          "questions": [
+            {
+              "question": "Hur lägger jag till en kortare beskrivning under namnet?",
+              "answer": "Lägg till ett separat textblock och flytta det under rubrikblocket. Storleken på hela rubriken och beskrivningen är inte samma inställning."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop och rekommendation per land",
+      "summary": "Din rekommendation kopplar besökaren till ett lämpligt Forever-erbjudande.",
+      "keywords": [
+        "shop",
+        "webbutik",
+        "Forever-ID",
+        "land",
+        "Titan",
+        "BiH",
+        "Albanien"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Ett huvudblock",
+          "paragraphs": [
+            "Det huvudsakliga Forever shop-blocket använder det kopplade Forever-ID:t och det befintliga rekommendationssystemet. Det gamla Titan-blocket kan finnas kvar på ett kort som skapats tidigare. Ändra inte och hitta inte på hänvisningsparametrar."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Kontrollera rekommendationen",
+          "steps": [
+            "Öppna redigeringen av ditt Forever shop-block under Mitt kort.",
+            "Kontrollera Forever-ID:t som är kopplat till kontot. Om det inte stämmer ber du supporten kontrollera det.",
+            "Läs blockbeskrivningen och skilj mellan att beställa produkter och att inleda ett affärssamarbete.",
+            "Spara ändringen och öppna den offentliga förhandsvisningen av kortet.",
+            "Kontrollera land, tillgängligt utbud och rekommendationsvisningen på målsidan innan du beställer."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "Språk och land är inte samma val",
+          "paragraphs": [
+            "Systemet väljer destination utifrån tillgänglig landdetektering och butikens regler. De flesta marknader använder Titan, medan BiH och Albanien använder lokala butiker med en annan rekommendation. VPN och resor kan påverka detekteringen. Om landet inte är det förväntade bör du kontrollera det före beställningen. Att ändra språk ändrar inte marknad."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Besökaren läser kortet på kroatiska men vill beställa i Tyskland. Före beställningen kontrollerar personen det tyska utbudet och rekommendationen utan att ändra kortets språk."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Vanlig fråga",
+          "questions": [
+            {
+              "question": "Bevisar ett klick att ett köp har gjorts?",
+              "answer": "Nej. Ett klick till butiken och en beställning är olika händelser. FCC bekräftar inte ett köp bara för att en länk har öppnats."
+            },
+            {
+              "question": "Måste jag förbereda en länk manuellt för varje land?",
+              "answer": "Huvudblocket använder det befintliga systemet för destinationsval per land. Kontrollera det kopplade Forever-ID:t och den faktiska destinationen. Om marknaden eller rekommendationen är fel skickar du ett exempel till supporten."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Rekommendera en produkt eller artikel",
+      "summary": "Hitta lämpligt innehåll och dela det med din personliga länk.",
+      "keywords": [
+        "produkt",
+        "artikel",
+        "dela",
+        "rekommendation",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Innehåll som en öppning till ett samtal",
+          "paragraphs": [
+            "Dela kopplar samman en artikel med din rekommendation. Produkter, tillgänglighet och officiella anvisningar kan skilja sig åt mellan länder. Artikeln ersätter inte informationen på den valda förpackningen."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Förbered en användbar rekommendation",
+          "steps": [
+            "Öppna Dela och sök efter produkten med dess exakta namn eller välj en lämplig artikel.",
+            "Läs innehållet och kontrollera att det passar personens faktiska fråga.",
+            "Förbered din länk och anpassa texten. Hitta inte på personliga erfarenheter eller produkteffekter.",
+            "Kopiera innehållet eller öppna WhatsApp och skicka sedan meddelandet personligen.",
+            "Kom överens om nästa uppföljning i Kontakter om personen vill fortsätta."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Innan du beställer",
+          "questions": [
+            {
+              "question": "Vad gör jag om produkten inte finns tillgänglig i kundens land?",
+              "answer": "Kontrollera det officiella lokala utbudet. Byt inte automatiskt ut produkten och anta inte att en annan förpackning har samma innehåll eller anvisningar."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Dela en affärspresentation",
+      "summary": "Presentera möjligheter till samarbete och följ upp frivilliga förfrågningar via ditt konto.",
+      "keywords": [
+        "affärsverksamhet",
+        "marknadsföringsplan",
+        "samarbete",
+        "startpaket",
+        "presentation"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Personlig länk för samtal",
+          "paragraphs": [
+            "Affärspresentationen är separat från webbinariet. Vilken vy som finns tillgänglig och möjligheten att förbereda en personlig presentation beror på kontots åtkomst och paket. Att gå vidare till startpaketet bekräftar inte en registrering."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Förbered och följ upp samtalet",
+          "steps": [
+            "Öppna Marknadsföringsplanen eller den tillgängliga affärspresentationen under Dela.",
+            "Läs igenom din egen översikt och kontrollera den personliga rekommendationen och kontakten.",
+            "Anpassa inbjudan efter personens intresse utan att lova inkomst eller resultat.",
+            "Skicka den förberedda länken personligen och kom överens om ett samtal om personen vill.",
+            "Leta efter frivilliga förfrågningar i Kontakter och notera nästa överenskommelse."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Vad resultatet betyder",
+          "questions": [
+            {
+              "question": "Är ett klick på startpaketet ett nytt samarbete?",
+              "answer": "Nej. Köp och registrering slutförs på Forever:s officiella destination. I FCC-registreringen skiljer du mellan klick, kontaktförfrågan och personligen bekräftat resultat."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Bjud in en gäst och följ anmälan",
+      "summary": "Välj en tid, skicka din inbjudan och kontrollera det faktiska resultatet efter webbinariet.",
+      "keywords": [
+        "webbinarium",
+        "webbinarium",
+        "inbjudan",
+        "Zooma",
+        "gäst",
+        "registreringar"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Din inbjudan, dina kontakter",
+          "paragraphs": [
+            "Free och PRO kan använda standardinbjudan till ett tillgängligt webbinarium. PRO lägger till en personlig introduktion och video. Gästen anmäler sig via din länk utan ett FCC-konto."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Från inbjudan till överenskommelse",
+          "steps": [
+            "Öppna Dela, Inbjudan till webbinarium och Välj tid.",
+            "Kontrollera datum, tid och tidszon för det valda evenemanget.",
+            "Anpassa meddelandet och skicka sedan din inbjudan personligen.",
+            "Granska anmälningar under Mina gästers anmälningar och i Kontakter.",
+            "Kontrollera att gästen har gett sitt tillstånd till uppföljning och notera resultatet efter evenemanget."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Anmälan bevisar inte närvaro",
+          "paragraphs": [
+            "Okänt betyder att närvaron ännu inte har kontrollerats. Det betyder inte att gästen inte kom. Efter samtalet väljer du om gästen faktiskt deltog eller uteblev. Påminnelser till gästen beror på valet och på att e-postadressen har bekräftats. En anmälan ger inte automatiskt tillstånd att skicka alla framtida meddelanden."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Inbjudan till en ny tid",
+          "paragraphs": [
+            "Om gästen vill ha en annan tid förbereder du en ny inbjudan i gästöversikten eller tidsvalet. Gästen bekräftar den nya anmälan. En befintlig kontakt används bara när identiteten stämmer. Delvis matchning behöver kontrolleras. Ett återkommande evenemang anmäler inte automatiskt gästen till framtida datum."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Marko har anmält sig, men du vet ännu inte om han deltog. Låt statusen vara Okänt, kontrollera med honom med hans tillstånd och markera först därefter det faktiska resultatet."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Vanlig fråga",
+          "questions": [
+            {
+              "question": "Betyder det att inbjudan har skickats när WhatsApp öppnas?",
+              "answer": "Nej. Du skickar meddelandet själv i WhatsApp-appen. Bekräfta i FCC att det har skickats först när du faktiskt har gjort det."
+            },
+            {
+              "question": "Behöver gästen skapa ett FCC-konto?",
+              "answer": "Nej. Gästen öppnar din anmälningssida och bekräftar den valda tiden. Gästens anmälan förblir kopplad till dig som inbjudare."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Skapa ett personligt webbinarium eller ett teamwebbinarium",
+      "summary": "Ange ämne, tid, språk och målgrupp som kan använda sina inbjudningar.",
+      "keywords": [
+        "webbinarium",
+        "organisatör",
+        "team",
+        "upprepning",
+        "Zooma",
+        "språk"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Organisera med PRO",
+          "paragraphs": [
+            "Du behöver PRO för att skapa och redigera ditt eget webbinarium. Du förbereder Zoom eller ett annat mötesrum i den aktuella tjänsten och anger den fullständiga HTTPS-länken i FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Förbered ditt evenemang",
+          "steps": [
+            "Öppna Dela, Webinarinbjudan, Mina webbinarier och formuläret för ett nytt webbinarium.",
+            "Ange en titel och vad gästerna får veta. Välj vem som får bjuda in gäster.",
+            "Välj språk för inbjudan och aviseringar, datum, starttid, längd och tidszon.",
+            "Ange länken till mötesrummet och välj ett enstaka tillfälle eller veckovis upprepning.",
+            "Spara webbinariet och granska den förberedda inbjudan innan du använder den."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Vem ser ett teamwebbinarium",
+          "paragraphs": [
+            "Hela mitt FCC-team omfattar organisatören och bekräftade samarbetspartner i dennes nedåtgående linje, även längre ned i grenarna. Sponsorer ovanför organisatören och andra team ingår inte automatiskt i målgruppen. Administratörsöversyn innebär inte att man tillhör målgruppen. Varje inbjudare behåller sina privata kontakter, och organisatören ser det totala antalet anmälningar."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Upprepning, redigering och avbokning",
+          "paragraphs": [
+            "Veckovis upprepning behåller den valda lokala tiden även vid övergång till och från sommartid. När du redigerar väljer du Endast detta tillfälle eller Detta och kommande tillfällen. Målgruppen för den befintliga serien förblir densamma. Vid avbokning behålls kontakter och historik, medan anmälningar och påminnelser om deltagande upphör för de avbokade tillfällena."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "För ett slovenskt söndagsmöte kl. 20.00 väljer du Slovenščina, Europe/Ljubljana och önskad målgrupp. Ange ditt Zoom-rum och kontrollera det första datumet och upprepningen."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Evenemangets språk",
+          "questions": [
+            {
+              "question": "Ändrar en inbjudan på slovenska språket för mitt konto?",
+              "answer": "Nej. Evenemangets språk styr inbjudan och aviseringarna för evenemanget. Kontots språk och marknadsval är separata inställningar."
+            },
+            {
+              "question": "Kan Free-samarbetspartner bjuda in till mitt teamwebbinarium?",
+              "answer": "Ja, om de ingår i den bekräftade målgruppen kan de använda en vanlig personlig inbjudan. Att skapa webbinarier och använda extra personliga videofunktioner kräver PRO."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Kontakter och överenskomna uppföljningar",
+      "summary": "Anteckna intresse, kontaktens samtycke och nästa överenskomna uppföljning utan att förlora historiken.",
+      "keywords": [
+        "kontakter",
+        "adressbok",
+        "uppföljning",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Din privata översikt",
+          "paragraphs": [
+            "Kontakter sparar ditt personliga arbete med människor. Ett webbinarium och en frivillig affärsförfrågan kan koppla en anmälan till en kontakt. Respektera markeringen om att personen inte vill bli kontaktad igen."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Redigera och kom överens om uppföljning",
+          "steps": [
+            "Öppna Kontakter och sök efter personen innan du lägger till en ny post manuellt.",
+            "Öppna kontakten och kontrollera namn, telefonnummer, e-postadress och samtycke till kontakt.",
+            "Anteckna det faktiska försäljnings- eller affärsintresset och det överenskomna datumet för uppföljning.",
+            "Spara ändringarna och öppna WhatsApp endast när personen vill prata.",
+            "Om du vill lägga till kontakten i enhetens adressbok väljer du Spara kontakt och bekräftar själv importen av den nedladdade filen."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Gästen från webbinariet finns redan i Kontakter. Hitta den befintliga posten och lägg till det överenskomna uppföljningsdatumet i stället för att skapa en ny kontakt manuellt."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktisk fråga",
+          "questions": [
+            {
+              "question": "Sparar Spara kontakt automatiskt allt i Google?",
+              "answer": "Nej. Knappen förbereder en kontaktfil från de ifyllda fälten. Bekräfta sparandet på telefonen. På en dator kan du själv importera filen till Google Kontakter."
+            },
+            {
+              "question": "Varför behöver jag kontrollera en delvis matchning vid en anmälan?",
+              "answer": "Vissa uppgifter kan stämma överens med en tidigare kontakt medan andra skiljer sig åt. Kontrollera personens identitet innan du slår ihop poster. Att namnen liknar varandra räcker inte."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Personlig kontakt med en samarbetspartner",
+      "summary": "Förbered ett meddelande, bekräfta att det faktiskt har skickats och kom överens om när ni ska följa upp samtalet.",
+      "keywords": [
+        "mitt team",
+        "meddelande",
+        "utkast",
+        "skickat",
+        "stöd"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Stöd till en teammedlem med PRO",
+          "paragraphs": [
+            "Mitt team och teammeddelanden kräver PRO. Öppna profilen för en samarbetspartner som du får erbjuda stöd. En coach använder tillgängliga framsteg och CC-uppgifter, utan att se andras privata CRM-anteckningar."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Från utkast till uppföljning",
+          "steps": [
+            "Öppna samarbetspartnerns profil under Mitt team och välj Stöd och personlig kontakt.",
+            "Välj anledningen till kontakten och anpassa Ditt meddelande. Välj Förbered med Coach vid behov.",
+            "Spara utkastet, kopiera meddelandet eller öppna WhatsApp.",
+            "Skicka meddelandet själv och bekräfta sedan i FCC att det har skickats.",
+            "Välj ett datum under När vill du följa upp hur det gick och anteckna senare vad ni faktiskt kom överens om."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "Du bekräftar själv att meddelandet har skickats",
+          "paragraphs": [
+            "Att öppna WhatsApp och kopiera ett meddelande är förberedelser, inte bevis på att det har skickats. Om du inte skickade meddelandet väljer du rätt bekräftelse eller lämnar det som utkast. Du kan rätta en felaktig bekräftelse i posten. Om du tar bort posten raderas inte meddelandet i WhatsApp. Utkast och borttagna poster skapar ingen påminnelse om samtalet."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Du öppnade WhatsApp men avbröt innan meddelandet skickades. Lämna det som ett utkast eller bekräfta att det inte skickades. Då finns inget faktiskt skickat meddelande registrerat."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Inget bekräftat nummer",
+          "questions": [
+            {
+              "question": "Varför kan jag inte öppna WhatsApp?",
+              "answer": "Samarbetspartnern måste ha ett bekräftat företagsnummer. Du kan kopiera texten och skicka den via en kanal du redan använder, och sedan själv bekräfta att den har skickats."
+            },
+            {
+              "question": "Skapar ett sparat utkast en påminnelse om samtalet?",
+              "answer": "Nej. Påminnelsen följer meddelandets status. Utkast och borttagna poster skapar ingen påminnelse om samtalet. Koppla datumet för uppföljning till en faktisk kontakt."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Så får du hjälp av Coach",
+      "summary": "Beskriv en konkret situation och få en förklaring eller ett utkast som du själv granskar.",
+      "keywords": [
+        "coach",
+        "AI",
+        "fråga",
+        "meddelande",
+        "vägledning"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Personlig hjälp med din befintliga åtkomst",
+          "paragraphs": [
+            "PRO Coach hjälper dig med uppgifter, meddelanden och ditt eget arbete. Coach får den tillåtna kontexten från kontot, men ser inte automatiskt din skärm och bekräftar inte att meddelanden har skickats, köp har genomförts eller registreringar har gjorts."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Ställ en användbar fråga",
+          "steps": [
+            "Öppna Coach eller Coach-hjälpen i anslutning till din uppgift eller ditt verktyg.",
+            "Skriv vad du vill göra, var i appen du gör det och vad du undrar över.",
+            "När du ber om ett utkast till ett meddelande beskriver du er relation och vad som faktiskt har hänt i samtalet, utan onödiga personuppgifter eller hälsouppgifter.",
+            "Läs svaret och kontrollera fakta och mottagare innan du använder det.",
+            "Anpassa utkastet och skicka sedan meddelandet själv. Coach skickar det inte åt dig."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Länkar till verifierad vägledning",
+          "paragraphs": [
+            "Coach kan föreslå relevant vägledning från hjälpcentret och hänvisa till ett specifikt avsnitt. Vägledningen öppnas på kontots språk och ger inte tillgång till fler verktyg. Om förklaringen inte räcker skriver du vad som fortfarande är oklart eller skickar en fråga till supporten."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Skriv: Jag vill bjuda in en gäst till ett nytt tillfälle. Var gör jag det? Coach kan förklara steget och länka till rätt avsnitt i vägledningen, utan att du behöver ange gästens namn."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Svarsspråk",
+          "questions": [
+            {
+              "question": "Kan jag ändra bara språket i Coach?",
+              "answer": "Du kan uttryckligen be om att få svaret på ett visst språk. Det ändrar inte landet för Forever-erbjudandet. Kontrollera att ett färdigt meddelande har rätt språk för mottagaren."
+            },
+            {
+              "question": "Kan jag läsa vägledningen utan PRO Coach?",
+              "answer": "Ja. Hjälpcentret är tillgängligt för inloggade Free- och PRO-samarbetspartner. Personliga AI-svar kräver den åtkomst till Coach du redan har."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Aviseringar och påminnelser",
+      "summary": "Välj ämnen, daglig påminnelse och den enhet där du vill få aviseringar.",
+      "keywords": [
+        "push",
+        "aviseringar",
+        "påminnelse",
+        "ljud",
+        "enhet"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Systemet och enheten har egna inställningar",
+          "paragraphs": [
+            "Inkorgen och pushaviseringar är inte samma sak. Pushaviseringar kräver tillstånd från enheten. Dagens uppgift och överenskomna uppföljningar kan visas tillsammans, medan evenemang och kontot har separata aviseringstider."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Kontrollera leveransen",
+          "steps": [
+            "Öppna Aviseringar och läs meddelandets rubrik, beskrivning och tidpunkt.",
+            "Öppna Aviseringar på enheten och Mina inställningar. Välj sedan Aktivera på den här enheten.",
+            "Tillåt aviseringar i webbläsaren eller på enheten och spara de valda kategorierna.",
+            "Välj tiden för din dagliga påminnelse under Mitt tempo.",
+            "Du kan slå på ljud och skicka en testavisering till dig själv när knappen är tillgänglig."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ljud och utseende",
+          "questions": [
+            {
+              "question": "Låter aviseringarna likadant på alla enheter?",
+              "answer": "Nej. Webbläsaren, operativsystemet och tyst läge avgör det slutliga ljudet och utseendet. FCC-inställningen kan inte åsidosätta enhetens ljudbegränsningar eller tyst läge."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Förstå resultaten och CC-poängen",
+      "summary": "Skilj mellan klick, registrerade aktiviteter och tillgängliga Forever-poäng.",
+      "keywords": [
+        "resultat",
+        "klick",
+        "CC",
+        "poäng",
+        "framsteg"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Olika mätvärden",
+          "paragraphs": [
+            "FCC Resultat visar kvalificerade besök i butiken. Min utveckling visar rapporterade steg. CC hämtas från tillgänglig import av Forever-data och utgör en totalsumma för perioden."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Läs mätvärdet i sitt sammanhang",
+          "steps": [
+            "Öppna FCC Resultat och läs perioden samt reglerna för hur klick räknas.",
+            "I Min utveckling kan du se faktisk tillämpning och övningar separat.",
+            "Kontrollera perioden och fullständigheten hos tillgängliga uppgifter under Min Forever och CC-poäng.",
+            "Om du vill kontrollera kvalificering eller ett officiellt affärsmål kan du gå igenom de aktuella marknadsreglerna med din sponsor."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Vanligt missförstånd",
+          "questions": [
+            {
+              "question": "Visar CC vem som har köpt en viss produkt?",
+              "answer": "Nej. Samlade CC är inte bevis på ett enskilt köp. En ofullständig eller saknad import innebär inte heller att värdet är bekräftat som noll."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free och PRO, betalningar och fakturor",
+      "summary": "Kontrollera din åtkomst till paketet och prenumerationens status innan du ändrar betalningsmetod.",
+      "keywords": [
+        "paket",
+        "Gratis",
+        "PRO",
+        "Stripe",
+        "prenumeration",
+        "faktura"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Paketet gäller för samma konto",
+          "paragraphs": [
+            "Free och PRO har olika förmåner, som visas i den aktuella paketjämförelsen. PRO bekräftar inte att du är inskriven i Min väg. Aktiveringen av betalningen följer bekräftelsen från Stripe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Kontrollera ditt paket",
+          "steps": [
+            "Öppna Free och PRO-paketet eller Mitt paket under Mer.",
+            "Läs om tillgängliga förmåner, prenumerationens status och åtkomstperioden.",
+            "Kontrollera sammanfattningen av den valda betalningen innan du fortsätter till Stripe för att aktivera den.",
+            "Granska de faktiska betalningsposterna under Betalningar och fakturor.",
+            "Använd de tillgängliga prenumerationsinställningarna för kortbetalning eller uppsägning och läs informationen om när perioden bekräftat avslutas."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Om betalningen kräver åtgärd",
+          "questions": [
+            {
+              "question": "Vad gör jag om betalningen har fastnat eller inte har bekräftats?",
+              "answer": "Kontrollera den befintliga fakturan och meddelandet i ditt paket. Använd det tillgängliga alternativet för att förnya eller kontakta supporten. Dra inte slutsatsen att pengar har dragits enbart utifrån paketets giltighetstid och gör inte nya beställningar på måfå."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Ladda ner och anpassa teamets presentation",
+      "summary": "Använd den publicerade versionen, ändra inledningen om presentatören och öva på din presentation.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "presentation",
+        "bilder",
+        "nedladdning"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "En gemensam grund för presentationer",
+          "paragraphs": [
+            "Presentationerna i centret är tillgängliga för inloggade samarbetspartner. Använd den fil och det språk som faktiskt erbjuds. Utgivningsdatumet hjälper dig att skilja den aktuella presentationen från en gammal kopia."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Förbered din presentation",
+          "steps": [
+            "Under Mer öppnar du FCC-guider och sedan ämnet Ladda ner och anpassa teamets presentation.",
+            "Välj språk i nedladdningsavsnittet och välj Ladda ner PPT. Om du vill ha en ZIP-fil med alla översättningar väljer du Ladda ner alla språk.",
+            "Öppna PPT-filen i PowerPoint eller ett kompatibelt program.",
+            "Ändra den avsedda inledningen om presentatören och lägg till ditt eget foto.",
+            "Gå igenom anteckningarna och kontrollera hela presentationen innan webbinariet."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Vad du kan anpassa",
+          "paragraphs": [
+            "Din personliga inledning ska bara innehålla verifierbara uppgifter och dina egna faktiska erfarenheter. Behåll den gemensamma strukturen och lägg inte till löften om inkomster eller behandling, eller andra personers privata uppgifter. Använd exempeldata när du visar exempel."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "Filens språk och version",
+          "paragraphs": [
+            "Här finns PPT-filer på alla tillgängliga språk och en ZIP-fil med alla översättningar. Kontrollera språk- och utgåvemärkningen innan du laddar ner. Bilder av FCC-gränssnittet kan ha kvar originalspråket, medan texten och anteckningarna är översatta. Kontrollera då och då om det finns en nyare utgåva."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exempel från verkligheten",
+          "paragraphs": [
+            "Du laddar ner den aktuella PPT-filen, ändrar din inledning och ditt foto och övar på ett exempel på delning. I demonstrationen använder du en exempelkontakt, inte en kunds privata uppgifter."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Praktisk fråga",
+          "questions": [
+            {
+              "question": "Kan jag kombinera delar av presentationen på egen hand?",
+              "answer": "Anpassa den avsedda inledningen och ordningen efter din presentation, med korrekta fakta och ett tydligt syfte. Kontrollera bilderna, anteckningarna och att de beskrivna FCC-funktionerna är tillgängliga innan du visar presentationen."
+            },
+            {
+              "question": "Vad gör jag om en tillgänglig PPT-bild visar ett annat språk?",
+              "answer": "Bilder av gränssnittet kan ha kvar originalspråket. Följ de översatta anteckningarna och instruktionerna och använd de faktiska knappnamnen i din FCC-vy. Kontrollera den tillgängliga filen före presentationen."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Avancerade FCC-verktyg",
+      "summary": "Öppna ett extraverktyg när du har ett konkret behov och kontrollera att du har åtkomst.",
+      "keywords": [
+        "QR",
+        "domäner",
+        "statistik",
+        "Trattstudio",
+        "avancerade verktyg"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Extra stöd för ditt arbete",
+          "paragraphs": [
+            "Under Mer finns extra länkar, QR-koder, statistik och avancerade verktyg. Åtkomsten till varje verktyg kontrolleras utifrån ditt paket. Börja med ditt kort, dina kontakter och en tydlig åtgärd."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Välj verktyg utifrån ditt mål",
+          "steps": [
+            "Öppna Mer och läs beskrivningen av tillgängliga verktyg.",
+            "Bestäm om du vill dela ditt kort, följa besök eller förbereda särskilt innehåll.",
+            "Öppna det valda verktyget och kontrollera instruktionerna och åtkomsten via ditt paket.",
+            "Testa resultatet i förhandsgranskningen innan du använder det offentligt."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Om en funktion inte är tillgänglig",
+          "questions": [
+            {
+              "question": "Behöver jag alla avancerade verktyg för att komma igång?",
+              "answer": "Nej. Börja med att förbereda ditt kort och ett planerat samtal. Välj ett extra verktyg när det underlättar en faktisk aktivitet och kontrollera åtkomsten i det aktuella paketet."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Skicka en fråga till supporten",
+      "summary": "Beskriv problemet och fortsätt i samma konversation tills du får en användbar lösning.",
+      "keywords": [
+        "stöd",
+        "hjälp",
+        "problem",
+        "förfrågan",
+        "fel"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "En fråga som du följer på ett och samma ställe",
+          "paragraphs": [
+            "Hjälp och support är till för tekniska problem, förslag eller ämnen för webbinarier. Coach kan förklara hur du gör, men skickar inte en förfrågan åt dig."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Skriv en tydlig förfrågan",
+          "steps": [
+            "Öppna Hjälp och support och välj sedan Nytt meddelande till supporten.",
+            "Skriv en kort rubrik och välj en frågekategori.",
+            "Berätta vilken del av appen du använder, vad du gjorde och vad som hände.",
+            "Lägg vid behov till en skärmbild utan lösenord, kortuppgifter eller andra personers privata uppgifter.",
+            "Skicka frågan och öppna samma konversation senare för att läsa svaret eller be om ett förtydligande."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Medan du väntar på svar",
+          "questions": [
+            {
+              "question": "Ska jag skicka flera förfrågningar om samma problem?",
+              "answer": "Fortsätt i den befintliga konversationen och lägg till den nya informationen. Ange vilken enhet du använder och det exakta felmeddelandet. Då kan supporten se hela förloppet på ett och samma ställe."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -7,16 +7,16 @@ $fcc_is_hr_language = \Altum\Language::$code === 'hr';
 $fcc_pages_eyebrow = $fcc_is_hr_language ? 'Stranice' : 'Pages';
 $fcc_pages_hero_subtitle = l('pages.subheader');
 $fcc_pages_stats_categories = $fcc_is_hr_language ? 'Kategorija' : 'Categories';
-$fcc_pages_stats_popular = $fcc_is_hr_language ? 'Popularnih stranica' : 'Popular pages';
+$fcc_pages_stats_popular = $fcc_is_hr_language ? fcc_t('Popularnih stranica') : fcc_t('Popular pages');
 $fcc_pages_categories_heading = $fcc_is_hr_language ? 'Kategorije' : 'Categories';
-$fcc_pages_popular_heading = $fcc_is_hr_language ? 'Popularne stranice' : 'Popular pages';
-$fcc_pages_cta_label = $fcc_is_hr_language ? 'Saznaj više' : 'Learn more';
+$fcc_pages_popular_heading = $fcc_is_hr_language ? fcc_t('Popularne stranice') : fcc_t('Popular pages');
+$fcc_pages_cta_label = $fcc_is_hr_language ? fcc_t('Saznaj više') : 'Learn more';
 /* /Custom code: FC-2026-02-27 */
 ?>
 
 <div class="container">
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li><a href="<?= url() ?>"><?= l('index.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
                 <li class="active" aria-current="page"><?= l('pages.index.breadcrumb') ?></li>

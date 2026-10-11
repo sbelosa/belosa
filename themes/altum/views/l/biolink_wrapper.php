@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="<?= $this->link->settings->language_code ?? \Altum\Language::$default_code ?>" class="link-html" dir="<?= l('direction') ?>">
     <head>
+    <?php fcc_i18n_assets(); ?>
         <?php
         $fcc_theme_custom_css = '';
 

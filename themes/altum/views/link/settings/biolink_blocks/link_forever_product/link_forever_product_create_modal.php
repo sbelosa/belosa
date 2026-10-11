@@ -3,37 +3,39 @@
 <?php
 $fcc_is_hr = \Altum\Language::$code === 'hr';
 $fcc_forever_product_copy = $fcc_is_hr ? [
-    'language_section' => 'Jezik sadržaja proizvoda',
-    'language_section_help' => 'Odredi treba li ovaj blok pratiti jezik aplikacije ili koristiti točno odabrani jezik proizvoda.',
-    'language_mode' => 'Način jezika',
-    'language_mode_app' => 'Prati jezik aplikacije',
-    'language_mode_manual' => 'Odaberi jezik proizvoda ručno',
-    'language_mode_help' => 'Ako aplikacija radi na EN, blok će pokušati povući EN verziju proizvoda. Ako ne postoji, koristi se fallback.',
-    'manual_language' => 'Ručni jezik proizvoda',
-    'manual_language_help' => 'Koristi se kada želiš da ovaj blok uvijek vodi na određeni jezik proizvoda bez obzira na jezik aplikacije.',
-    'fallback_language' => 'Fallback jezik',
-    'fallback_language_help' => 'Ako traženi jezik proizvoda ne postoji, blok automatski prelazi na odabrani fallback.',
-    'fallback_none' => 'Bez fallbacka',
-    'app_language_note' => 'Trenutni jezik ove aplikacije: ',
-    'selector_language_hint' => 'Dostupni jezici proizvoda: ',
+    'language_section' => fcc_t('Jezik sadržaja proizvoda'),
+    'language_section_help' => fcc_t('Odredi treba li ovaj blok pratiti jezik aplikacije ili koristiti točno odabrani jezik proizvoda.'),
+    'language_mode' => fcc_t('Način jezika'),
+    'language_mode_app' => fcc_t('Prati jezik aplikacije'),
+    'language_mode_manual' => fcc_t('Odaberi jezik proizvoda ručno'),
+    'language_mode_help' => fcc_t('Ako aplikacija radi na EN, blok će pokušati povući EN verziju proizvoda. Ako ne postoji, koristi se fallback.'),
+    'manual_language' => fcc_t('Ručni jezik proizvoda'),
+    'manual_language_help' => fcc_t('Koristi se kada želiš da ovaj blok uvijek vodi na određeni jezik proizvoda bez obzira na jezik aplikacije.'),
+    'fallback_language' => fcc_t('Fallback jezik'),
+    'fallback_language_help' => fcc_t('Ako traženi jezik proizvoda ne postoji, blok automatski prelazi na odabrani fallback.'),
+    'fallback_none' => fcc_t('Bez fallbacka'),
+    'app_language_note' => fcc_t('Trenutni jezik ove aplikacije: '),
+    'selector_language_hint' => fcc_t('Dostupni jezici proizvoda: '),
 ] : [
     'language_section' => 'Product content language',
-    'language_section_help' => 'Choose whether this block should follow the app language or always use a specific product language.',
+    'language_section_help' => fcc_t('Choose whether this block should follow the app language or always use a specific product language.'),
     'language_mode' => 'Language mode',
-    'language_mode_app' => 'Follow the app language',
-    'language_mode_manual' => 'Choose the product language manually',
-    'language_mode_help' => 'If the app runs in EN, the block will try to load the EN product version. When it is missing, the fallback is used.',
-    'manual_language' => 'Manual product language',
-    'manual_language_help' => 'Use this when the block should always open one product language regardless of the app language.',
-    'fallback_language' => 'Fallback language',
-    'fallback_language_help' => 'If the requested product language is missing, the block automatically falls back to the selected language.',
-    'fallback_none' => 'No fallback',
-    'app_language_note' => 'Current app language: ',
-    'selector_language_hint' => 'Available product languages: ',
+    'language_mode_app' => fcc_t('Follow the app language'),
+    'language_mode_manual' => fcc_t('Choose the product language manually'),
+    'language_mode_help' => fcc_t('If the app runs in EN, the block will try to load the EN product version. When it is missing, the fallback is used.'),
+    'manual_language' => fcc_t('Manual product language'),
+    'manual_language_help' => fcc_t('Use this when the block should always open one product language regardless of the app language.'),
+    'fallback_language' => fcc_t('Fallback language'),
+    'fallback_language_help' => fcc_t('If the requested product language is missing, the block automatically falls back to the selected language.'),
+    'fallback_none' => fcc_t('No fallback'),
+    'app_language_note' => fcc_t('Current app language: '),
+    'selector_language_hint' => fcc_t('Available product languages: '),
 ];
 
 $fcc_active_language_codes = array_values((array) \Altum\Language::$active_languages);
 $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language::$default_code;
+$fcc_product_market = fcc_forever_country_code($_GET['market'] ?? null);
+if(!$fcc_product_market || !isset(fcc_forever_markets()[$fcc_product_market])) $fcc_product_market = '';
 ?>
 
 <!-- Custom code: FC-2026-03-09: create modal for Forever product picker block -->
@@ -59,6 +61,8 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
                     <input type="hidden" name="product_blog_post_id" value="0" data-forever-product-blog-post-id />
                     <input type="hidden" name="product_translation_key" value="" data-forever-product-translation-key />
                     <input type="hidden" name="product_image_url" value="" data-forever-product-image-url />
+                    <input type="hidden" name="product_name_mode" value="auto" data-forever-product-name-mode />
+                    <input type="hidden" name="product_description_mode" value="auto" data-forever-product-description-mode />
 
                     <div class="notification-container"></div>
 
@@ -81,6 +85,7 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
                                     data-translation-key="<?= htmlspecialchars($blog_product->translation_key ?? '', ENT_QUOTES) ?>"
                                     data-language-code="<?= htmlspecialchars($blog_product->language_code ?? '', ENT_QUOTES) ?>"
                                     data-language-label="<?= htmlspecialchars($blog_product->available_languages_label ?? '', ENT_QUOTES) ?>"
+                                    data-translations="<?= htmlspecialchars(json_encode($blog_product->translations ?? new \stdClass(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
                                 >
                                     <?= $blog_product->title ?><?= !empty($blog_product->available_languages_label) ? ' [' . $blog_product->available_languages_label . ']' : '' ?>
                                 </option>
@@ -123,7 +128,7 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
                                 <div class="form-group mb-0">
                                     <label for="forever_product_fallback_language_code"><?= $fcc_forever_product_copy['fallback_language'] ?></label>
                                     <select id="forever_product_fallback_language_code" name="product_fallback_language_code" class="custom-select" data-forever-product-fallback-language-code>
-                                        <option value="hr" <?= 'hr' === $fcc_app_language_code ? 'selected="selected"' : null ?>>HR</option>
+                                        <option value="hr" <?= 'hr' === $fcc_app_language_code ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('HR'), ENT_QUOTES, 'UTF-8') ?></option>
                                         <?php foreach($fcc_active_language_codes as $language_code): ?>
                                             <?php if($language_code === 'hr') continue ?>
                                             <option value="<?= $language_code ?>"><?= mb_strtoupper($language_code) ?></option>
@@ -181,92 +186,114 @@ $fcc_app_language_code = $data->link->settings->language_code ?? \Altum\Language
     const previewWrapper = modal.querySelector('[data-forever-product-preview-wrapper]');
     const previewImage = modal.querySelector('[data-forever-product-preview-image]');
     const languageMode = modal.querySelector('[data-forever-product-language-mode]');
+    const manualLanguage = modal.querySelector('[data-forever-product-language-code]');
+    const fallbackLanguage = modal.querySelector('[data-forever-product-fallback-language-code]');
+    const nameModeInput = modal.querySelector('[data-forever-product-name-mode]');
+    const descriptionModeInput = modal.querySelector('[data-forever-product-description-mode]');
     const manualLanguageWrapper = modal.querySelector('[data-forever-product-manual-language-wrapper]');
     const languageHint = modal.querySelector('[data-forever-product-language-hint]');
 
-    if(!selector || !nameInput || !locationInput || !blogPostIdInput || !translationKeyInput || !imageUrlInput || !descriptionInput || !languageMode) return;
+    if(!selector || !nameInput || !locationInput || !blogPostIdInput || !translationKeyInput || !imageUrlInput || !descriptionInput || !languageMode || !manualLanguage || !fallbackLanguage || !nameModeInput || !descriptionModeInput) return;
 
-    const getAutoTrackedValue = (element) => element ? (element.dataset.foreverProductAutoValue || '') : '';
-    const setAutoTrackedValue = (element, value) => {
-        if(element) {
-            element.dataset.foreverProductAutoValue = value || '';
-        }
+    const appLanguage = <?= json_encode((string) $fcc_app_language_code) ?>;
+    const selectedMarket = <?= json_encode((string) $fcc_product_market) ?>;
+    const normalizeText = value => String(value || '').replace(/\s+/g, ' ').trim();
+    const inputText = (value, element) => {
+        const text = String(value || '');
+        const limit = Number(element?.maxLength);
+        return limit > 0 ? Array.from(text).slice(0, limit).join('') : text;
     };
+    const translationsFor = option => {
+        if(!option || !option.value) return {};
+        let translations = {};
+        try {
+            const parsed = JSON.parse(option.getAttribute('data-translations') || '{}');
+            if(parsed && typeof parsed === 'object' && !Array.isArray(parsed)) translations = parsed;
+        } catch(error) {
+            translations = {};
+        }
+        const preferredCode = option.getAttribute('data-language-code') || appLanguage;
+        if(preferredCode && !translations[preferredCode]) {
+            translations[preferredCode] = {
+                blog_post_id: option.value,
+                title: option.getAttribute('data-title') || '',
+                description: option.getAttribute('data-description') || '',
+                blog_url: option.getAttribute('data-url') || '',
+                image_url: option.getAttribute('data-image-url') || '',
+                language_code: preferredCode
+            };
+        }
+        return translations;
+    };
+    let currentTranslations = translationsFor(selector.options[selector.selectedIndex]);
+    const matchesAutomaticText = (element, key) => {
+        const value = normalizeText(element?.value);
+        return value === '' || Object.values(currentTranslations).some(variant => variant && normalizeText(inputText(variant[key], element)) === value);
+    };
+    const initializeTextMode = (element, modeInput, key) => {
+        if(!element || !modeInput) return;
+        if(!['auto', 'custom'].includes(modeInput.value)) {
+            modeInput.value = matchesAutomaticText(element, key) ? 'auto' : 'custom';
+        }
+        const trackTextEdit = () => {
+            modeInput.value = matchesAutomaticText(element, key) ? 'auto' : 'custom';
+        };
+        element.addEventListener('input', trackTextEdit);
+        element.addEventListener('change', trackTextEdit);
+    };
+    initializeTextMode(nameInput, nameModeInput, 'title');
+    initializeTextMode(descriptionInput, descriptionModeInput, 'description');
 
     const syncLanguageMode = () => {
-        if(!manualLanguageWrapper) {
-            return;
+        if(manualLanguageWrapper && languageMode) {
+            manualLanguageWrapper.style.display = languageMode.value === 'manual' ? '' : 'none';
         }
-
-        manualLanguageWrapper.style.display = languageMode.value === 'manual' ? '' : 'none';
     };
-
+    const productUrl = value => {
+        if(!value || !selectedMarket) return value || '';
+        try {
+            const url = new URL(value, window.location.href);
+            url.searchParams.set('market', selectedMarket);
+            return url.href;
+        } catch(error) {
+            return value;
+        }
+    };
     const applySelectedProduct = () => {
         const option = selector.options[selector.selectedIndex];
-        if(!option || !option.value) {
-            blogPostIdInput.value = 0;
-            translationKeyInput.value = '';
-            locationInput.value = '';
-            imageUrlInput.value = '';
-            if(languageHint) {
-                languageHint.textContent = '';
-                languageHint.classList.add('d-none');
-            }
-            if(previewWrapper) previewWrapper.style.display = 'none';
-            return;
-        }
+        currentTranslations = translationsFor(option);
+        const targetLanguage = languageMode?.value === 'manual' ? manualLanguage?.value : appLanguage;
+        const fallbackCode = fallbackLanguage?.value || '';
+        const variant = currentTranslations[targetLanguage] || (fallbackCode ? currentTranslations[fallbackCode] : null);
+        const translationKey = option?.value ? option.getAttribute('data-translation-key') || '' : '';
+        const languageLabel = option?.value ? option.getAttribute('data-language-label') || Object.keys(currentTranslations).map(code => code.toUpperCase()).join(' / ') : '';
 
-        const selectedTitle = option.getAttribute('data-title') || '';
-        const selectedDescription = option.getAttribute('data-description') || '';
-        const selectedUrl = option.getAttribute('data-url') || '';
-        const selectedImageUrl = option.getAttribute('data-image-url') || '';
-        const translationKey = option.getAttribute('data-translation-key') || '';
-        const languageLabel = option.getAttribute('data-language-label') || '';
-        const previousAutoName = getAutoTrackedValue(nameInput);
-        const previousAutoDescription = getAutoTrackedValue(descriptionInput);
-
-        blogPostIdInput.value = option.value;
-        translationKeyInput.value = translationKey;
-        locationInput.value = selectedUrl;
-        imageUrlInput.value = selectedImageUrl;
-
-        if(nameInput.value.trim() === '' || nameInput.value === previousAutoName) {
-            nameInput.value = selectedTitle;
-        }
-
-        if(descriptionInput.value.trim() === '' || descriptionInput.value === previousAutoDescription) {
-            descriptionInput.value = selectedDescription;
-        }
-
-        setAutoTrackedValue(nameInput, selectedTitle);
-        setAutoTrackedValue(descriptionInput, selectedDescription);
+        if(blogPostIdInput) blogPostIdInput.value = variant?.blog_post_id || 0;
+        if(translationKeyInput) translationKeyInput.value = translationKey;
+        if(locationInput) locationInput.value = productUrl(variant?.blog_url || '');
+        if(imageUrlInput) imageUrlInput.value = variant?.image_url || '';
+        if(nameInput && nameModeInput?.value === 'auto') nameInput.value = inputText(variant?.title, nameInput);
+        if(descriptionInput && descriptionModeInput?.value === 'auto') descriptionInput.value = inputText(variant?.description, descriptionInput);
 
         if(languageHint) {
-            if(languageLabel) {
-                languageHint.textContent = <?= json_encode($fcc_forever_product_copy['selector_language_hint']) ?> + languageLabel;
-                languageHint.classList.remove('d-none');
-            } else {
-                languageHint.textContent = '';
-                languageHint.classList.add('d-none');
-            }
+            languageHint.textContent = languageLabel ? <?= json_encode($fcc_forever_product_copy['selector_language_hint']) ?> + languageLabel : '';
+            languageHint.classList.toggle('d-none', !languageLabel);
         }
-
         if(previewWrapper && previewImage) {
-            if(selectedImageUrl) {
-                previewImage.src = selectedImageUrl;
-                previewWrapper.style.display = '';
-            } else {
-                previewImage.src = '';
-                previewWrapper.style.display = 'none';
-            }
+            previewImage.src = variant?.image_url || '';
+            previewWrapper.style.display = variant?.image_url ? '' : 'none';
         }
     };
 
     selector.addEventListener('change', applySelectedProduct);
-    languageMode.addEventListener('change', syncLanguageMode);
+    languageMode?.addEventListener('change', () => {
+        syncLanguageMode();
+        applySelectedProduct();
+    });
+    manualLanguage?.addEventListener('change', applySelectedProduct);
+    fallbackLanguage?.addEventListener('change', applySelectedProduct);
     syncLanguageMode();
-    setAutoTrackedValue(nameInput, '');
-    setAutoTrackedValue(descriptionInput, '');
+    if(selector.options[selector.selectedIndex]?.value) applySelectedProduct();
 
     const initializeProductSelector = () => {
         if($(selector).hasClass('select2-hidden-accessible')) {

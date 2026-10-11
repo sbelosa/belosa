@@ -1,0 +1,1445 @@
+{
+    "version": "fcc-learning-2026-09-29-v8",
+    "tasks": {
+        "fcc90_v7_001": {
+            "topic_id": "forever_fcc",
+            "day": 1,
+            "core": "Development",
+            "question": "Što mi omogućuje My Global Business i što prvo trebam provjeriti na svom računu?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Otvori svoje globalno Forever poslovanje. Što mi omogućuje My Global Business i što prvo trebam provjeriti na svom računu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_002": {
+            "topic_id": "forever_fcc",
+            "day": 2,
+            "core": "Development",
+            "question": "Možeš li pogledati moj profil i reći je li jasno gdje ljudi mogu pronaći više informacija?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Poveži društvene mreže sa svojom FCC karticom. Možeš li pogledati moj profil i reći je li jasno gdje ljudi mogu pronaći više informacija? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_003": {
+            "topic_id": "forever_fcc",
+            "day": 3,
+            "core": "Development",
+            "question": "Možemo li zajedno otvoriti moju karticu i provjeriti kontakt, poveznice i Forever trgovinu?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Uredi FCC karticu zajedno sa sponzorom. Možemo li zajedno otvoriti moju karticu i provjeriti kontakt, poveznice i Forever trgovinu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_004": {
+            "topic_id": "customers_team",
+            "day": 4,
+            "core": "Development",
+            "question": "Kako bi u jednoj rečenici objasnio čime se baviš osobi koja te tek upoznaje?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Predstavi se i pokaži što ljudi mogu očekivati. Kako bi u jednoj rečenici objasnio čime se baviš osobi koja te tek upoznaje? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_005": {
+            "topic_id": "products_experience",
+            "day": 5,
+            "core": "Development",
+            "question": "Koji jedan proizvod možeš pokazati početniku i kako ga ti jednostavno predstavljaš kupcu?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Nauči pokazati jedan proizvod. Koji jedan proizvod možeš pokazati početniku i kako ga ti jednostavno predstavljaš kupcu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_006": {
+            "topic_id": "customers_team",
+            "day": 6,
+            "core": "Development",
+            "question": "Kako razlikuješ zainteresiranu osobu od osobe kojoj si samo obećao javiti se?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pripremi kontakte i dogovorena javljanja. Kako razlikuješ zainteresiranu osobu od osobe kojoj si samo obećao javiti se? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_007": {
+            "topic_id": "customers_team",
+            "day": 7,
+            "core": "Productivity",
+            "question": "Kako započeti razgovor s poznanikom bez pretpostavke da mu treba proizvod?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se dvjema osobama i započni razgovor. Kako započeti razgovor s poznanikom bez pretpostavke da mu treba proizvod? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_008": {
+            "topic_id": "products_experience",
+            "day": 8,
+            "core": "Productivity",
+            "question": "Kupac je opisao što traži. Kako postavljaš još jedno pitanje prije izbora proizvoda?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Preporuči proizvod osobi koja te pitala za pomoć. Kupac je opisao što traži. Kako postavljaš još jedno pitanje prije izbora proizvoda? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_009": {
+            "topic_id": "forever_fcc",
+            "day": 9,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći kako kupac s moje poveznice dolazi do svoje lokalne trgovine?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Olakšaj zainteresiranoj osobi narudžbu. Možemo li zajedno proći kako kupac s moje poveznice dolazi do svoje lokalne trgovine? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_010": {
+            "topic_id": "products_experience",
+            "day": 10,
+            "core": "Retention",
+            "question": "Što kupci najčešće pitaju kad tek počnu koristiti ovaj proizvod i kako im pomažete?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pomozi kupcu da počne koristiti proizvod. Što kupci najčešće pitaju kad tek počnu koristiti ovaj proizvod i kako im pomažete? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_011": {
+            "topic_id": "customers_team",
+            "day": 11,
+            "core": "Retention",
+            "question": "Kako se javljaš osobi nakon preporuke i ostavljaš joj prostor da sama odluči?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se osobi kojoj si već poslao preporuku. Kako se javljaš osobi nakon preporuke i ostavljaš joj prostor da sama odluči? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_012": {
+            "topic_id": "earnings",
+            "day": 12,
+            "core": "Recruitment",
+            "question": "Možeš li mi jednostavno objasniti kako nastaju prodajna razlika i bonus prije moje prve prezentacije?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pripremi svoju poslovnu prezentaciju. Možeš li mi jednostavno objasniti kako nastaju prodajna razlika i bonus prije moje prve prezentacije? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_013": {
+            "topic_id": "customers_team",
+            "day": 13,
+            "core": "Recruitment",
+            "question": "Kako provjeriti zanima li osobu dodatni posao, bez obećavanja zarade?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pozovi osobu koju zanima dodatni posao. Kako provjeriti zanima li osobu dodatni posao, bez obećavanja zarade? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_014": {
+            "topic_id": "webinars",
+            "day": 14,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno pripremiti moju prvu osobnu pozivnicu za aktualni FCC termin?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pripremi prvi poziv na FCC webinar. Možemo li zajedno pripremiti moju prvu osobnu pozivnicu za aktualni FCC termin? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_015": {
+            "topic_id": "cc",
+            "day": 15,
+            "core": "Development",
+            "question": "Možemo li usporediti moje razgovore, prijave i CC bez pretpostavke da svaki razgovor znači kupnju?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pregledaj prve razgovore i popravi jedan korak. Možemo li usporediti moje razgovore, prijave i CC bez pretpostavke da svaki razgovor znači kupnju? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_016": {
+            "topic_id": "products_experience",
+            "day": 16,
+            "core": "Productivity",
+            "question": "Koje jedno pitanje kupci često postavljaju o proizvodu koje mogu pretvoriti u korisnu objavu?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi koristan odgovor za svoju publiku. Koje jedno pitanje kupci često postavljaju o proizvodu koje mogu pretvoriti u korisnu objavu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_017": {
+            "topic_id": "products_experience",
+            "day": 17,
+            "core": "Retention",
+            "question": "Kako provjeravate razumije li kupac uporabu, a da razgovor ne zvuči kao ispitivanje?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pitaj kupca što mu je ostalo nejasno. Kako provjeravate razumije li kupac uporabu, a da razgovor ne zvuči kao ispitivanje? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_018": {
+            "topic_id": "customers_team",
+            "day": 18,
+            "core": "Recruitment",
+            "question": "Kako mogu iskreno ispričati svoj razlog za početak i povezati ga s interesom osobe?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Ispričaj svoj razlog i ponudi poslovnu prezentaciju. Kako mogu iskreno ispričati svoj razlog za početak i povezati ga s interesom osobe? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_019": {
+            "topic_id": "products_experience",
+            "day": 19,
+            "core": "Productivity",
+            "question": "Koja je stvarna praktična razlika između ove dvije opcije i kome bi koja više odgovarala?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži razliku između dvije opcije. Koja je stvarna praktična razlika između ove dvije opcije i kome bi koja više odgovarala? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_020": {
+            "topic_id": "earnings",
+            "day": 20,
+            "core": "Development",
+            "question": "Kako odgovaraš kad osoba kaže da joj je proizvod skup i kako poštuješ njezin budžet?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Uvježbaj razgovor o cijeni proizvoda. Kako odgovaraš kad osoba kaže da joj je proizvod skup i kako poštuješ njezin budžet? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_021": {
+            "topic_id": "products_experience",
+            "day": 21,
+            "core": "Productivity",
+            "question": "Koje tri povezane teme o jednom proizvodu bi ljudima stvarno koristile?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pokreni malu trodnevnu temu. Koje tri povezane teme o jednom proizvodu bi ljudima stvarno koristile? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_022": {
+            "topic_id": "products_experience",
+            "day": 22,
+            "core": "Productivity",
+            "question": "Možeš li mi pokazati jednostavan način da u kratkoj snimci prikažem proizvod?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži drugi dio teme u praksi. Možeš li mi pokazati jednostavan način da u kratkoj snimci prikažem proizvod? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_023": {
+            "topic_id": "products_experience",
+            "day": 23,
+            "core": "Productivity",
+            "question": "Kako bi ti odgovorio na ovo pitanje o proizvodu jednom jasnom rečenicom?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Odgovori na pitanje o proizvodu iz svoje objave. Kako bi ti odgovorio na ovo pitanje o proizvodu jednom jasnom rečenicom? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_024": {
+            "topic_id": "webinars",
+            "day": 24,
+            "core": "Recruitment",
+            "question": "Kako provjeravaš prijave na vlastitoj pozivnici i što radiš kad osoba još ima pitanje?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pozovi novu osobu i provjeri svoje prijave. Kako provjeravaš prijave na vlastitoj pozivnici i što radiš kad osoba još ima pitanje? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_025": {
+            "topic_id": "webinars",
+            "day": 25,
+            "core": "Retention",
+            "question": "Koje pitanje poslije webinara pomaže razumjeti što je gosta stvarno zanimalo?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se osobi nakon webinara. Koje pitanje poslije webinara pomaže razumjeti što je gosta stvarno zanimalo? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_026": {
+            "topic_id": "products_experience",
+            "day": 26,
+            "core": "Development",
+            "question": "Kako biraš jednu opciju unutar budžeta umjesto slanja cijelog popisa proizvoda?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pronađi proizvod koji se uklapa u nečiji budžet. Kako biraš jednu opciju unutar budžeta umjesto slanja cijelog popisa proizvoda? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_027": {
+            "topic_id": "products_experience",
+            "day": 27,
+            "core": "Productivity",
+            "question": "Koji praktičan savjet o ovom proizvodu kupci najčešće žele sačuvati?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Napravi objavu koju vrijedi spremiti. Koji praktičan savjet o ovom proizvodu kupci najčešće žele sačuvati? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_028": {
+            "topic_id": "customers_team",
+            "day": 28,
+            "core": "Retention",
+            "question": "Kako zadovoljnom kupcu olakšati da me predstavi prijatelju bez traženja tuđeg broja?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Zadovoljnom kupcu olakšaj osobnu preporuku. Kako zadovoljnom kupcu olakšati da me predstavi prijatelju bez traženja tuđeg broja? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_029": {
+            "topic_id": "ranks",
+            "day": 29,
+            "core": "Recruitment",
+            "question": "Možeš li mi objasniti moju sljedeću poziciju i kako razgovori s kupcima i podrška timu doprinose tom cilju?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Vodi prvi kratak poslovni razgovor. Možeš li mi objasniti moju sljedeću poziciju i kako razgovori s kupcima i podrška timu doprinose tom cilju? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_030": {
+            "topic_id": "webinars",
+            "day": 30,
+            "core": "Development",
+            "question": "Koju jednu temu mogu objasniti na svom prvom malom susretu uz tvoju pomoć?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pripremi temu svojeg prvog kratkog susreta. Koju jednu temu mogu objasniti na svom prvom malom susretu uz tvoju pomoć? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_031": {
+            "topic_id": "health_questions",
+            "day": 31,
+            "core": "Productivity",
+            "question": "Kako razgovaraš o dodacima prehrani kada osoba spomene zdravstvenu temu?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pitaj ljude što žele znati o dodacima prehrani. Kako razgovaraš o dodacima prehrani kada osoba spomene zdravstvenu temu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_032": {
+            "topic_id": "products_experience",
+            "day": 32,
+            "core": "Productivity",
+            "question": "Koji provjeren detalj o ovom proizvodu ljudima pomaže da ga lakše razumiju?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi jedan koristan detalj o proizvodu. Koji provjeren detalj o ovom proizvodu ljudima pomaže da ga lakše razumiju? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_033": {
+            "topic_id": "customers_team",
+            "day": 33,
+            "core": "Productivity",
+            "question": "Kako nastaviti razgovor s osobom koja je odgovorila na moju temu?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Razgovaraj s ljudima koje zanima tvoja tema. Kako nastaviti razgovor s osobom koja je odgovorila na moju temu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_034": {
+            "topic_id": "products_experience",
+            "day": 34,
+            "core": "Retention",
+            "question": "Možeš li mi praktično pokazati dio uporabe koji kupcu nije jasan pa da ga objasnim svojim riječima?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Objasni kupcu dio upute koji mu nije jasan. Možeš li mi praktično pokazati dio uporabe koji kupcu nije jasan pa da ga objasnim svojim riječima? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_035": {
+            "topic_id": "four_core",
+            "day": 35,
+            "core": "Recruitment",
+            "question": "Kako mogu pokazati dio stvarnog rada i učenja bez izmišljanja uspjeha?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži rad iza objava. Kako mogu pokazati dio stvarnog rada i učenja bez izmišljanja uspjeha? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_036": {
+            "topic_id": "webinars",
+            "day": 36,
+            "core": "Recruitment",
+            "question": "Možemo li uvježbati dva osobna poziva za osobe s različitim razlozima interesa?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pozovi dvije osobe na predstavljanje posla. Možemo li uvježbati dva osobna poziva za osobe s različitim razlozima interesa? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_037": {
+            "topic_id": "products_experience",
+            "day": 37,
+            "core": "Development",
+            "question": "Koje pitanje najviše pomaže da saslušam osobu prije preporuke proizvoda?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Saslušaj osobu prije nego predložiš proizvod. Koje pitanje najviše pomaže da saslušam osobu prije preporuke proizvoda? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_038": {
+            "topic_id": "products_experience",
+            "day": 38,
+            "core": "Retention",
+            "question": "Kako dogovaraš javljanje prema kupčevoj rutini umjesto slanja istih podsjetnika svima?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se kupcu prema njegovoj rutini. Kako dogovaraš javljanje prema kupčevoj rutini umjesto slanja istih podsjetnika svima? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_039": {
+            "topic_id": "products_experience",
+            "day": 39,
+            "core": "Productivity",
+            "question": "Kako prepoznati da je postojeći proizvod dovoljan i da ne treba predlagati dodatni?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Provjeri treba li kupcu uopće još neki proizvod. Kako prepoznati da je postojeći proizvod dovoljan i da ne treba predlagati dodatni? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_040": {
+            "topic_id": "earnings",
+            "day": 40,
+            "core": "Recruitment",
+            "question": "Koje stvarne početne obveze, troškove i mogućnosti trebam jasno objasniti zainteresiranoj osobi?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Objasni početak, vrijeme i stvarne obveze. Koje stvarne početne obveze, troškove i mogućnosti trebam jasno objasniti zainteresiranoj osobi? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_041": {
+            "topic_id": "forever_fcc",
+            "day": 41,
+            "core": "Productivity",
+            "question": "Koju jednu nedoumicu o naručivanju mogu jednostavno objasniti u objavi?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi odgovor na pitanje o kupnji. Koju jednu nedoumicu o naručivanju mogu jednostavno objasniti u objavi? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_042": {
+            "topic_id": "customers_team",
+            "day": 42,
+            "core": "Retention",
+            "question": "Kako nastavak razgovora prilagođavaš onome što je kupac već rekao?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se osobi kojoj si preporučio proizvod. Kako nastavak razgovora prilagođavaš onome što je kupac već rekao? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_043": {
+            "topic_id": "webinars",
+            "day": 43,
+            "core": "Development",
+            "question": "Možemo li uvježbati moj kratki susret i izabrati jednu stvar koju trebam jasnije objasniti?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Uvježbaj svoj kratki susret sa sponzorom. Možemo li uvježbati moj kratki susret i izabrati jednu stvar koju trebam jasnije objasniti? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_044": {
+            "topic_id": "customers_team",
+            "day": 44,
+            "core": "Retention",
+            "question": "Što početniku prvo pokazuješ da se osjeća sigurno i zna kome se obratiti?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Novom suradniku olakšaj prve korake. Što početniku prvo pokazuješ da se osjeća sigurno i zna kome se obratiti? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_045": {
+            "topic_id": "products_experience",
+            "day": 45,
+            "core": "Productivity",
+            "question": "Možeš li mi pomoći odgovoriti na pitanje iz moje teme koje je ostalo otvoreno?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Odgovori na preostalo pitanje iz svoje teme. Možeš li mi pomoći odgovoriti na pitanje iz moje teme koje je ostalo otvoreno? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_046": {
+            "topic_id": "webinars",
+            "day": 46,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno provjeriti naziv, datum i pristupnu poveznicu moje prve vlastite pozivnice?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Kreiraj svoju prvu pozivnicu za mali susret. Možemo li zajedno provjeriti naziv, datum i pristupnu poveznicu moje prve vlastite pozivnice? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_047": {
+            "topic_id": "webinars",
+            "day": 47,
+            "core": "Productivity",
+            "question": "Kako bi predstavio razlog dolaska na moj susret u dvije prirodne rečenice?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi poziv na svoj susret. Kako bi predstavio razlog dolaska na moj susret u dvije prirodne rečenice? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_048": {
+            "topic_id": "webinars",
+            "day": 48,
+            "core": "Retention",
+            "question": "Što prijavljenom gostu treba prije početka i kako mu najjednostavnije pomoći?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pomogni prijavljenom gostu da se pripremi. Što prijavljenom gostu treba prije početka i kako mu najjednostavnije pomoći? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_049": {
+            "topic_id": "ranks",
+            "day": 49,
+            "core": "Recruitment",
+            "question": "Kako provjeravamo pravila za zemlju osobe kojoj pokazujem poslovnu prezentaciju?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži poslovnu prezentaciju za pravu zemlju. Kako provjeravamo pravila za zemlju osobe kojoj pokazujem poslovnu prezentaciju? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_050": {
+            "topic_id": "products_experience",
+            "day": 50,
+            "core": "Productivity",
+            "question": "Možeš li pogledati moj prikaz proizvoda i reći je li jasan osobi koja ga prvi put vidi?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži jedan proizvod na kratkom susretu. Možeš li pogledati moj prikaz proizvoda i reći je li jasan osobi koja ga prvi put vidi? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_051": {
+            "topic_id": "webinars",
+            "day": 51,
+            "core": "Retention",
+            "question": "Kako saznati što je gostu bilo korisno i koji mu nastavak stvarno odgovara?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Odgovori gostu nakon svojeg susreta. Kako saznati što je gostu bilo korisno i koji mu nastavak stvarno odgovara? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_052": {
+            "topic_id": "products_experience",
+            "day": 52,
+            "core": "Productivity",
+            "question": "Kako uspoređuješ dvije opcije za jednu konkretnu potrebu bez proglašavanja jedne najboljom za sve?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Usporedi dvije opcije za jednu osobu. Kako uspoređuješ dvije opcije za jednu konkretnu potrebu bez proglašavanja jedne najboljom za sve? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_053": {
+            "topic_id": "customers_team",
+            "day": 53,
+            "core": "Retention",
+            "question": "Kako novom suradniku pomoći odabrati prvi korak koji može samostalno napraviti?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Dogovori izvediv prvi tjedan novog suradnika. Kako novom suradniku pomoći odabrati prvi korak koji može samostalno napraviti? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_054": {
+            "topic_id": "customers_team",
+            "day": 54,
+            "core": "Development",
+            "question": "Možemo li zajedno proći prvu poruku novog suradnika i zadržati njegov način izražavanja?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pomogni početniku napisati prvu poruku. Možemo li zajedno proći prvu poruku novog suradnika i zadržati njegov način izražavanja? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_055": {
+            "topic_id": "products_experience",
+            "day": 55,
+            "core": "Retention",
+            "question": "Kako pitaš kupca za vlastito iskustvo i dopuštenje da ga preneseš bez dodavanja svojih tvrdnji?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Zatraži stvaran dojam koji može pomoći drugima. Kako pitaš kupca za vlastito iskustvo i dopuštenje da ga preneseš bez dodavanja svojih tvrdnji? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_056": {
+            "topic_id": "products_experience",
+            "day": 56,
+            "core": "Productivity",
+            "question": "Kako napisati objavu o ovom proizvodu koja otvara stvarno pitanje umjesto da zvuči kao katalog?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi proizvod i ponudi detalje. Kako napisati objavu o ovom proizvodu koja otvara stvarno pitanje umjesto da zvuči kao katalog? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_057": {
+            "topic_id": "customers_team",
+            "day": 57,
+            "core": "Recruitment",
+            "question": "Kada je korisno uključiti sponzora u razgovor i kako to prirodno ponuditi osobi?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Poveži zainteresiranu osobu sa sponzorom. Kada je korisno uključiti sponzora u razgovor i kako to prirodno ponuditi osobi? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_058": {
+            "topic_id": "activity",
+            "day": 58,
+            "core": "Retention",
+            "question": "Kako redovita podrška kupcima pomaže održivom mjesečnom radu bez kupovanja zaliha radi bodova?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Ponovnu narudžbu učini jednostavnom. Kako redovita podrška kupcima pomaže održivom mjesečnom radu bez kupovanja zaliha radi bodova? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_059": {
+            "topic_id": "four_core",
+            "day": 59,
+            "core": "Development",
+            "question": "Možemo li pogledati jednu moju poruku i ispraviti dio koji osoba nije razumjela?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Popravi jednu poruku koja nije bila jasna. Možemo li pogledati jednu moju poruku i ispraviti dio koji osoba nije razumjela? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_060": {
+            "topic_id": "webinars",
+            "day": 60,
+            "core": "Development",
+            "question": "Koju temu su gosti sami spomenuli pa je možemo obraditi na sljedećem mjesečnom susretu?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pripremi sljedeći mjesečni susret. Koju temu su gosti sami spomenuli pa je možemo obraditi na sljedećem mjesečnom susretu? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_061": {
+            "topic_id": "products_experience",
+            "day": 61,
+            "core": "Productivity",
+            "question": "Koji niz od tri praktične objave bi pokazao različite strane jednog proizvoda?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pokreni tri povezane objave o jednom proizvodu. Koji niz od tri praktične objave bi pokazao različite strane jednog proizvoda? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_062": {
+            "topic_id": "forever_fcc",
+            "day": 62,
+            "core": "Development",
+            "question": "Kako novom suradniku pokazati razliku između Forever računa i FCC alata u jednom kratkom razgovoru?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pomozi početniku pripremiti račun i predstavljanje. Kako novom suradniku pokazati razliku između Forever računa i FCC alata u jednom kratkom razgovoru? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_063": {
+            "topic_id": "products_experience",
+            "day": 63,
+            "core": "Productivity",
+            "question": "Koje najčešće pitanje o proizvodu mogu prikazati u drugoj kratkoj snimci?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Snimi drugi prikaz proizvoda iz svoje teme. Koje najčešće pitanje o proizvodu mogu prikazati u drugoj kratkoj snimci? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_064": {
+            "topic_id": "customers_team",
+            "day": 64,
+            "core": "Retention",
+            "question": "Kako provjeravaš da si stvarno dovršio pomoć koju si osobi obećao?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se dvjema osobama kojima si obećao pomoć. Kako provjeravaš da si stvarno dovršio pomoć koju si osobi obećao? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_065": {
+            "topic_id": "products_experience",
+            "day": 65,
+            "core": "Productivity",
+            "question": "Kako odgovaraš na različita pitanja iz objave bez kopiranja iste preporuke svima?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Odgovori ljudima koji su pitali za tvoju objavu. Kako odgovaraš na različita pitanja iz objave bez kopiranja iste preporuke svima? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_066": {
+            "topic_id": "four_core",
+            "day": 66,
+            "core": "Recruitment",
+            "question": "Koji moj primjer pokazuje kako FCC olakšava stvaran razgovor ili dogovor s kupcem?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži kako ti FCC pomaže u stvarnom radu. Koji moj primjer pokazuje kako FCC olakšava stvaran razgovor ili dogovor s kupcem? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_067": {
+            "topic_id": "products_experience",
+            "day": 67,
+            "core": "Development",
+            "question": "Možemo li s početnikom uvježbati izbor proizvoda i jedno jasno objašnjenje razloga?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Uvježbaj preporuku proizvoda s novim suradnikom. Možemo li s početnikom uvježbati izbor proizvoda i jedno jasno objašnjenje razloga? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_068": {
+            "topic_id": "customers_team",
+            "day": 68,
+            "core": "Retention",
+            "question": "Kako zadržati prirodan razgovor s kupcem kada se javljam prema našem dogovoru?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se kupcu prema stvarnom dogovoru. Kako zadržati prirodan razgovor s kupcem kada se javljam prema našem dogovoru? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_069": {
+            "topic_id": "webinars",
+            "day": 69,
+            "core": "Recruitment",
+            "question": "Koje tri stvari trebam objasniti o početku posla na malom susretu za zainteresirane osobe?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Dogovori mali susret o početku Forever posla. Koje tri stvari trebam objasniti o početku posla na malom susretu za zainteresirane osobe? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_070": {
+            "topic_id": "products_experience",
+            "day": 70,
+            "core": "Productivity",
+            "question": "Koji moj odgovor na pitanje vrijedi sačuvati da ga kupac kasnije lako pronađe?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Odgovori na zadnje pitanje i spremi korisne objave. Koji moj odgovor na pitanje vrijedi sačuvati da ga kupac kasnije lako pronađe? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_071": {
+            "topic_id": "cc",
+            "day": 71,
+            "core": "Development",
+            "question": "Koje moje podatke vrijedi usporediti ovaj mjesec i što iz CC ne možemo zaključiti?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Usporedi aktivnosti i napravi jednu ispravku. Koje moje podatke vrijedi usporediti ovaj mjesec i što iz CC ne možemo zaključiti? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_072": {
+            "topic_id": "customers_team",
+            "day": 72,
+            "core": "Retention",
+            "question": "Kako pomoći zadovoljnom kupcu da me osobno predstavi nekome tko je zainteresiran?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Olakšaj zadovoljnom kupcu da te predstavi. Kako pomoći zadovoljnom kupcu da me osobno predstavi nekome tko je zainteresiran? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_073": {
+            "topic_id": "products_experience",
+            "day": 73,
+            "core": "Productivity",
+            "question": "Koje su dvije stvarne razlike proizvoda koje olakšavaju izbor mojoj publici?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi usporedbu koja olakšava izbor proizvoda. Koje su dvije stvarne razlike proizvoda koje olakšavaju izbor mojoj publici? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_074": {
+            "topic_id": "earnings",
+            "day": 74,
+            "core": "Recruitment",
+            "question": "Kako objasniti cijenu i sljedeći korak osobi koja razmišlja, bez požurivanja odluke?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pomogni zainteresiranoj osobi donijeti odluku. Kako objasniti cijenu i sljedeći korak osobi koja razmišlja, bez požurivanja odluke? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_075": {
+            "topic_id": "webinars",
+            "day": 75,
+            "core": "Development",
+            "question": "Možemo li početniku pokazati kako sam pripremiti pozivnicu i provjeriti svoj termin?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pokaži suradniku kako pripremiti pozivnicu. Možemo li početniku pokazati kako sam pripremiti pozivnicu i provjeriti svoj termin? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_076": {
+            "topic_id": "products_experience",
+            "day": 76,
+            "core": "Productivity",
+            "question": "Kako postojeću temu obraditi iz novog kuta na temelju pitanja koje je publika postavila?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Ponovno obradi temu koja je potaknula pitanje. Kako postojeću temu obraditi iz novog kuta na temelju pitanja koje je publika postavila? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_077": {
+            "topic_id": "products_experience",
+            "day": 77,
+            "core": "Retention",
+            "question": "Kako složiti kratku pomoć za ovaj proizvod koju kupac može lako ponovno otvoriti?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Pripremi pomoć koju kupac lako pronađe. Kako složiti kratku pomoć za ovaj proizvod koju kupac može lako ponovno otvoriti? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_078": {
+            "topic_id": "customers_team",
+            "day": 78,
+            "core": "Development",
+            "question": "Što trebam promatrati dok novi suradnik vodi prvi razgovor i kada mu pomoći?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: S novim suradnikom dovrši prvi razgovor. Što trebam promatrati dok novi suradnik vodi prvi razgovor i kada mu pomoći? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_079": {
+            "topic_id": "customers_team",
+            "day": 79,
+            "core": "Development",
+            "question": "Kako odgovoriti kad osoba ne želi nastaviti i poštovati njezinu odluku?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Uvježbaj razgovor kada osoba ne želi nastaviti. Kako odgovoriti kad osoba ne želi nastaviti i poštovati njezinu odluku? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_080": {
+            "topic_id": "products_experience",
+            "day": 80,
+            "core": "Productivity",
+            "question": "Možeš li poslušati moju cijelu preporuku i reći je li razlog izbora dovoljno jasan?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Samostalno preporuči proizvod i ponudi pomoć. Možeš li poslušati moju cijelu preporuku i reći je li razlog izbora dovoljno jasan? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_081": {
+            "topic_id": "activity",
+            "day": 81,
+            "core": "Retention",
+            "question": "Kako dogovorenu ponovnu narudžbu povezati s kupčevom stvarnom potrebom?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Javi se kupcu koji je tražio podsjetnik za narudžbu. Kako dogovorenu ponovnu narudžbu povezati s kupčevom stvarnom potrebom? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_082": {
+            "topic_id": "ranks",
+            "day": 82,
+            "core": "Recruitment",
+            "question": "Možemo li uvježbati cjelovit razgovor o poslu, uključujući pozicije, uvjete i realan prvi korak?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Samostalno vodi cjelovit razgovor o poslu. Možemo li uvježbati cjelovit razgovor o poslu, uključujući pozicije, uvjete i realan prvi korak? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_083": {
+            "topic_id": "webinars",
+            "day": 83,
+            "core": "Development",
+            "question": "Kako mogu pomoći suradniku pripremiti njegov prvi susret tako da ga sljedeći put napravi sam?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Sa suradnikom pripremi njegov prvi mali susret. Kako mogu pomoći suradniku pripremiti njegov prvi susret tako da ga sljedeći put napravi sam? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_084": {
+            "topic_id": "products_experience",
+            "day": 84,
+            "core": "Productivity",
+            "question": "Koji primjer iz stvarnog iskustva mogu dodati temi koju moja publika već prepoznaje?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Objavi novi nastavak svoje prepoznatljive teme. Koji primjer iz stvarnog iskustva mogu dodati temi koju moja publika već prepoznaje? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_085": {
+            "topic_id": "forever_fcc",
+            "day": 85,
+            "core": "Retention",
+            "question": "Kako provjeravamo da poveznica koju kupac prosljeđuje i dalje pripada pravom suradniku?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Ponudi kupcu link koji može proslijediti. Kako provjeravamo da poveznica koju kupac prosljeđuje i dalje pripada pravom suradniku? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_086": {
+            "topic_id": "four_core",
+            "day": 86,
+            "core": "Development",
+            "question": "Kako mogu pomoći suradniku razumjeti korak, a da ga ne napravim umjesto njega?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Pomozi suradniku da samostalno odradi svoj korak. Kako mogu pomoći suradniku razumjeti korak, a da ga ne napravim umjesto njega? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_087": {
+            "topic_id": "customers_team",
+            "day": 87,
+            "core": "Productivity",
+            "question": "Kako završiti dogovorenu pomoć i ostaviti jasan idući korak samo ako je potreban?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Odgovori ljudima kojima si obećao javljanje. Kako završiti dogovorenu pomoć i ostaviti jasan idući korak samo ako je potreban? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_088": {
+            "topic_id": "products_experience",
+            "day": 88,
+            "core": "Development",
+            "question": "Možemo li uvježbati cijeli razgovor od pitanja kupcu do preporuke, narudžbe i podrške?",
+            "channel": "team",
+            "coach_question": "Objasni mi temu uz moj korak: Uvježbaj cijeli razgovor s kupcem. Možemo li uvježbati cijeli razgovor od pitanja kupcu do preporuke, narudžbe i podrške? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_089": {
+            "topic_id": "customers_team",
+            "day": 89,
+            "core": "Recruitment",
+            "question": "Možemo li uvježbati razgovor s novim suradnikom koji uključuje njegovo zašto, učenje i prvi dogovor?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Uvježbaj razgovor s novim suradnikom. Možemo li uvježbati razgovor s novim suradnikom koji uključuje njegovo zašto, učenje i prvi dogovor? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v7_090": {
+            "topic_id": "four_core",
+            "day": 90,
+            "core": "Development",
+            "question": "Možemo li za moj odabrani cilj složiti održiv ritam kupaca, tima, učenja i mjesečnog susreta?",
+            "channel": "sponsor",
+            "coach_question": "Objasni mi temu uz moj korak: Složi održiv ritam za sljedeći mjesec. Možemo li za moj odabrani cilj složiti održiv ritam kupaca, tima, učenja i mjesečnog susreta? Želim naučiti kroz primjer i razgovor sa sponzorom ili timom."
+        },
+        "fcc90_v8_001": {
+            "topic_id": "forever_fcc",
+            "day": 1,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Odaberi svoj razlog za početak”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Odaberi svoj razlog za početak”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_002": {
+            "topic_id": "forever_fcc",
+            "day": 2,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Uredi karticu koja te lijepo predstavlja”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Uredi karticu koja te lijepo predstavlja”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_003": {
+            "topic_id": "forever_fcc",
+            "day": 3,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pripremi svoje Forever poslovanje”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pripremi svoje Forever poslovanje”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_004": {
+            "topic_id": "four_core",
+            "day": 4,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Složi svoj prvi krug ljudi”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Složi svoj prvi krug ljudi”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_005": {
+            "topic_id": "four_core",
+            "day": 5,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Predstavi ljudima što počinješ raditi”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Predstavi ljudima što počinješ raditi”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_006": {
+            "topic_id": "products_experience",
+            "day": 6,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Dobro upoznaj jedan proizvod”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Dobro upoznaj jedan proizvod”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_007": {
+            "topic_id": "webinars",
+            "day": 7,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pozovi prve dvije osobe na webinar”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pozovi prve dvije osobe na webinar”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_008": {
+            "topic_id": "four_core",
+            "day": 8,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Započni dva razgovora o potrebama”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Započni dva razgovora o potrebama”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_009": {
+            "topic_id": "products_experience",
+            "day": 9,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pošalji svoju prvu osobnu preporuku”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pošalji svoju prvu osobnu preporuku”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_010": {
+            "topic_id": "four_core",
+            "day": 10,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Podijeli marketing plan kroz osobni razgovor”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Podijeli marketing plan kroz osobni razgovor”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_011": {
+            "topic_id": "four_core",
+            "day": 11,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Vrati se na dva započeta razgovora”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Vrati se na dva započeta razgovora”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_012": {
+            "topic_id": "four_core",
+            "day": 12,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pogledaj predstavljanje očima gosta”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pogledaj predstavljanje očima gosta”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_013": {
+            "topic_id": "webinars",
+            "day": 13,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Dočekaj svojeg prijavljenog gosta”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Dočekaj svojeg prijavljenog gosta”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_014": {
+            "topic_id": "webinars",
+            "day": 14,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Čuj što je gostu bilo zanimljivo”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Čuj što je gostu bilo zanimljivo”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_015": {
+            "topic_id": "four_core",
+            "day": 15,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pogledaj svoj početak sa sponzorom”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pogledaj svoj početak sa sponzorom”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_016": {
+            "topic_id": "products_experience",
+            "day": 16,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Predstavi proizvod u jednoj minuti”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Predstavi proizvod u jednoj minuti”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_017": {
+            "topic_id": "webinars",
+            "day": 17,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pošalji dva nova poziva”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pošalji dva nova poziva”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_018": {
+            "topic_id": "products_experience",
+            "day": 18,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pokaži kupcu kako do proizvoda”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži kupcu kako do proizvoda”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_019": {
+            "topic_id": "customers_team",
+            "day": 19,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Pomozi kupcu da lijepo krene”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pomozi kupcu da lijepo krene”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_020": {
+            "topic_id": "products_experience",
+            "day": 20,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pretvori jedno pitanje u korisnu objavu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pretvori jedno pitanje u korisnu objavu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_021": {
+            "topic_id": "four_core",
+            "day": 21,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Proširi i posloži svoj krug kontakata”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Proširi i posloži svoj krug kontakata”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_022": {
+            "topic_id": "four_core",
+            "day": 22,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Predstavi posao dvjema osobama”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Predstavi posao dvjema osobama”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_023": {
+            "topic_id": "four_core",
+            "day": 23,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Razgovaraj o onome što osobu zanima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Razgovaraj o onome što osobu zanima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_024": {
+            "topic_id": "four_core",
+            "day": 24,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Razumij kako izgleda početak posla”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Razumij kako izgleda početak posla”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_025": {
+            "topic_id": "customers_team",
+            "day": 25,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Pitaj kupca kako mu ide”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pitaj kupca kako mu ide”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_026": {
+            "topic_id": "webinars",
+            "day": 26,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Napravi svoj mali krug poziva”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Napravi svoj mali krug poziva”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_027": {
+            "topic_id": "products_experience",
+            "day": 27,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Odgovori na najčešće pitanje o proizvodu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Odgovori na najčešće pitanje o proizvodu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_028": {
+            "topic_id": "customers_team",
+            "day": 28,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Olakšaj osobi odluku o kupnji”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Olakšaj osobi odluku o kupnji”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_029": {
+            "topic_id": "four_core",
+            "day": 29,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pogledaj što pokreće tvoje razgovore”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pogledaj što pokreće tvoje razgovore”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_030": {
+            "topic_id": "four_core",
+            "day": 30,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Zaokruži svoj prvi mjesec”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Zaokruži svoj prvi mjesec”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_031": {
+            "topic_id": "four_core",
+            "day": 31,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Daj svojem poslu mjesto u tjednu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Daj svojem poslu mjesto u tjednu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_032": {
+            "topic_id": "products_experience",
+            "day": 32,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pokreni temu o kojoj ljudi pitaju”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokreni temu o kojoj ljudi pitaju”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_033": {
+            "topic_id": "products_experience",
+            "day": 33,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pokaži jedan koristan detalj”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži jedan koristan detalj”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_034": {
+            "topic_id": "four_core",
+            "day": 34,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pretvori reakciju u razgovor”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pretvori reakciju u razgovor”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_035": {
+            "topic_id": "products_experience",
+            "day": 35,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Pomozi osobi izabrati između dvije opcije”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pomozi osobi izabrati između dvije opcije”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_036": {
+            "topic_id": "four_core",
+            "day": 36,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Proširi svoj krug kroz običan razgovor”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Proširi svoj krug kroz običan razgovor”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_037": {
+            "topic_id": "four_core",
+            "day": 37,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pokaži jedan dio svojeg radnog dana”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži jedan dio svojeg radnog dana”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_038": {
+            "topic_id": "webinars",
+            "day": 38,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Napiši tri poziva koja zvuče kao ti”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Napiši tri poziva koja zvuče kao ti”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_039": {
+            "topic_id": "four_core",
+            "day": 39,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Nastavi razgovor koji je ostao otvoren”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Nastavi razgovor koji je ostao otvoren”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_040": {
+            "topic_id": "four_core",
+            "day": 40,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Dogovori prvi razgovor u troje”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Dogovori prvi razgovor u troje”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_041": {
+            "topic_id": "customers_team",
+            "day": 41,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Javi se kupcima kojima je danas vrijeme”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Javi se kupcima kojima je danas vrijeme”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_042": {
+            "topic_id": "four_core",
+            "day": 42,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Na edukaciju dođi s jednim pitanjem”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Na edukaciju dođi s jednim pitanjem”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_043": {
+            "topic_id": "products_experience",
+            "day": 43,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Riješi jedno pitanje kupca do kraja”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Riješi jedno pitanje kupca do kraja”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_044": {
+            "topic_id": "customers_team",
+            "day": 44,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Saznaj što je kupcu stvarno značilo”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Saznaj što je kupcu stvarno značilo”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_045": {
+            "topic_id": "four_core",
+            "day": 45,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Doradi svoj način rada”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Doradi svoj način rada”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_046": {
+            "topic_id": "four_core",
+            "day": 46,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pokaži kako se započinje suradnja”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži kako se započinje suradnja”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_047": {
+            "topic_id": "customers_team",
+            "day": 47,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Pripremi lijepu dobrodošlicu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pripremi lijepu dobrodošlicu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_048": {
+            "topic_id": "customers_team",
+            "day": 48,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pokaži drugoj osobi kako urediti karticu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži drugoj osobi kako urediti karticu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_049": {
+            "topic_id": "webinars",
+            "day": 49,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Zajedno pripremite prvi osobni poziv”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Zajedno pripremite prvi osobni poziv”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_050": {
+            "topic_id": "four_core",
+            "day": 50,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pronađi edukaciju koja ti sada koristi”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pronađi edukaciju koja ti sada koristi”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_051": {
+            "topic_id": "customers_team",
+            "day": 51,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Javi se članu tima s konkretnom pomoći”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Javi se članu tima s konkretnom pomoći”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_052": {
+            "topic_id": "customers_team",
+            "day": 52,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Vrati se na dogovor s članom tima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Vrati se na dogovor s članom tima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_053": {
+            "topic_id": "products_experience",
+            "day": 53,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Vježbajte preporuku proizvoda zajedno”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Vježbajte preporuku proizvoda zajedno”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_054": {
+            "topic_id": "four_core",
+            "day": 54,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Iskoristi Coacha za stvaran razgovor”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Iskoristi Coacha za stvaran razgovor”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_055": {
+            "topic_id": "customers_team",
+            "day": 55,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Osvježi odnos s kupcem”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Osvježi odnos s kupcem”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_056": {
+            "topic_id": "products_experience",
+            "day": 56,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Olakšaj sljedeću narudžbu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Olakšaj sljedeću narudžbu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_057": {
+            "topic_id": "four_core",
+            "day": 57,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Preuzmi uvod u zajedničkom razgovoru”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Preuzmi uvod u zajedničkom razgovoru”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_058": {
+            "topic_id": "customers_team",
+            "day": 58,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Pomozi nekome tko je zapeo”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pomozi nekome tko je zapeo”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_059": {
+            "topic_id": "four_core",
+            "day": 59,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Sačuvaj poruke koje ti dobro služe”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Sačuvaj poruke koje ti dobro služe”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_060": {
+            "topic_id": "customers_team",
+            "day": 60,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pokaži kako vodiš početnika”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži kako vodiš početnika”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_061": {
+            "topic_id": "products_experience",
+            "day": 61,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Ispričaj korisnu priču u tri kratka dijela”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Ispričaj korisnu priču u tri kratka dijela”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_062": {
+            "topic_id": "customers_team",
+            "day": 62,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Prepoznaj koga možeš podržati u timu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Prepoznaj koga možeš podržati u timu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_063": {
+            "topic_id": "customers_team",
+            "day": 63,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Obnovi kontakt s članom tima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Obnovi kontakt s članom tima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_064": {
+            "topic_id": "four_core",
+            "day": 64,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Odvoji vrijeme za tri nova poslovna razgovora”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Odvoji vrijeme za tri nova poslovna razgovora”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_065": {
+            "topic_id": "customers_team",
+            "day": 65,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Olakšaj kupcu da te preporuči”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Olakšaj kupcu da te preporuči”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_066": {
+            "topic_id": "customers_team",
+            "day": 66,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pokaži suradniku kako dijeliš marketing plan”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži suradniku kako dijeliš marketing plan”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_067": {
+            "topic_id": "products_experience",
+            "day": 67,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Odgovori na novo pitanje svoje publike”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Odgovori na novo pitanje svoje publike”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_068": {
+            "topic_id": "customers_team",
+            "day": 68,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Napravi mali krug brige o kupcima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Napravi mali krug brige o kupcima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_069": {
+            "topic_id": "webinars",
+            "day": 69,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pripremi svoj mali susret”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pripremi svoj mali susret”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_070": {
+            "topic_id": "webinars",
+            "day": 70,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Osobno pozovi goste na svoj susret”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Osobno pozovi goste na svoj susret”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_071": {
+            "topic_id": "webinars",
+            "day": 71,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Vodi svoj dio susreta”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Vodi svoj dio susreta”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_072": {
+            "topic_id": "webinars",
+            "day": 72,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Nastavi razgovore sa svojim gostima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Nastavi razgovore sa svojim gostima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_073": {
+            "topic_id": "cc",
+            "day": 73,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Poveži svoj trud s rezultatima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Poveži svoj trud s rezultatima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_074": {
+            "topic_id": "webinars",
+            "day": 74,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pripremite sljedeći poziv zajedno”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pripremite sljedeći poziv zajedno”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_075": {
+            "topic_id": "customers_team",
+            "day": 75,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Provjeri koliko ste postali samostalni”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Provjeri koliko ste postali samostalni”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_076": {
+            "topic_id": "products_experience",
+            "day": 76,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Odradi cijeli razgovor o proizvodu”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Odradi cijeli razgovor o proizvodu”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_077": {
+            "topic_id": "four_core",
+            "day": 77,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Vodi cijeli poslovni razgovor”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Vodi cijeli poslovni razgovor”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_078": {
+            "topic_id": "customers_team",
+            "day": 78,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Neka suradnik vodi, a ti slušaj”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Neka suradnik vodi, a ti slušaj”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_079": {
+            "topic_id": "customers_team",
+            "day": 79,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Poveži se sa sponzorom člana iz dubine”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Poveži se sa sponzorom člana iz dubine”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_080": {
+            "topic_id": "four_core",
+            "day": 80,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Upotrijebi svoju karticu u razgovoru uživo”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Upotrijebi svoju karticu u razgovoru uživo”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_081": {
+            "topic_id": "products_experience",
+            "day": 81,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Ponovi temu koja je pokrenula razgovore”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Ponovi temu koja je pokrenula razgovore”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_082": {
+            "topic_id": "customers_team",
+            "day": 82,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Podrži člana u njegovu prvom mentoriranju”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Podrži člana u njegovu prvom mentoriranju”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_083": {
+            "topic_id": "customers_team",
+            "day": 83,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Vodi kratak radni dogovor tima”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Vodi kratak radni dogovor tima”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_084": {
+            "topic_id": "customers_team",
+            "day": 84,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Primijeti i pohvali konkretan trud”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Primijeti i pohvali konkretan trud”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_085": {
+            "topic_id": "four_core",
+            "day": 85,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Napravi svoj kratki dnevni pregled”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Napravi svoj kratki dnevni pregled”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_086": {
+            "topic_id": "products_experience",
+            "day": 86,
+            "core": "Productivity",
+            "question": "Možemo li zajedno proći korak „Učvrsti svoj krug redovitih kupaca”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Učvrsti svoj krug redovitih kupaca”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_087": {
+            "topic_id": "four_core",
+            "day": 87,
+            "core": "Retention",
+            "question": "Možemo li zajedno proći korak „Dovrši ono što si obećao”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Dovrši ono što si obećao”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_088": {
+            "topic_id": "four_core",
+            "day": 88,
+            "core": "Recruitment",
+            "question": "Možemo li zajedno proći korak „Pripremi sljedeći mjesec poslovnih razgovora”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pripremi sljedeći mjesec poslovnih razgovora”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_089": {
+            "topic_id": "cc",
+            "day": 89,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Pokaži svoj napredak i odaberi novi cilj”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Pokaži svoj napredak i odaberi novi cilj”. Objasni mi jedan jednostavan primjer."
+        },
+        "fcc90_v8_090": {
+            "topic_id": "four_core",
+            "day": 90,
+            "core": "Development",
+            "question": "Možemo li zajedno proći korak „Zaokruži svoj put i nastavi graditi”?",
+            "channel": "sponsor",
+            "coach_question": "Pomozi mi sa zadatkom „Zaokruži svoj put i nastavi graditi”. Objasni mi jedan jednostavan primjer."
+        }
+    }
+}

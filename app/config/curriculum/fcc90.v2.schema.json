@@ -1,0 +1,696 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fcc:curriculum:90:v2",
+  "title": "FCC90 versioned practical curriculum",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "catalog_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "editorial_status": {
+      "const": "ready_for_owner_review"
+    },
+    "activation_status": {
+      "const": "local_opt_in_cycle"
+    },
+    "language": {
+      "const": "hr"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "core_labels": {
+      "type": "object",
+      "properties": {
+        "Productivity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Retention": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Recruitment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Development": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "Productivity",
+        "Retention",
+        "Recruitment",
+        "Development"
+      ],
+      "additionalProperties": false
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "from": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "to": {
+            "type": "integer",
+            "maximum": 90
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "from",
+          "to",
+          "title",
+          "goal"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "min_completed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "window": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "min_applied": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "min_external": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "min_cores": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "min_advanced": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "level",
+          "label",
+          "min_completed",
+          "window",
+          "min_applied",
+          "min_external",
+          "min_cores",
+          "min_advanced"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "fcc90_progress_v2"
+        },
+        "new_level_resets_position": {
+          "const": false
+        },
+        "pro_changes_eligibility": {
+          "const": false
+        },
+        "cc_is_level_gate": {
+          "const": false
+        }
+      },
+      "required": [
+        "id",
+        "new_level_resets_position",
+        "pro_changes_eligibility",
+        "cc_is_level_gate"
+      ],
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "coach_contract": {
+      "type": "object",
+      "required": [
+        "purpose",
+        "input_allowlist",
+        "never_automatic",
+        "output",
+        "rules",
+        "offline_fallback"
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "use": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "title",
+          "url",
+          "use"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 90,
+      "maxItems": 90,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^fcc90_v1_0(?:0[1-9]|[1-8][0-9]|90)$"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90
+          },
+          "content_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "language": {
+            "const": "hr"
+          },
+          "module": {
+            "type": "string",
+            "minLength": 1
+          },
+          "core": {
+            "enum": [
+              "Productivity",
+              "Retention",
+              "Recruitment",
+              "Development"
+            ]
+          },
+          "core_label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 8
+          },
+          "why": {
+            "type": "string",
+            "minLength": 70
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "minLength": 20
+            }
+          },
+          "completion": {
+            "type": "object",
+            "properties": {
+              "criterion": {
+                "type": "string",
+                "minLength": 30
+              },
+              "progress_units": {
+                "const": 1
+              },
+              "requires_other_person_response": {
+                "const": false
+              },
+              "requires_purchase": {
+                "const": false
+              },
+              "requires_pro": {
+                "const": false
+              },
+              "default_mode": {
+                "enum": [
+                  "applied",
+                  "practice"
+                ]
+              },
+              "practice_available": {
+                "const": true
+              },
+              "external_event_eligible": {
+                "type": "boolean"
+              },
+              "result_type_applied": {
+                "enum": [
+                  "planning",
+                  "content",
+                  "training",
+                  "contact",
+                  "recommendation",
+                  "follow_up",
+                  "onboarding",
+                  "customer_checkin",
+                  "invitation",
+                  "coaching"
+                ]
+              },
+              "result_type_practice": {
+                "const": "training"
+              },
+              "evidence_fields": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "output_statuses": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "self_check": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "criterion",
+              "progress_units",
+              "requires_other_person_response",
+              "requires_purchase",
+              "requires_pro",
+              "default_mode",
+              "practice_available",
+              "external_event_eligible",
+              "result_type_applied",
+              "result_type_practice",
+              "evidence_fields",
+              "output_statuses",
+              "self_check"
+            ],
+            "additionalProperties": false
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "video_binding": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "text_is_complete_without_video": {
+            "const": true
+          },
+          "private_default": {
+            "const": true
+          },
+          "communication": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "message",
+                  "public",
+                  "note",
+                  "instruction"
+                ]
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "situation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "personal_experience": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "condition": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "message": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "condition",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "example": {
+                "type": "string",
+                "minLength": 40
+              },
+              "composer": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "article",
+                      "text",
+                      "none"
+                    ]
+                  },
+                  "template": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "template"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "kind",
+              "label",
+              "situation",
+              "personal_experience",
+              "example",
+              "composer"
+            ],
+            "additionalProperties": false
+          },
+          "skill_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outcome_line": {
+            "type": "string",
+            "minLength": 1
+          },
+          "help_cards": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "body": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "title",
+                "body"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "practice": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "instruction": {
+                "type": "string",
+                "minLength": 1
+              },
+              "criterion": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "label",
+              "instruction",
+              "criterion"
+            ],
+            "additionalProperties": false
+          },
+          "why_repeat_from": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 89
+            }
+          },
+          "variants": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "properties": {
+                "variant_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "level": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                },
+                "context": {
+                  "enum": [
+                    "independent",
+                    "customer_or_partner"
+                  ]
+                },
+                "steps": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "string",
+                    "minLength": 20
+                  }
+                },
+                "criterion": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "estimated_minutes": {
+                  "type": "object",
+                  "properties": {
+                    "min": {
+                      "type": "integer",
+                      "minimum": 10,
+                      "maximum": 25
+                    },
+                    "max": {
+                      "type": "integer",
+                      "minimum": 10,
+                      "maximum": 25
+                    }
+                  },
+                  "required": [
+                    "min",
+                    "max"
+                  ],
+                  "additionalProperties": false
+                },
+                "allowed_output_statuses": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "prepared",
+                      "sent",
+                      "performed",
+                      "updated",
+                      "reviewed"
+                    ]
+                  }
+                },
+                "external_event_eligible": {
+                  "type": "boolean"
+                },
+                "advanced_case_eligible": {
+                  "type": "boolean"
+                },
+                "primary_action": {
+                  "enum": [
+                    "today",
+                    "contacts",
+                    "share",
+                    "card",
+                    "materials",
+                    "progress",
+                    "results",
+                    "forever",
+                    "review",
+                    "goal",
+                    "support",
+                    "coach"
+                  ]
+                }
+              },
+              "required": [
+                "variant_id",
+                "level",
+                "context",
+                "steps",
+                "criterion",
+                "estimated_minutes",
+                "allowed_output_statuses",
+                "external_event_eligible",
+                "advanced_case_eligible",
+                "primary_action"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "content_version",
+          "language",
+          "module",
+          "core",
+          "core_label",
+          "kind",
+          "title",
+          "why",
+          "steps",
+          "completion",
+          "resources",
+          "video_binding",
+          "text_is_complete_without_video",
+          "private_default",
+          "communication",
+          "skill_key",
+          "outcome_line",
+          "help_cards",
+          "practice",
+          "why_repeat_from",
+          "variants"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "catalog_version",
+    "editorial_status",
+    "activation_status",
+    "language",
+    "title",
+    "core_labels",
+    "modules",
+    "levels",
+    "policy",
+    "resources",
+    "coach_contract",
+    "sources",
+    "tasks"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,339 @@
+{
+  "version": "webinar-learning-2026-09-26.1",
+  "tasks": {
+    "14": {
+      "title": "Pripremi prvi poziv na FCC webinar",
+      "stage": "prvi poziv",
+      "tool": "invite",
+      "actions": [
+        "Otvori pozivnicu za sljedeći FCC webinar. Pogledaj temu, datum i vrijeme. Ako nema objavljenog termina, pitaj sponzora kada možeš pozvati nove goste.",
+        "Odaberi jednu osobu koju zanima dodatni posao. Uredi poruku tako da joj kažeš što može saznati na tom susretu.",
+        "Pošalji joj svoju pozivnicu. U PRO paketu možeš dodati kratak video. Dovoljna je i standardna pozivnica."
+      ],
+      "message": "Bok! Ako još razmišljaš o dodatnom poslu, mogu ti poslati poziv za kratko predstavljanje Forevera. Vidjet ćeš što se radi i moći pitati što te zanima. Želiš detalje?",
+      "practice": "Otvori svoju pozivnicu i naglas pročitaj poziv kao da ga šalješ prijatelju. Skrati sve što ne bi rekao u razgovoru.",
+      "alternative": "Ako nema prikladne osobe ili potvrđenog termina, pripremi poziv uz sponzora i zabilježi ga kao vježbu.",
+      "done": {
+        "message_sent": "Poslao/la sam osobni poziv",
+        "conversation_reported": "Osobno sam pozvao/la zainteresiranu osobu"
+      },
+      "advanced_challenge": "Pozovi dvije osobe zasebnim porukama i pripremi odgovor na jedno njihovo pitanje.",
+      "coach_question": "Radim korak 14: Pripremi prvi poziv na FCC webinar. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Jedna osoba koja želi upoznati Forever posao",
+      "channel": "prvi poziv"
+    },
+    "24": {
+      "title": "Pozovi novu osobu i provjeri svoje prijave",
+      "stage": "redovni poziv",
+      "tool": "invite",
+      "actions": [
+        "Otvori sljedeći dostupan FCC webinar i provjeri odgovara li tema osobi s kojom razgovaraš o poslu.",
+        "Pošalji joj osobnu pozivnicu i reci koji joj dio može biti koristan. Možeš koristiti već pripremljen uvod.",
+        "Otvori Moje prijave. Ako se prijavila, provjeri ima li sve za ulazak. Ako nije, nemoj pretpostaviti da želi podsjetnik."
+      ],
+      "message": "Ej! Na sljedećem predstavljanju možeš vidjeti kako izgleda rad s kupcima i početak uz podršku tima. Mogu ti poslati svoju pozivnicu pa pogledaj odgovara li ti termin. Želiš?",
+      "practice": "Pronađi svoju pozivnicu i mjesto gdje ćeš vidjeti prijavu gosta. Pripremi jednu rečenicu za poziv.",
+      "alternative": "Ako već imaš dogovoren susret s tom osobom, potvrdi postojeći dogovor umjesto slanja još jedne pozivnice.",
+      "done": {
+        "message_sent": "Poslao/la sam poziv ili potvrdio/la dogovor",
+        "conversation_reported": "Dogovorio/la sam predstavljanje"
+      },
+      "advanced_challenge": "Poveži osobu sa sponzorom ako je zatražila odgovor koji još ne znaš.",
+      "coach_question": "Radim korak 24: Pozovi novu osobu i provjeri svoje prijave. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Osoba s kojom već razgovaraš o dodatnom poslu",
+      "channel": "redovni poziv"
+    },
+    "25": {
+      "title": "Javi se osobi nakon webinara",
+      "stage": "razgovor nakon susreta",
+      "tool": "activity",
+      "actions": [
+        "U Mojim prijavama pronađi gosta s prošlog webinara. Provjeri je li dopustio javljanje. Prijava sama ne znači da je sudjelovao.",
+        "Pitaj je li uspio pogledati predstavljanje i što ga zanima. Ako nije, ponudi sljedeći termin samo ako to želi.",
+        "Odgovori na jedno pitanje ili dogovori kratak razgovor. U Kontaktu spremi datum samo ako ste se dogovorili za novo javljanje."
+      ],
+      "message": "Bok! Jesi uspio pogledati predstavljanje ili ti termin nije odgovarao? Ako jesi, baš me zanima što ti je ostalo nejasno pa možemo proći zajedno.",
+      "practice": "Pripremi dva kratka odgovora: za osobu koja je gledala i za osobu kojoj termin nije odgovarao.",
+      "alternative": "Ako još nemaš prijava, javi se osobi s kojom već imaš otvoren razgovor o poslu i pitaj što joj treba pojasniti.",
+      "done": {
+        "message_sent": "Poslao/la sam dogovoreno javljanje",
+        "conversation_reported": "Razgovarao/la sam s osobom nakon predstavljanja"
+      },
+      "advanced_challenge": "Uz dopuštenje uključi sponzora u jedno konkretnije pitanje.",
+      "coach_question": "Radim korak 25: Javi se osobi nakon webinara. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Gost webinara ili osoba s otvorenim razgovorom o poslu",
+      "channel": "razgovor nakon susreta"
+    },
+    "30": {
+      "title": "Pripremi temu svojeg prvog kratkog susreta",
+      "stage": "izbor teme",
+      "tool": "plan",
+      "actions": [
+        "Odaberi jedno pitanje koje su ti kupci ili pratitelji postavili, primjerice kako se koristi proizvod, što pogledati na deklaraciji ili kako izgleda tvoja rutina.",
+        "S Coachem ili sponzorom složi tri dijela za 20 minuta: kratki uvod, prikaz jednog proizvoda i pitanja. Koristi vlastito iskustvo samo ako ga stvarno imaš.",
+        "Spremi naslov, kome je susret namijenjen i tri točke sadržaja. Ako još ne želiš voditi susret, dogovori sa sponzorom da ga pripremite zajedno."
+      ],
+      "message": "Tema susreta:\nKome je namijenjen:\nŠto ću pokazati:\nKoje pitanje želim razjasniti:\nTko mi može pomoći:",
+      "practice": "Snimi probni uvod od jedne minute i poslušaj je li jasno što će osoba saznati.",
+      "alternative": "Odaberi postojeći FCC webinar i pripremi vlastiti kratak uvod koji objašnjava zašto ga preporučuješ.",
+      "done": {
+        "preparation_reported": "Spremio/la sam temu i tri točke susreta"
+      },
+      "advanced_challenge": "Pošalji sponzoru sadržaj na pregled prije određivanja termina.",
+      "coach_question": "Radim korak 30: Pripremi temu svojeg prvog kratkog susreta. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Kupci ili pratitelji koji imaju konkretno pitanje o proizvodu",
+      "channel": "izbor teme"
+    },
+    "36": {
+      "title": "Pozovi dvije osobe na predstavljanje posla",
+      "stage": "navika pozivanja",
+      "tool": "invite",
+      "actions": [
+        "Provjeri stvarni termin sljedećeg FCC predstavljanja. Nemoj prepisivati datum iz stare poruke.",
+        "Odaberi dvije osobe s kojima već razgovaraš o dodatnom poslu. Za svaku napiši jednu osobnu rečenicu i pošalji svoju pozivnicu.",
+        "Pogledaj Moje prijave i odgovori ako ti se netko javio s pitanjem. Nemoj čekati prijavu da bi završio ovaj zadatak."
+      ],
+      "message": "Bok! Ako ti je i dalje zanimljiva ideja dodatnog posla, imamo novo predstavljanje. Pokazat ćemo kako izgleda početak i rad s ljudima. Želiš da ti pošaljem termin?",
+      "practice": "Napiši dva različita uvoda za dvije stvarne situacije, bez kopiranja istog razloga javljanja.",
+      "alternative": "Ako imaš samo jednu zainteresiranu osobu, pozovi nju. Drugi poziv uvježbaj sa sponzorom.",
+      "done": {
+        "message_sent": "Poslao/la sam osobne pozive",
+        "conversation_reported": "Osobno sam pozvao/la zainteresirane ljude"
+      },
+      "advanced_challenge": "Prije događaja odgovori na jedno konkretno pitanje osobe koja se prijavila.",
+      "coach_question": "Radim korak 36: Pozovi dvije osobe na predstavljanje posla. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Jedna do dvije osobe koje žele upoznati posao",
+      "channel": "navika pozivanja"
+    },
+    "43": {
+      "title": "Uvježbaj svoj kratki susret sa sponzorom",
+      "stage": "priprema uz podršku",
+      "tool": "plan",
+      "actions": [
+        "Otvori pripremljenu temu svojeg susreta. Ako je još nemaš, uzmi jedno često pitanje kupca i jedan proizvod.",
+        "Pozovi sponzora da posluša pet minuta tvojeg uvoda. Pokaži ono što planiraš objasniti i zamoli ga da izdvoji jedan nejasan dio.",
+        "Popravi taj dio. Uz proizvod provjeri službenu uputu za svoje tržište, a za poslovnu temu stvarne korake i troškove početka."
+      ],
+      "message": "Bok! Pripremam kratak online susret i dobro bi mi došlo da poslušaš moj uvod. Možemo uhvatiti deset minuta da prođemo što trebam pojasniti?",
+      "practice": "Prođi uvod pred kamerom, zatim jednom rečenicom reci zašto bi gostu bilo korisno doći.",
+      "alternative": "Ako sponzor danas ne može, pošalji mu tri točke i konkretno pitanje pa samostalno uvježbaj uvod.",
+      "done": {
+        "conversation_reported": "Uvježbao/la sam sadržaj sa sponzorom",
+        "message_sent": "Poslao/la sam sadržaj i pitanje sponzoru"
+      },
+      "advanced_challenge": "Uvježbajte i odgovor na pitanje na koje ne znaš odgovor.",
+      "coach_question": "Radim korak 43: Uvježbaj svoj kratki susret sa sponzorom. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Sponzor koji ti može pomoći uvježbati uvod",
+      "channel": "priprema uz podršku"
+    },
+    "46": {
+      "title": "Kreiraj svoju prvu pozivnicu za mali susret",
+      "stage": "vlastiti termin",
+      "tool": "create",
+      "actions": [
+        "Odaberi jednu pripremljenu temu i budući termin. Dogovori tko vodi susret. U svojem Zoomu ili drugom servisu kreiraj sobu i kopiraj pristupnu poveznicu.",
+        "U PRO alatu klikni Kreiraj svoj webinar ili termin. Upiši naziv, datum, vrijeme, poveznicu i dvije rečenice o tome što će gosti saznati.",
+        "Odaberi vlastiti uvodni video ili pozivnicu bez videa. Kreiraj pozivnicu i otvori njen pregled. Provjeri jesu li naziv, vrijeme i opis točni."
+      ],
+      "message": "Naziv susreta:\nKome je namijenjen:\nŠto će gosti saznati:\nDogovoreni datum i vrijeme:\nTko vodi susret:",
+      "practice": "Složi naslov i opis koji u dvije rečenice objašnjavaju kome je susret namijenjen i što će vidjeti.",
+      "alternative": "Ako nemaš PRO ili vlastitu sobu, otvori standardnu pozivnicu za FCC webinar i prilagodi poruku svojoj publici. Nije potrebna dodatna kupnja.",
+      "done": {
+        "preparation_reported": "Pripremio/la sam i provjerio/la pozivnicu"
+      },
+      "advanced_challenge": "Pripremi kratki vlastiti uvodni video i dodaj ga svojoj pozivnici.",
+      "coach_question": "Radim korak 46: Kreiraj svoju prvu pozivnicu za mali susret. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Mala skupina kojoj želiš pokazati proizvod ili početak posla",
+      "channel": "vlastiti termin"
+    },
+    "47": {
+      "title": "Objavi poziv na svoj susret",
+      "stage": "javni poziv",
+      "tool": "events",
+      "actions": [
+        "Otvori pripremljeni susret i kopiraj poveznicu pozivnice. Ako nemaš vlastiti termin, koristi aktualni FCC webinar.",
+        "Snimi kratki Story: reci temu, kome je korisna i kada se održava. Dodaj poveznicu na prijavu kao naljepnicu ili je pošalji onima koji zatraže.",
+        "Objavi poziv i odgovori na pitanja. Nemoj javno objavljivati broj gostiju ili njihove podatke bez dopuštenja."
+      ],
+      "message": "Pripremam kratak online susret na kojem ćemo proći jednu praktičnu temu i ostaviti prostor za pitanja. Tema i točan termin su na pozivnici. Ako te zanima, javi mi se pa ti pošaljem detalje.",
+      "practice": "Izgovori poziv u 20 sekundi tako da se čuju tema i razlog dolaska.",
+      "alternative": "Ako ne želiš objavu, pošalji poziv jednoj osobi koja je zatražila tu temu.",
+      "done": {
+        "publication_reported": "Objavio/la sam poziv s točnim terminom",
+        "message_sent": "Poslao/la sam traženi osobni poziv"
+      },
+      "advanced_challenge": "Napravi i jednostavnu anketu o pitanju koje želiš obraditi na susretu.",
+      "coach_question": "Radim korak 47: Objavi poziv na svoj susret. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Pratitelji koje zanima tema tvojeg susreta",
+      "channel": "javni poziv"
+    },
+    "48": {
+      "title": "Pomogni prijavljenom gostu da se pripremi",
+      "stage": "briga za gosta",
+      "tool": "activity",
+      "actions": [
+        "Otvori Moje prijave i pogledaj goste svojeg susreta ili FCC webinara.",
+        "Ako postoji osoba koja je tražila pomoć ili dopustila javljanje, provjeri zna li termin i kako se ulazi. Ne šalji dodatni podsjetnik ako ga ne želi.",
+        "Pitaj postoji li jedno pitanje koje želi razjasniti. Bez gostiju provjeri vlastitu pozivnicu i pripremi odgovor na pitanje o ulasku."
+      ],
+      "message": "Bok! Imaš li sve za ulazak na susret ili ti trebam nešto pojasniti? Ako imaš konkretno pitanje za temu, slobodno mi ga pošalji.",
+      "practice": "Otvori pregled pozivnice i pronađi gdje gost vidi termin te kada dobiva pristupnu poveznicu.",
+      "alternative": "Ako nema prijava, provjeri svoju pozivnicu i sa sponzorom uvježbaj objašnjenje kako se gost prijavljuje.",
+      "done": {
+        "message_sent": "Odgovorio/la sam gostu",
+        "conversation_reported": "Pomogao/la sam gostu s pripremom",
+        "preparation_reported": "Provjerio/la sam pozivnicu i pripremio/la upute"
+      },
+      "advanced_challenge": "Pripremi odgovor na najčešće pitanje prije susreta.",
+      "coach_question": "Radim korak 48: Pomogni prijavljenom gostu da se pripremi. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Prijavljeni gost koji je zatražio pomoć ili dopustio javljanje",
+      "channel": "briga za gosta"
+    },
+    "50": {
+      "title": "Pokaži jedan proizvod na kratkom susretu",
+      "stage": "izvedba",
+      "tool": "events",
+      "actions": [
+        "Na dogovorenom susretu pokaži jedan proizvod, njegovu namjenu iz službenih podataka i način korištenja prema uputi. Odvoji vlastiti dojam od provjerene činjenice.",
+        "Ostavi vrijeme za pitanja. Ako ne znaš odgovor, reci da ćeš ga provjeriti i dogovori kada se javljaš.",
+        "Osobama koje traže detalje pošalji svoj članak preko Podijeli. Ako termin još nije došao, danas uvježbaj prikaz sa sponzorom i odaberi vježbu."
+      ],
+      "message": "Hvala ti što si se uključio! Želiš da ti pošaljem detalje proizvoda koji smo gledali ili ti je ostalo neko pitanje?",
+      "practice": "Odradi probni prikaz od pet minuta i uvježbaj odgovor na jedno pitanje o sastavu ili korištenju.",
+      "alternative": "Ako nema grupnog susreta, pokaži proizvod jednoj zainteresiranoj osobi uživo ili u videopozivu.",
+      "done": {
+        "conversation_reported": "Održao/la sam prikaz proizvoda ili razgovor uživo"
+      },
+      "advanced_challenge": "Zamoli gosta da kaže koji mu je dio objašnjenja bio nejasan i popravi ga za sljedeći put.",
+      "coach_question": "Radim korak 50: Pokaži jedan proizvod na kratkom susretu. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Jedna osoba ili mala skupina zainteresirana za proizvod",
+      "channel": "izvedba"
+    },
+    "51": {
+      "title": "Odgovori gostu nakon svojeg susreta",
+      "stage": "nastavak razgovora",
+      "tool": "activity",
+      "actions": [
+        "Odaberi osobu s kojom si razgovarao na susretu. Ako vidiš samo prijavu, prvo pitaj je li uspjela sudjelovati.",
+        "Odgovori na njeno pitanje ili pošalji traženi članak s vlastitom poveznicom iz Podijeli.",
+        "Ako želi nastavak, dogovorite jedan sljedeći korak. Spremi javljanje u Kontaktima samo ako ste ga dogovorili."
+      ],
+      "message": "Bok! Želim provjeriti je li ti ostalo neko pitanje nakon susreta. Ako želiš detalje nekog proizvoda, reci mi kojeg pa ti pošaljem.",
+      "practice": "Pripremi odgovor za gosta koji želi detalje i za gosta koji samo želi pogledati informacije.",
+      "alternative": "Ako nema gostiju, javi se kupcu kojem već duguješ odgovor na konkretno pitanje.",
+      "done": {
+        "message_sent": "Poslao/la sam traženi nastavak",
+        "conversation_reported": "Razgovarao/la sam o sljedećem koraku"
+      },
+      "advanced_challenge": "Poveži razgovor s jednim konkretnim pitanjem gosta, bez slanja cijelog kataloga.",
+      "coach_question": "Radim korak 51: Odgovori gostu nakon svojeg susreta. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Gost kojem treba odgovor ili tražena informacija",
+      "channel": "nastavak razgovora"
+    },
+    "60": {
+      "title": "Pripremi sljedeći mjesečni susret",
+      "stage": "mjesečni ritam",
+      "tool": "create",
+      "actions": [
+        "U Mojim webinarima i prijavama pogledaj prethodni susret. Prisjeti se stvarnih pitanja ljudi. Broj prijava nije broj sudionika ni prodaja.",
+        "Odaberi jednu novu temu za kupce ili pratitelje. Može biti prikaz proizvoda, tvoje stvarno iskustvo ili odgovori na pitanja. Planiraj otprilike jedan susret mjesečno, prema svom vremenu.",
+        "Ako je vrijeme za novi susret, dogovori termin i pripremi pozivnicu. Ako već imaš budući termin, doradi njega umjesto stvaranja duplikata."
+      ],
+      "message": "Tema sljedećeg susreta:\nPitanje publike koje želim razjasniti:\nŠto ću pokazati:\nPredloženi termin:\nTreba li mi pomoć sponzora:",
+      "practice": "Složi tri točke za novu temu koristeći jedno stvarno pitanje iz prethodnog razgovora.",
+      "alternative": "Ako još nisi spreman voditi, odaberi FCC webinar za svoju publiku i pripremi osobni poziv.",
+      "done": {
+        "preparation_reported": "Pripremio/la sam sljedeći susret ili poziv"
+      },
+      "advanced_challenge": "Usporedi dvije teme s Coachem i odaberi onu koja odgovara pitanjima tvoje publike.",
+      "coach_question": "Radim korak 60: Pripremi sljedeći mjesečni susret. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Tvoji kupci ili pratitelji s novim pitanjem",
+      "channel": "mjesečni ritam"
+    },
+    "69": {
+      "title": "Dogovori mali susret o početku Forever posla",
+      "stage": "poslovni susret",
+      "tool": "create",
+      "actions": [
+        "Odaberi osobu ili malu skupinu koja želi razumjeti Forever posao. Pitaj što žele znati prije odluke.",
+        "Sa sponzorom dogovori prikaz stvarnog početka: rad s ljudima, podrška, obveze i aktualni troškovi. Možeš koristiti FCC webinar ili vlastiti termin.",
+        "Pošalji osobni poziv s točnim terminom i svojom pozivnicom. Ne obećavaj zaradu ni rezultate."
+      ],
+      "message": "Bok! Možemo kratko proći kako izgleda početak Forever posla i kakvu podršku imaš. Krenuli bismo od onoga što tebi nije jasno. Želiš da ti pošaljem termin?",
+      "practice": "Pripremi tri konkretne stvari koje ćeš pokazati osobi da razumije početak posla.",
+      "alternative": "Ako nema zainteresirane osobe, uvježbaj uvod sa sponzorom i pripremi poziv za budući razgovor.",
+      "done": {
+        "message_sent": "Poslao/la sam osobni poziv",
+        "conversation_reported": "Dogovorio/la sam poslovni susret"
+      },
+      "advanced_challenge": "Neka sponzor sudjeluje u odgovorima na pitanja koja prelaze tvoje iskustvo.",
+      "coach_question": "Radim korak 69: Dogovori mali susret o početku Forever posla. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Jedna osoba ili mala skupina koja želi upoznati posao",
+      "channel": "poslovni susret"
+    },
+    "75": {
+      "title": "Pokaži suradniku kako pripremiti pozivnicu",
+      "stage": "podrška suradniku",
+      "tool": "invite",
+      "actions": [
+        "Otvori s jednim suradnikom Podijeli pa Poziv na webinar i provjerite aktualni termin.",
+        "Pokaži mu svoju poruku, zatim neka napiše vlastitu za jednu zainteresiranu osobu. Ako ima PRO, pokaži i vlastiti termin te pregled pozivnice.",
+        "Neka sam pronađe Moje prijave i objasni što će napraviti kad se netko prijavi. On odlučuje kome će poslati poziv."
+      ],
+      "message": "Hoćemo zajedno proći kako se priprema pozivnica za webinar? Pokazat ću ti gdje je termin, a ti složi svoju poruku za osobu s kojom razgovaraš.",
+      "practice": "Prođi postupak bez preskakanja: pozivnica, poruka, pregled i prijave. Izgovori objašnjenje početniku.",
+      "alternative": "Ako nema novog suradnika, snimi kratke upute za ovaj postupak i spremi ih za sljedeći razgovor.",
+      "done": {
+        "conversation_reported": "Pokazao/la sam suradniku kako pripremiti poziv",
+        "preparation_reported": "Pripremio/la sam kratke upute za pozivnicu"
+      },
+      "advanced_challenge": "Neka suradnik sam pripremi primjer, a ti pomozi samo na dijelu na kojem zapne.",
+      "coach_question": "Radim korak 75: Pokaži suradniku kako pripremiti pozivnicu. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Suradnik kojem pokazuješ kako pripremiti poziv",
+      "channel": "podrška suradniku"
+    },
+    "83": {
+      "title": "Sa suradnikom pripremi njegov prvi mali susret",
+      "stage": "osamostaljivanje",
+      "tool": "plan",
+      "actions": [
+        "Pitaj suradnika koju temu već razumije i kome bi mogao pomoći kratkim susretom.",
+        "Zajedno složite naslov i tri točke. Ako ima PRO, neka sam pripremi vlastiti termin i pozivnicu. Inače koristite postojeći FCC webinar.",
+        "Prođite uvod i jedno moguće pitanje gosta. Dogovorite tko će mu pomoći ako se pojavi pitanje koje ne zna."
+      ],
+      "message": "Koju temu bi ti bilo najlakše pokazati ljudima u dvadesetak minuta? Možemo zajedno složiti prvi susret, a ti vodi dio koji dobro poznaješ.",
+      "practice": "Pripremi primjer susreta s jednim proizvodom i tri jasne točke za potpunog početnika.",
+      "alternative": "Ako nema suradnika za ovaj korak, pripremi vodič za svoj budući razgovor s početnikom.",
+      "done": {
+        "conversation_reported": "Pomogao/la sam suradniku pripremiti susret",
+        "preparation_reported": "Pripremio/la sam vodič za prvi susret"
+      },
+      "advanced_challenge": "Prepusti suradniku pripremu i zajedno provjerite završnu pozivnicu.",
+      "coach_question": "Radim korak 83: Sa suradnikom pripremi njegov prvi mali susret. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Suradnik koji želi pripremiti vlastiti susret",
+      "channel": "osamostaljivanje"
+    },
+    "90": {
+      "title": "Postavi svoj jednostavan ritam poziva i susreta",
+      "stage": "trajna navika",
+      "tool": "plan",
+      "actions": [
+        "Odaberi jedan dan u tjednu kada ćeš provjeriti objavljeni FCC webinar i poslati osobni poziv ljudima koje tema zanima.",
+        "Za vlastite kupce i pratitelje planiraj otprilike jedan mali susret mjesečno. Koristi pitanja koja stvarno dobivaš, a novi termin kreiraj kad prethodni završi i ima smisla za tvoju publiku.",
+        "S Coachem odaberi jedan sljedeći potez i odradi ga: pripremi pozivnicu, doradi budući susret ili odgovori gostu. Termine po želji spremi u svoj kalendar."
+      ],
+      "message": "Moj dan za provjeru FCC webinara:\nTema sljedećeg susreta za kupce:\nSljedeći konkretan potez:\nKada ću ga napraviti:",
+      "practice": "Prođi cijeli postupak od izbora teme do osobnog javljanja nakon susreta i izdvoji dio za koji još trebaš pomoć.",
+      "alternative": "Ako zasad nemaš vremena za vođenje, zadrži osobne pozive na FCC webinar i jedan dogovoreni razgovor nakon njega.",
+      "done": {
+        "preparation_reported": "Pripremio/la sam sljedeći konkretan korak",
+        "message_sent": "Poslao/la sam sljedeći osobni poziv",
+        "conversation_reported": "Odgovorio/la sam gostu"
+      },
+      "advanced_challenge": "Pomogni jednom suradniku da uspostavi ritam koji odgovara njegovu vremenu.",
+      "coach_question": "Radim korak 90: Postavi svoj jednostavan ritam poziva i susreta. Pomozi mi pripremiti jedan konkretan sljedeći potez za moju publiku i vrijeme koje imam.",
+      "audience": "Tvoja publika, kupci i ljudi koji žele upoznati posao",
+      "channel": "trajna navika"
+    }
+  }
+}

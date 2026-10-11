@@ -12,21 +12,21 @@
         <div class="alert alert-warning mb-4">
             <div class="mb-3">
                 <i class="fas fa-fw fa-exclamation-triangle text-warning mr-1"></i>
-                <strong>Your future support inquiries will be completely discarded.</strong>
+                <strong><?= htmlspecialchars(fcc_t('Your future support inquiries will be completely discarded.'), ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
 
             <div class="mb-3">
                 <i class="fas fa-fw fa-sync-alt text-info mr-1"></i>
-                <span>Renewing support is optional. If you do not need support, then you can ignore this message.</span>
+                <span><?= htmlspecialchars(fcc_t('Renewing support is optional. If you do not need support, then you can ignore this message.'), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
 
             <div>
                 <button type="button" class="btn btn-sm btn-light" data-dismiss="alert" data-dismiss-inactive-support>
-                    <i class="fas fa-fw fa-sm fa-times mr-1"></i> Dismiss notification
+                    <i class="fas fa-fw fa-sm fa-times mr-1"></i> <?= htmlspecialchars(fcc_t('Dismiss notification'), ENT_QUOTES, 'UTF-8') ?>
                 </button>
 
                 <a href="https://altumco.de/club" target="_blank" class="btn btn-sm btn-primary font-weight-bold ml-3">
-                    <i class="fas fa-fw fa-sm fa-check-circle mr-1"></i> Extend your support
+                    <i class="fas fa-fw fa-sm fa-check-circle mr-1"></i> <?= htmlspecialchars(fcc_t('Extend your support'), ENT_QUOTES, 'UTF-8') ?>
                 </a>
             </div>
 

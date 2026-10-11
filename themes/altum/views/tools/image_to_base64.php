@@ -4,7 +4,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li><a href="<?= url('tools') ?>"><?= l('tools.breadcrumb') ?></a> <i class="fas fa-fw fa-angle-right"></i></li>
             <li class="active" aria-current="page"><?= l('tools.image_to_base64.name') ?></li>
@@ -35,7 +35,7 @@
                 <div class="form-group">
                     <label for="image"><i class="fas fa-fw fa-sm fa-image text-muted mr-1"></i> <?= l('global.image') ?></label>
                     <input id="image" type="file" name="image" accept=".gif, .png, .jpg, .jpeg, .svg" class="form-control-file altum-file-input" />
-                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), '.gif, .png, .jpg, .jpeg, .svg') . ' ' . sprintf(l('global.accessibility.file_size_limit'), get_max_upload()) ?></small>
+                    <small class="form-text text-muted"><?= sprintf(l('global.accessibility.whitelisted_file_extensions'), fcc_t('.gif, .png, .jpg, .jpeg, .svg')) . ' ' . sprintf(l('global.accessibility.file_size_limit'), get_max_upload()) ?></small>
                 </div>
 
                 <button type="submit" name="submit" class="btn btn-block btn-primary"><?= l('global.submit') ?></button>

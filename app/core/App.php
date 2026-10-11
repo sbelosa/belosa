@@ -58,7 +58,7 @@ class App {
         /* Get the remaining params */
         $params = \Altum\Router::get_params();
 
-        if(!\Altum\Router::$controller_settings['allow_indexing']) {
+        if(getenv('FCC_LOCAL') === '1' || !\Altum\Router::$controller_settings['allow_indexing']) {
             header('X-Robots-Tag: noindex');
         }
 
@@ -215,34 +215,11 @@ class App {
                 $user_model->update_last_activity(\Altum\Authentication::$user_id);
             }
 
-            if(!isset($_COOKIE['set_language'])) {
-                /* Update the language of the site for next page use if the current language (default) is different than the one the user has */
-                if(Language::$name != $user->language) {
-                    /* Make sure the language of the user still exists & is active */
-                    if(array_key_exists($user->language, Language::$active_languages)) {
-                        //Language::set_by_name($user->language);
-                    } else {
-                        db()->where('user_id', \Altum\Authentication::$user_id)->update('users', ['language' => Language::$default_name]);
-
-                        /* Clear the cache */
-                        cache()->deleteItemsByTag('user_id=' . \Altum\Authentication::$user_id);
-                    }
-                }
-            }
-
-            /* Update the language of the user if needed */
-            if(isset($_COOKIE['set_language']) && array_key_exists($_COOKIE['set_language'], Language::$active_languages) && Language::$name != $user->language) {
-                db()->where('user_id', \Altum\Authentication::$user_id)->update('users', ['language' => $_COOKIE['set_language']]);
-
-                /* Clear the cache */
-                cache()->deleteItemsByTag('user_id=' . \Altum\Authentication::$user_id);
-
-                /* Remove cookie */
-                setcookie('set_language', '', time()-30, COOKIE_PATH);
-
-                /* Set the language */
-                Language::set_by_name($_COOKIE['set_language']);
-            }
+            /* Account preference wins on neutral routes; explicit URLs never write preferences. */
+            Language::set_by_name(fcc_language_preference(
+                (string) $user->language, null, (string) Router::$language_code,
+                Language::$active_languages, Language::$default_name
+            ));
 
             /* Update the currency of the user if needed */
             if(isset($_COOKIE['set_currency']) && array_key_exists($_COOKIE['set_currency'], (array) settings()->payment->currencies) && $_COOKIE['set_currency'] != $user->currency) {
@@ -314,6 +291,13 @@ class App {
             exit();
         }
 
+        if(!is_logged_in()) {
+            Language::set_by_name(fcc_language_preference(
+                null, is_string($_COOKIE['fcc_language'] ?? null) ? $_COOKIE['fcc_language'] : null,
+                (string) Router::$language_code, Language::$active_languages, Language::$default_name
+            ));
+        }
+
         /* Initiate the Title system */
         Title::initialize(settings()->main->title, settings()->main->title_separator ?? '-');
         Meta::initialize();
@@ -322,14 +306,11 @@ class App {
 //        \Altum\Csrf::set('token');
 //        \Altum\Csrf::set('global_token');
 
-        /* If the language code is the default one, redirect to index */
-        if(\Altum\Router::$language_code == Language::$default_code) {
-            redirect(\Altum\Router::$original_request . (\Altum\Router::$original_request_query ? '?' . \Altum\Router::$original_request_query : null));
-        }
+        /* Explicit locale URLs also work when an account prefers another language. */
 
         /* Redirect based on browser language if needed */
         $browser_language_code = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
-        if(settings()->main->auto_language_detection_is_enabled && \Altum\Router::$controller_settings['no_browser_language_detection'] == false && !\Altum\Router::$language_code && !is_logged_in() && $browser_language_code && Language::$default_code != $browser_language_code && array_search($browser_language_code, Language::$active_languages)) {
+        if(settings()->main->auto_language_detection_is_enabled && \Altum\Router::$controller_settings['no_browser_language_detection'] == false && !\Altum\Router::$language_code && !is_logged_in() && !isset($_COOKIE['fcc_language']) && $browser_language_code && Language::$default_code != $browser_language_code && array_search($browser_language_code, Language::$active_languages)) {
             if(!isset($_SERVER['HTTP_REFERER']) || (isset($_SERVER['HTTP_REFERER']) && parse_url($_SERVER['HTTP_REFERER'])['host'] != parse_url(SITE_URL, PHP_URL_HOST))) {
                 header('Location: ' . SITE_URL . $browser_language_code . '/' . \Altum\Router::$original_request . (\Altum\Router::$original_request_query ? '?' . \Altum\Router::$original_request_query : null));
             }

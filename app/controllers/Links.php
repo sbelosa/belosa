@@ -1092,6 +1092,13 @@ class Links extends Controller {
     public function index() {
 
         \Altum\Authentication::guard();
+        // Existing entry links open the shared mobile workspace. Explicit
+        // advanced filters, exports and writes keep their established route.
+        if(fcc_partner_enabled() && $_SERVER['REQUEST_METHOD']==='GET'
+            && empty(array_diff(array_keys($_GET), ['altum','type']))
+            && in_array($_GET['type'] ?? 'biolink', ['biolink',''], true)) {
+            redirect('partner/cards');
+        }
         $this->ensure_featured_app_columns();
 
         /* Custom code: FC-2026-03-19: self-heal link states after plan downgrades */

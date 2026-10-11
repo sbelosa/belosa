@@ -5,7 +5,7 @@
     <url>
         <loc><?= SITE_URL . $row->url ?></loc>
         <lastmod><?= (new \DateTime($row->datetime))->format('Y-m-d\TH:i:sP') ?></lastmod>
-        <changefreq>daily</changefreq>
+        <changefreq><?= htmlspecialchars(fcc_t('daily'), ENT_QUOTES, 'UTF-8') ?></changefreq>
         <priority>0.9</priority>
     </url>
 <?php endwhile ?>

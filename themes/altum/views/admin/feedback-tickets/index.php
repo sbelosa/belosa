@@ -6,7 +6,7 @@
 
     <?php
     $feedback_statuses = [
-        'open' => l('feedback_tickets.status.open'),
+        'open' => fcc_t('Čeka tvoj odgovor'),
         'answered' => l('feedback_tickets.status.answered'),
         'closed' => l('feedback_tickets.status.closed'),
     ];
@@ -23,11 +23,12 @@
         <h1 class="h4 m-0"><i class="fas fa-fw fa-comments mr-1"></i> <?= l('admin_feedback_tickets.header') ?></h1>
     </div>
 
+    <nav class="mb-3" aria-label="<?= htmlspecialchars(fcc_t('Pitanja suradnika'), ENT_QUOTES, 'UTF-8') ?>"><a class="btn btn-sm <?= $data->waiting_only?'btn-primary':'btn-light' ?>" href="<?= url('admin/feedback-tickets?waiting=1') ?>"><?= htmlspecialchars(fcc_t('Čekaju odgovor'), ENT_QUOTES, 'UTF-8') ?></a> <a class="btn btn-sm <?= !$data->waiting_only?'btn-primary':'btn-light' ?>" href="<?= url('admin/feedback-tickets') ?>"><?= htmlspecialchars(fcc_t('Sva pitanja'), ENT_QUOTES, 'UTF-8') ?></a></nav>
     <div class="card">
         <div class="card-body">
             <?php if(count($data->feedback_tickets)): ?>
                 <div class="table-responsive table-custom-container">
-                    <table class="table table-custom table-hover table-striped mb-0">
+                    <table class="table table-custom table-hover table-striped mb-0 fp-admin-responsive-table">
                         <thead>
                         <tr>
                             <th><?= l('admin_feedback_tickets.ticket_label') ?></th>
@@ -43,7 +44,7 @@
                                 <td>
                                     <a href="<?= url('admin/feedback-tickets/ticket/' . $ticket->feedback_ticket_id) ?>">#<?= $ticket->feedback_ticket_id ?> · <?= $ticket->subject ?></a>
                                 </td>
-                                <td>
+                                <td data-label="Suradnik">
                                     <div class="d-flex align-items-center">
                                         <img src="<?= get_user_avatar($ticket->user_avatar, $ticket->user_email) ?>" class="rounded-circle mr-2" style="width: 24px; height: 24px;" loading="lazy" />
                                         <!-- Custom code: FC-2026-03-08: open feedback ticket user profile in new tab -->
@@ -51,12 +52,12 @@
                                         <!-- /Custom code: FC-2026-03-08 -->
                                     </div>
                                 </td>
-                                <td class="text-capitalize"><?= $feedback_categories[$ticket->category] ?? $ticket->category ?></td>
-                                <td>
+                                <td data-label="Kategorija" class="text-capitalize"><?= $feedback_categories[$ticket->category] ?? $ticket->category ?></td>
+                                <td data-label="Status">
                                     <?php $status_class = $ticket->status == 'open' ? 'info' : ($ticket->status == 'answered' ? 'success' : 'secondary') ?>
                                     <span class="badge badge-<?= $status_class ?> text-capitalize"><?= $feedback_statuses[$ticket->status] ?? $ticket->status ?></span>
                                 </td>
-                                <td class="text-nowrap"><?= \Altum\Date::get($ticket->last_datetime, 2) ?></td>
+                                <td data-label="Ažurirano" class="text-nowrap"><?= \Altum\Date::get($ticket->last_datetime, 2) ?></td>
                             </tr>
                         <?php endforeach ?>
                         </tbody>

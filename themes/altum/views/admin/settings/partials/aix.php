@@ -1,8 +1,8 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <div>
-    <h2 class="h5">OpenAI</h2>
-    <p class="text-muted">Used for <code>NSFW moderation</code>, <code>AI Documents</code>, <code>AI Images</code>, <code>AI Transcriptions</code>, <code>AI Syntheses</code>, <code>AI Chats</code>.</p>
+    <h2 class="h5"><?= htmlspecialchars(fcc_t('OpenAI'), ENT_QUOTES, 'UTF-8') ?></h2>
+    <p class="text-muted"><?= htmlspecialchars(fcc_t('Used for'), ENT_QUOTES, 'UTF-8') ?> <code>NSFW moderation</code>, <code>AI Documents</code>, <code>AI Images</code>, <code>AI Transcriptions</code>, <code>AI Syntheses</code>, <code>AI Chats</code>.</p>
     <div class="form-group">
         <label for="openai_api_key"><?= l('admin_settings.aix.openai_api_key') ?></label>
         <textarea id="openai_api_key" name="openai_api_key" class="form-control"><?= settings()->aix->openai_api_key ?></textarea>

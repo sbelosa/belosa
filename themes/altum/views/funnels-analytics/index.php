@@ -716,7 +716,7 @@
     <?= \Altum\Alerts::output_alerts() ?>
 
     <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
             <ol class="custom-breadcrumbs small">
                 <li>
                     <a href="<?= url('links') ?>"><?= l('links.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -1164,7 +1164,7 @@
                 <div class="modal-header">
                     <div>
                         <h5 class="modal-title mb-1"><?= l('funnels_analytics.total_funnels') ?></h5>
-                        <div class="funnels-analytics-meta">Popis svih FCC Funnel blokova. Klik na blok vodi direktno u njegovo uređivanje.</div>
+                        <div class="funnels-analytics-meta"><?= htmlspecialchars(fcc_t('Popis svih FCC Funnel blokova. Klik na blok vodi direktno u njegovo uređivanje.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
                         <span aria-hidden="true">&times;</span>
@@ -1217,7 +1217,7 @@
                 <div class="modal-header">
                     <div>
                         <h5 class="modal-title mb-1"><?= l('biolink_lead_funnel.total_leads') ?></h5>
-                        <div class="funnels-analytics-meta">Svaki lead ima prioritetni kanal kontakta i dostupne fallback akcije za brži follow-up.</div>
+                        <div class="funnels-analytics-meta"><?= htmlspecialchars(fcc_t('Svaki lead ima prioritetni kanal kontakta i dostupne fallback akcije za brži follow-up.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
                         <span aria-hidden="true">&times;</span>
@@ -1290,7 +1290,7 @@
                 <div class="modal-header">
                     <div>
                         <h5 class="modal-title mb-1"><?= l('funnels_analytics.active_funnels') ?></h5>
-                        <div class="funnels-analytics-meta">Popis biolinkova na kojima su funneli aktivni, s brzim ulazom u editor.</div>
+                        <div class="funnels-analytics-meta"><?= htmlspecialchars(fcc_t('Popis biolinkova na kojima su funneli aktivni, s brzim ulazom u editor.'), ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="<?= l('global.close') ?>">
                         <span aria-hidden="true">&times;</span>
@@ -1303,18 +1303,18 @@
                                 <div class="d-flex justify-content-between align-items-start flex-wrap">
                                     <div class="pr-3">
                                         <div class="font-weight-bold text-white"><?= $biolink->biolink_url ?></div>
-                                        <div class="funnels-analytics-meta"><?= $biolink->project_name ?: 'Bez projekta' ?></div>
-                                        <div class="funnels-analytics-meta"><?= nr($biolink->active_funnels) ?> aktivnih funnela • <?= nr($biolink->total_leads) ?> prijava</div>
+                                        <div class="funnels-analytics-meta"><?= $biolink->project_name ?: fcc_t('Bez projekta') ?></div>
+                                        <div class="funnels-analytics-meta"><?= nr($biolink->active_funnels) ?> <?= htmlspecialchars(fcc_t('aktivnih funnela •'), ENT_QUOTES, 'UTF-8') ?> <?= nr($biolink->total_leads) ?> <?= htmlspecialchars(fcc_t('prijava'), ENT_QUOTES, 'UTF-8') ?></div>
                                     </div>
                                     <div class="funnels-analytics-actions">
-                                        <a href="<?= $biolink->analytics_url ?>" class="btn btn-sm btn-outline-light">Analitika</a>
-                                        <a href="<?= $biolink->editor_url ?>" class="btn btn-sm btn-primary">Otvori editor</a>
+                                        <a href="<?= $biolink->analytics_url ?>" class="btn btn-sm btn-outline-light"><?= htmlspecialchars(fcc_t('Analitika'), ENT_QUOTES, 'UTF-8') ?></a>
+                                        <a href="<?= $biolink->editor_url ?>" class="btn btn-sm btn-primary"><?= htmlspecialchars(fcc_t('Otvori editor'), ENT_QUOTES, 'UTF-8') ?></a>
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach ?>
                     <?php else: ?>
-                        <p class="funnels-analytics-empty">Nema aktivnih funnel biolinkova u odabranom periodu.</p>
+                        <p class="funnels-analytics-empty"><?= htmlspecialchars(fcc_t('Nema aktivnih funnel biolinkova u odabranom periodu.'), ENT_QUOTES, 'UTF-8') ?></p>
                     <?php endif ?>
                 </div>
             </div>

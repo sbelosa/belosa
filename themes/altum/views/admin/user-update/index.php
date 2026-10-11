@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-    <nav aria-label="breadcrumb">
+    <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li>
                 <a href="<?= url('admin/users') ?>"><?= l('admin_users.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -47,8 +47,8 @@ $fcc_admin_missing = l('admin_user_update.fcc_featured_missing');
 
             <div class="form-group custom-control custom-switch">
                 <input id="vip_funnel_gate_exempt" name="vip_funnel_gate_exempt" type="checkbox" class="custom-control-input" <?= !empty($data->user_preferences->vip_funnel_gate_exempt) || !empty($data->user_meta->vip_funnel_gate_exempt) ? 'checked="checked"' : null ?>>
-                <label class="custom-control-label" for="vip_funnel_gate_exempt"><i class="fas fa-fw fa-sm fa-diagram-project text-muted mr-1"></i> Ručno uključi Funnel 2.0 za ovog korisnika</label>
-                <small class="form-text text-muted">Koristi se za pilot pristup. Korisnici bez ove dozvole i dalje vide obavijest da je Funnel 2.0 u test periodu.</small>
+                <label class="custom-control-label" for="vip_funnel_gate_exempt"><i class="fas fa-fw fa-sm fa-diagram-project text-muted mr-1"></i> <?= htmlspecialchars(fcc_t('Ručno uključi Funnel 2.0 za ovog korisnika'), ENT_QUOTES, 'UTF-8') ?></label>
+                <small class="form-text text-muted"><?= htmlspecialchars(fcc_t('Koristi se za pilot pristup. Korisnici bez ove dozvole i dalje vide obavijest da je Funnel 2.0 u test periodu.'), ENT_QUOTES, 'UTF-8') ?></small>
             </div>
             <!-- /Custom code -->
 
@@ -70,6 +70,7 @@ $fcc_admin_missing = l('admin_user_update.fcc_featured_missing');
                 <?= \Altum\Alerts::output_field_error('email') ?>
             </div>
 
+            <?php $teamSubjectId=(int)$data->user->user_id; require THEME_PATH.'views/admin/partials/sponsor-fields.php'; ?>
              <!-- Custom code -->
             <div class="form-group">
                 <label for="forever_id"><i class="fa fa-fw fa-sm fa-id-card text-muted mr-1"></i> <?= l('admin_users.main.forever_id') ?></label>

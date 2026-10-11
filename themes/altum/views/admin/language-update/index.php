@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-    <nav aria-label="breadcrumb">
+    <nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
         <ol class="custom-breadcrumbs small">
             <li>
                 <a href="<?= url('admin/languages') ?>"><?= l('admin_languages.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -158,8 +158,8 @@
                                     <div class="form-group">
                                         <label for="<?= $form_key ?>">&nbsp;</label>
                                         <select id="<?= $form_key ?>" name="<?= $form_key ?>" class="custom-select <?= \Altum\Alerts::has_field_errors($form_key) ? 'is-invalid' : null ?> <?= !isset(\Altum\Language::get($data->language['name'])[$key]) || (isset(\Altum\Language::get($data->language['name'])[$key]) && empty(\Altum\Language::get($data->language['name'])[$key])) ? 'border-info' : null ?>" <?= $index++ >= (int) ini_get('max_input_vars') ? 'readonly="readonly"' : null ?>>
-                                            <option value="ltr" <?= (\Altum\Language::get($data->language['name'])[$key] ?? null) == 'ltr' ? 'selected="selected"' : null ?>>ltr</option>
-                                            <option value="rtl" <?= (\Altum\Language::get($data->language['name'])[$key] ?? null) == 'rtl' ? 'selected="selected"' : null ?>>rtl</option>
+                                            <option value="ltr" <?= (\Altum\Language::get($data->language['name'])[$key] ?? null) == 'ltr' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('ltr'), ENT_QUOTES, 'UTF-8') ?></option>
+                                            <option value="rtl" <?= (\Altum\Language::get($data->language['name'])[$key] ?? null) == 'rtl' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('rtl'), ENT_QUOTES, 'UTF-8') ?></option>
                                         </select>
                                     </div>
                                 </div>
@@ -396,7 +396,7 @@
                         `Do not add, remove, or modify punctuation except to match the original text. ` +
                         `Return only the translated text with no explanations, comments, or formatting outside the translation.` +
                         `Translate: ${string_to_translate}`,
-                    'user': 'Admin panel - auto translation',
+                    'user': window.fccT('Admin panel - auto translation'),
                 })
             });
 

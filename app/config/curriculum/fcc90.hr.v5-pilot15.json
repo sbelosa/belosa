@@ -1,0 +1,915 @@
+{
+  "schema_version": 3,
+  "catalog_version": "fcc90-2026-09-24-v5-pilot15",
+  "policy": {
+    "id": "fcc90_v5_pilot15_v1",
+    "published_steps": 15,
+    "planned_steps": 90,
+    "max_regular_per_day": 1,
+    "timezone": "Europe/Zagreb",
+    "levels": "Guided pilot. No automatic level promotion."
+  },
+  "title": "Moj put · prvih 15 koraka",
+  "tasks": [
+    {
+      "id": "fcc90_v5_001",
+      "day": 1,
+      "phase": 1,
+      "core": "Development",
+      "action_type": "profile",
+      "title": "Neka ljudi odmah razumiju čime se baviš",
+      "audience": "Ljudi koji prvi put otvaraju tvoj profil",
+      "channel": "profil i objava",
+      "primary_cta": "Uredi predstavljanje",
+      "actions": [
+        "Odaberi jednu temu koju poznaješ: njega, svakodnevna rutina ili upoznavanje posla.",
+        "Uredi opis profila jednom rečenicom i dodaj svoju FCC poveznicu.",
+        "Objavi kratko predstavljanje: tko si, što ovdje dijeliš i za što ti se ljudi mogu javiti."
+      ],
+      "message_example": "Ovdje ću dijeliti praktične stvari o Forever proizvodima i pokazati kako izgleda moj početak u ovom poslu. Ako te nešto zanima, slobodno mi se javi.",
+      "practice": "Izgovori predstavljanje naglas i snimi ga jednom; izbaci riječ koju inače ne koristiš.",
+      "alternative": "Ako ne želiš snimati lice, objavi svoju fotografiju ili tekst preko vlastite fotografije radnog kutka.",
+      "completion": "Ažuriran profil i objavljeno predstavljanje; samopotvrda objave.",
+      "next_step": "Pogledaj pitanja koja stignu; odgovori osobno, bez slanja kataloga svima.",
+      "advanced_challenge": "Uredi istaknute priče u tri jasne cjeline: proizvodi, pitanja i posao.",
+      "mentor_question": "Radim korak „Neka ljudi odmah razumiju čime se baviš”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Izgovori predstavljanje naglas i snimi ga jednom; izbaci riječ koju inače ne koristiš.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 1,
+      "content_version": 1,
+      "core_label": "Razvoj",
+      "steps": [
+        "Odaberi jednu temu koju poznaješ: njega, svakodnevna rutina ili upoznavanje posla.",
+        "Uredi opis profila jednom rečenicom i dodaj svoju FCC poveznicu.",
+        "Objavi kratko predstavljanje: tko si, što ovdje dijeliš i za što ti se ljudi mogu javiti."
+      ],
+      "published": true,
+      "kind": "profile",
+      "communication": {
+        "example": "Pozdrav! Ovdje ću dijeliti praktične informacije o Forever proizvodima i pokazati kako izgleda moj početak. Ako te nešto zanima, slobodno mi se javi.",
+        "situation": "Ljudi koji prvi put otvaraju tvoj profil",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Pozdrav! Ovdje ću dijeliti praktične informacije o Forever proizvodima i pokazati kako izgleda moj početak. Ako te nešto zanima, slobodno mi se javi."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_002",
+      "day": 2,
+      "phase": 1,
+      "core": "Productivity",
+      "action_type": "story",
+      "title": "Prvi Story koji otvara razgovor",
+      "audience": "Tvoja postojeća publika zainteresirana za odabranu temu",
+      "channel": "Story / WhatsApp status",
+      "primary_cta": "Složi Story",
+      "actions": [
+        "Objavi dva Storyja: jedan svakodnevni prizor i jedno konkretno pitanje.",
+        "Dodaj anketu s dvije jednostavne opcije.",
+        "Odgovori ljudima koji ti pošalju pitanje; glas u anketi sam po sebi nije pristanak na prodajnu poruku."
+      ],
+      "message_example": "Što ti je praktičnije: jedan proizvod koji nosiš sa sobom ili mala rutina kod kuće? Ako tražiš nešto konkretno, napiši mi pa mogu pogledati.",
+      "practice": "Složi dva kadra s najviše jednom mišlju po kadru i pročitaj ih na mobitelu.",
+      "alternative": "Ako nemaš aktivan profil, objavi WhatsApp status za svoje postojeće kontakte; ne šalji masovnu poruku.",
+      "completion": "Dva objavljena kadra s pitanjem.",
+      "next_step": "Spremi temu stvarnog upita za dan 4.",
+      "advanced_challenge": "Za istu temu napravi dvije različite uvodne rečenice i odaberi razumljiviju s mentorom.",
+      "mentor_question": "Radim korak „Prvi Story koji otvara razgovor”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Složi dva kadra s najviše jednom mišlju po kadru i pročitaj ih na mobitelu.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 2,
+      "content_version": 1,
+      "core_label": "Produktivnost",
+      "steps": [
+        "Objavi dva Storyja: jedan svakodnevni prizor i jedno konkretno pitanje.",
+        "Dodaj anketu s dvije jednostavne opcije.",
+        "Odgovori ljudima koji ti pošalju pitanje; glas u anketi sam po sebi nije pristanak na prodajnu poruku."
+      ],
+      "published": true,
+      "kind": "story",
+      "communication": {
+        "example": "Što ti je praktičnije: jedan proizvod koji nosiš sa sobom ili mala rutina kod kuće? Ako tražiš nešto konkretno, napiši mi pa mogu pogledati.",
+        "situation": "Tvoja postojeća publika zainteresirana za odabranu temu",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Što ti je praktičnije: jedan proizvod koji nosiš sa sobom ili mala rutina kod kuće? Ako tražiš nešto konkretno, napiši mi pa mogu pogledati."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_003",
+      "day": 3,
+      "phase": 1,
+      "core": "Productivity",
+      "action_type": "conversation",
+      "title": "Započni dva obična razgovora",
+      "audience": "Dvoje poznanika s kojima imaš stvaran razlog za javljanje",
+      "channel": "razgovor / WhatsApp",
+      "primary_cta": "Složi poruku",
+      "actions": [
+        "Odaberi dvije osobe prema zajedničkoj temi, ne prema pretpostavljenom zdravstvenom problemu.",
+        "Javi se i pitaj što im je važno kod te teme.",
+        "Tek ako žele, ponudi korisnu informaciju ili proizvod."
+      ],
+      "message_example": "Bok! Počinjem više dijeliti stvari o svakodnevnoj njezi. Baš me zanima što je tebi bitno kad biraš proizvod — da je jednostavan za korištenje ili nešto drugo?",
+      "practice": "Napiši dva različita početka prema stvarnom odnosu s te dvije osobe.",
+      "alternative": "Ako nemaš prikladnog poznanika, odgovori korisno na javno pitanje u prostoru gdje je to dopušteno, bez neželjenog linka.",
+      "completion": "Dvije primjerene poruke ili jedan koristan javni odgovor; korisnik potvrđuje radnju.",
+      "next_step": "Odgovor poveži s kontaktom; bez odgovora nema automatskog ponavljanja.",
+      "advanced_challenge": "Nastavi razgovor bez gotovog prodajnog teksta i sažmi potrebu u jednoj rečenici.",
+      "mentor_question": "Radim korak „Započni dva obična razgovora”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Napiši dva različita početka prema stvarnom odnosu s te dvije osobe.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 3,
+      "content_version": 1,
+      "core_label": "Produktivnost",
+      "steps": [
+        "Odaberi dvije osobe prema zajedničkoj temi, ne prema pretpostavljenom zdravstvenom problemu.",
+        "Javi se i pitaj što im je važno kod te teme.",
+        "Tek ako žele, ponudi korisnu informaciju ili proizvod."
+      ],
+      "published": true,
+      "kind": "conversation",
+      "communication": {
+        "example": "Bok! Počinjem više dijeliti stvari o svakodnevnoj njezi. Što je tebi važno kad biraš proizvod — da je jednostavan za korištenje ili nešto drugo?",
+        "situation": "Dvoje poznanika s kojima imaš stvaran razlog za javljanje",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Bok! Počinjem više dijeliti stvari o svakodnevnoj njezi. Što je tebi važno kad biraš proizvod — da je jednostavan za korištenje ili nešto drugo?"
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_004",
+      "day": 4,
+      "phase": 1,
+      "core": "Development",
+      "action_type": "product",
+      "title": "Nauči pokazati jedan proizvod",
+      "audience": "Osoba iz jučerašnjeg razgovora ili tvoja odabrana publika",
+      "channel": "proizvod i prikaz",
+      "primary_cta": "Odaberi proizvod",
+      "actions": [
+        "Odaberi jedan dostupan proizvod iz provjerenog kataloga.",
+        "Prouči namjenu i korištenje te snimi objašnjenje do 30 sekundi.",
+        "Objavi objašnjenje ili ga pošalji osobi koja je tražila detalje."
+      ],
+      "message_example": "Danas ti pokazujem jedan proizvod i kako se koristi. Ako želiš, pošaljem ti i sve detalje da ih možeš pogledati na miru.",
+      "practice": "Bez čitanja reci naziv, jednu provjerenu namjenu i način korištenja; zatim usporedi s izvorom.",
+      "alternative": "Bez proizvoda pri ruci upotrijebi odobrenu fotografiju i jasno reci da objašnjavaš podatke iz upute.",
+      "completion": "Objavljeno ili zatraženo poslano točno objašnjenje jednog proizvoda.",
+      "next_step": "Za preporuku traži još samo podatak koji nedostaje, npr. željeni format.",
+      "advanced_challenge": "Objasni zašto bi za isti zahtjev druga opcija mogla biti jednostavnija ili jeftinija.",
+      "mentor_question": "Radim korak „Nauči pokazati jedan proizvod”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Bez čitanja reci naziv, jednu provjerenu namjenu i način korištenja; zatim usporedi s izvorom.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 4,
+      "content_version": 1,
+      "core_label": "Razvoj",
+      "steps": [
+        "Odaberi jedan dostupan proizvod iz provjerenog kataloga.",
+        "Prouči namjenu i korištenje te snimi objašnjenje do 30 sekundi.",
+        "Objavi objašnjenje ili ga pošalji osobi koja je tražila detalje."
+      ],
+      "published": true,
+      "kind": "product",
+      "communication": {
+        "example": "Bok! Evo detalja za {title}:\n{link}\nTu možeš pogledati opis i uputu. Javi mi ako ti treba još nešto.",
+        "situation": "Osoba iz jučerašnjeg razgovora ili tvoja odabrana publika",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "article",
+          "template": "Bok! Evo detalja za {title}:\n{link}\nTu možeš pogledati opis i uputu. Javi mi ako ti treba još nešto."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_005",
+      "day": 5,
+      "phase": 1,
+      "core": "Productivity",
+      "action_type": "recommendation",
+      "title": "Pošalji prvu ciljanu preporuku",
+      "audience": "Kontakt koji je rekao što traži i želi preporuku",
+      "channel": "osobna preporuka",
+      "primary_cta": "Složi preporuku",
+      "actions": [
+        "Odaberi proizvod koji odgovara izrečenoj potrebi.",
+        "Pripremi poruku s jednim razlogom izbora, fotografijom i osobnom poveznicom.",
+        "Pošalji je i ponudi pomoć oko pitanja."
+      ],
+      "message_example": "Bok! Evo detalja za proizvod koji smo spominjali. Pogledaj kad stigneš, a ako želiš, mogu ti objasniti kako se koristi i kako ga naručiti.",
+      "practice": "U poruci podcrtaj razlog koji je važan baš toj osobi; ako ga nema, prvo postavi jedno pitanje.",
+      "alternative": "Ako još nema zainteresiranog kontakta, objavi fotografiju proizvoda s pitanjem za koju rutinu ljudi traže pomoć.",
+      "completion": "Poslana tražena preporuka ili objavljen konkretan poziv na upit; ne upisivati prodaju.",
+      "next_step": "Ponudi dogovor o javljanju; datum postavi samo ako je dogovoren.",
+      "advanced_challenge": "Usporedi najviše dvije opcije prema osobi; izbjegni slanje cijelog kataloga.",
+      "mentor_question": "Radim korak „Pošalji prvu ciljanu preporuku”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: U poruci podcrtaj razlog koji je važan baš toj osobi; ako ga nema, prvo postavi jedno pitanje.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 5,
+      "content_version": 1,
+      "core_label": "Produktivnost",
+      "steps": [
+        "Odaberi proizvod koji odgovara izrečenoj potrebi.",
+        "Pripremi poruku s jednim razlogom izbora, fotografijom i osobnom poveznicom.",
+        "Pošalji je i ponudi pomoć oko pitanja."
+      ],
+      "published": true,
+      "kind": "recommendation",
+      "communication": {
+        "example": "Bok! Šaljem ti detalje za {title}:\n{link}\nPogledaj kad stigneš. Ako imaš pitanje oko korištenja ili naručivanja, slobodno mi se javi.",
+        "situation": "Kontakt koji je rekao što traži i želi preporuku",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "article",
+          "template": "Bok! Šaljem ti detalje za {title}:\n{link}\nPogledaj kad stigneš. Ako imaš pitanje oko korištenja ili naručivanja, slobodno mi se javi."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_006",
+      "day": 6,
+      "phase": 1,
+      "core": "Retention",
+      "action_type": "followup",
+      "title": "Vrati se na dogovorenu preporuku",
+      "audience": "Kontakt kojem je danas dogovoreno javljanje",
+      "channel": "dogovoreni nastavak",
+      "primary_cta": "Otvori dogovor",
+      "actions": [
+        "Otvori preporuku iz ranijeg razgovora.",
+        "Pošalji jednu kratku poruku vezanu uz njegovo pitanje.",
+        "Zabilježi samo odgovor ili novi dogovor, bez dugog izvještaja."
+      ],
+      "message_example": "Bok! Jesi stigao pogledati detalje? Zanima me je li ti to ono što tražiš ili ti je nešto ostalo nejasno.",
+      "practice": "Skrati nastavak na jedno pitanje koje može dobiti jednostavan odgovor.",
+      "alternative": "Ako nema dospjelog dogovora, objavi odgovor na jedno često pitanje o jučerašnjem proizvodu.",
+      "completion": "Jedno dospjelo javljanje ili objavljen odgovor; čekanje odgovora je zasebno stanje.",
+      "next_step": "Ako osoba kaže da ne želi dalje, zatvori preporuku i ugasi podsjetnik.",
+      "advanced_challenge": "Razlikuj nejasnoću, neprikladan proizvod i odgodu; za svako odaberi drukčiji nastavak.",
+      "mentor_question": "Radim korak „Vrati se na dogovorenu preporuku”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Skrati nastavak na jedno pitanje koje može dobiti jednostavan odgovor.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 6,
+      "content_version": 1,
+      "core_label": "Zadržavanje",
+      "steps": [
+        "Otvori preporuku iz ranijeg razgovora.",
+        "Pošalji jednu kratku poruku vezanu uz njegovo pitanje.",
+        "Zabilježi samo odgovor ili novi dogovor, bez dugog izvještaja."
+      ],
+      "published": true,
+      "kind": "followup",
+      "communication": {
+        "example": "Bok! Trebaš li još neku informaciju ili ti je nešto ostalo nejasno? Slobodno mi javi pa ćemo proći zajedno.",
+        "situation": "Kontakt kojem je danas dogovoreno javljanje",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Bok! Trebaš li još neku informaciju ili ti je nešto ostalo nejasno? Slobodno mi javi pa ćemo proći zajedno."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_007",
+      "day": 7,
+      "phase": 1,
+      "core": "Recruitment",
+      "action_type": "story",
+      "title": "Pokaži kako stvarno izgleda tvoj početak",
+      "audience": "Ljudi koje može zanimati dodatni posao",
+      "channel": "Story / WhatsApp status",
+      "primary_cta": "Složi Story",
+      "actions": [
+        "Objavi tri kratka kadra: što danas učiš, jednu stvarnu radnju i poziv na pitanje.",
+        "Jasno napiši da se radi o Forever poslovanju.",
+        "Odgovori osobama koje pitaju kako se kreće."
+      ],
+      "message_example": "Danas učim kako nekome preporučiti proizvod koji mu stvarno odgovara. Ovo je dio mog početka u Foreveru. Ako te zanima kako izgleda posao, mogu ti pokazati.",
+      "practice": "Fotografiraj stvaran mali dio rada; nemoj inscenirati zaradu ili velik tim.",
+      "alternative": "Ako ne želiš javnu objavu, pošalji takvo objašnjenje jednoj osobi s kojom već razgovaraš o dodatnom poslu.",
+      "completion": "Objavljena priča o stvarnom radu ili poslano traženo objašnjenje posla.",
+      "next_step": "Zainteresiranome ponudi kratak razgovor, ne registraciju odmah.",
+      "advanced_challenge": "Dodaj jedan stvaran izazov i način na koji ga rješavaš uz sponzora.",
+      "mentor_question": "Radim korak „Pokaži kako stvarno izgleda tvoj početak”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Fotografiraj stvaran mali dio rada; nemoj inscenirati zaradu ili velik tim.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 7,
+      "content_version": 1,
+      "core_label": "Regrutacija",
+      "steps": [
+        "Objavi tri kratka kadra: što danas učiš, jednu stvarnu radnju i poziv na pitanje.",
+        "Jasno napiši da se radi o Forever poslovanju.",
+        "Odgovori osobama koje pitaju kako se kreće."
+      ],
+      "published": true,
+      "kind": "story",
+      "communication": {
+        "example": "Danas učim kako nekome preporučiti proizvod koji mu stvarno odgovara. Ovo je dio mog početka u Foreveru. Ako te zanima kako izgleda posao, mogu ti pokazati.",
+        "situation": "Ljudi koje može zanimati dodatni posao",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Danas učim kako nekome preporučiti proizvod koji mu stvarno odgovara. Ovo je dio mog početka u Foreveru. Ako te zanima kako izgleda posao, mogu ti pokazati."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_008",
+      "day": 8,
+      "phase": 1,
+      "core": "Recruitment",
+      "action_type": "invite",
+      "title": "Otvoreno pozovi jednu osobu na razgovor",
+      "audience": "Poznanik s kojim možeš otvoreno razgovarati o poslovanju",
+      "channel": "poslovni poziv",
+      "primary_cta": "Složi poziv",
+      "actions": [
+        "Odaberi jednu osobu i iskren razlog zašto joj se javljaš.",
+        "Reci da je riječ o Forever prodaji i radu s ljudima.",
+        "Ponudi kratak razgovor i ostavi joj izbor."
+      ],
+      "message_example": "Bok! Pokrećem svoj Forever posao i zanima me bi li htio čuti kako to izgleda. Radi se o preporuci proizvoda i radu s kupcima. Ako ti je zanimljivo, možemo kratko popričati.",
+      "practice": "Dovrši usmeno rečenicu Zašto baš ovoj osobi pišem; ako nema smislenog razloga, izaberi drugi kontekst.",
+      "alternative": "Ako nema prikladne osobe, objavi poziv za upoznavanje posla s istim jasnim objašnjenjem.",
+      "completion": "Jedan osobni poziv ili jedna javna objava; odgovor nije uvjet.",
+      "next_step": "Pristane li, ponudi dva stvarno slobodna termina.",
+      "advanced_challenge": "Prilagodi poziv nečijem izrečenom interesu, bez obećanja prihoda ili lakog uspjeha.",
+      "mentor_question": "Radim korak „Otvoreno pozovi jednu osobu na razgovor”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Dovrši usmeno rečenicu Zašto baš ovoj osobi pišem; ako nema smislenog razloga, izaberi drugi kontekst.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 8,
+      "content_version": 1,
+      "core_label": "Regrutacija",
+      "steps": [
+        "Odaberi jednu osobu i iskren razlog zašto joj se javljaš.",
+        "Reci da je riječ o Forever prodaji i radu s ljudima.",
+        "Ponudi kratak razgovor i ostavi joj izbor."
+      ],
+      "published": true,
+      "kind": "invite",
+      "communication": {
+        "example": "Bok! Pokrećem svoj Forever posao i zanima me želiš li čuti kako to izgleda. Radi se o preporuci proizvoda i radu s kupcima. Ako ti je zanimljivo, možemo kratko popričati.",
+        "situation": "Poznanik s kojim možeš otvoreno razgovarati o poslovanju",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Bok! Pokrećem svoj Forever posao i zanima me želiš li čuti kako to izgleda. Radi se o preporuci proizvoda i radu s kupcima. Ako ti je zanimljivo, možemo kratko popričati."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_009",
+      "day": 9,
+      "phase": 1,
+      "core": "Development",
+      "action_type": "mentor",
+      "title": "Uključi sponzora u prvi poslovni razgovor",
+      "audience": "Tvoj sponzor ili dodijeljeni mentor",
+      "channel": "mentor / praktična vježba",
+      "primary_cta": "Otvori vježbu",
+      "actions": [
+        "Odaberi što ti treba: uvod, objašnjenje poslovanja ili odgovor na pitanje.",
+        "Pošalji sponzoru konkretan upit i dva termina koja ti odgovaraju.",
+        "Pripremi tri rečenice kojima ćeš predstaviti sebe i temu razgovora."
+      ],
+      "message_example": "Bok! Treba mi pomoć oko prvog razgovora o Forever poslu. Možemo se kratko čuti da prođemo kako da ga vodim? Poslat ću ti termine koji mi odgovaraju.",
+      "practice": "Snimi uvod od 30 sekundi koji bi rekao gostu; pošalji ga mentoru uz pitanje je li jasan.",
+      "alternative": "Ako mentor nije dostupan, prođi snimljeni primjer i pošalji pitanje kroz FCC podršku; razgovor možeš voditi i sam uz vodič.",
+      "completion": "Poslan konkretan zahtjev za pomoć i pripremljen uvod; dogovor nije automatski potvrđen.",
+      "next_step": "Ako je gost pristao, uskladi termin s obje osobe.",
+      "advanced_challenge": "Ti vodi uvod, a mentoru unaprijed dodijeli samo dio koji još ne znaš objasniti.",
+      "mentor_question": "Radim korak „Uključi sponzora u prvi poslovni razgovor”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Snimi uvod od 30 sekundi koji bi rekao gostu; pošalji ga mentoru uz pitanje je li jasan.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 9,
+      "content_version": 1,
+      "core_label": "Razvoj",
+      "steps": [
+        "Odaberi što ti treba: uvod, objašnjenje poslovanja ili odgovor na pitanje.",
+        "Pošalji sponzoru konkretan upit i dva termina koja ti odgovaraju.",
+        "Pripremi tri rečenice kojima ćeš predstaviti sebe i temu razgovora."
+      ],
+      "published": true,
+      "kind": "mentor",
+      "communication": {
+        "example": "Bok! Treba mi pomoć oko prvog razgovora o Forever poslu. Možemo se kratko čuti da prođemo kako da ga započnem?",
+        "situation": "Tvoj sponzor ili dodijeljeni mentor",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Bok! Treba mi pomoć oko prvog razgovora o Forever poslu. Možemo se kratko čuti da prođemo kako da ga započnem?"
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_010",
+      "day": 10,
+      "phase": 1,
+      "core": "Productivity",
+      "action_type": "order",
+      "title": "Olakšaj zainteresiranoj osobi narudžbu",
+      "audience": "Kontakt koji je pitao kako naručiti",
+      "channel": "pomoć oko naručivanja",
+      "primary_cta": "Pripremi pomoć",
+      "actions": [
+        "Otvori službenu stranicu odabranog proizvoda u svojoj zemlji.",
+        "Pošalji vlastitu poveznicu i objasni gdje provjeriti cijenu i dostavu.",
+        "Ponudi pomoć ako zapne; kupac sam unosi svoje podatke i plaća."
+      ],
+      "message_example": "Bok! Ovdje možeš pogledati proizvod i naručiti: {referral_url} Prije potvrde vidjet ćeš cijenu i dostavu. Ako negdje zapneš, javi mi što ti se prikazuje.",
+      "practice": "Prođi put do pregleda košarice bez dovršavanja probne kupnje i označi dva gumba koja kupac treba pronaći.",
+      "alternative": "Bez kupca napravi kratak slikovni vodič do košarice i objavi ga u istaknute priče.",
+      "completion": "Poslana tražena pomoć ili objavljen vodič; otvorena košarica nije narudžba.",
+      "next_step": "Narudžbu prikaži prema dostupnom dokazu, a ne prema kliku.",
+      "advanced_challenge": "Pomozi osobi riješiti jednu konkretnu prepreku bez preuzimanja pristupa njenom računu.",
+      "mentor_question": "Radim korak „Olakšaj zainteresiranoj osobi narudžbu”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Prođi put do pregleda košarice bez dovršavanja probne kupnje i označi dva gumba koja kupac treba pronaći.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 10,
+      "content_version": 1,
+      "core_label": "Produktivnost",
+      "steps": [
+        "Otvori službenu stranicu odabranog proizvoda u svojoj zemlji.",
+        "Pošalji vlastitu poveznicu i objasni gdje provjeriti cijenu i dostavu.",
+        "Ponudi pomoć ako zapne; kupac sam unosi svoje podatke i plaća."
+      ],
+      "published": true,
+      "kind": "order",
+      "communication": {
+        "example": "Bok! Ovdje su detalji za {title} i poveznica za naručivanje:\n{link}\nPrije potvrde narudžbe provjeri cijenu i dostavu. Ako negdje zapneš, javi mi što ti se prikazuje.",
+        "situation": "Kontakt koji je pitao kako naručiti",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "article",
+          "template": "Bok! Ovdje su detalji za {title} i poveznica za naručivanje:\n{link}\nPrije potvrde narudžbe provjeri cijenu i dostavu. Ako negdje zapneš, javi mi što ti se prikazuje."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_011",
+      "day": 11,
+      "phase": 1,
+      "core": "Retention",
+      "action_type": "service",
+      "title": "Kupcu pošalji početnu pomoć za proizvod",
+      "audience": "Kupac s potvrđenom isporukom ili koji je sam rekao da je proizvod dobio",
+      "channel": "pomoć kupcu",
+      "primary_cta": "Pripremi uputu",
+      "actions": [
+        "Odaberi isporučeni proizvod.",
+        "Pošalji kratku uputu iz odgovarajućeg izvora i ponudi odgovor na pitanje.",
+        "Pitaj želi li da mu se javiš nakon što ga počne koristiti."
+      ],
+      "message_example": "Bok! Ako ti zatreba pomoć oko korištenja, slobodno mi se javi. Mogu ti poslati i kratku uputu za ovaj proizvod. Želiš da ti se javim za nekoliko dana pa da vidimo imaš li pitanja?",
+      "practice": "Pripremi fotografiju ili tri jasna koraka korištenja za taj proizvod.",
+      "alternative": "Bez kupca objavi praktičan vodič za isti proizvod; ne izmišljaj da je netko naručio.",
+      "completion": "Poslana pomoć stvarnom kupcu ili objavljen vodič.",
+      "next_step": "Podsjetnik tek prema dogovoru; bez tvrdnje da je proizvod već djelovao.",
+      "advanced_challenge": "Prilagodi uputu formatu koji kupac želi: glasovna poruka, tekst ili fotografija.",
+      "mentor_question": "Radim korak „Kupcu pošalji početnu pomoć za proizvod”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Pripremi fotografiju ili tri jasna koraka korištenja za taj proizvod.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 11,
+      "content_version": 1,
+      "core_label": "Zadržavanje",
+      "steps": [
+        "Odaberi isporučeni proizvod.",
+        "Pošalji kratku uputu iz odgovarajućeg izvora i ponudi odgovor na pitanje.",
+        "Pitaj želi li da mu se javiš nakon što ga počne koristiti."
+      ],
+      "published": true,
+      "kind": "service",
+      "communication": {
+        "example": "Bok! Ovdje možeš pogledati podatke za {title}:\n{link}\nAko ti nešto nije jasno oko korištenja, slobodno mi se javi pa možemo proći uputu zajedno.",
+        "situation": "Kupac s potvrđenom isporukom ili koji je sam rekao da je proizvod dobio",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "article",
+          "template": "Bok! Ovdje možeš pogledati podatke za {title}:\n{link}\nAko ti nešto nije jasno oko korištenja, slobodno mi se javi pa možemo proći uputu zajedno."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_012",
+      "day": 12,
+      "phase": 1,
+      "core": "Productivity",
+      "action_type": "video",
+      "title": "Snimi proizvod u stvarnoj svakodnevnoj situaciji",
+      "audience": "Publika kojoj koristi praktičan prikaz",
+      "channel": "kratki video",
+      "primary_cta": "Pripremi prikaz",
+      "actions": [
+        "Izaberi jedan mali kontekst: torbica, kupaonica ili putna oprema.",
+        "Snimi do 30 sekundi s jednom jasnom porukom.",
+        "Objavi uz poziv da se ljudi jave za detalje."
+      ],
+      "message_example": "Ako ti odgovara da proizvod ima svoje mjesto u dnevnoj rutini, ovako možeš složiti jednostavan početak. Za naziv i detalje slobodno mi piši.",
+      "practice": "Napravi prvi kadar koji bez zvuka pokazuje o čemu je video; dodaj čitljive titlove.",
+      "alternative": "Bez vlastitog proizvoda složi dva kadra od odobrene fotografije i točne upute; ne glumi korištenje.",
+      "completion": "Objavljen video ili kratki slikovni prikaz s pozivom.",
+      "next_step": "Odgovori na stvarna pitanja o prikazanom proizvodu.",
+      "advanced_challenge": "Testiraj novi uvodni kadar uz istu ponudu; usporedi upite, ne samo preglede.",
+      "mentor_question": "Radim korak „Snimi proizvod u stvarnoj svakodnevnoj situaciji”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Napravi prvi kadar koji bez zvuka pokazuje o čemu je video; dodaj čitljive titlove.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 12,
+      "content_version": 1,
+      "core_label": "Produktivnost",
+      "steps": [
+        "Izaberi jedan mali kontekst: torbica, kupaonica ili putna oprema.",
+        "Snimi do 30 sekundi s jednom jasnom porukom.",
+        "Objavi uz poziv da se ljudi jave za detalje."
+      ],
+      "published": true,
+      "kind": "video",
+      "communication": {
+        "example": "Danas pokazujem {title}. Više informacija i uputu možeš pogledati ovdje:\n{link}\nAko te nešto zanima, slobodno mi se javi.",
+        "situation": "Publika kojoj koristi praktičan prikaz",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "article",
+          "template": "Danas pokazujem {title}. Više informacija i uputu možeš pogledati ovdje:\n{link}\nAko te nešto zanima, slobodno mi se javi."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_013",
+      "day": 13,
+      "phase": 1,
+      "core": "Productivity",
+      "action_type": "recommendation",
+      "title": "Poveži pravi proizvod s pravim upitom",
+      "audience": "Osoba koja je odgovorila na objavu ili zatražila detalje",
+      "channel": "osobna preporuka",
+      "primary_cta": "Složi preporuku",
+      "actions": [
+        "Odaberi njezin konkretan upit.",
+        "Provjeri namjenu proizvoda i po potrebi pitaj još jednu stvar.",
+        "Pošalji kratku preporuku s fotografijom i automatskim vlastitim referralom."
+      ],
+      "message_example": "Bok! Evo proizvoda koji ti predlažem prema onome što tražiš. Detalji su ovdje: {referral_url} Pogledaj pa mi javi želiš li još nešto znati.",
+      "practice": "Usporedi dvije moguće preporuke i objasni zašto jednu izostavljaš.",
+      "alternative": "Ako nema upita, objavi usporedbu dviju jednostavnih opcija i pozovi ljude da ti napišu što im treba.",
+      "completion": "Jedna ciljana preporuka ili objavljena usporedba.",
+      "next_step": "Zabilježi proizvod i sljedeći dogovor; ishod narudžbe pratimo odvojeno.",
+      "advanced_challenge": "Objasni izbor jednom konkretnom razlikom koja je važna osobi, ne popisom sastojaka.",
+      "mentor_question": "Radim korak „Poveži pravi proizvod s pravim upitom”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Usporedi dvije moguće preporuke i objasni zašto jednu izostavljaš.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 13,
+      "content_version": 1,
+      "core_label": "Produktivnost",
+      "steps": [
+        "Odaberi njezin konkretan upit.",
+        "Provjeri namjenu proizvoda i po potrebi pitaj još jednu stvar.",
+        "Pošalji kratku preporuku s fotografijom i automatskim vlastitim referralom."
+      ],
+      "published": true,
+      "kind": "recommendation",
+      "communication": {
+        "example": "Bok! Evo detalja za {title}:\n{link}\nPogledaj kad stigneš. Ako ti nešto nije jasno, rado ću ti pomoći.",
+        "situation": "Osoba koja je odgovorila na objavu ili zatražila detalje",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "article",
+          "template": "Bok! Evo detalja za {title}:\n{link}\nPogledaj kad stigneš. Ako ti nešto nije jasno, rado ću ti pomoći."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_014",
+      "day": 14,
+      "phase": 1,
+      "core": "Recruitment",
+      "action_type": "invite",
+      "title": "Pozovi na sljedeći potvrđeni webinar",
+      "audience": "Osoba koja želi upoznati posao",
+      "channel": "poslovni poziv",
+      "primary_cta": "Složi poziv",
+      "actions": [
+        "Otvori stvarni sljedeći termin webinara.",
+        "Pošalji poziv s kratkim razlogom zašto bi joj bio koristan.",
+        "Ako želi doći, pitaj treba li podsjetnik."
+      ],
+      "message_example": "Bok! Na sljedećem webinaru možeš vidjeti kako izgleda Forever posao i postaviti pitanja. Ako želiš, pošaljem ti termin i link pa pogledaj odgovara li ti.",
+      "practice": "Izgovori poziv u 20 sekundi bez objašnjavanja cijelog poslovnog modela.",
+      "alternative": "Bez prikladnog kontakta objavi javni poziv s potvrđenim datumom, vremenom i temom.",
+      "completion": "Poslan poziv ili objavljena najava; dolazak gosta nije uvjet.",
+      "next_step": "Termin i link uzmi iz kalendara, ne iz stalno upisane nedjelje.",
+      "advanced_challenge": "Uskladi s mentorom tko odgovara na pitanja nakon događaja.",
+      "mentor_question": "Radim korak „Pozovi na sljedeći potvrđeni webinar”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Izgovori poziv u 20 sekundi bez objašnjavanja cijelog poslovnog modela.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 14,
+      "content_version": 1,
+      "core_label": "Regrutacija",
+      "steps": [
+        "Otvori stvarni sljedeći termin webinara.",
+        "Pošalji poziv s kratkim razlogom zašto bi joj bio koristan.",
+        "Ako želi doći, pitaj treba li podsjetnik."
+      ],
+      "published": true,
+      "kind": "invite",
+      "communication": {
+        "example": "Bok! Na sljedećem webinaru možeš vidjeti kako izgleda Forever posao i postaviti pitanja. Ako želiš, pošaljem ti potvrđeni termin i link pa pogledaj odgovara li ti.",
+        "situation": "Osoba koja želi upoznati posao",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Bok! Na sljedećem webinaru možeš vidjeti kako izgleda Forever posao i postaviti pitanja. Ako želiš, pošaljem ti potvrđeni termin i link pa pogledaj odgovara li ti."
+        }
+      }
+    },
+    {
+      "id": "fcc90_v5_015",
+      "day": 15,
+      "phase": 1,
+      "core": "Development",
+      "action_type": "review",
+      "title": "Zatvori prvi krug jednim stvarnim potezom",
+      "audience": "Najbliža otvorena prilika iz prvih 14 koraka",
+      "channel": "konkretna radnja iz otvorenog dogovora",
+      "primary_cta": "Odaberi sljedeći potez",
+      "actions": [
+        "Pogledaj najviše tri otvorena razgovora.",
+        "Odaberi onaj kojem nedostaje jedna tvoja radnja: odgovor, preporuka ili poziv.",
+        "Napravi tu radnju danas."
+      ],
+      "message_example": "Bok! Ostalo nam je otvoreno tvoje pitanje. Evo kratkog odgovora, pa mi reci trebaš li još nešto da možeš odlučiti.",
+      "practice": "Uz jednu priliku reci naglas što točno čeka na tebe; odmah pripremi tu poruku.",
+      "alternative": "Ako nema otvorenih razgovora, objavi najjasniji dosadašnji prikaz proizvoda s novim konkretnim pitanjem.",
+      "completion": "Izvršena sljedeća radnja; aplikacija sama sažima prvi krug.",
+      "next_step": "Coach predlaže samo jednu vještinu za vježbanje u sljedećem ciklusu.",
+      "advanced_challenge": "Uz stvaran ishod odredi jednu promjenu u načinu vođenja idućeg razgovora.",
+      "mentor_question": "Radim korak „Zatvori prvi krug jednim stvarnim potezom”. Možeš mi pomoći da ovo izvedem u svojoj situaciji? Želim proći ovaj primjer: Uz jednu priliku reci naglas što točno čeka na tebe; odmah pripremi tu poruku.",
+      "evidence_policy": {
+        "own_action_can_complete": true,
+        "external_result_required": false,
+        "draft_is_delivery": false,
+        "whatsapp_open_is_sent": false,
+        "cc_is_order": false,
+        "default_external_action_source": "self_reported",
+        "alternative_must_be_labelled": true
+      },
+      "level_delivery_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "source_policy": "approved_market_product_facts_and_confirmed_user_context",
+      "implementation_status": "local_pilot",
+      "position": 15,
+      "content_version": 1,
+      "core_label": "Razvoj",
+      "steps": [
+        "Pogledaj najviše tri otvorena razgovora.",
+        "Odaberi onaj kojem nedostaje jedna tvoja radnja: odgovor, preporuka ili poziv.",
+        "Napravi tu radnju danas."
+      ],
+      "published": true,
+      "kind": "review",
+      "communication": {
+        "example": "Bok! Trebaš li još neki odgovor ili pomoć oko sljedećeg koraka? Slobodno mi javi što te zanima.",
+        "situation": "Najbliža otvorena prilika iz prvih 14 koraka",
+        "label": "Primjer koji možeš prilagoditi",
+        "personal_experience": null,
+        "composer": {
+          "kind": "text",
+          "template": "Bok! Trebaš li još neki odgovor ili pomoć oko sljedećeg koraka? Slobodno mi javi što te zanima."
+        }
+      }
+    }
+  ]
+}

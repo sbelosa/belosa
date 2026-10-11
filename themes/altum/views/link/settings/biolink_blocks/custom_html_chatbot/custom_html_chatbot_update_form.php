@@ -10,10 +10,10 @@
     <div class="notification-container"></div>
 
     <div class="alert alert-info mb-4">
-        <div class="font-weight-bold mb-1">FCC AI popup</div>
+        <div class="font-weight-bold mb-1"><?= htmlspecialchars(fcc_t('FCC AI popup'), ENT_QUOTES, 'UTF-8') ?></div>
         <div class="small">
-            Ovaj blok je sada spojen na interni <strong>ChatExtreme AI za ljude</strong> sustav. Više ne trebaš lijepiti Zapier ili drugi HTML.
-            Ton, jezik i model uređuješ u <strong>FCC AI</strong> hubu.
+            <?= htmlspecialchars(fcc_t('Ovaj blok je sada spojen na interni'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('ChatExtreme AI za ljude'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('sustav. Više ne trebaš lijepiti Zapier ili drugi HTML.
+            Ton, jezik i model uređuješ u'), ENT_QUOTES, 'UTF-8') ?> <strong><?= htmlspecialchars(fcc_t('FCC AI'), ENT_QUOTES, 'UTF-8') ?></strong> <?= htmlspecialchars(fcc_t('hubu.'), ENT_QUOTES, 'UTF-8') ?>
         </div>
     </div>
 
@@ -111,7 +111,7 @@
         <div class="form-group">
             <label for="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>"><i class="fa fa-fw fa-window-restore fa-sm text-muted mr-1"></i> <?= l('biolink_link.display_operating_systems') ?></label>
             <select id="<?= 'link_display_operating_systems_' . $row->biolink_block_id ?>" name="display_operating_systems[]" class="custom-select" multiple="multiple">
-                <?php foreach(['iOS', 'Android', 'Windows', 'OS X', 'Linux', 'Ubuntu', 'Chrome OS'] as $os_name): ?>
+                <?php foreach(['iOS', 'Android', 'Windows', fcc_t('OS X'), 'Linux', 'Ubuntu', fcc_t('Chrome OS')] as $os_name): ?>
                     <option value="<?= $os_name ?>" <?= in_array($os_name, $row->settings->display_operating_systems ?? []) ? 'selected="selected"' : null ?>><?= $os_name ?></option>
                 <?php endforeach ?>
             </select>

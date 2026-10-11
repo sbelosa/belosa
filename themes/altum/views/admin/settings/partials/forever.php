@@ -30,7 +30,7 @@
                 type="url"
                 name="<?= 'forever_webshop_links_' . $country_code ?>"
                 class="form-control"
-                placeholder="https://"
+                placeholder="<?= htmlspecialchars('https://', ENT_QUOTES, 'UTF-8') ?>"
                 value="<?= $value ?>"
             />
 
@@ -71,7 +71,7 @@
                 type="url"
                 name="<?= 'forever_business_links_' . $country_code ?>"
                 class="form-control"
-                placeholder="https://"
+                placeholder="<?= htmlspecialchars('https://', ENT_QUOTES, 'UTF-8') ?>"
                 value="<?= $value ?>"
             />
 

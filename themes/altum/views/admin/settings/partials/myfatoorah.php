@@ -17,11 +17,11 @@
         <div class="form-group">
             <label for="api_endpoint"><?= l('admin_settings.myfatoorah.api_endpoint') ?></label>
             <select id="api_endpoint" name="api_endpoint" class="custom-select">
-                <option value="api.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api.myfatoorah.com' ? 'selected="selected"' : null ?>>api.myfatoorah.com</option>
-                <option value="api-sa.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api-sa.myfatoorah.com' ? 'selected="selected"' : null ?>>api-sa.myfatoorah.com</option>
-                <option value="api-qa.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api-qa.myfatoorah.com' ? 'selected="selected"' : null ?>>api-qa.myfatoorah.com</option>
-                <option value="api-eg.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api-eg.myfatoorah.com' ? 'selected="selected"' : null ?>>api-eg.myfatoorah.com</option>
-                <option value="apitest.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'apitest.myfatoorah.com' ? 'selected="selected"' : null ?>>apitest.myfatoorah.com</option>
+                <option value="api.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api.myfatoorah.com' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api.myfatoorah.com'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="api-sa.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api-sa.myfatoorah.com' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-sa.myfatoorah.com'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="api-qa.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api-qa.myfatoorah.com' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-qa.myfatoorah.com'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="api-eg.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'api-eg.myfatoorah.com' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('api-eg.myfatoorah.com'), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="apitest.myfatoorah.com" <?= settings()->myfatoorah->api_endpoint == 'apitest.myfatoorah.com' ? 'selected="selected"' : null ?>><?= htmlspecialchars(fcc_t('apitest.myfatoorah.com'), ENT_QUOTES, 'UTF-8') ?></option>
             </select>
         </div>
 

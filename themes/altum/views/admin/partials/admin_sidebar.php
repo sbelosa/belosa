@@ -66,12 +66,7 @@ try {
             <div id="admin_sidebar_los_container" class="mt-1 collapse bg-gray-200 rounded <?= in_array(\Altum\Router::$controller, $admin_los_controllers, true) ? 'show' : null ?>">
                 <li class="<?= in_array(\Altum\Router::$controller, ['AdminLeaderOperatingSystem', 'AdminLeaderOperatingSystemLeader'], true) ? 'active' : null ?>">
                     <a class="nav-link text-truncate" href="<?= url('admin/leader-operating-system') ?>">
-                        <i class="fas fa-fw fa-sm fa-users-cog mr-2"></i> <?= l('admin_leader_operating_system.section.leader') ?>
-                    </a>
-                </li>
-                <li class="<?= \Altum\Router::$controller == 'AdminLeaderOperatingSystemForever' ? 'active' : null ?>">
-                    <a class="nav-link text-truncate" href="<?= url('admin/leader-operating-system-forever') ?>">
-                        <i class="fas fa-fw fa-sm fa-seedling mr-2"></i> <?= l('admin_leader_operating_system.section.forever') ?>
+                        <i class="fas fa-fw fa-sm fa-users-cog mr-2"></i> Pregled LOS-a
                     </a>
                 </li>
                 <li class="<?= \Altum\Router::$controller == 'AdminForeverBusiness' ? 'active' : null ?>">
@@ -82,6 +77,7 @@ try {
             </div>
             <!-- /Custom code: FC-2026-08-21 -->
 
+            <li class="<?= \Altum\Router::$controller === 'AdminFccAccess' ? 'active' : null ?>"><a class="nav-link text-truncate" href="<?= url('admin/fcc-access') ?>"><i class="fas fa-fw fa-sm fa-user-check mr-2"></i> <?= htmlspecialchars(fcc_t('Pristup novom FCC-u'), ENT_QUOTES, 'UTF-8') ?></a></li>
             <li class="<?= in_array(\Altum\Router::$controller, ['AdminUsers', 'AdminUserUpdate', 'AdminUserCreate', 'AdminUserView']) ? 'active' : null ?>">
                 <a class="nav-link text-truncate" href="<?= url('admin/users') ?>">
                     <i class="fas fa-fw fa-sm fa-users mr-2"></i> <?= l('admin_users.menu') ?>

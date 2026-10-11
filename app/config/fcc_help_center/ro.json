@@ -1,0 +1,855 @@
+{
+  "locale": "ro",
+  "source_version": "2026.10.05.1",
+  "articles": {
+    "start": {
+      "title": "Primii pași în sistemul FCC",
+      "summary": "Conectează-te, verifică-ți cardul și găsește acțiunea cu care vrei să începi.",
+      "keywords": [
+        "început",
+        "înregistrări",
+        "limbă",
+        "instalare"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Ce ai la dispoziție",
+          "paragraphs": [
+            "Folosești același cont FCC pe calculator și pe telefon. Versiunile Free și PRO au funcționalități diferite, iar accesul la programul Moj put se confirmă separat."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pregătește-ți spațiul de lucru",
+          "steps": [
+            "Conectează-te cu adresa de e-mail și parola pe care le folosești deja. Nu crea un al doilea cont pentru a instala aplicația.",
+            "Selectează limba în bara de sus. Această alegere nu schimbă țara magazinului Forever.",
+            "Deschide Moja kartica și verifică datele tale de contact, Forever ID și previzualizarea publică a cardului.",
+            "Deschide Danas pentru următorul pas sau Podijeli pentru un produs, o prezentare de afaceri ori o invitație.",
+            "În Više găsești instrucțiuni pentru FCC, instalarea aplicației, pachet și asistență."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Dacă întâmpini probleme",
+          "questions": [
+            {
+              "question": "De ce nu văd sarcina zilnică personalizată?",
+              "answer": "Verifică afișarea accesului în Moj put și punctele tale. Datele neconfirmate nu dovedesc că nu ai făcut ceva. Asistența poate verifica dacă conturile sunt conectate."
+            }
+          ]
+        }
+      ]
+    },
+    "daily": {
+      "title": "Astăzi și călătoria mea",
+      "summary": "Învață un lucru, pune-l în practică și notează cu exactitate ce ai făcut.",
+      "keywords": [
+        "astăzi",
+        "călătoria mea",
+        "sarcină",
+        "4 Core",
+        "progres"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Un singur program interconectat",
+          "paragraphs": [
+            "Moj put reunește Recrutarea, Fidelizarea, Productivitatea și Dezvoltarea. Pasul disponibil, exercițiul și criteriul de finalizare sunt afișate lângă sarcina ta. PRO include asistență personalizată din partea unui Coach."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Parcurge pasul tău",
+          "steps": [
+            "Deschide Danas și citește obiectivul și acțiunile afișate pentru pasul tău.",
+            "Deschide instrumentul sau materialul asociat. Dacă este nevoie, cere o explicație mai simplă.",
+            "Fă acțiunea dorită de persoană sau alege exercițiul oferit dacă nu ai o situație potrivită.",
+            "Confirmă doar rezultatul real, conform criteriului pasului. Un clic și o ciornă nu înseamnă că ai purtat o conversație.",
+            "Consultă în Moj napredak înregistrările tale și scrie în reflecție ce te-a ajutat sau unde ai întâmpinat dificultăți."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Pasul de astăzi presupune o conversație cu un client. Dacă nu ai o persoană potrivită care dorește să discute, fă exercițiul oferit și marchează-l ca atare."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebare frecventă",
+          "questions": [
+            {
+              "question": "Se consideră exercițiul o vânzare?",
+              "answer": "Nu. Exercițiul și aplicarea în practică au marcaje diferite. Simplul fapt că citești instrucțiunile nu finalizează pasul și nu confirmă un rezultat de afaceri."
+            },
+            {
+              "question": "PRO oferă automat acces la programul Moj put?",
+              "answer": "Nu. Pachetul și înscrierea aprobată în program sunt condiții separate. Deschide afișarea accesului tău sau cere asistenței să verifice."
+            }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "title": "Editează și verifică-ți cardul",
+      "summary": "Asociază datele de contact, conținutul și recomandarea personală pe cardul pe care îl distribui.",
+      "keywords": [
+        "card",
+        "bloc",
+        "editează",
+        "rețele sociale"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Cardul văzut de vizitator",
+          "paragraphs": [
+            "Moja kartica îți deschide cardurile și opțiunile de editare. Fiecare bloc se editează separat, iar Izgled schimbă aspectul general. Numărul de carduri și blocurile disponibile depind de pachet."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Editează o parte, apoi verifică",
+          "steps": [
+            "Deschide Moja kartica, selectează-ți cardul și apasă Uredi.",
+            "În Sadržaj, deschide Uredi sau apasă pictograma creion de lângă blocul pe care vrei să-l schimbi.",
+            "Verifică numele, descrierea, numărul de telefon și canalele de comunicare. Dacă un câmp afișează deja domeniul, introdu doar partea solicitată din adresă.",
+            "Pentru conținut nou, selectează Dodaj blok și citește cu atenție descrierea scopului său.",
+            "Salvează modificarea, deschide Pregled public și testează linkul înainte de a-l distribui."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebare practică",
+          "questions": [
+            {
+              "question": "Cum adaug o descriere mai scurtă sub nume?",
+              "answer": "Adaugă un bloc de text separat și mută-l sub blocul de titlu. Dimensiunea întregului titlu și descrierea sunt setări diferite."
+            }
+          ]
+        }
+      ]
+    },
+    "shop": {
+      "title": "Forever shop și recomandarea în funcție de țară",
+      "summary": "Recomandarea ta conectează vizitatorul la oferta Forever potrivită.",
+      "keywords": [
+        "magazin",
+        "magazin online",
+        "ID Forever",
+        "țară",
+        "Titan",
+        "BiH",
+        "Albania"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Un singur bloc principal",
+          "paragraphs": [
+            "Blocul principal Forever shop folosește Forever ID-ul asociat și sistemul de recomandare existent. Blocul Titan vechi poate rămâne pe un card creat anterior. Nu modifica și nu inventa parametri de recomandare."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Verifică recomandarea",
+          "steps": [
+            "În Moja kartica, deschide editarea blocului tău Forever shop.",
+            "Verifică Forever ID-ul asociat contului tău. Dacă nu este corect, cere asistenței să îl verifice.",
+            "Citește descrierea blocului și fă diferența dintre comandarea produselor și începerea unei colaborări de afaceri.",
+            "Salvează modificarea și deschide Pregled public al cardului.",
+            "Pe pagina de destinație, verifică țara, oferta disponibilă și afișarea recomandării înainte de a plasa comanda."
+          ]
+        },
+        {
+          "id": "country",
+          "title": "Limba și țara sunt alegeri diferite",
+          "paragraphs": [
+            "Sistemul alege destinația în funcție de detectarea disponibilă a țării și de regulile magazinului. Majoritatea piețelor folosesc Titan, iar BiH și Albania au magazine locale cu un sistem de recomandare diferit. VPN-ul și călătoriile pot schimba detectarea. Dacă țara afișată nu este cea așteptată, verific-o înainte de a comanda. Schimbarea limbii nu schimbă piața."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Un vizitator citește cardul în croată, dar vrea să comande în Germania. Înainte de a comanda, verifică oferta și recomandarea pentru Germania, fără să schimbe limba cardului."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebare frecventă",
+          "questions": [
+            {
+              "question": "Un clic confirmă o achiziție?",
+              "answer": "Nu. Accesarea magazinului și plasarea unei comenzi sunt evenimente diferite. FCC nu confirmă o achiziție doar pentru că a fost deschis un link."
+            },
+            {
+              "question": "Trebuie să pregătesc manual câte un link pentru fiecare țară?",
+              "answer": "Blocul principal folosește sistemul existent de selectare a destinației în funcție de țară. Verifică Forever ID-ul asociat și destinația reală. Dacă piața sau recomandarea nu este corectă, trimite asistenței un exemplu."
+            }
+          ]
+        }
+      ]
+    },
+    "products": {
+      "title": "Recomandă un produs sau un articol",
+      "summary": "Găsește conținut potrivit și distribuie-l prin linkul tău personal de recomandare.",
+      "keywords": [
+        "produs",
+        "articol",
+        "distribuie",
+        "recomandare",
+        "Fiber Fusion"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Conținutul poate deschide conversația",
+          "paragraphs": [
+            "Podijeli asociază un articol cu recomandarea ta. Produsele, disponibilitatea și instrucțiunile oficiale pot varia în funcție de țară. Articolul nu înlocuiește informațiile de pe eticheta ambalajului ales."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pregătește o recomandare utilă",
+          "steps": [
+            "Deschide Podijeli și caută produsul după denumirea exactă sau selectează un articol potrivit.",
+            "Citește conținutul și verifică dacă răspunde la întrebarea reală a persoanei.",
+            "Pregătește-ți linkul și adaptează mesajul. Nu inventa experiențe personale sau efecte ale produsului.",
+            "Copiază conținutul sau deschide WhatsApp și trimite personal mesajul.",
+            "Stabilește următorul contact în Kontaktima dacă persoana dorește să continuați."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Înainte de a comanda",
+          "questions": [
+            {
+              "question": "Ce fac dacă produsul nu este disponibil în țara cumpărătorului?",
+              "answer": "Verifică oferta locală oficială. Nu înlocui automat produsul și nu presupune că un alt ambalaj are aceeași compoziție sau aceleași instrucțiuni."
+            }
+          ]
+        }
+      ]
+    },
+    "business": {
+      "title": "Distribuie o prezentare de afaceri",
+      "summary": "Prezintă oportunitățile de colaborare și urmărește solicitările voluntare prin contul tău.",
+      "keywords": [
+        "afaceri",
+        "plan de marketing",
+        "colaborare",
+        "pachet de început",
+        "prezentare"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Link personal pentru conversație",
+          "paragraphs": [
+            "Prezentarea de afaceri este separată de webinar. Vizualizarea disponibilă și pregătirea prezentării personale depind de accesul contului și de plan. Accesarea planului de bază nu confirmă înregistrarea."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pregătește și urmărește conversația",
+          "steps": [
+            "În Distribuie, deschide Planul de marketing sau Prezentarea de afaceri disponibilă.",
+            "Citește prezentarea și verifică recomandarea personală și datele de contact.",
+            "Adaptează invitația la interesul persoanei, fără să promiți câștiguri sau rezultate.",
+            "Trimite personal linkul pregătit și stabiliți o conversație atunci când persoana dorește.",
+            "Caută solicitarea voluntară în Contacte și notează următorul pas convenit."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Ce înseamnă rezultatele",
+          "questions": [
+            {
+              "question": "Accesarea planului de bază înseamnă o nouă colaborare?",
+              "answer": "Nu. Cumpărarea și înregistrarea se finalizează pe site-ul oficial Forever. În evidența FCC, diferențiază între accesare, solicitare de contact și rezultat confirmat personal."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-invite": {
+      "title": "Invită un oaspete și urmărește înscrierea",
+      "summary": "Alege o dată, trimite invitația și verifică rezultatul real după webinar.",
+      "keywords": [
+        "webinar",
+        "webinar",
+        "invitație",
+        "Zoom",
+        "oaspete",
+        "înregistrări"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Invitația ta, contactele tale",
+          "paragraphs": [
+            "Free și PRO pot folosi invitația standard pentru webinarul disponibil. PRO include o introducere personală și un videoclip. Oaspetele se înscrie prin linkul tău, fără un cont FCC."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "De la invitație la o înțelegere",
+          "steps": [
+            "Deschide Distribuie, Invitație la webinar și Alege o dată.",
+            "Verifică data, ora și fusul orar al evenimentului ales.",
+            "Adaptează mesajul, apoi trimite personal invitația.",
+            "Verifică înscrierile în Înscrierile oaspeților mei și în Contacte.",
+            "Verifică dacă oaspetele și-a dat acordul să fie contactat, apoi notează rezultatul după eveniment."
+          ]
+        },
+        {
+          "id": "attendance",
+          "title": "Înscrierea nu dovedește participarea",
+          "paragraphs": [
+            "Necunoscut înseamnă că participarea nu a fost încă verificată. Nu înseamnă că oaspetele nu a participat. După conversație, selectează dacă a participat sau a lipsit. Mementourile pentru oaspete depind de opțiunea selectată și de adresa de e-mail confirmată. Înscrierea nu oferă automat permisiunea de a trimite toate mesajele viitoare."
+          ]
+        },
+        {
+          "id": "next-date",
+          "title": "Invitație pentru o nouă dată",
+          "paragraphs": [
+            "Dacă oaspetele dorește o altă dată, pregătește o nouă invitație din lista oaspeților sau din selectorul de date. Oaspetele confirmă noua înscriere. Un contact existent este folosit numai când identitatea corespunde. O potrivire parțială trebuie verificată. Repetarea evenimentului nu îl înscrie automat pe oaspete la datele viitoare."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Marko s-a înscris, dar încă nu știi dacă a participat. Lasă starea ca Necunoscut, verifică împreună cu el, cu acordul său, apoi selectează rezultatul real."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebare frecventă",
+          "questions": [
+            {
+              "question": "Faptul că s-a deschis WhatsApp înseamnă că invitația a fost trimisă?",
+              "answer": "Nu. Trimiți mesajul personal din aplicația WhatsApp. Confirmă trimiterea în FCC numai după ce l-ai trimis efectiv."
+            },
+            {
+              "question": "Oaspetele trebuie să creeze un cont FCC?",
+              "answer": "Nu. Oaspetele deschide pagina ta de înscriere și confirmă data aleasă. Înscrierea sa rămâne asociată cu tine, în calitate de persoană care l-a invitat."
+            }
+          ]
+        }
+      ]
+    },
+    "webinar-host": {
+      "title": "Creează un webinar personal sau pentru echipă",
+      "summary": "Stabilește tema, data, limba și publicul care își poate folosi invitațiile.",
+      "keywords": [
+        "webinar",
+        "organizator",
+        "echipă",
+        "repetare",
+        "Zoom",
+        "limbă"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Organizare cu PRO",
+          "paragraphs": [
+            "Ai nevoie de PRO pentru a crea și edita propriul webinar. Configurează Zoom sau altă sală în serviciul corespunzător și introdu în FCC linkul complet de acces HTTPS."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pregătește evenimentul",
+          "steps": [
+            "Deschide Distribuie, Invitație la webinar, Webinarele mele și formularul pentru un webinar nou.",
+            "Introdu titlul și ce vor afla oaspeții. Alege cine poate invita oaspeți.",
+            "Alege limba invitației și a notificărilor, data, ora de începere, durata și fusul orar.",
+            "Introdu linkul de acces și alege o singură dată sau repetarea săptămânală.",
+            "Salvează webinarul și verifică invitația pregătită înainte de a o folosi."
+          ]
+        },
+        {
+          "id": "visibility",
+          "title": "Cine vede webinarul echipei",
+          "paragraphs": [
+            "Întreaga mea echipă FCC îi include pe organizator și pe colaboratorii confirmați din linia sa inferioară, inclusiv ramurile mai îndepărtate. Sponsorii aflați deasupra organizatorului și celelalte echipe nu fac automat parte din public. Supravegherea de către administratori nu înseamnă că fac parte din public. Fiecare persoană care invită își păstrează contactele private, iar organizatorul vede numărul total de înscrieri."
+          ]
+        },
+        {
+          "id": "recurrence",
+          "title": "Repetare, modificare și anulare",
+          "paragraphs": [
+            "Repetarea săptămânală păstrează ora locală aleasă, inclusiv la trecerea la ora de vară sau de iarnă. La editare, alege Doar această dată sau Această dată și datele viitoare. Publicul seriei existente rămâne neschimbat. Anularea păstrează contactele și istoricul, iar pentru datele anulate opresc înscrierile și mementourile de participare."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Pentru întâlnirea de duminică în slovenă, la 20:00, alege Slovenščina, Europe/Ljubljana și publicul dorit. Introdu sala ta Zoom și verifică prima dată și repetarea."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Limba evenimentului",
+          "questions": [
+            {
+              "question": "O invitație în slovenă schimbă limba contului meu?",
+              "answer": "Nu. Limba evenimentului stabilește limba invitației și a notificărilor asociate. Limba contului și alegerea pieței rămân separate."
+            },
+            {
+              "question": "Pot colaboratorii Free să invite persoane la webinarul echipei mele?",
+              "answer": "Da, dacă fac parte din publicul confirmat, pot folosi invitația personală standard. Crearea webinarului și videoclipul personal suplimentar necesită acces PRO."
+            }
+          ]
+        }
+      ]
+    },
+    "contacts": {
+      "title": "Contacte și reveniri convenite",
+      "summary": "Notează interesul, acordul de a contacta persoana și următorul pas convenit, fără să pierzi istoricul.",
+      "keywords": [
+        "contacte",
+        "agendă",
+        "urmărire",
+        "WhatsApp",
+        "vCard"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Lista ta privată",
+          "paragraphs": [
+            "Contactele păstrează evidența interacțiunilor tale personale cu oamenii. Înscrierea la un webinar și o solicitare voluntară de informații despre afacere pot asocia înscrierea cu un contact. Respectă mențiunea că persoana nu dorește să fie contactată în continuare."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Editează și stabilește următorul pas",
+          "steps": [
+            "Deschide Contacte și caută persoana existentă înainte de a adăuga manual o înregistrare nouă.",
+            "Deschide contactul și verifică numele, numărul de telefon, adresa de e-mail și acordul de a contacta persoana.",
+            "Notează interesul real pentru vânzări sau afacere și data convenită pentru urmărire.",
+            "Salvează modificările și deschide WhatsApp numai dacă persoana dorește să discute.",
+            "Pentru agenda dispozitivului, selectează Salvează contactul și confirmă personal importul fișierului descărcat."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Oaspetele webinarului există deja în Contacte. Găsește înregistrarea existentă și adaugă data convenită, în loc să creezi manual un al doilea contact."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebare practică",
+          "questions": [
+            {
+              "question": "Salvare contact salvează automat totul în Google?",
+              "answer": "Nu. Butonul pregătește un fișier de contact din câmpurile completate. Pe telefon, confirmă salvarea, iar pe computer poți importa personal fișierul în Contacte Google."
+            },
+            {
+              "question": "De ce trebuie verificată o potrivire parțială la înscriere?",
+              "answer": "Unele date pot corespunde unui contact anterior, iar altele pot fi diferite. Verifică identitatea înainte de a combina înregistrările. O asemănare a numelui nu este suficientă."
+            }
+          ]
+        }
+      ]
+    },
+    "team-outreach": {
+      "title": "Contactează personal un colaborator",
+      "summary": "Pregătește un mesaj, confirmă trimiterea efectivă și stabilește când să verifici cum a decurs conversația.",
+      "keywords": [
+        "echipa mea",
+        "mesaj",
+        "ciornă",
+        "trimitere",
+        "sprijin"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Sprijină un membru al echipei cu PRO",
+          "paragraphs": [
+            "Accesul la Echipa mea și la mesajele de echipă necesită PRO. Deschide profilul colaboratorului căruia ai permisiunea să-i oferi sprijin. Coach folosește progresul disponibil și datele CC, fără notițele private din CRM ale altor persoane."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "De la ciornă la contactare",
+          "steps": [
+            "În Echipa mea, deschide profilul colaboratorului și selectează Sprijin și contactare personală.",
+            "Alege motivul contactării și adaptează Mesajul tău. Dacă este nevoie, selectează Pregătește cu Coach.",
+            "Salvează ciorna, selectează Copiază mesajul sau Deschide WhatsApp.",
+            "Trimite personal mesajul, apoi confirmă trimiterea în sistemul FCC.",
+            "Alege o dată la Când vrei să verifici cum a decurs și notează ulterior ce ați convenit efectiv."
+          ]
+        },
+        {
+          "id": "sent",
+          "title": "Confirmi personal trimiterea",
+          "paragraphs": [
+            "Deschiderea WhatsApp și copierea mesajului îl pregătesc, dar nu dovedesc că a fost trimis. Dacă nu ai trimis mesajul, selectează confirmarea corespunzătoare sau lasă-l ca ciornă. Poți corecta înregistrarea dacă ai confirmat din greșeală că mesajul a fost trimis. Eliminarea înregistrării nu șterge mesajul din WhatsApp. Ciornele și înregistrările eliminate nu creează un memento pentru conversație."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Ai deschis WhatsApp, dar te-ai răzgândit înainte să trimiți mesajul. Lasă-l ca ciornă sau confirmă că nu a fost trimis. Astfel, evidența nu va arăta că a avut loc o conversație reală prin mesaj."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Număr neconfirmat",
+          "questions": [
+            {
+              "question": "De ce nu pot deschide WhatsApp?",
+              "answer": "Colaboratorul trebuie să aibă un număr de telefon de serviciu confirmat. Poți copia textul și îl poți trimite printr-un canal pe care îl folosești deja, apoi poți confirma personal trimiterea."
+            },
+            {
+              "question": "O ciornă salvată creează un memento pentru conversație?",
+              "answer": "Nu. Mementoul urmărește starea mesajului. Ciornele și înregistrările eliminate nu creează un memento pentru conversație. Asociază data verificării cu o contactare efectivă."
+            }
+          ]
+        }
+      ]
+    },
+    "coach": {
+      "title": "Cum să ceri ajutor de la Coach",
+      "summary": "Descrie o situație concretă și primește o explicație sau o ciornă pe care să o verifici personal.",
+      "keywords": [
+        "antrenor",
+        "AI",
+        "întrebare",
+        "mesaj",
+        "instrucțiune"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Ajutor personalizat în limitele accesului existent",
+          "paragraphs": [
+            "PRO Coach te ajută cu o sarcină, cu mesaje și cu activitatea ta. Are acces la contextul permis al contului, dar nu îți vede automat ecranul și nu confirmă trimiterea, cumpărarea sau înregistrarea."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pune o întrebare utilă",
+          "steps": [
+            "Deschide Coach sau ajutorul Coach în dreptul sarcinii ori al instrumentului tău.",
+            "Scrie ce vrei să faci, în ce parte a aplicației și ce nu îți este clar.",
+            "Pentru o ciornă de mesaj, descrie relația și etapa reală a conversației, fără date personale sau medicale inutile.",
+            "Citește răspunsul și verifică faptele și destinatarul înainte de a-l folosi.",
+            "Adaptează ciorna, apoi trimite personal mesajul. Coach nu îl trimite în locul tău."
+          ]
+        },
+        {
+          "id": "help-links",
+          "title": "Linkuri către instrucțiuni verificate",
+          "paragraphs": [
+            "Coach îți poate oferi o instrucțiune relevantă din centru și secțiunea exactă din aceasta. Instrucțiunea se deschide în limba contului și nu acordă drepturi suplimentare de acces la instrumente. Dacă explicația nu este suficientă, scrie ce nu îți este clar sau trimite o întrebare echipei de asistență."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Scrie: Vreau să invit un oaspete pentru o nouă întâlnire. Unde pot face asta? Coach îți poate explica pasul și îți poate indica secțiunea exactă din instrucțiuni, fără să fie nevoie să dai numele oaspetelui."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Limba răspunsului",
+          "questions": [
+            {
+              "question": "Pot schimba doar limba Coach?",
+              "answer": "Poți cere în mod explicit limba în care vrei să primești răspunsul. Acest lucru nu schimbă țara ofertei Forever. Verifică dacă mesajul final este în limba destinatarului tău."
+            },
+            {
+              "question": "Pot citi instrucțiunile fără PRO Coach?",
+              "answer": "Da. Centrul este disponibil colaboratorilor Free și PRO care s-au conectat. Răspunsul personal oferit de AI respectă accesul existent la Coach."
+            }
+          ]
+        }
+      ]
+    },
+    "notifications": {
+      "title": "Notificări și mementouri",
+      "summary": "Alege subiectele, mementoul zilnic și dispozitivul pe care vrei să primești notificări.",
+      "keywords": [
+        "push",
+        "notificări",
+        "memento",
+        "sunet",
+        "dispozitiv"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Sistemul și dispozitivul au propriile setări",
+          "paragraphs": [
+            "Inboxul și notificările push sunt vizualizări diferite. Pentru notificările push este necesară permisiunea dispozitivului. Sarcina zilnică și mementourile programate pot fi grupate, în timp ce evenimentele și contul au ore separate pentru notificări."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Verifică livrarea",
+          "steps": [
+            "Deschide Notificări și citește titlul, descrierea și ora mesajului.",
+            "Deschide Notificări pe dispozitivul meu și setările mele, apoi selectează Activează pe acest dispozitiv.",
+            "Permite notificările în browser sau pe dispozitiv și salvează categoriile selectate.",
+            "În Ritmul meu, alege ora mementoului zilnic.",
+            "Dacă vrei, activează sunetul și trimite-ți o notificare de test atunci când acest buton este disponibil."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Sunet și afișare",
+          "questions": [
+            {
+              "question": "Sunetul va fi același pe toate dispozitivele?",
+              "answer": "Nu. Browserul, sistemul de operare și modul silențios determină sunetul și aspectul final. Setarea FCC nu poate anula blocarea sau dezactivarea sunetului pe dispozitiv."
+            }
+          ]
+        }
+      ]
+    },
+    "results": {
+      "title": "Înțelege rezultatele și punctele CC",
+      "summary": "Diferențiază între clicuri, activități înregistrate și punctele Forever disponibile.",
+      "keywords": [
+        "rezultate",
+        "clicuri",
+        "CC",
+        "puncte",
+        "progres"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Indicatori diferiți",
+          "paragraphs": [
+            "Rezultatele FCC afișează vizitele care îndeplinesc criteriile, în funcție de magazin. Progresul meu afișează pașii raportați. Punctele CC provin din importul datelor Forever disponibile și reprezintă totalul pentru o anumită perioadă."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Citește indicatorul în contextul său",
+          "steps": [
+            "Deschide Rezultate FCC și citește perioada și regulile de numărare a clicurilor.",
+            "În Progresul meu, verifică separat activitatea reală și exercițiile.",
+            "În Forever-ul meu și punctele CC, verifică perioada și dacă datele disponibile sunt complete.",
+            "Pentru calificare sau un obiectiv de afaceri oficial, verifică împreună cu sponsorul regulile actuale de pe piața ta."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "O presupunere greșită frecventă",
+          "questions": [
+            {
+              "question": "Dovedesc punctele CC cine a cumpărat un anumit produs?",
+              "answer": "Nu. Totalul punctelor CC nu dovedește o anumită achiziție. De asemenea, un import incomplet sau lipsă nu confirmă o valoare zero."
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "title": "Free și PRO, plăți și facturi",
+      "summary": "Verifică accesul la pachet și starea abonamentului înainte de a schimba metoda de plată.",
+      "keywords": [
+        "pachet",
+        "Gratuit",
+        "PRO",
+        "Stripe",
+        "abonament",
+        "cont"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Pachetul este valabil pentru același cont",
+          "paragraphs": [
+            "Pachetele Free și PRO au beneficii diferite, prezentate în comparația actuală a pachetelor. PRO nu confirmă înscrierea în Drumul meu. Activarea facturării depinde de confirmarea sistemului Stripe."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Verifică-ți pachetul",
+          "steps": [
+            "În Mai multe, deschide pachetul Free și PRO sau Pachetul meu.",
+            "Citește beneficiile disponibile, starea abonamentului și perioada de acces.",
+            "Pentru activare, verifică rezumatul plății selectate înainte de a continua către Stripe.",
+            "În Plăți și facturi, verifică înregistrările reale ale plăților.",
+            "Pentru card sau anulare, folosește setările de abonament disponibile și verifică data confirmată de încheiere a perioadei."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Dacă este nevoie de atenție în privința facturării",
+          "questions": [
+            {
+              "question": "Ce fac dacă facturarea s-a blocat sau nu a fost confirmată?",
+              "answer": "Verifică contul existent și mesajul din pachetul tău. Folosește opțiunea de reînnoire disponibilă sau contactează echipa de asistență. Nu presupune că ai fost taxat doar pentru că pachetul este activ și nu plasa orbește comenzi noi în mod repetat."
+            }
+          ]
+        }
+      ]
+    },
+    "presentation": {
+      "title": "Descarcă și adaptează prezentarea echipei",
+      "summary": "Folosește versiunea publicată, modifică introducerea despre prezentator și verifică-ți prezentarea.",
+      "keywords": [
+        "PPT",
+        "PowerPoint",
+        "prezentare",
+        "diapozitive",
+        "descărcare"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "O bază comună pentru prezentare",
+          "paragraphs": [
+            "Prezentările din centru sunt disponibile colaboratorilor care s-au conectat. Folosește fișierul și limba oferite efectiv. Data publicării te ajută să deosebești prezentarea actuală de o copie veche."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pregătește-ți prezentarea",
+          "steps": [
+            "În secțiunea Mai multe, deschide Instrucțiuni FCC, apoi subiectul Descarcă și adaptează prezentarea echipei.",
+            "În secțiunea de descărcare, alege limba și selectează Descarcă PPT. Pentru arhiva ZIP cu toate traducerile, selectează Descarcă toate limbile.",
+            "Deschide PPT în PowerPoint sau într-o aplicație compatibilă.",
+            "Modifică introducerea prevăzută despre prezentator și fotografia ta.",
+            "Parcurge notițele și verifică întreaga prezentare înainte de webinar."
+          ]
+        },
+        {
+          "id": "customize",
+          "title": "Ce să adaptezi",
+          "paragraphs": [
+            "Introducerea personală trebuie să conțină doar informații verificabile și experiența ta reală. Păstrează structura comună și nu adăuga promisiuni de câștiguri, vindecare sau datele private ale altor persoane. Folosește date demonstrative pentru exemple."
+          ]
+        },
+        {
+          "id": "downloads",
+          "title": "Limba și versiunea fișierului",
+          "paragraphs": [
+            "Aici sunt disponibile fișiere PPT în toate limbile disponibile și o arhivă ZIP cu toate traducerile. Verifică limba și ediția înainte de descărcare. Imaginile interfeței FCC pot rămâne în limba originală, în timp ce textul și notițele sunt traduse. Verifică periodic dacă este disponibilă o ediție mai nouă."
+          ]
+        },
+        {
+          "id": "example",
+          "title": "Exemplu practic",
+          "paragraphs": [
+            "Descarci PPT-ul actual, îți modifici introducerea și fotografia, apoi exersezi un exemplu de distribuire. În demonstrație folosești un contact demonstrativ, nu datele private ale unui client."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Întrebare practică",
+          "questions": [
+            {
+              "question": "Pot combina prezentarea pe cont propriu?",
+              "answer": "Adaptează introducerea prevăzută și ordinea pentru prezentarea ta, folosind informații exacte și explicând clar scopul. Înainte de prezentare, verifică diapozitivele, notițele și disponibilitatea funcțiilor FCC descrise."
+            },
+            {
+              "question": "Ce fac dacă o imagine PPT disponibilă afișează altă limbă?",
+              "answer": "Imaginile interfeței pot rămâne în limba originală. Urmează notițele și instrucțiunile traduse și folosește denumirile reale ale butoanelor din interfața ta FCC. Verifică fișierul disponibil înainte de prezentare."
+            }
+          ]
+        }
+      ]
+    },
+    "advanced": {
+      "title": "Instrumente FCC avansate",
+      "summary": "Deschide un instrument suplimentar când ai o nevoie concretă și verifică dacă ai drept de acces.",
+      "keywords": [
+        "QR",
+        "domenii",
+        "statistici",
+        "Studio de pâlnii de vânzare",
+        "instrumente avansate"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "Ajutor suplimentar pentru activitatea ta",
+          "paragraphs": [
+            "În Mai multe găsești linkuri suplimentare, coduri QR, statistici și instrumente avansate. Fiecare instrument verifică drepturile incluse în pachet. Pentru început, folosește-ți cardul, contactele și o singură acțiune clară."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Alege instrumentul în funcție de obiectiv",
+          "steps": [
+            "Deschide Mai multe și consultă descrierile instrumentelor disponibile.",
+            "Stabilește dacă vrei să distribui cardul, să urmărești vizitele sau să pregătești un conținut special.",
+            "Deschide instrumentul ales și verifică instrucțiunile și accesul inclus în pachet.",
+            "Testează rezultatul în previzualizare înainte de a-l folosi public."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "Dacă opțiunea nu este disponibilă",
+          "questions": [
+            {
+              "question": "Am nevoie de toate instrumentele avansate ca să încep?",
+              "answer": "Nu. Mai întâi pregătește cardul și conversația stabilită. Alege un instrument suplimentar atunci când te ajută să faci ceva concret și verifică accesul în pachetul actual."
+            }
+          ]
+        }
+      ]
+    },
+    "support": {
+      "title": "Trimite o întrebare echipei de asistență",
+      "summary": "Descrie problema și continuă aceeași conversație până primești o soluție utilă.",
+      "keywords": [
+        "sprijin",
+        "ajutor",
+        "problemă",
+        "solicitare",
+        "eroare"
+      ],
+      "sections": [
+        {
+          "id": "start",
+          "title": "O întrebare pe care o urmărești într-un singur loc",
+          "paragraphs": [
+            "Ajutor și asistență este destinat problemelor tehnice, sugestiilor sau subiectelor pentru webinare. Coach îți poate explica procedura, dar nu trimite o solicitare în locul tău."
+          ]
+        },
+        {
+          "id": "steps",
+          "title": "Pregătește o solicitare clară",
+          "steps": [
+            "Deschide Ajutor și asistență, apoi Mesaj nou către asistență.",
+            "Scrie un titlu scurt și alege categoria întrebării.",
+            "Spune în ce secțiune a aplicației lucrezi, ce ai făcut și ce s-a întâmplat.",
+            "Dacă este nevoie, atașează o captură de ecran fără parole, date ale cardului sau informații private ale altor persoane.",
+            "Trimite întrebarea, apoi revino la aceeași conversație pentru a vedea răspunsul sau pentru a oferi detalii suplimentare."
+          ]
+        },
+        {
+          "id": "faq",
+          "title": "În timp ce aștepți răspunsul",
+          "questions": [
+            {
+              "question": "Ar trebui să trimit mai multe solicitări pentru aceeași problemă?",
+              "answer": "Continuă conversația existentă și adaugă informația nouă. Menționează dispozitivul și mesajul exact de eroare. Astfel, echipa de asistență poate vedea întregul istoric într-un singur loc."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

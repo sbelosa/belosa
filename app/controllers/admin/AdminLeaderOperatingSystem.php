@@ -97,7 +97,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'user_id' => $user_id,
             'admin_user_id' => (int) ($this->user->user_id ?? null),
             'is_admin_reply' => 1,
-            'message' => 'Ticket je označen kao riješen. Ako trebaš dodatnu pomoć, slobodno odgovori na ovaj ticket i ponovno ćemo ga otvoriti.',
+            'message' => fcc_t('Ticket je označen kao riješen. Ako trebaš dodatnu pomoć, slobodno odgovori na ovaj ticket i ponovno ćemo ga otvoriti.'),
             'attachment' => null,
             'datetime' => get_date(),
         ]);
@@ -491,6 +491,7 @@ class AdminLeaderOperatingSystem extends Controller {
             l('global.emails.admin.fcc_access_approved.body', $language)
         );
 
+        $email_template->body .= fcc_partner_install_email_content($language,(int)$user->user_id);
         send_mail($user->email, $email_template->subject, $email_template->body, [
             'anti_phishing_code' => $user->anti_phishing_code ?? null,
             'language' => $language,
@@ -1047,14 +1048,14 @@ class AdminLeaderOperatingSystem extends Controller {
         $allowed_actions = ['qualified', 'top', 'auto'];
 
         if($user_id <= 0 || !in_array($action, $allowed_actions, true)) {
-            Alerts::add_error('AI unlock akcija nije valjana.');
+            Alerts::add_error(fcc_t('AI unlock akcija nije valjana.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'preferences', 'plan_id', 'plan_expiration_date']);
 
         if(!$user) {
-            Alerts::add_error('Suradnik nije pronađen.');
+            Alerts::add_error(fcc_t('Suradnik nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1064,7 +1065,7 @@ class AdminLeaderOperatingSystem extends Controller {
         ];
 
         if(!$this->is_active_pro_row($row)) {
-            Alerts::add_error('Ručni AI unlock moguć je samo za aktivni PRO paket.');
+            Alerts::add_error(fcc_t('Ručni AI unlock moguć je samo za aktivni PRO paket.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1121,7 +1122,7 @@ class AdminLeaderOperatingSystem extends Controller {
             ],
             'coach_vip' => [
                 'label' => 'VIP Coach',
-                'description' => 'Coach za PRO ili trial paket i najjači paket inteligencije.',
+                'description' => 'Coach za PRO ili trial paket, osobnu podršku i dostupne FCC alate.',
             ],
             'product_advisor' => [
                 'label' => 'AI za ljude',
@@ -1154,7 +1155,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $route_definitions = $this->get_fcc_ai_model_route_definitions();
         $routing = fcc_ai_get_model_routing_config();
         $global_model = fcc_ai_get_global_default_model();
-        $model_options = array_merge(['' => 'Naslijedi globalni model (' . $global_model . ')'], array_combine(fcc_ai_get_available_models(), fcc_ai_get_available_models()));
+        $model_options = array_merge(['' => 'Preporučeni model za ovaj alat, za ostale globalni (' . $global_model . ')'], array_combine(fcc_ai_get_available_models(), fcc_ai_get_available_models()));
 
         $routes = [];
         foreach($route_definitions as $route_key => $definition) {
@@ -1217,7 +1218,7 @@ class AdminLeaderOperatingSystem extends Controller {
             'updated_by_user_id' => (int) ($this->user->user_id ?? 0),
         ]);
 
-        Alerts::add_success('FCC AI modeli su spremljeni.');
+        Alerts::add_success(fcc_t('FCC AI modeli su spremljeni.'));
         redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
     }
 
@@ -1270,19 +1271,19 @@ class AdminLeaderOperatingSystem extends Controller {
         $description = input_clean($_POST['message_description'] ?? '', 1024);
 
         if($target_user_id <= 0) {
-            Alerts::add_error('Odaberi suradnika kojem želiš poslati poruku.');
+            Alerts::add_error(fcc_t('Odaberi suradnika kojem želiš poslati poruku.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if($title === '' || $description === '') {
-            Alerts::add_error('Naslov i poruka su obavezni.');
+            Alerts::add_error(fcc_t('Naslov i poruka su obavezni.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         $user = db()->where('user_id', $target_user_id)->getOne('users', ['user_id', 'name']);
 
         if(!$user) {
-            Alerts::add_error('Suradnik nije pronađen.');
+            Alerts::add_error(fcc_t('Suradnik nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1325,12 +1326,12 @@ class AdminLeaderOperatingSystem extends Controller {
         $description = input_clean($_POST['group_message_description'] ?? '', 1024);
 
         if(!in_array($group_key, $allowed_groups, true)) {
-            Alerts::add_error('Odaberi valjanu grupu suradnika.');
+            Alerts::add_error(fcc_t('Odaberi valjanu grupu suradnika.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if($title === '' || $description === '') {
-            Alerts::add_error('Naslov i poruka za grupu su obavezni.');
+            Alerts::add_error(fcc_t('Naslov i poruka za grupu su obavezni.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1391,12 +1392,12 @@ class AdminLeaderOperatingSystem extends Controller {
         $description = input_clean($_POST['message_description'] ?? '', 1024);
 
         if(!in_array($target_mode, ['single', 'group'], true)) {
-            Alerts::add_error('Odaberi želiš li poslati poruku pojedincu ili grupi.');
+            Alerts::add_error(fcc_t('Odaberi želiš li poslati poruku pojedincu ili grupi.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if($title === '' || $description === '') {
-            Alerts::add_error('Naslov i poruka su obavezni.');
+            Alerts::add_error(fcc_t('Naslov i poruka su obavezni.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1404,14 +1405,14 @@ class AdminLeaderOperatingSystem extends Controller {
             $target_user_id = (int) ($_POST['message_target_user_id'] ?? 0);
 
             if($target_user_id <= 0) {
-                Alerts::add_error('Odaberi suradnika kojem želiš poslati poruku.');
+                Alerts::add_error(fcc_t('Odaberi suradnika kojem želiš poslati poruku.'));
                 redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
             }
 
             $user = db()->where('user_id', $target_user_id)->getOne('users', ['user_id', 'name']);
 
             if(!$user) {
-                Alerts::add_error('Suradnik nije pronađen.');
+                Alerts::add_error(fcc_t('Suradnik nije pronađen.'));
                 redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
             }
 
@@ -1442,7 +1443,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $allowed_groups = ['team', 'risk', 'rising', 'priority'];
 
         if(!in_array($group_key, $allowed_groups, true)) {
-            Alerts::add_error('Odaberi valjanu grupu suradnika.');
+            Alerts::add_error(fcc_t('Odaberi valjanu grupu suradnika.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1502,12 +1503,12 @@ class AdminLeaderOperatingSystem extends Controller {
         $redirect_query['support_ticket_id'] = $feedback_ticket_id;
 
         if($feedback_ticket_id <= 0) {
-            Alerts::add_error('Odaberi valjani support ticket.');
+            Alerts::add_error(fcc_t('Odaberi valjani support ticket.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if(!$this->has_feedback_tables()) {
-            Alerts::add_error('Support ticket modul trenutno nije dostupan.');
+            Alerts::add_error(fcc_t('Support ticket modul trenutno nije dostupan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1521,7 +1522,7 @@ class AdminLeaderOperatingSystem extends Controller {
             ]);
 
         if(!$ticket) {
-            Alerts::add_error('Support ticket nije pronađen.');
+            Alerts::add_error(fcc_t('Support ticket nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1567,7 +1568,7 @@ class AdminLeaderOperatingSystem extends Controller {
 
         try {
             $this->generate_support_ticket_ai_report($ticket_payload, true);
-            Alerts::add_success('AI analiza support ticketa je generirana.');
+            Alerts::add_success(fcc_t('AI analiza support ticketa je generirana.'));
         } catch(\Throwable $exception) {
             Alerts::add_error($this->sanitize_ai_string($exception->getMessage(), 240) ?: 'AI analiza support ticketa nije uspjela.');
         }
@@ -1593,17 +1594,17 @@ class AdminLeaderOperatingSystem extends Controller {
         $attachment = null;
 
         if($feedback_ticket_id <= 0) {
-            Alerts::add_error('Odaberi valjani support ticket.');
+            Alerts::add_error(fcc_t('Odaberi valjani support ticket.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if($message === '') {
-            Alerts::add_error('Odgovor ne može biti prazan.');
+            Alerts::add_error(fcc_t('Odgovor ne može biti prazan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if(!in_array($communication_mode, ['ticket', 'notification', 'both'], true)) {
-            Alerts::add_error('Način komunikacije nije valjan.');
+            Alerts::add_error(fcc_t('Način komunikacije nije valjan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1628,7 +1629,7 @@ class AdminLeaderOperatingSystem extends Controller {
             ]);
 
         if(!$feedback_ticket) {
-            Alerts::add_error('Support ticket nije pronađen.');
+            Alerts::add_error(fcc_t('Support ticket nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1688,14 +1689,14 @@ class AdminLeaderOperatingSystem extends Controller {
         $next_status = input_clean($_POST['next_status'] ?? '', 16);
 
         if($feedback_ticket_id <= 0 || !in_array($next_status, ['open', 'closed'], true)) {
-            Alerts::add_error('Status support ticketa nije valjan.');
+            Alerts::add_error(fcc_t('Status support ticketa nije valjan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         $feedback_ticket = db()->where('feedback_ticket_id', $feedback_ticket_id)->getOne('feedback_tickets');
 
         if(!$feedback_ticket) {
-            Alerts::add_error('Support ticket nije pronađen.');
+            Alerts::add_error(fcc_t('Support ticket nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1741,7 +1742,7 @@ class AdminLeaderOperatingSystem extends Controller {
         }
 
         if(!$this->has_feedback_tables()) {
-            Alerts::add_error('Support ticket modul trenutno nije dostupan.');
+            Alerts::add_error(fcc_t('Support ticket modul trenutno nije dostupan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -1752,14 +1753,14 @@ class AdminLeaderOperatingSystem extends Controller {
         $confirmed = (int) ($_POST['is_webinar_topic_confirmed'] ?? 0) === 1 ? 1 : 0;
 
         if($feedback_ticket_id <= 0) {
-            Alerts::add_error('Odaberi valjani support ticket.');
+            Alerts::add_error(fcc_t('Odaberi valjani support ticket.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         $feedback_ticket = db()->where('feedback_ticket_id', $feedback_ticket_id)->getOne('feedback_tickets', ['feedback_ticket_id', 'subject']);
 
         if(!$feedback_ticket) {
-            Alerts::add_error('Support ticket nije pronađen.');
+            Alerts::add_error(fcc_t('Support ticket nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -5807,7 +5808,7 @@ class AdminLeaderOperatingSystem extends Controller {
         }
     }
 
-    private function get_support_center_payload(array $rows): array {
+    private function get_support_center_payload(array $rows, string $search = ''): array {
         $payload = [
             'is_available' => false,
             'totals' => [
@@ -5878,6 +5879,10 @@ class AdminLeaderOperatingSystem extends Controller {
         $collaborator_buckets = [];
         $messages_by_ticket_id = [];
 
+        if($search !== '') {
+            $needle = database()->real_escape_string('%' . $search . '%');
+            db()->where("(users.name LIKE '{$needle}' OR users.email LIKE '{$needle}' OR feedback_tickets.subject LIKE '{$needle}')");
+        }
         $tickets = db()
             ->join('users', 'feedback_tickets.user_id = users.user_id', 'LEFT')
             ->orderBy('feedback_tickets.last_datetime', 'DESC')
@@ -6066,7 +6071,7 @@ class AdminLeaderOperatingSystem extends Controller {
             ];
         }, $top_collaborators);
 
-        $payload['recent_tickets'] = array_slice($payload['recent_tickets'], 0, 12);
+        $payload['recent_tickets'] = array_slice($payload['recent_tickets'], 0, 80);
 
         return $payload;
     }
@@ -7965,7 +7970,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $user_id = (int) ($_POST['user_id'] ?? 0);
 
         if($user_id <= 0) {
-            Alerts::add_error('Suradnik nije valjan.');
+            Alerts::add_error(fcc_t('Suradnik nije valjan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -7980,19 +7985,27 @@ class AdminLeaderOperatingSystem extends Controller {
         ]);
 
         if(!$user) {
-            Alerts::add_error('Suradnik nije pronađen.');
+            Alerts::add_error(fcc_t('Suradnik nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         $preferences = $this->get_preferences_object($user->preferences ?? null);
         $meta = $this->get_user_meta_object($preferences);
+        try {
+            if(isset($_POST['team_form'])) {
+                fcc_team_admin_save((int)$this->user->user_id, $user_id, $_POST, function() use ($user_id) {
+                    if(!db()->where('user_id', $user_id)->update('users', ['status' => 1])) throw new \RuntimeException(fcc_t('Odobrenje računa nije spremljeno.'));
+                });
+            } else {
+                db()->where('user_id', $user_id)->update('users', ['status' => 1]);
+            }
+        } catch(\InvalidArgumentException $e) {
+            Alerts::add_error($e->getMessage());
+            redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
+        }
         $assets = $this->ensure_user_primary_assets($user_id);
 
         if((int) ($user->status ?? 0) !== 1) {
-            db()->where('user_id', $user_id)->update('users', [
-                'status' => 1,
-            ]);
-
             $this->fire_user_new_webhook($user_id, (string) $user->name, (string) $user->email, $meta, $assets['main_biolink_url']);
         }
 
@@ -8034,12 +8047,12 @@ class AdminLeaderOperatingSystem extends Controller {
         $user_id = (int) ($_POST['user_id'] ?? 0);
 
         if($user_id <= 0) {
-            Alerts::add_error('Suradnik nije valjan.');
+            Alerts::add_error(fcc_t('Suradnik nije valjan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if($user_id === (int) ($this->user->user_id ?? 0)) {
-            Alerts::add_error('Nije moguće odbiti i obrisati vlastiti admin račun.');
+            Alerts::add_error(fcc_t('Nije moguće odbiti i obrisati vlastiti admin račun.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -8053,12 +8066,12 @@ class AdminLeaderOperatingSystem extends Controller {
         ]);
 
         if(!$user) {
-            Alerts::add_error('Suradnik nije pronađen.');
+            Alerts::add_error(fcc_t('Suradnik nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
         if((int) ($user->status ?? 0) === 1) {
-            Alerts::add_error('Pristup je već odobren i ovaj račun se više ne nalazi u listi za odbijanje.');
+            Alerts::add_error(fcc_t('Pristup je već odobren i ovaj račun se više ne nalazi u listi za odbijanje.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -8066,7 +8079,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $email_sent = $this->send_fcc_access_rejected_email($user, $rejection_reason);
 
         if(!$email_sent) {
-            Alerts::add_error('Email odbijenice nije poslan, pa račun nije obrisan. Provjeri postavke slanja emaila i pokušaj ponovno.');
+            Alerts::add_error(fcc_t('Email odbijenice nije poslan, pa račun nije obrisan. Provjeri postavke slanja emaila i pokušaj ponovno.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -8114,7 +8127,7 @@ class AdminLeaderOperatingSystem extends Controller {
         $user_id = (int) ($_POST['user_id'] ?? 0);
 
         if($user_id <= 0) {
-            Alerts::add_error('Suradnik nije valjan.');
+            Alerts::add_error(fcc_t('Suradnik nije valjan.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -8128,7 +8141,7 @@ class AdminLeaderOperatingSystem extends Controller {
         ]);
 
         if(!$user) {
-            Alerts::add_error('Suradnik nije pronađen.');
+            Alerts::add_error(fcc_t('Suradnik nije pronađen.'));
             redirect('admin/leader-operating-system' . (!empty($redirect_query) ? '?' . http_build_query($redirect_query) : ''));
         }
 
@@ -9037,81 +9050,47 @@ class AdminLeaderOperatingSystem extends Controller {
     }
 
     public function index() {
-        $allowed_periods = ['7d', '30d', '90d'];
-        $selected_period = isset($_GET['period']) && in_array($_GET['period'], $allowed_periods, true) ? $_GET['period'] : '30d';
-        $allowed_statuses = ['all', 'qualified', 'rising', 'stable', 'risk', 'high_potential', 'inactive'];
-        $selected_status = isset($_GET['status']) && in_array($_GET['status'], $allowed_statuses, true) ? $_GET['status'] : 'all';
-        $allowed_ai_statuses = ['all', 'inactive', 'started', 'questionnaire', 'active'];
-        $selected_ai_status = isset($_GET['ai_status']) && in_array($_GET['ai_status'], $allowed_ai_statuses, true) ? $_GET['ai_status'] : 'all';
-        $allowed_anomaly_statuses = ['all', 'stable', 'watch', 'high'];
-        $selected_anomaly_status = isset($_GET['anomaly_status']) && in_array($_GET['anomaly_status'], $allowed_anomaly_statuses, true) ? $_GET['anomaly_status'] : 'all';
-        $allowed_fraud_statuses = ['all', 'clean', 'watch', 'high'];
-        $selected_fraud_status = isset($_GET['fraud_status']) && in_array($_GET['fraud_status'], $allowed_fraud_statuses, true) ? $_GET['fraud_status'] : 'all';
-        $allowed_sorts = ['leader_os', 'app_quality', 'fraud', 'shop_clicks', 'growth', 'registrations', 'risk', 'country', 'source', 'last_click'];
-        $selected_sort = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts, true) ? $_GET['sort'] : 'leader_os';
-        $allowed_tabs = ['overview', 'operations', 'collaborators', 'funnel', 'analytics', 'ai', 'ai_intelligence', 'fraud', 'coaching', 'support'];
-        $selected_tab = isset($_GET['tab']) && in_array($_GET['tab'], $allowed_tabs, true) ? $_GET['tab'] : 'overview';
-        $search_query = trim((string) ($_GET['search'] ?? ''));
-        $page = max(1, (int) ($_GET['page'] ?? 1));
-        $selected_support_ticket_id = max(0, (int) ($_GET['support_ticket_id'] ?? 0));
-
-        $redirect_query = [
-            'period' => $selected_period,
-            'search' => $search_query,
-            'status' => $selected_status,
-            'ai_status' => $selected_ai_status,
-            'anomaly_status' => $selected_anomaly_status,
-            'fraud_status' => $selected_fraud_status,
-            'sort' => $selected_sort,
-            'tab' => $selected_tab,
-            'page' => $page,
-            'support_ticket_id' => $selected_support_ticket_id,
-        ];
-
-        if(!empty($_POST)) {
-            $this->handle_fcc_ai_feedback_resolve_action($redirect_query);
-            $this->handle_operations_rejection_action($redirect_query);
-            $this->handle_operations_approval_action($redirect_query);
-            $this->handle_operations_card_action($redirect_query);
-            $this->handle_fcc_ai_model_routing_action($redirect_query);
-            $this->handle_team_strategist_action($redirect_query);
-            $this->handle_support_ticket_ai_action($redirect_query);
-            $this->handle_support_ticket_reply_action($redirect_query);
-            $this->handle_support_ticket_status_action($redirect_query);
-            $this->handle_support_ticket_webinar_action($redirect_query);
-            $this->handle_message_center_action($redirect_query);
-            $this->handle_group_message_action($redirect_query);
-            $this->handle_priority_collaborator_message_action($redirect_query);
-            $this->handle_ai_access_action($redirect_query);
+        require_once APP_PATH . 'helpers/fcc_los.php';
+        fcc_los_admin((int)$this->user->user_id);
+        $input = $_GET;
+        unset($input['altum']);
+        $canonical = fcc_los_canonical_query($input);
+        if(($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && $canonical !== $input) {
+            redirect('admin/leader-operating-system?' . http_build_query($canonical));
         }
-
-        Title::set(l('admin_leader_operating_system.title'));
-
-        $data = [
-            'selected_period' => $selected_period,
-            'period_options' => $allowed_periods,
-            'selected_status' => $selected_status,
-            'status_options' => $allowed_statuses,
-            'selected_ai_status' => $selected_ai_status,
-            'ai_status_options' => $allowed_ai_statuses,
-            'selected_anomaly_status' => $selected_anomaly_status,
-            'anomaly_status_options' => $allowed_anomaly_statuses,
-            'selected_fraud_status' => $selected_fraud_status,
-            'fraud_status_options' => $allowed_fraud_statuses,
-            'selected_sort' => $selected_sort,
-            'sort_options' => $allowed_sorts,
-            'selected_tab' => $selected_tab,
-            'selected_support_ticket_id' => $selected_support_ticket_id,
-            'tab_options' => $allowed_tabs,
-            'search_query' => $search_query,
-            'fcc_ai_model_routing' => $this->get_fcc_ai_model_routing_payload(),
-            'operations' => $this->get_operations_payload($search_query),
-            'overview' => $this->get_overview_payload($selected_period, $search_query, $selected_status, $selected_ai_status, $selected_anomaly_status, $selected_fraud_status, $selected_sort, $page),
-        ];
-
-        $view = new \Altum\View('admin/leader-operating-system/index', (array) $this);
-        $this->add_view_content('content', $view->run((object) $data));
+        $_GET = $canonical;
+        $tab = (string)($canonical['tab'] ?? 'overview');
+        $tool = (string)($canonical['tool'] ?? '');
+        $search = is_string($canonical['search'] ?? null) ? $canonical['search'] : '';
+        $tools = [];
+        if(!empty($_POST)) {
+            if($tab === 'operations' && $tool === '') {
+                $this->handle_operations_rejection_action($canonical);
+                $this->handle_operations_approval_action($canonical);
+                $this->handle_operations_card_action($canonical);
+            }
+            if($tool === 'models') $this->handle_fcc_ai_model_routing_action($canonical);
+            if($tool === 'support') {
+                $this->handle_support_ticket_ai_action($canonical);
+                $this->handle_support_ticket_reply_action($canonical);
+                $this->handle_support_ticket_status_action($canonical);
+                $this->handle_support_ticket_webinar_action($canonical);
+            }
+        }
+        if($tool === 'models') $tools['models'] = $this->get_fcc_ai_model_routing_payload();
+        if($tool === 'support') {
+            $tools['support'] = $this->get_support_center_payload([], $search);
+            $ticketId = max(0, (int)($canonical['support_ticket_id'] ?? 0));
+            $tools['ticket'] = $ticketId ? $this->get_selected_support_ticket_payload($ticketId) : null;
+            if($tools['ticket']) fcc_los_audit((int)$this->user->user_id, 'support_view', $ticketId);
+        }
+        if($tool === 'forever') {
+            $window = (int)($canonical['window'] ?? 30);
+            if(!in_array($window, [7,14,30,60], true)) $window = 30;
+            $period = (string)($canonical['period'] ?? '');
+            if(!preg_match('/^20\d{2}-(0[1-9]|1[0-2])-01$/', $period)) $period = '';
+            $tools['forever'] = forever_business_get_los_admin_analytics((int)$this->user->user_id, $window, $period);
+        }
+        fcc_los_page($this, $tab === 'operations' && $tool === '' ? $this->get_operations_payload($search) : null, $tools);
     }
 }
-
-/* /Custom code: FC-2026-03-31 */

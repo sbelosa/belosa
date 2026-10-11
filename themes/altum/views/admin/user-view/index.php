@@ -1,7 +1,7 @@
 <?php defined('ALTUMCODE') || die() ?>
 
 <?php if(settings()->main->breadcrumbs_is_enabled): ?>
-<nav aria-label="breadcrumb">
+<nav aria-label="<?= htmlspecialchars(fcc_t('breadcrumb'), ENT_QUOTES, 'UTF-8') ?>">
     <ol class="custom-breadcrumbs small">
         <li>
             <a href="<?= url('admin/users') ?>"><?= l('admin_users.breadcrumb') ?></a><i class="fas fa-fw fa-angle-right"></i>
@@ -186,7 +186,7 @@ $billing_event_icons = [
                                     <span class="text-truncate mr-2"><?= $payment['processor'] ? l('pay.custom_plan.' . $payment['processor']) : l('global.unknown') ?></span>
                                     <strong><?= nr($payment['total_amount'], 2) ?> <?= $payment['currency'] ?></strong>
                                 </div>
-                                <div class="text-muted"><?= \Altum\Date::get($payment['datetime'], 2) ?> · <?= $payment['status'] ? l('admin_payments.status_' . $payment['status']) : l('global.unknown') ?></div>
+                                <div class="text-muted"><?= \Altum\Date::get($payment['datetime'], 2) ?> · <?= ['paid'=>fcc_t('Plaćeno'),'approved'=>fcc_t('Plaćeno'),'pending'=>fcc_t('Na čekanju'),'failed'=>'Neuspjelo','refunded'=>fcc_t('Vraćeno'),'cancelled'=>'Otkazano'][$payment['status']] ?? l('global.unknown') ?></div>
                             </div>
                         <?php endforeach ?>
                     <?php endif ?>
@@ -591,10 +591,10 @@ $billing_event_icons = [
                                 </div>
                             </td>
                             <td class="small text-muted text-nowrap">
-                                <div>D <?= !empty($message->delivered_datetime) ? \Altum\Date::get($message->delivered_datetime, 2) : '-' ?></div>
-                                <div>O <?= !empty($message->first_open_datetime) ? \Altum\Date::get($message->first_open_datetime, 2) : '-' ?></div>
-                                <div>C <?= !empty($message->first_click_datetime) ? \Altum\Date::get($message->first_click_datetime, 2) : '-' ?></div>
-                                <div>U <?= !empty($message->unsubscribe_datetime) ? \Altum\Date::get($message->unsubscribe_datetime, 2) : '-' ?></div>
+                                <div><?= htmlspecialchars(fcc_t('D'), ENT_QUOTES, 'UTF-8') ?> <?= !empty($message->delivered_datetime) ? \Altum\Date::get($message->delivered_datetime, 2) : '-' ?></div>
+                                <div><?= htmlspecialchars(fcc_t('O'), ENT_QUOTES, 'UTF-8') ?> <?= !empty($message->first_open_datetime) ? \Altum\Date::get($message->first_open_datetime, 2) : '-' ?></div>
+                                <div><?= htmlspecialchars(fcc_t('C'), ENT_QUOTES, 'UTF-8') ?> <?= !empty($message->first_click_datetime) ? \Altum\Date::get($message->first_click_datetime, 2) : '-' ?></div>
+                                <div><?= htmlspecialchars(fcc_t('U'), ENT_QUOTES, 'UTF-8') ?> <?= !empty($message->unsubscribe_datetime) ? \Altum\Date::get($message->unsubscribe_datetime, 2) : '-' ?></div>
                             </td>
                         </tr>
                     <?php endforeach ?>
