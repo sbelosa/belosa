@@ -65149,4 +65149,17 @@ Ai nevoie de ajutor pentru conectare?',
     'Naruči Vital5 u svojoj zemlji' => 'Comandă Vital5 în țara ta',
     'Gumb za naručivanje vodi na službenu Forever ponudu za odabrano tržište kada je dostupna. Ondje provjeri konačan sastav, cijenu, dostupnost i dostavu prije potvrde narudžbe. Ako nema lokalne ponude paketa, otvori vodiče sastavnih proizvoda i provjeri njihove mogućnosti naručivanja.' => 'Butonul de comandă te duce la oferta Forever oficială pentru piața selectată, dacă este disponibilă. Verifică acolo compoziția finală, prețul, disponibilitatea și livrarea înainte de a confirma comanda. Dacă nu există o ofertă locală pentru pachet, deschide ghidurile produselor componente și verifică opțiunile de comandă pentru acestea.',
     'Česta pitanja o Vital5 paketu' => 'Întrebări frecvente despre pachetul Vital5',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'M-am blocat',
+    'Zapelo mi je: ' => 'M-am blocat: ',
+    'Što sam htio/la napraviti:' => 'Ce am vrut să fac:',
+    'Učenje' => 'Învățare',
+    'Rezultati i tim' => 'Rezultate și echipă',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Linkuri, coduri QR, pâlnii, statistici și setări tehnice. Nu sunt necesare pentru munca de zi cu zi.',
+    'Tehničke postavke' => 'Setări tehnice',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Caută un instrument, de ex. cod QR sau link',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Drumul meu are 90 de pași. Pașii finalizați, notițele și mesajele pregătite rămân salvate chiar dacă iei o pauză.',
+    /* /Custom code: FC-2026-10-11 */
 ];

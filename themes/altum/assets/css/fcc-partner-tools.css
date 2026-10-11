@@ -152,3 +152,18 @@ body.fcc-partner-mode .fp-editor .custom-switch .custom-control-input:checked~.c
  body.fcc-partner-mode .fp-editor .input-group-prepend { max-width:100%; }
  body.fcc-partner-mode .fp-editor .input-group-text { white-space:normal; overflow-wrap:anywhere; }
 }
+
+/* Custom code: FC-2026-10-11: Workspace menu grouped by purpose, technical tools behind one closed section. */
+.fp-menu-group { margin:0 0 22px; }
+body.fcc-partner-mode .fp-section-more h2.fp-menu-group-title { margin:0 0 10px; font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--fp-muted,#526b64); }
+.fp-advanced-tools { margin-top:8px; padding:0; overflow:hidden; scroll-margin-top:95px; }
+.fp-advanced-tools > summary { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:18px 22px; cursor:pointer; list-style:none; min-height:48px; }
+.fp-advanced-tools > summary::-webkit-details-marker { display:none; }
+.fp-advanced-tools > summary::after { content:"+"; flex:none; font-size:22px; line-height:1; color:var(--fp-green,#106653); }
+.fp-advanced-tools[open] > summary::after { content:"\2212"; }
+.fp-advanced-tools > summary span { display:flex; flex-direction:column; gap:4px; }
+.fp-advanced-tools > summary small { color:var(--fp-muted,#526b64); font-size:13px; font-weight:400; }
+.fp-advanced-tools .fp-tool-library { margin:0; border:0; border-radius:0; box-shadow:none; background:transparent; padding:0 22px 18px; }
+.fp-advanced-tools .fp-tool-library > .fp-eyebrow, .fp-advanced-tools .fp-tool-library > h2, .fp-advanced-tools .fp-tool-library > h2 + .fp-muted { display:none; }
+.fp-advanced-tools .fp-tools-library { margin:0 22px 18px; }
+/* /Custom code: FC-2026-10-11 */

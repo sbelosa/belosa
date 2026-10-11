@@ -57785,4 +57785,18 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'Želim snimiti prvi video. Napiši kome se obraćaš, zašto počinješ, što želiš reći i što ti je ugodno snimiti.' => 'Je veux tourner ma première vidéo. Indique à qui tu t’adresses, pourquoi tu te lances, ce que tu veux dire et ce que tu es à l’aise de filmer.',
     '' => '',
     'Write exclusively in Croatian. You are an elite growth coach and strategist for Forever Card Club members. You are not a motivational chatbot, but someone who sees where results are being lost, cuts out the excess and chooses the one move with the greatest leverage. Be honest, direct when needed, but useful and practical. Return only valid JSON, with no markdown and no extra keys.' => 'Write exclusively in Croatian. You are an elite growth coach and strategist for Forever Card Club members. You are not a motivational chatbot, but someone who sees where results are being lost, cuts out the excess and chooses the one move with the greatest leverage. Be honest, direct when needed, but useful and practical. Return only valid JSON, with no markdown and no extra keys.',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Je suis bloqué(e)',
+    'Zapelo mi je: ' => 'Je suis bloqué(e) : ',
+    'Što sam htio/la napraviti:' => 'Ce que je voulais faire :',
+    'Učenje' => 'Apprentissage',
+    'Rezultati i tim' => 'Résultats et équipe',
+    'Napredni alati' => 'Outils avancés',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Liens, codes QR, tunnels, statistiques et réglages techniques. Inutiles pour le travail quotidien.',
+    'Tehničke postavke' => 'Réglages techniques',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Chercher un outil, p. ex. code QR ou lien',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Mon parcours compte 90 étapes. Les étapes terminées, les notes et les messages préparés restent enregistrés, même si tu fais une pause.',
+    /* /Custom code: FC-2026-10-11 */
 ];

@@ -23,4 +23,18 @@ return [
     'Forever Living Products weight management, Forever weight management, C9 Forever, Forever F15, Forever DX4' => 'Forever Living Products Gewichtsmanagement, Forever Gewichtsmanagement, C9 Forever, Forever F15, Forever DX4',
     'Forever Living Products, Forever proizvodi, Forever Living Products proizvodi, Forever vodiči za proizvode' => 'Forever Living Products, Forever Produkte, Produkte von Forever Living Products, Forever Produktratgeber',
     'Start paket, Forever suradnja, Forever registracija, 30 posto popusta, Forever ID, Forever Card Club' => 'Starterpaket, Forever Partnerschaft, Forever Registrierung, 30 Prozent Rabatt, Forever ID, Forever Card Club',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Ich komme nicht weiter',
+    'Zapelo mi je: ' => 'Ich komme nicht weiter: ',
+    'Što sam htio/la napraviti:' => 'Was ich tun wollte:',
+    'Učenje' => 'Lernen',
+    'Rezultati i tim' => 'Ergebnisse und Team',
+    'Napredni alati' => 'Erweiterte Werkzeuge',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Links, QR-Codes, Funnels, Statistiken und technische Einstellungen. Für die tägliche Arbeit brauchst du sie nicht.',
+    'Tehničke postavke' => 'Technische Einstellungen',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Werkzeug suchen, z. B. QR-Code oder Link',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Mein Weg hat 90 Schritte. Erledigte Schritte, Notizen und vorbereitete Nachrichten bleiben gespeichert, auch wenn du eine Pause machst.',
+    /* /Custom code: FC-2026-10-11 */
 ];

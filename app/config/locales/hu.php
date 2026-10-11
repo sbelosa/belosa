@@ -64916,4 +64916,17 @@ Segíthetek a csatlakozásban?',
     'Naruči Vital5 u svojoj zemlji' => 'Rendeld meg a Vital5-öt az országodban',
     'Gumb za naručivanje vodi na službenu Forever ponudu za odabrano tržište kada je dostupna. Ondje provjeri konačan sastav, cijenu, dostupnost i dostavu prije potvrde narudžbe. Ako nema lokalne ponude paketa, otvori vodiče sastavnih proizvoda i provjeri njihove mogućnosti naručivanja.' => 'A rendelés gomb az adott piac hivatalos Forever-ajánlatára vezet, ha az elérhető. A rendelés véglegesítése előtt ellenőrizd ott a pontos összetételt, az árat, az elérhetőséget és a szállítási feltételeket. Ha helyben nem érhető el a csomagajánlat, nyisd meg az egyes termékek útmutatóit, és ellenőrizd a rendelési lehetőségeket.',
     'Česta pitanja o Vital5 paketu' => 'Gyakori kérdések a Vital5 csomagról',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Elakadtam',
+    'Zapelo mi je: ' => 'Elakadtam: ',
+    'Što sam htio/la napraviti:' => 'Mit szerettem volna csinálni:',
+    'Učenje' => 'Tanulás',
+    'Rezultati i tim' => 'Eredmények és csapat',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Linkek, QR-kódok, tölcsérek, statisztikák és technikai beállítások. A napi munkához nincs rájuk szükség.',
+    'Tehničke postavke' => 'Technikai beállítások',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Eszköz keresése, pl. QR-kód vagy link',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Az utam 90 lépésből áll. A teljesített lépések, jegyzetek és előkészített üzenetek akkor is megmaradnak, ha szünetet tartasz.',
+    /* /Custom code: FC-2026-10-11 */
 ];

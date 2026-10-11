@@ -57197,4 +57197,18 @@ Guidance ne ocenjuje sopstveni odgovor, na primer „Ova poruka se drži bezbedn
     '' => '',
     'One step a day, plus an additional Sunday Marketing plan. Each new level starts at its own step 1.' => 'Jedan korak dnevno i dodatni marketinški plan nedeljom. Svaki novi nivo počinje od svog koraka 1.',
     'Forever Aloe First Spray is an important additional recommendation because you can lightly spray it on your scalp after washing and let it dry as an extra soothing external routine.' => 'Forever Aloe First Spray je važna dodatna preporuka jer možeš lagano da ga naprskaš na teme posle pranja i ostaviš da se osuši, kao dodatni umirujući korak za spoljašnju negu.',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Zapelo mi je',
+    'Zapelo mi je: ' => 'Zapelo mi je: ',
+    'Što sam htio/la napraviti:' => 'Šta sam hteo/la da uradim:',
+    'Učenje' => 'Učenje',
+    'Rezultati i tim' => 'Rezultati i tim',
+    'Napredni alati' => 'Napredni alati',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Linkovi, QR kodovi, funneli, statistika i tehnička podešavanja. Za svakodnevni rad nisu potrebni.',
+    'Tehničke postavke' => 'Tehnička podešavanja',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Pronađi alat, npr. QR kod ili link',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Moj put ima 90 koraka. Završeni koraci, beleške i pripremljene poruke ostaju sačuvani i kada napraviš pauzu.',
+    /* /Custom code: FC-2026-10-11 */
 ];

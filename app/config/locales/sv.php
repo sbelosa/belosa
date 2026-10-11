@@ -34641,7 +34641,8 @@ Vill du följa med?',
     'Administrator' => 'Administratör',
     'Faroese' => 'Färöiska',
     'Forever Aloe First Spray is the main Forever direction here because it is the cleanest first step for a gentle post-depilation aftercare routine.' => 'Forever Aloe First Spray är det främsta Forever-alternativet här, eftersom det är det mest självklara första steget i en skonsam eftervårdsrutin efter hårborttagning.',
-    'Assistant style: "For skin and coat, I would stay with gentle ingredient-based guidance and avoid guessing the cause. A sensible first direction is one calm product/article path focused on soothing routine support, and only then optional extras if they clearly fit."' => 'Assistentens stil: "För hud och päls skulle jag hålla mig till skonsamma råd baserade på ingredienser och undvika att gissa orsaken. Ett klokt första steg är en lugn väg med en produkt eller artikel med fokus på stöd i en lindrande rutin, och först därefter eventuella tillägg om de tydligt passar."',
+    'Assistant style: "For skin and coat, I would stay with gentle ingredient-based guidance and avoid guessing the cause. A sensible first direction is one calm product/article path focused on soothing routine support, and only then optional extras if they clearly fit."' => 'Assistentens stil: "För hud och päls skulle jag hålla mig till skonsamma råd baserade på ingredienser och undvika att gissa orsaken. Ett klokt första steg är en lugn väg med en produkt eller artikel med fokus på stöd i en lindrande rutin, och först därefter eventuella tillägg om de tydligt passar."
+',
     'visok secer' => 'högt blodsocker',
     'The price can depend on the market, current offer and the partner checkout path, so the safest concrete step is to open the partner checkout/link or ask the FCC partner for the current price.' => 'Priset kan bero på marknad, aktuellt erbjudande och partnerns kassalänk. Det säkraste konkreta steget är därför att öppna partnerns kassalänk eller fråga FCC-partnern om det aktuella priset.',
     'Prođi prijavu i pronađi My Account te My Global Business. Zapiši točno na kojem koraku trebaš pomoć.' => 'Gå igenom inloggningen och leta upp My Account och My Global Business. Skriv ner exakt vilket steg du behöver hjälp med.',
@@ -65092,4 +65093,17 @@ Behöver du hjälp med att ansluta?',
     'Naruči Vital5 u svojoj zemlji' => 'Beställ Vital5 i ditt land',
     'Gumb za naručivanje vodi na službenu Forever ponudu za odabrano tržište kada je dostupna. Ondje provjeri konačan sastav, cijenu, dostupnost i dostavu prije potvrde narudžbe. Ako nema lokalne ponude paketa, otvori vodiče sastavnih proizvoda i provjeri njihove mogućnosti naručivanja.' => 'Beställningsknappen leder till det officiella Forever-erbjudandet för den valda marknaden när det finns tillgängligt. Kontrollera det slutliga innehållet, priset, tillgängligheten och leveransen där innan du bekräftar beställningen. Om det inte finns något lokalt paketerbjudande kan du öppna guiderna till produkterna som ingår och kontrollera vilka beställningsalternativ som finns.',
     'Česta pitanja o Vital5 paketu' => 'Vanliga frågor om Vital5-paketet',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Jag har fastnat',
+    'Zapelo mi je: ' => 'Jag har fastnat: ',
+    'Što sam htio/la napraviti:' => 'Vad jag ville göra:',
+    'Učenje' => 'Lärande',
+    'Rezultati i tim' => 'Resultat och team',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Länkar, QR-koder, trattar, statistik och tekniska inställningar. Behövs inte i det dagliga arbetet.',
+    'Tehničke postavke' => 'Tekniska inställningar',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Hitta ett verktyg, t.ex. QR-kod eller länk',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Min väg har 90 steg. Avklarade steg, anteckningar och förberedda meddelanden sparas även när du tar en paus.',
+    /* /Custom code: FC-2026-10-11 */
 ];

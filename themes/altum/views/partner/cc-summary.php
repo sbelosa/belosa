@@ -10,7 +10,7 @@ $ccPage=fcc_cc_page($uid);$cc=$ccPage['metric'];$ccSnapshot=$ccPage['history'][0
  <?php else: ?><p><?= $h(fcc_cc_t('no_data')) ?></p><?php endif ?>
 </section>
 
-<?php $ccNews=array_slice(fcc_cc_recent_items($uid),0,2);if($ccNews): ?>
+<?php /* Custom code: FC-2026-10-11: Own changes are already in the summary above; Today lists only team news that needs an action. */ $ccNews=array_slice(array_values(array_filter(fcc_cc_recent_items($uid),static fn($item)=>empty($item['self']))),0,2);if($ccNews): /* /Custom code: FC-2026-10-11 */ ?>
 <section class="fp-panel"><div class="fp-section-title"><h2><?= $h(fcc_cc_t('my_points_events')) ?></h2><a class="fp-link" href="<?= url('partner/points#cc-updates') ?>"><?= $h(fcc_cc_t('all_points')) ?> →</a></div>
 <?php foreach($ccNews as $item): ?><article class="fp-cc-update"><p><?= $h(fcc_cc_item_text($item)) ?></p><?php if(!$item['self']): ?><a class="fp-button fp-button-outline" href="<?= url('partner/team?member='.(int)$item['member'].'&cc_event='.(int)$item['id'].'#team-work') ?>"><?= $h(fcc_cc_t($item['kind']==='growth'?'contact':'congratulate')) ?> →</a><?php endif ?></article><?php endforeach ?>
 </section><?php endif ?>

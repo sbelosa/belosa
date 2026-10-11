@@ -9,7 +9,7 @@ if(empty(settings()->codes->qr_codes_is_enabled)) unset($fp_tools['qr-codes']);
     <h2 id="fp-tools-title"><?= htmlspecialchars(fcc_t('Alati za tvoje poslovanje'), ENT_QUOTES, 'UTF-8') ?></h2>
     <p class="fp-muted"><?= htmlspecialchars(fcc_t('Odaberi što želiš napraviti. Svaki alat koristi tvoj postojeći račun i podatke.'), ENT_QUOTES, 'UTF-8') ?></p>
     <label class="sr-only" for="fp-tool-search"><?= htmlspecialchars(fcc_t('Pronađi alat'), ENT_QUOTES, 'UTF-8') ?></label>
-    <input type="search" id="fp-tool-search" class="fp-tool-search" placeholder="<?= htmlspecialchars(fcc_t('Pronađi alat, npr. piksel ili domena'), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
+    <input type="search" id="fp-tool-search" class="fp-tool-search" placeholder="<?= htmlspecialchars(fcc_t('Pronađi alat, npr. QR kod ili poveznica'), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
     <?php foreach(fcc_partner_tool_groups() as $group=>$label): ?>
     <div class="fp-tool-group" data-tool-group><h3><?= $h($label) ?></h3><div class="fp-tool-grid">
         <?php foreach($fp_tools as $key=>$tool): if($tool['group'] !== $group) continue;

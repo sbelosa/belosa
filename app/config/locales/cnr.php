@@ -57867,4 +57867,18 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     '' => '',
     'Write exclusively in Croatian. You are an elite growth coach and strategist for Forever Card Club members. You are not a motivational chatbot, but someone who sees where results are being lost, cuts out the excess and chooses the one move with the greatest leverage. Be honest, direct when needed, but useful and practical. Return only valid JSON, with no markdown and no extra keys.' => 'Write exclusively in Croatian. You are an elite growth coach and strategist for Forever Card Club members. You are not a motivational chatbot, but someone who sees where results are being lost, cuts out the excess and chooses the one move with the greatest leverage. Be honest, direct when needed, but useful and practical. Return only valid JSON, with no markdown and no extra keys.',
     'This is the first priority. Without a valid Forever sales link, FCC cannot deliver real webshop referrals and results.' => 'Ovo je prvi prioritet. Bez važećeg Forever prodajnog linka, FCC ne može da ostvari stvarne preporuke ka internet prodavnicama i rezultate.',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Zapelo mi je',
+    'Zapelo mi je: ' => 'Zapelo mi je: ',
+    'Što sam htio/la napraviti:' => 'Šta sam htio/la da uradim:',
+    'Učenje' => 'Učenje',
+    'Rezultati i tim' => 'Rezultati i tim',
+    'Napredni alati' => 'Napredni alati',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Linkovi, QR kodovi, funneli, statistika i tehnička podešavanja. Za svakodnevni rad nijesu potrebni.',
+    'Tehničke postavke' => 'Tehnička podešavanja',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Pronađi alat, npr. QR kod ili link',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju sačuvani i kada napraviš pauzu.',
+    /* /Custom code: FC-2026-10-11 */
 ];

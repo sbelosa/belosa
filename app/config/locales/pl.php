@@ -44588,7 +44588,8 @@ Kto może mi pomóc:',
     'je cjelovit program prehrane i kretanja osmišljen kao
       prirodan nastavak nakon C9 programa ili kao samostalan korak za sve koji žele
       više strukture, jasniji plan i vidljive promjene u relativno kratkom vremenu.' => 'to kompletny program żywieniowy i ruchowy, zaprojektowany jako
-      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.',
+      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce
+      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.',
     'Demo red' => 'Kolejka demonstracyjna',
     'Ne mogu proglasiti' => 'Nie mogę zadeklarować',
     'Bez upita objavi samostalni vodič od jedne svakodnevne potrebe do prikladne opcije.' => 'Jeśli nikt nie pyta, opublikuj samodzielny poradnik, który pomoże przejść od codziennej potrzeby do odpowiedniego rozwiązania.',
@@ -58673,7 +58674,8 @@ Wskazówki nie powinny oceniać własnej odpowiedzi, na przykład: „Ta wiadomo
       prirodan nastavak nakon C9 programa ili kao samostalan korak za sve koji žele
       više strukture, jasniji plan i vidljive promjene u relativno kratkom vremenu.
     ' => ' to kompletny program żywieniowy i ruchowy, zaprojektowany jako
-      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.
+      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce
+      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.
     ',
     '
       Tijekom 15 dana F15 vas vodi kroz jasno definirane faze koje pomažu tijelu da se
@@ -65120,4 +65122,17 @@ Potrzebujesz pomocy z połączeniem?',
     'Naruči Vital5 u svojoj zemlji' => 'Zamów Vital5 w swoim kraju',
     'Gumb za naručivanje vodi na službenu Forever ponudu za odabrano tržište kada je dostupna. Ondje provjeri konačan sastav, cijenu, dostupnost i dostavu prije potvrde narudžbe. Ako nema lokalne ponude paketa, otvori vodiče sastavnih proizvoda i provjeri njihove mogućnosti naručivanja.' => 'Przycisk zamówienia prowadzi do oficjalnej oferty Forever na wybranym rynku, jeśli jest dostępna. Przed potwierdzeniem zamówienia sprawdź tam ostateczny skład, cenę, dostępność i dostawę. Jeśli lokalna oferta zestawu nie jest dostępna, otwórz poradniki dotyczące poszczególnych produktów i sprawdź możliwości ich zamówienia.',
     'Česta pitanja o Vital5 paketu' => 'Często zadawane pytania o zestaw Vital5',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Utknąłem',
+    'Zapelo mi je: ' => 'Utknąłem: ',
+    'Što sam htio/la napraviti:' => 'Co chciałem zrobić:',
+    'Učenje' => 'Nauka',
+    'Rezultati i tim' => 'Wyniki i zespół',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Linki, kody QR, lejki, statystyki i ustawienia techniczne. Nie są potrzebne do codziennej pracy.',
+    'Tehničke postavke' => 'Ustawienia techniczne',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Znajdź narzędzie, np. kod QR lub link',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Moja ścieżka ma 90 kroków. Ukończone kroki, notatki i przygotowane wiadomości pozostają zapisane, nawet gdy zrobisz przerwę.',
+    /* /Custom code: FC-2026-10-11 */
 ];

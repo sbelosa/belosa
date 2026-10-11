@@ -57838,4 +57838,18 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'Želim snimiti prvi video. Napiši kome se obraćaš, zašto počinješ, što želiš reći i što ti je ugodno snimiti.' => 'Dua të xhiroj videon time të parë. Shkruaj kujt i drejtohesh, pse po fillon, çfarë dëshiron të thuash dhe çfarë ndihesh rehat të filmosh.',
     '' => '',
     'Write exclusively in Croatian. You are an elite growth coach and strategist for Forever Card Club members. You are not a motivational chatbot, but someone who sees where results are being lost, cuts out the excess and chooses the one move with the greatest leverage. Be honest, direct when needed, but useful and practical. Return only valid JSON, with no markdown and no extra keys.' => 'Write exclusively in Croatian. You are an elite growth coach and strategist for Forever Card Club members. You are not a motivational chatbot, but someone who sees where results are being lost, cuts out the excess and chooses the one move with the greatest leverage. Be honest, direct when needed, but useful and practical. Return only valid JSON, with no markdown and no extra keys.',
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Zapelo mi je' => 'Kam ngecur',
+    'Zapelo mi je: ' => 'Kam ngecur: ',
+    'Što sam htio/la napraviti:' => 'Çfarë doja të bëja:',
+    'Učenje' => 'Mësim',
+    'Rezultati i tim' => 'Rezultatet dhe ekipi',
+    'Napredni alati' => 'Mjete të avancuara',
+    'Poveznice, QR kodovi, funneli, statistika i tehničke postavke. Za svakodnevni rad nisu potrebni.' => 'Lidhje, kode QR, funnel, statistika dhe cilësime teknike. Nuk të nevojiten për punën e përditshme.',
+    'Tehničke postavke' => 'Cilësime teknike',
+    'Pronađi alat, npr. QR kod ili poveznica' => 'Gjej një mjet, p.sh. kod QR ose lidhje',
+    /* /Custom code: FC-2026-10-11 */
+    /* Custom code: FC-2026-10-11: Simplified workspace copy. */
+    'Moj put ima 90 koraka. Završeni koraci, bilješke i pripremljene poruke ostaju spremljeni i kada napraviš pauzu.' => 'Rruga ime ka 90 hapa. Hapat e përfunduar, shënimet dhe mesazhet e përgatitura mbeten të ruajtura edhe kur bën pushim.',
+    /* /Custom code: FC-2026-10-11 */
 ];

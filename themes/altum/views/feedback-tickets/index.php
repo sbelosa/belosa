@@ -743,6 +743,7 @@ foreach($data->feedback_tickets as $ticket) {
             <div class="fcc-support-section-title"><?= htmlspecialchars(fcc_t('Nova poruka podršci'), ENT_QUOTES, 'UTF-8') ?></div>
             <div class="text-muted mb-4"><?= htmlspecialchars(fcc_t('Jednim mjestom možeš prijaviti problem, poslati ideju ili predložiti temu koja ti stvarno treba na sljedećem webinaru.'), ENT_QUOTES, 'UTF-8') ?></div>
 
+            <?php /* Custom code: FC-2026-10-11: Prefill a stuck report from the Partner help menu. */ $fcc_stuck_page = isset($_GET['stuck']) ? trim(mb_substr(strip_tags((string) $_GET['stuck']), 0, 60)) : ''; /* /Custom code: FC-2026-10-11 */ ?>
             <form id="fcc-support-create" action="" method="post" enctype="multipart/form-data" role="form">
                 <input type="hidden" name="token" value="<?= \Altum\Csrf::get() ?>" />
 
@@ -756,7 +757,7 @@ foreach($data->feedback_tickets as $ticket) {
 
                 <div class="fcc-support-field">
                     <label for="subject" class="fcc-support-label"><?= l('feedback_tickets.subject') ?></label>
-                    <input type="text" id="subject" name="subject" class="fcc-support-input <?= \Altum\Alerts::has_field_errors('subject') ? 'is-invalid' : null ?>" maxlength="128" value="<?= htmlspecialchars((string) ($_POST['subject'] ?? ((isset($_GET['journey_step']) && (int)$_GET['journey_step']>=1 && (int)$_GET['journey_step']<=90) ? fcc_t('Pomoć uz korak ').(int)$_GET['journey_step'] : '')), ENT_QUOTES, 'UTF-8') ?>" required="required" />
+                    <input type="text" id="subject" name="subject" class="fcc-support-input <?= \Altum\Alerts::has_field_errors('subject') ? 'is-invalid' : null ?>" maxlength="128" value="<?= htmlspecialchars((string) ($_POST['subject'] ?? ((isset($_GET['journey_step']) && (int)$_GET['journey_step']>=1 && (int)$_GET['journey_step']<=90) ? fcc_t('Pomoć uz korak ').(int)$_GET['journey_step'] : ($fcc_stuck_page !== '' ? fcc_t('Zapelo mi je: ').$fcc_stuck_page : ''))), ENT_QUOTES, 'UTF-8') ?>" required="required" />
                     <?= \Altum\Alerts::output_field_error('subject') ?>
                     <div class="fcc-support-helper"><?= l('feedback_tickets.subject_help') ?></div>
                 </div>
@@ -764,7 +765,7 @@ foreach($data->feedback_tickets as $ticket) {
                 <div class="fcc-support-field">
                     <label for="category" class="fcc-support-label"><?= l('feedback_tickets.category') ?></label>
                     <select id="category" name="category" class="fcc-support-select">
-                        <?php $selected_category = $_POST['category'] ?? 'other' ?>
+                        <?php $selected_category = $_POST['category'] ?? ($fcc_stuck_page !== '' ? 'bug' : 'other') ?>
                         <option value="change" <?= $selected_category == 'change' ? 'selected="selected"' : null ?>><?= l('feedback_tickets.category.change') ?></option>
                         <option value="add" <?= $selected_category == 'add' ? 'selected="selected"' : null ?>><?= l('feedback_tickets.category.add') ?></option>
                         <option value="bug" <?= $selected_category == 'bug' ? 'selected="selected"' : null ?>><?= l('feedback_tickets.category.bug') ?></option>
@@ -774,7 +775,7 @@ foreach($data->feedback_tickets as $ticket) {
 
                 <div class="fcc-support-field">
                     <label for="message" class="fcc-support-label"><?= l('feedback_tickets.message') ?></label>
-                    <textarea id="message" name="message" class="fcc-support-textarea <?= \Altum\Alerts::has_field_errors('message') ? 'is-invalid' : null ?>" required="required"><?= htmlspecialchars((string) ($_POST['message'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                    <textarea id="message" name="message" class="fcc-support-textarea <?= \Altum\Alerts::has_field_errors('message') ? 'is-invalid' : null ?>" required="required"><?= htmlspecialchars((string) ($_POST['message'] ?? ($fcc_stuck_page !== '' ? fcc_t('Što sam htio/la napraviti:')."\n\n".fcc_t('Gdje je zapelo:')."\n" : '')), ENT_QUOTES, 'UTF-8') ?></textarea>
                     <?= \Altum\Alerts::output_field_error('message') ?>
                     <div class="fcc-support-helper"><?= l('feedback_tickets.message_help') ?></div>
                 </div>
