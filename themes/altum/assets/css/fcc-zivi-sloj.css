@@ -640,3 +640,107 @@ body.fcc-ui-zivi #fl-composer .fl-selected img { mix-blend-mode: normal !importa
   body.fcc-ui-zivi #fl-library .fl-product-stage .fl-photo-note { margin: 0 !important; }
 }
 body.fcc-ui-zivi #fl-library .fl-stage-label { padding: 7px 13px !important; border-radius: 999px !important; font-size: 12px !important; line-height: 1.2; }
+
+/* ---------- Premium form controls across the workspace and FCC's public pages (not admin) ----------
+   One select and one field style: white, 48px, 14px corners, soft border, chevron icon, clear focus ring. */
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]) {
+  -webkit-appearance: none !important; appearance: none !important;
+  min-height: 48px; padding: 0 44px 0 16px !important; border-radius: 14px !important; border: 1px solid #D6E5DC !important;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9.5l6 6 6-6' fill='none' stroke='%234C665C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 18px !important;
+  color: var(--zs-ink) !important; font: 600 15px/1.2 var(--zs-font) !important; cursor: pointer; box-shadow: 0 1px 2px rgba(14,42,34,.05) !important;
+  transition: border-color .15s ease, box-shadow .15s ease; text-overflow: ellipsis;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]):hover { border-color: #B9D8C8 !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]):focus,
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]):focus-visible { outline: none !important; border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:is(.form-control-sm, .custom-select-sm) { min-height: 40px; font-size: 14px !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) :is(input[type="text"], input[type="search"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], input[type="date"], input[type="password"], textarea):not(.fl-plain) {
+  border-radius: 14px !important; border: 1px solid #D6E5DC !important; background-color: #fff !important; color: var(--zs-ink);
+  box-shadow: 0 1px 2px rgba(14,42,34,.05) !important; transition: border-color .15s ease, box-shadow .15s ease;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) :is(input[type="text"], input[type="search"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], input[type="date"], input[type="password"]) { min-height: 48px; padding-left: 16px; padding-right: 16px; font-size: 16px; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) :is(input, textarea):focus { outline: none !important; border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+body.fcc-ui-zivi:not([data-fcc-page="admin"]) label { color: var(--zs-ink); }
+
+/* Filter links become pills, the current one tinted */
+body.fcc-ui-zivi .fp-filter-row { gap: 8px !important; align-items: center; font-size: 13.5px !important; }
+body.fcc-ui-zivi .fp-filter-row > a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px !important; border-radius: 14px; text-decoration: none !important;
+  background: #fff; border: 1px solid #DCE8E1; color: var(--zs-ink) !important; font-weight: 600; box-shadow: 0 1px 2px rgba(14,42,34,.05);
+}
+body.fcc-ui-zivi .fp-filter-row > a:hover { border-color: #B9D8C8; }
+body.fcc-ui-zivi .fp-filter-row > a:is([aria-current], .is-active, .fb-filter-active, .active) { background: #E3F4EC; border-color: #E3F4EC; color: var(--zs-em2) !important; }
+
+/* ---------- FCC Top 10 ---------- */
+body.fcc-ui-zivi .ft-filters {
+  display: flex !important; flex-wrap: wrap; align-items: flex-end; gap: 14px !important; margin: 18px 0 0 !important; padding: 18px 20px !important;
+  border-radius: 24px; background: var(--zs-glass); border: 1px solid var(--zs-edge); box-shadow: var(--zs-shadow);
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi .ft-filters label { gap: 8px !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .06em; text-transform: uppercase; color: var(--zs-muted) !important; }
+body.fcc-ui-zivi .ft-filters label { flex: 1 1 190px; min-width: 0; }
+body.fcc-ui-zivi .ft-filters label :is(select, input) { width: 100% !important; min-width: 0 !important; }
+body.fcc-ui-zivi .ft-filters .fp-button { min-width: 120px; }
+body.fcc-ui-zivi :is(.ft-period-explanation, .ft-status) {
+  display: flex; gap: 10px; align-items: flex-start; margin: 10px 4px 0 !important; font-size: 12.5px !important; line-height: 1.55; color: var(--zs-muted) !important;
+}
+body.fcc-ui-zivi :is(.ft-period-explanation, .ft-status)::before {
+  content: ""; flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%; background: #E3F4EC no-repeat center / 12px;
+}
+body.fcc-ui-zivi .ft-period-explanation::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 10.5v6M12 7.2v.1' fill='none' stroke='%230B5A45' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E"); }
+body.fcc-ui-zivi .ft-status::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%230B5A45' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M12 7v5l3 2'/%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3C/g%3E%3C/svg%3E"); }
+body.fcc-ui-zivi .ft-status + * { margin-top: 22px !important; }
+body.fcc-ui-zivi .ft-grid { align-items: stretch !important; gap: 18px !important; }
+body.fcc-ui-zivi .ft-card { display: flex; flex-direction: column; margin: 0 !important; }
+body.fcc-ui-zivi .ft-card > :last-child { margin-top: auto; }
+body.fcc-ui-zivi .ft-card .ft-list li { border-radius: 12px; }
+body.fcc-ui-zivi .ft-card .ft-own { border-radius: 18px !important; background: rgba(255,255,255,.7) !important; border: 1px solid #E3EEE8; }
+body.fcc-ui-zivi .ft-counts span { border-radius: 999px !important; background: #F1F7F3 !important; border: 1px solid #E3EEE8; }
+body.fcc-ui-zivi .ft-rules summary, body.fcc-ui-zivi .ft-card details > summary { list-style: none; cursor: pointer; font-weight: 700; color: var(--zs-em); display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
+body.fcc-ui-zivi .ft-card details > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi .ft-card details > summary::before { content: "+"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #E3F4EC; color: var(--zs-em2); font-weight: 800; transition: transform .2s ease; }
+body.fcc-ui-zivi .ft-card details[open] > summary::before { transform: rotate(45deg); }
+@media (max-width: 800px) {
+  body.fcc-ui-zivi .ft-filters { padding: 14px !important; }
+  body.fcc-ui-zivi .ft-filters label { flex: 1 1 100%; }
+  body.fcc-ui-zivi .ft-filters .fp-button { flex: 1 1 100%; }
+}
+
+/* Product page country chooser: the library stylesheet targets it by id, so match that strength */
+html body.fcc-ui-zivi #fl-library .fl-country-form select {
+  -webkit-appearance: none !important; appearance: none !important; min-height: 48px !important; padding: 0 44px 0 16px !important; border-radius: 14px !important; border: 1px solid #D6E5DC !important;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9.5l6 6 6-6' fill='none' stroke='%234C665C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 18px !important;
+  font: 600 15px/1.2 var(--zs-font) !important; color: var(--zs-ink) !important; min-width: 180px;
+}
+html body.fcc-ui-zivi #fl-library .fl-country-form button { min-height: 48px; padding: 0 18px; border-radius: 14px; border: 1px solid #DCE8E1; background: #fff; color: var(--zs-em2); font-weight: 700; }
+
+/* Script-enhanced selects (select2) get the same premium look as native ones */
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection--single {
+  min-height: 48px !important; height: 48px; display: flex !important; align-items: center; padding: 0 44px 0 16px !important;
+  border-radius: 14px !important; border: 1px solid #D6E5DC !important; background: #fff !important; box-shadow: 0 1px 2px rgba(14,42,34,.05) !important;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection__rendered { padding: 0 !important; line-height: 1.2 !important; color: var(--zs-ink) !important; font: 600 15px/1.2 var(--zs-font) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection__arrow {
+  top: 0 !important; right: 12px !important; height: 100% !important; width: 22px !important;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9.5l6 6 6-6' fill='none' stroke='%234C665C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / 18px !important;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection__arrow b { display: none !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container--open .select2-selection--single,
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container--focus .select2-selection--single { border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-dropdown {
+  border: 1px solid #DCE8E1 !important; border-radius: 16px !important; overflow: hidden; box-shadow: 0 18px 44px rgba(14,42,34,.16) !important; margin-top: 6px;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-results__option { padding: 10px 14px !important; font: 500 14.5px var(--zs-font) !important; color: var(--zs-ink) !important; background: #fff !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-results__option--highlighted[aria-selected] { background: #E3F4EC !important; color: var(--zs-em2) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-results__option[aria-selected="true"] { font-weight: 700 !important; color: var(--zs-em2) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-search__field { min-height: 40px !important; border-radius: 10px !important; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-form { display: block !important; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-form > label { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-controls { display: flex !important; gap: 8px; width: 100%; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-controls > :is(select, .select2-container) { flex: 1 1 0% !important; width: auto !important; min-width: 0 !important; }
+/* The original select stays hidden when select2 replaces it */
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi select.select2-hidden-accessible,
+html body.fcc-ui-zivi #fl-library .fl-country-form select.select2-hidden-accessible {
+  position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important; min-width: 0 !important; padding: 0 !important; border: 0 !important;
+  flex: none !important; overflow: hidden !important; clip: rect(0 0 0 0) !important; box-shadow: none !important;
+}
