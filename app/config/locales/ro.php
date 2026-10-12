@@ -65421,4 +65421,6 @@ Ai nevoie de ajutor pentru conectare?',
     'Moj put još nije uključen za tvoj račun' => 'Călătoria mea nu este încă activată pentru contul tău',
     'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Progresul tău este salvat. Contactează asistența și vom verifica de ce nu se deschide pasul tău.',
     /* /Custom code: FC-2026-10-12 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Salut! Uită-te la acest produs, cred că te-ar putea interesa: %s. Pe pagină găsești descrierea și modul de utilizare, iar dacă ai întrebări, și contactul unei persoane care te poate ajuta.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Linkul păstrează recomandarea persoanei de la care a venit.',
 ];

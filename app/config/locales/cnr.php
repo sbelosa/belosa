@@ -58141,4 +58141,6 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'Moj put još nije uključen za tvoj račun' => 'Moje putovanje još nije uključeno za tvoj nalog',
     'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Tvoj napredak je sačuvan. Obrati se podršci i provjerićemo zašto se tvoj korak ne otvara.',
     /* /Custom code: FC-2026-10-12 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Zdravo! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korišćenja, a ako imaš pitanja, tu je i kontakt osobe koja ti može pomoći.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Link zadržava preporuku osobe od koje je stigao.',
 ];

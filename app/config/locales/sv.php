@@ -34641,7 +34641,8 @@ Vill du följa med?',
     'Administrator' => 'Administratör',
     'Faroese' => 'Färöiska',
     'Forever Aloe First Spray is the main Forever direction here because it is the cleanest first step for a gentle post-depilation aftercare routine.' => 'Forever Aloe First Spray är det främsta Forever-alternativet här, eftersom det är det mest självklara första steget i en skonsam eftervårdsrutin efter hårborttagning.',
-    'Assistant style: "For skin and coat, I would stay with gentle ingredient-based guidance and avoid guessing the cause. A sensible first direction is one calm product/article path focused on soothing routine support, and only then optional extras if they clearly fit."' => 'Assistentens stil: "För hud och päls skulle jag hålla mig till skonsamma råd baserade på ingredienser och undvika att gissa orsaken. Ett klokt första steg är en lugn väg med en produkt eller artikel med fokus på stöd i en lindrande rutin, och först därefter eventuella tillägg om de tydligt passar."',
+    'Assistant style: "For skin and coat, I would stay with gentle ingredient-based guidance and avoid guessing the cause. A sensible first direction is one calm product/article path focused on soothing routine support, and only then optional extras if they clearly fit."' => 'Assistentens stil: "För hud och päls skulle jag hålla mig till skonsamma råd baserade på ingredienser och undvika att gissa orsaken. Ett klokt första steg är en lugn väg med en produkt eller artikel med fokus på stöd i en lindrande rutin, och först därefter eventuella tillägg om de tydligt passar."
+',
     'visok secer' => 'högt blodsocker',
     'The price can depend on the market, current offer and the partner checkout path, so the safest concrete step is to open the partner checkout/link or ask the FCC partner for the current price.' => 'Priset kan bero på marknad, aktuellt erbjudande och partnerns kassalänk. Det säkraste konkreta steget är därför att öppna partnerns kassalänk eller fråga FCC-partnern om det aktuella priset.',
     'Prođi prijavu i pronađi My Account te My Global Business. Zapiši točno na kojem koraku trebaš pomoć.' => 'Gå igenom inloggningen och leta upp My Account och My Global Business. Skriv ner exakt vilket steg du behöver hjälp med.',
@@ -65364,4 +65365,6 @@ Behöver du hjälp med att ansluta?',
     'Moj put još nije uključen za tvoj račun' => 'Min resa är inte aktiverad för ditt konto ännu',
     'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Dina framsteg är sparade. Kontakta supporten så kontrollerar vi varför ditt steg inte öppnas.',
     /* /Custom code: FC-2026-10-12 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Hej! Titta på den här produkten, jag tror att den kan intressera dig: %s. På sidan finns beskrivning och användning, och om du har frågor även kontakt till en person som kan hjälpa dig.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Länken behåller rekommendationen från personen den kom från.',
 ];

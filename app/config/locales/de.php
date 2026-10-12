@@ -54622,4 +54622,6 @@ Viele Grüße, <br />
     'Forever AU - Australia' => 'Forever AU: Australien',
     'Forever AT - Austria' => 'Forever AT: Österreich',
     'Forever ME - Montenegro' => 'Forever ME: Montenegro',
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Hallo! Schau dir dieses Produkt an, ich glaube, es könnte dich interessieren: %s. Auf der Seite findest du Beschreibung und Anwendung und bei Fragen auch den Kontakt einer Person, die dir weiterhilft.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Der Link behält die Empfehlung der Person bei, von der er stammt.',
 ];

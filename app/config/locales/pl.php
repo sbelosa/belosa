@@ -44588,7 +44588,8 @@ Kto może mi pomóc:',
     'je cjelovit program prehrane i kretanja osmišljen kao
       prirodan nastavak nakon C9 programa ili kao samostalan korak za sve koji žele
       više strukture, jasniji plan i vidljive promjene u relativno kratkom vremenu.' => 'to kompletny program żywieniowy i ruchowy, zaprojektowany jako
-      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.',
+      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce
+      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.',
     'Demo red' => 'Kolejka demonstracyjna',
     'Ne mogu proglasiti' => 'Nie mogę zadeklarować',
     'Bez upita objavi samostalni vodič od jedne svakodnevne potrebe do prikladne opcije.' => 'Jeśli nikt nie pyta, opublikuj samodzielny poradnik, który pomoże przejść od codziennej potrzeby do odpowiedniego rozwiązania.',
@@ -58673,7 +58674,8 @@ Wskazówki nie powinny oceniać własnej odpowiedzi, na przykład: „Ta wiadomo
       prirodan nastavak nakon C9 programa ili kao samostalan korak za sve koji žele
       više strukture, jasniji plan i vidljive promjene u relativno kratkom vremenu.
     ' => ' to kompletny program żywieniowy i ruchowy, zaprojektowany jako
-      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.
+      naturalny kolejny etap po programie C9 lub samodzielny krok dla każdego, kto chce
+      mieć więcej struktury, jaśniejszy plan i widoczne zmiany w stosunkowo krótkim czasie.
     ',
     '
       Tijekom 15 dana F15 vas vodi kroz jasno definirane faze koje pomažu tijelu da se
@@ -65392,4 +65394,6 @@ Potrzebujesz pomocy z połączeniem?',
     'Moj put još nije uključen za tvoj račun' => 'Moja droga nie jest jeszcze włączona dla twojego konta',
     'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Twoje postępy są zapisane. Skontaktuj się ze wsparciem, a sprawdzimy, dlaczego twój krok się nie otwiera.',
     /* /Custom code: FC-2026-10-12 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Cześć! Zobacz ten produkt, myślę, że może cię zainteresować: %s. Na stronie jest opis i sposób użycia, a jeśli masz pytania, także kontakt do osoby, która może pomóc.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Link zachowuje polecenie osoby, od której pochodzi.',
 ];

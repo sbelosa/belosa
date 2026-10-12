@@ -1,0 +1,783 @@
+/* FCC Živi sloj. Optional layer loaded after every existing FCC stylesheet when fcc_ui_theme() is "zivi".
+   Scope: signed-in workspace (fcc-partner-mode), sign-in pages (fcc-auth-mode) and FCC's own public pages (fcc-public-mode).
+   Collaborators' public cards use the biolink wrapper and never receive this file or the fcc-ui-zivi class. */
+
+body.fcc-ui-zivi {
+  --zs-ink: #0E2A22; --zs-muted: #4C665C; --zs-em: #12775B; --zs-em2: #0B5A45; --zs-aqua: #3BB9A4; --zs-lime: #B6E36B; --zs-sky: #CDEFF7;
+  --zs-glass: rgba(255,255,255,.66); --zs-glass-strong: rgba(255,255,255,.86); --zs-edge: rgba(255,255,255,.9);
+  --zs-line: rgba(14,42,34,.09); --zs-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 12px 30px rgba(18,90,70,.10);
+  --zs-blur: blur(22px) saturate(1.4); --zs-grad: linear-gradient(135deg, #12775B, #0B5A45);
+  --zs-ring: conic-gradient(from 200deg, #3BB9A4, #B6E36B, #7FD3E6, #12775B, #3BB9A4);
+  --zs-mesh: radial-gradient(60% 45% at 12% 6%, #B9F0D8 0, transparent 70%), radial-gradient(55% 40% at 96% 22%, #CDEFF7 0, transparent 70%), radial-gradient(70% 50% at 70% 100%, #E3F6C9 0, transparent 70%), #EAF5EF;
+  --zs-font: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Existing FCC tokens, retuned */
+  --fp-ink: var(--zs-ink); --fp-muted: var(--zs-muted); --fp-green: var(--zs-em); --fp-line: #d6e6dd; --fp-paper: #EAF5EF; --fp-light: rgba(59,185,164,.14);
+  --fp-radius: 24px; --fp-control-height: 48px; --fp-glass: var(--zs-glass); --fp-shadow: var(--zs-shadow); --fp-gloss: var(--zs-grad);
+  --fp-tool-ink: var(--zs-ink); --fp-tool-muted: var(--zs-muted); --fp-tool-line: #d6e6dd; --fp-tool-paper: var(--zs-glass-strong); --fp-tool-soft: rgba(255,255,255,.55);
+  --fcw-ink: var(--zs-ink); --fcw-muted: var(--zs-muted); --fcw-green: var(--zs-em); --fcw-line: #d6e6dd;
+  font-family: var(--zs-font) !important;
+  color: var(--zs-ink);
+  font-optical-sizing: auto;
+}
+body.fcc-ui-zivi.app.fcc-partner-mode,
+body.fcc-ui-zivi.fcc-public-mode { background: var(--zs-mesh) !important; background-attachment: fixed !important; }
+body.fcc-ui-zivi :is(h1, h2, h3, h4, .h1, .h2, .h3, .h4) { font-family: var(--zs-font); }
+body.fcc-ui-zivi :is(button, input, select, textarea) { font-family: var(--zs-font); }
+
+/* ---------- Glass surfaces ---------- */
+body.fcc-ui-zivi :is(.fp-panel, .fp-menu-item, .fp-tool-item, .fp-card-grid > *, .fcc-pc-card, .fcc-pc-table, .fcc-language-panel, .fp-empty) {
+  background: var(--zs-glass) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important;
+  box-shadow: var(--zs-shadow) !important;
+  border-radius: 24px;
+}
+body.fcc-ui-zivi .fp-panel { padding: 22px; margin-bottom: 16px; }
+body.fcc-ui-zivi .fp-panel .fp-panel { background: rgba(255,255,255,.55) !important; box-shadow: none !important; border-radius: 18px; }
+
+/* ---------- Typography ---------- */
+body.fcc-ui-zivi :is(.fp-page h1, .fp-editor-heading h1, .fp-page-heading h1) { font-weight: 800; letter-spacing: -.04em; line-height: 1.05; font-size: clamp(28px, 3vw, 38px); }
+body.fcc-ui-zivi :is(.fp-page h2, .fp-section-title) { font-weight: 800; letter-spacing: -.03em; }
+body.fcc-ui-zivi .fp-page h3 { font-weight: 700; letter-spacing: -.02em; }
+body.fcc-ui-zivi .fp-eyebrow, body.fcc-ui-zivi .fcc-pc-eyebrow { color: var(--zs-em); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+body.fcc-ui-zivi :is(.fp-muted, .fp-lead, .fp-page-heading p) { color: var(--zs-muted); }
+body.fcc-ui-zivi :is(.fp-page-heading p, .fp-lead) { font-size: 14.5px; line-height: 1.55; }
+body.fcc-ui-zivi :is(.fp-count, .fcc-pc-price, .fp-cc-values b, .fp-cc-values strong) { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+body.fcc-ui-zivi a.fp-link, body.fcc-ui-zivi .fp-text-button { color: var(--zs-em); font-weight: 700; }
+
+/* ---------- Buttons ---------- */
+body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary) {
+  min-height: 48px; border-radius: 16px !important; border: 0 !important;
+  background: var(--zs-grad) !important; color: #fff !important; font-weight: 700;
+  box-shadow: 0 8px 20px rgba(18,119,91,.28) !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary):hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(18,119,91,.34) !important; }
+body.fcc-ui-zivi :is(.fp-button.fp-button-outline, .fp-button-outline, .fp-button.fp-button-light, .fp-button-light, .btn-outline-primary, .btn-light) {
+  background: var(--zs-glass-strong) !important; color: var(--zs-em2) !important;
+  border: 1px solid var(--zs-edge) !important; box-shadow: 0 4px 12px rgba(18,90,70,.08) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi :is(.fp-button, .fp-button-outline, .fp-text-button, .fp-icon-button, a, button):focus-visible { outline: 3px solid rgba(59,185,164,.55) !important; outline-offset: 2px; }
+
+/* ---------- Forms ---------- */
+body.fcc-ui-zivi :is(.fp-form input:not([type=checkbox]):not([type=radio]), .fp-form select, .fp-form textarea, .fp-search input, .form-control, .custom-select) {
+  min-height: 48px; border-radius: 14px !important; border: 1px solid #d3e4da !important;
+  background: rgba(255,255,255,.82) !important; color: var(--zs-ink); font-size: 16px;
+}
+body.fcc-ui-zivi :is(.fp-form input, .fp-form select, .fp-form textarea, .fp-search input, .form-control, .custom-select):focus { border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+
+/* ---------- Status and progress ---------- */
+body.fcc-ui-zivi .fp-progress { height: 8px; border-radius: 99px; background: rgba(18,119,91,.12) !important; overflow: hidden; }
+body.fcc-ui-zivi .fp-progress > * { background: linear-gradient(90deg, var(--zs-aqua), var(--zs-em)) !important; border-radius: 99px; }
+body.fcc-ui-zivi progress { accent-color: var(--zs-em); }
+body.fcc-ui-zivi .fcc-pro-badge { background: linear-gradient(135deg, var(--zs-em), var(--zs-aqua)) !important; color: #fff !important; border: 0 !important; border-radius: 999px; letter-spacing: .1em; }
+
+/* ---------- Top bar ---------- */
+body.fcc-ui-zivi .fp-topbar {
+  background: rgba(240,249,244,.72) !important; border: 0 !important; border-bottom: 1px solid rgba(255,255,255,.8) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: 0 6px 20px rgba(18,90,70,.06) !important;
+}
+body.fcc-ui-zivi :is(.fp-icon-button, .fp-help-menu summary) {
+  background: var(--zs-glass-strong) !important; border: 1px solid var(--zs-edge) !important; box-shadow: 0 4px 12px rgba(18,90,70,.08);
+}
+body.fcc-ui-zivi :is(.fp-avatar, .fp-profile-avatar) { background: var(--zs-grad) !important; border: 2px solid #fff !important; color: #fff !important; box-shadow: 0 0 0 2px rgba(59,185,164,.45), 0 4px 12px rgba(18,90,70,.18) !important; }
+
+/* ---------- Desktop sidebar ---------- */
+body.fcc-ui-zivi .fp-sidebar {
+  background: rgba(255,255,255,.58) !important; border-right: 1px solid rgba(255,255,255,.85) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: 8px 0 30px rgba(18,90,70,.06) !important;
+}
+body.fcc-ui-zivi .fp-sidebar .fp-brand small, body.fcc-ui-zivi .fp-nav-caption { color: var(--zs-muted) !important; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link { color: var(--zs-ink) !important; border-radius: 16px; font-weight: 600; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link:hover { background: rgba(255,255,255,.7) !important; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link.is-active { color: #fff !important; background: var(--zs-grad) !important; border-color: transparent !important; box-shadow: 0 8px 20px rgba(18,119,91,.28) !important; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link.is-active svg { color: #D9F5E6 !important; }
+body.fcc-ui-zivi .fp-sidebar-bottom a { color: var(--zs-em2) !important; }
+body.fcc-ui-zivi .fp-sidebar-bottom > span { color: var(--zs-muted) !important; }
+
+/* ---------- Mobile: floating glass tab bar ---------- */
+@media (max-width: 800px) {
+  body.fcc-ui-zivi.fcc-partner-mode .fp-bottom-nav, body.fcc-ui-zivi.fcc-partner-mode > .fp-mobile-shell > .fp-bottom-nav {
+    position: relative !important; inset: auto !important; width: auto !important; box-sizing: border-box !important;
+    margin: 0 10px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 6px !important; border-radius: 24px !important; border: 1px solid var(--zs-edge) !important;
+    background: rgba(255,255,255,.72) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+    box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 14px 34px rgba(18,90,70,.18) !important;
+  }
+  body.fcc-ui-zivi .fp-bottom-nav a { color: var(--zs-muted) !important; border-radius: 18px !important; min-height: 50px; font-size: 10.5px; font-weight: 700; }
+  body.fcc-ui-zivi .fp-bottom-nav a.is-active { color: #fff !important; background: var(--zs-grad) !important; box-shadow: 0 6px 16px rgba(18,119,91,.3); }
+  body.fcc-ui-zivi .fp-bottom-nav a.is-active svg { background: transparent !important; box-shadow: none !important; color: #fff !important; }
+  body.fcc-ui-zivi .fp-bottom-nav a:hover { color: var(--zs-em2) !important; }
+  body.fcc-ui-zivi .fp-bottom-nav a.is-active:hover { color: #fff !important; }
+  body.fcc-ui-zivi .fcc-mobile-navigation:not([hidden]) { background: rgba(240,249,244,.78); border-bottom-color: rgba(255,255,255,.8); }
+  body.fcc-ui-zivi .fp-panel { padding: 18px; border-radius: 22px; }
+}
+
+/* ---------- Coach launcher ---------- */
+body.fcc-ui-zivi .fcc-chat-extreme__launcher {
+  border: 2px solid transparent !important;
+  background-image: linear-gradient(rgba(255,255,255,.92), rgba(255,255,255,.92)), var(--zs-ring) !important;
+  background-origin: border-box !important; background-clip: padding-box, border-box !important;
+  box-shadow: 0 12px 28px rgba(18,90,70,.22) !important;
+}
+
+/* ---------- Dialogs and menus ---------- */
+body.fcc-ui-zivi :is(.modal-content, .dropdown-menu) {
+  background: rgba(255,255,255,.94) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important; border-radius: 24px !important; box-shadow: 0 24px 60px rgba(14,42,34,.18) !important;
+}
+body.fcc-ui-zivi .dropdown-menu { border-radius: 18px !important; }
+
+/* ---------- Package comparison ---------- */
+body.fcc-ui-zivi .fcc-pc-card:has(.fcc-pc-cell-pro), body.fcc-ui-zivi .fcc-pc-card.is-pro, body.fcc-ui-zivi .fcc-pc-card-pro {
+  border: 1.5px solid transparent !important;
+  background-image: linear-gradient(rgba(255,255,255,.86), rgba(255,255,255,.86)), var(--zs-ring) !important;
+  background-origin: border-box !important; background-clip: padding-box, border-box !important;
+}
+
+/* ---------- Sign-in, registration and FCC's own public pages ---------- */
+body.fcc-ui-zivi.fcc-auth-mode, body.fcc-ui-zivi.fcc-public-mode { background: var(--zs-mesh) !important; background-attachment: fixed !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-header { background: rgba(240,249,244,.72) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); border-bottom: 1px solid rgba(255,255,255,.8) !important; }
+body.fcc-ui-zivi.fcc-public-mode :is(h1, .h1) { font-weight: 800; letter-spacing: -.045em; line-height: 1.02; }
+
+/* ---------- Accessibility and weaker devices ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body.fcc-ui-zivi { --zs-glass: rgba(255,255,255,.95); --zs-glass-strong: #fff; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  body.fcc-ui-zivi { --zs-glass: #fff; --zs-glass-strong: #fff; --zs-blur: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary) { transition: none; }
+  body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary):hover { transform: none; }
+}
+@media print {
+  body.fcc-ui-zivi { background: #fff !important; }
+  body.fcc-ui-zivi * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+}
+
+/* ---------- Journey, team notices and segmented tabs ---------- */
+body.fcc-ui-zivi :is(.jf-team, .fp-cc-summary, .fp-cc4-group) {
+  background: var(--zs-glass) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important; box-shadow: var(--zs-shadow) !important; border-radius: 24px !important;
+}
+body.fcc-ui-zivi .jp-tabs {
+  display: flex; gap: 4px; padding: 4px; border: 1px solid var(--zs-edge) !important; border-radius: 18px;
+  background: rgba(255,255,255,.55); -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi .jp-tabs a { flex: 1; min-height: 44px; display: grid; place-items: center; border-radius: 14px; border: 0 !important; color: var(--zs-muted) !important; font-weight: 700; }
+body.fcc-ui-zivi .jp-tabs a:is(.is-active, [aria-current], [aria-selected="true"]) { background: #fff !important; color: var(--zs-em2) !important; box-shadow: 0 4px 12px rgba(18,90,70,.12); }
+body.fcc-ui-zivi .fp-icon-button { width: 44px; height: 44px; border-radius: 50% !important; display: inline-grid; place-items: center; }
+body.fcc-ui-zivi .jw-step .jp-meta { color: var(--zs-em); font-weight: 700; }
+body.fcc-ui-zivi .jw-result { background: rgba(182,227,107,.22) !important; border: 0 !important; border-radius: 16px !important; }
+
+/* ---------- Help context and share navigation ---------- */
+body.fcc-ui-zivi .fh-context {
+  background: var(--zs-glass) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important; border-radius: 20px !important; box-shadow: var(--zs-shadow) !important;
+}
+body.fcc-ui-zivi :is(.fp-share-navigation, .fp-share-nav) {
+  background: rgba(255,255,255,.5) !important; border: 1px solid var(--zs-edge) !important; border-radius: 22px !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi :is(.fp-share-navigation, .fp-share-nav) a { border-radius: 16px !important; color: var(--zs-muted) !important; }
+body.fcc-ui-zivi :is(.fp-share-navigation, .fp-share-nav) a:is(.is-active, [aria-current]) { background: #fff !important; color: var(--zs-em2) !important; box-shadow: 0 4px 12px rgba(18,90,70,.12) !important; }
+
+/* ---------- FCC public home ---------- */
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel {
+  background: var(--zs-glass) !important; color: var(--zs-ink) !important; border: 1px solid var(--zs-edge) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: var(--zs-shadow) !important; border-radius: 28px !important;
+}
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel h2 { color: var(--zs-ink) !important; font-weight: 800; letter-spacing: -.035em; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel .fcw-eyebrow { color: var(--zs-em) !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel .fcw-steps li { background: rgba(255,255,255,.8) !important; border: 1px solid var(--zs-edge) !important; color: var(--zs-ink) !important; border-radius: 16px !important; box-shadow: 0 4px 12px rgba(18,90,70,.08); }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel .fcw-steps li::before { color: var(--zs-em) !important; font-weight: 800; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-note { color: var(--zs-muted) !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-orbit { background: var(--zs-ring) !important; opacity: .35; filter: blur(18px); }
+body.fcc-ui-zivi.fcc-public-mode :is(.fcw-explore-card, .fcw-feature, .fcw-person, .fcw-closing) {
+  background: var(--zs-glass) !important; border: 1px solid var(--zs-edge) !important; border-radius: 24px !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: var(--zs-shadow) !important;
+}
+body.fcc-ui-zivi.fcc-public-mode .fcw-button { border-radius: 16px !important; background: var(--zs-grad) !important; color: #fff !important; box-shadow: 0 10px 24px rgba(18,119,91,.3) !important; min-height: 52px; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-text-link { color: var(--zs-em) !important; font-weight: 700; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-hero-copy h1 { background: linear-gradient(100deg, var(--zs-ink) 30%, var(--zs-em) 70%, var(--zs-aqua)); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-feature-icon { background: rgba(59,185,164,.16) !important; color: var(--zs-em) !important; border-radius: 14px !important; }
+
+/* ---------- Product stage: white-background photos sit on a studio backdrop ----------
+   Every product photo is an opaque square with a white background. Multiply blending lets that
+   white become the stage itself, a soft contact shadow grounds the pack, and the glow takes the
+   packaging's own colour (set by fcc-zivi-sloj.js, topic colour as fallback). */
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image) { --fl-glow: #A8E0C2; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-bee { --fl-glow: #F2C66B; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-care { --fl-glow: #9FD8C4; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-drinks { --fl-glow: #8FD6B0; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-personal { --fl-glow: #A9CDEB; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-supplement { --fl-glow: #F3BE98; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-weight { --fl-glow: #C8E08E; }
+
+body.fcc-ui-zivi .fl-product-stage {
+  isolation: isolate; border-radius: 28px !important; border: 1px solid rgba(255,255,255,.95) !important;
+  background:
+    radial-gradient(46% 40% at 50% 46%, #fff 0, rgba(255,255,255,.92) 45%, rgba(255,255,255,0) 100%),
+    radial-gradient(120% 95% at 50% 40%, color-mix(in srgb, var(--fl-glow) 22%, #fff) 0, color-mix(in srgb, var(--fl-glow) 42%, #EEF7F2) 100%) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 18px 44px color-mix(in srgb, var(--fl-glow) 30%, rgba(18,90,70,.12)) !important;
+  transition: background .6s ease, box-shadow .6s ease;
+}
+body.fcc-ui-zivi .fl-product-stage::before {
+  border: 0 !important; box-shadow: none !important; width: 78% !important; height: auto !important; aspect-ratio: 1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--fl-glow) 45%, transparent), transparent) !important;
+  filter: blur(24px); opacity: .75; top: 50% !important;
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image { position: relative; isolation: auto; }
+body.fcc-ui-zivi :is(.fl-product-stage .fl-hero-image img, .fl-product-image img, .fl-related-card img) { mix-blend-mode: multiply; filter: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image:not([style*="--zs-floor"])::after { display: none; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image::after {
+  content: ""; position: absolute; left: 24%; right: 24%; top: var(--zs-floor, auto); bottom: auto; height: 22px; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(14,42,34,.26), rgba(14,42,34,0)); filter: blur(5px);
+}
+body.fcc-ui-zivi .fl-stage-label { background: rgba(255,255,255,.78) !important; border: 1px solid #fff !important; color: var(--zs-em2) !important; font-weight: 700; box-shadow: 0 4px 12px rgba(18,90,70,.08); }
+body.fcc-ui-zivi .fl-product-stage .fl-stage-caption { display: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-photo-note { text-align: center; font-size: 12px; color: var(--zs-muted); margin: 0; }
+
+body.fcc-ui-zivi .fl-product-image {
+  isolation: isolate; border-radius: 22px !important;
+  background: radial-gradient(60% 55% at 50% 45%, #fff 0, rgba(255,255,255,.6) 55%, rgba(255,255,255,0) 100%), color-mix(in srgb, var(--fl-glow) 28%, #F3F9F5) !important;
+}
+body.fcc-ui-zivi .fl-related-card { background: var(--zs-glass) !important; border: 1px solid var(--zs-edge) !important; border-radius: 22px !important; box-shadow: var(--zs-shadow) !important; }
+body.fcc-ui-zivi .fl-related-card img { background: color-mix(in srgb, var(--fl-glow, #A8E0C2) 22%, #fff); border-radius: 16px; }
+@media (prefers-reduced-motion: reduce) { body.fcc-ui-zivi .fl-product-stage { transition: none; } }
+
+/* ---------- Product page: country line ---------- */
+body.fcc-ui-zivi #fl-library .fl-country-switch { margin: 0 0 14px; }
+body.fcc-ui-zivi #fl-library .fl-country-switch > summary {
+  list-style: none; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px; cursor: pointer;
+  border-radius: 14px; background: rgba(255,255,255,.75); border: 1px solid #e3eee8; font-size: 14.5px; color: var(--zs-ink);
+}
+body.fcc-ui-zivi #fl-library .fl-country-switch > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi #fl-library .fl-country-switch > summary::marker { content: ""; }
+body.fcc-ui-zivi #fl-library .fl-country-pin { width: 18px; height: 18px; color: var(--zs-em); flex: none; }
+body.fcc-ui-zivi #fl-library .fl-country-text { flex: 1; min-width: 0; }
+body.fcc-ui-zivi #fl-library .fl-country-change { margin-left: auto; font-weight: 700; color: var(--zs-em); }
+body.fcc-ui-zivi #fl-library .fl-country-switch[open] .fl-country-change { visibility: hidden; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-form { margin-top: 10px; }
+body.fcc-ui-zivi #fl-library .fl-country-prompt { margin: 6px 2px 0; font-size: 14.5px; line-height: 1.55; color: var(--zs-muted); }
+
+/* ---------- Product page: lower sections as one premium sheet ----------
+   One heading style, one card style, one accordion style. The page accent follows the product (--fl-glow). */
+body.fcc-ui-zivi #fl-library { --fl-glow: #A8E0C2; --zs-tint: color-mix(in srgb, var(--fl-glow) 14%, #fff); --zs-tint-strong: color-mix(in srgb, var(--fl-glow) 26%, #fff); }
+body.fcc-ui-zivi #fl-library :is(.fl-section-heading, .fl-routine-heading, .fl-faq > div:first-child) .fl-kicker,
+body.fcc-ui-zivi #fl-library .fl-fit .fl-kicker { color: var(--zs-em); font-weight: 700; letter-spacing: .12em; }
+body.fcc-ui-zivi #fl-library :is(.fl-section-heading h2, .fl-routine-heading h2, .fl-faq h2, .fl-reading > h2, .fl-fit h2) {
+  font-weight: 800 !important; letter-spacing: -.035em !important; line-height: 1.1 !important; font-size: clamp(26px, 2.6vw, 34px) !important; color: var(--zs-ink);
+}
+
+/* Assurance row */
+body.fcc-ui-zivi #fl-library .fl-trust-strip {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border: 0 !important; padding: 0 !important; margin-top: 28px !important;
+}
+body.fcc-ui-zivi #fl-library .fl-trust-strip > * {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 10px 16px; text-align: center;
+  border-radius: 18px; background: var(--zs-tint); color: var(--zs-em2); font-weight: 600; font-size: 13.5px; text-decoration: none;
+}
+body.fcc-ui-zivi #fl-library .fl-trust-strip > a { background: var(--zs-grad); color: #fff; box-shadow: 0 8px 20px rgba(18,119,91,.22); }
+body.fcc-ui-zivi #fl-library .fl-trust-strip svg { width: 18px; height: 18px; color: var(--zs-em); }
+
+/* Highlights */
+body.fcc-ui-zivi #fl-library .fl-discover { padding-top: 64px !important; }
+body.fcc-ui-zivi #fl-library .fl-benefits { gap: 16px !important; }
+body.fcc-ui-zivi #fl-library .fl-benefit {
+  border: 1px solid color-mix(in srgb, var(--fl-glow) 22%, #eef3ef) !important; border-radius: 24px; padding: 24px !important;
+  background: linear-gradient(170deg, var(--zs-tint) 0, #fff 70%) !important; box-shadow: 0 10px 28px rgba(18,90,70,.06);
+}
+body.fcc-ui-zivi #fl-library .fl-benefit .fl-number {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; margin-bottom: 14px;
+  background: var(--zs-tint-strong); color: var(--zs-em2); font-weight: 800; font-size: 13px;
+}
+body.fcc-ui-zivi #fl-library .fl-benefit h3 { font-weight: 800 !important; letter-spacing: -.02em !important; }
+
+/* Routine */
+body.fcc-ui-zivi #fl-library .fl-routine {
+  margin-top: 64px; padding: clamp(24px, 4vw, 44px) !important; border-radius: 30px !important; border: 1px solid rgba(255,255,255,.95);
+  background: radial-gradient(80% 120% at 0% 0%, var(--zs-tint-strong) 0, transparent 60%), linear-gradient(135deg, var(--zs-tint) 0, #F6FBF8 100%) !important;
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--fl-glow) 22%, rgba(18,90,70,.08));
+}
+body.fcc-ui-zivi #fl-library .fl-routine-format { border-top: 0 !important; padding: 7px 12px !important; border-radius: 999px; background: rgba(255,255,255,.8); color: var(--zs-em2) !important; font-weight: 700; }
+body.fcc-ui-zivi #fl-library .fl-routine li {
+  border: 0 !important; margin-bottom: 12px !important; padding: 18px 20px !important; border-radius: 20px;
+  background: rgba(255,255,255,.82); box-shadow: 0 6px 18px rgba(18,90,70,.06);
+}
+body.fcc-ui-zivi #fl-library .fl-routine li::before { background: var(--zs-grad) !important; color: #fff !important; border: 0 !important; font-weight: 800; }
+body.fcc-ui-zivi #fl-library .fl-routine li h3 { font-weight: 800; letter-spacing: -.02em; }
+
+/* Questions and details share one accordion */
+body.fcc-ui-zivi #fl-library .fl-faq { display: block !important; padding-top: 64px !important; }
+body.fcc-ui-zivi #fl-library .fl-faq > div:first-child { margin-bottom: 20px; }
+body.fcc-ui-zivi #fl-library .fl-faq h2 { max-width: none !important; }
+body.fcc-ui-zivi #fl-library.fl-editorial .fl-reading, body.fcc-ui-zivi #fl-library .fl-reading { display: block; max-width: none !important; margin: 64px 0 0 !important; }
+body.fcc-ui-zivi #fl-library .fl-reading > h2 { margin: 0 0 20px !important; }
+body.fcc-ui-zivi #fl-library .fl-deeper-heading { margin: 14px 4px 8px !important; font-size: 12px !important; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--zs-muted) !important; }
+body.fcc-ui-zivi #fl-library .fl-deeper-heading p { margin: 0; }
+body.fcc-ui-zivi #fl-library .fl-article-section {
+  border: 1px solid #e6eee9 !important; border-radius: 20px; background: #fff; padding: 0 20px !important; margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(14,42,34,.04); transition: box-shadow .2s ease, border-color .2s ease;
+}
+body.fcc-ui-zivi #fl-library .fl-article-section[open] { border-color: color-mix(in srgb, var(--fl-glow) 45%, #e6eee9) !important; box-shadow: 0 14px 34px rgba(18,90,70,.08); }
+body.fcc-ui-zivi #fl-library .fl-article-section > summary {
+  list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer;
+  min-height: 62px !important; padding: 0 !important; font-size: 16.5px !important; font-weight: 700 !important; color: var(--zs-ink); letter-spacing: -.01em;
+}
+body.fcc-ui-zivi #fl-library .fl-article-section > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi #fl-library .fl-article-section > summary::marker { content: ""; }
+body.fcc-ui-zivi #fl-library .fl-article-section > summary::after {
+  content: ""; flex: none; width: 32px; height: 32px; border-radius: 50%; background-color: var(--zs-tint-strong);
+  background-image: linear-gradient(var(--zs-em2), var(--zs-em2)), linear-gradient(var(--zs-em2), var(--zs-em2));
+  background-size: 12px 2px, 2px 12px; background-position: center; background-repeat: no-repeat; transition: transform .25s ease, background-color .2s ease;
+}
+body.fcc-ui-zivi #fl-library .fl-article-section[open] > summary::after { transform: rotate(45deg); }
+body.fcc-ui-zivi #fl-library .fl-article-section > :not(summary) { padding-bottom: 20px; }
+body.fcc-ui-zivi #fl-library .fl-faq .fl-article-section p { padding-top: 0 !important; margin: 0; }
+body.fcc-ui-zivi #fl-library .fl-source-content { font-size: 15.5px; line-height: 1.75; color: #33504A; max-width: 72ch; }
+body.fcc-ui-zivi #fl-library .fl-source-content :is(h2, h3, h4) { font-weight: 800; letter-spacing: -.02em; color: var(--zs-ink); margin: 18px 0 6px; font-size: 17px; }
+body.fcc-ui-zivi #fl-library .fl-source-content :is(ul, ol) { padding-left: 1.2em; }
+body.fcc-ui-zivi #fl-library .fl-source-content li::marker { color: var(--zs-em); }
+body.fcc-ui-zivi #fl-library .fl-source-content a { color: var(--zs-em); font-weight: 700; }
+
+/* Related products and closing line */
+body.fcc-ui-zivi #fl-library .fl-related { margin-top: 64px; }
+body.fcc-ui-zivi #fl-library .fl-related-card { transition: transform .2s ease, box-shadow .2s ease; }
+body.fcc-ui-zivi #fl-library .fl-related-card:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(18,90,70,.12) !important; }
+body.fcc-ui-zivi #fl-library .fl-independent { display: block; width: 100%; max-width: none !important; margin: 48px 0 0 !important; padding: 20px 0 0 !important; border-top: 1px solid #e6eee9; text-align: center; font-size: 12.5px; color: var(--zs-muted); }
+
+@media (max-width: 800px) {
+  body.fcc-ui-zivi #fl-library .fl-trust-strip { grid-template-columns: minmax(0, 1fr); }
+  body.fcc-ui-zivi #fl-library :is(.fl-discover, .fl-faq) { padding-top: 44px !important; }
+  body.fcc-ui-zivi #fl-library :is(.fl-routine, .fl-related) { margin-top: 44px; }
+  body.fcc-ui-zivi #fl-library .fl-article-section { padding: 0 16px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.fcc-ui-zivi #fl-library :is(.fl-article-section, .fl-article-section > summary::after, .fl-related-card) { transition: none; }
+}
+@media (max-width: 800px) {
+  body.fcc-ui-zivi #fl-library .fl-stage-label { justify-self: start; align-self: start; width: auto; max-width: 100%; }
+}
+
+/* Who it suits: same tinted card family as the highlights */
+body.fcc-ui-zivi #fl-library .fl-fit {
+  margin-top: 24px !important; padding: 28px 30px !important; border: 1px solid color-mix(in srgb, var(--fl-glow) 22%, #eef3ef) !important; border-left-width: 1px !important;
+  border-radius: 24px !important; background: linear-gradient(170deg, var(--zs-tint) 0, #fff 75%) !important; box-shadow: 0 10px 28px rgba(18,90,70,.06);
+}
+body.fcc-ui-zivi #fl-library .fl-fit p { color: #33504A; font-size: 16px; line-height: 1.65; margin: 10px 0 0; }
+
+/* Journey tabs: keep the More menu above the step card (glass creates its own layer) */
+body.fcc-ui-zivi .jp-tabs { position: relative; z-index: 30; }
+body.fcc-ui-zivi .jp-tabs :is(details, .dropdown) { position: relative; z-index: 31; }
+body.fcc-ui-zivi .jp-tabs :is(details[open] > :not(summary), .dropdown-menu) {
+  z-index: 32; background: #fff !important; border: 1px solid var(--zs-edge) !important; border-radius: 18px !important;
+  box-shadow: 0 18px 44px rgba(14,42,34,.16) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi .jp-tabs .jp-nav-more > summary { list-style: none; min-height: 44px; display: grid; place-items: center; padding: 0 16px; border-radius: 14px; color: var(--zs-muted); font-weight: 700; cursor: pointer; }
+body.fcc-ui-zivi .jp-tabs .jp-nav-more > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi .jp-tabs .jp-nav-more[open] > summary { background: #fff; color: var(--zs-em2); box-shadow: 0 4px 12px rgba(18,90,70,.12); }
+body.fcc-ui-zivi .jp-tabs .jp-nav-more > div { position: absolute; right: 0; top: calc(100% + 8px); min-width: 220px; padding: 6px; display: grid; gap: 2px; }
+body.fcc-ui-zivi .jp-tabs .jp-nav-more > div a { flex: none; place-items: center start; padding: 0 14px; border-radius: 12px; color: var(--zs-ink) !important; font-weight: 600; }
+body.fcc-ui-zivi .jp-tabs .jp-nav-more > div a:hover { background: var(--fp-light) !important; }
+body.fcc-ui-zivi #fl-library .fl-benefits { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)) !important; }
+body.fcc-ui-zivi #fl-library .fl-reading > .fl-kicker { display: block; margin-bottom: 10px; color: var(--zs-em); font-weight: 700; letter-spacing: .12em; }
+
+/* ---------- Guide and business articles (legacy blog template) ----------
+   The same sheet, stage, tiles, accordions and related cards as the product pages, so FCC has one article style. */
+body.fcc-ui-zivi .fcc-blog-sidebar-col { display: none !important; }
+body.fcc-ui-zivi .fcc-blog-main-col { flex: 0 0 100% !important; max-width: 100% !important; }
+body.fcc-ui-zivi :is(.fcc-article-card, .fcc-share-card, .fcc-related-card).card {
+  background: #fff !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 30px !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 18px 44px rgba(18,90,70,.08) !important; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+body.fcc-ui-zivi .fcc-article-card > .card-body { padding: clamp(20px, 3.4vw, 40px) !important; }
+body.fcc-ui-zivi .fcc-article-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 36px; align-items: center; margin-bottom: 32px; }
+body.fcc-ui-zivi .fcc-article-hero .fcc-hero-image-frame {
+  grid-row: 1 / span 2; isolation: isolate; border-radius: 28px; padding: 22px; margin: 0;
+  background: radial-gradient(46% 40% at 50% 46%, #fff 0, rgba(255,255,255,.9) 45%, rgba(255,255,255,0) 100%), linear-gradient(160deg, #E6F6EE 0, #D6F0F4 100%);
+  border: 1px solid rgba(255,255,255,.95); box-shadow: 0 18px 44px rgba(18,90,70,.10);
+}
+body.fcc-ui-zivi .fcc-article-hero .fcc-hero-image { margin: 0 !important; border-radius: 18px !important; mix-blend-mode: multiply; }
+body.fcc-ui-zivi .fcc-article-hero .fcc-article-title { font-size: clamp(30px, 3.4vw, 44px) !important; font-weight: 800 !important; letter-spacing: -.04em; line-height: 1.04; color: var(--zs-ink); align-self: end; margin-bottom: 14px !important; }
+body.fcc-ui-zivi .fcc-article-meta { align-self: start; display: flex; flex-wrap: wrap; gap: 8px; }
+body.fcc-ui-zivi :is(.fcc-meta-badge, .fcc-blog-highlight-chip, .fcc-product-card-chip) {
+  background: #F2F8F5 !important; border: 1px solid #e3eee8 !important; color: var(--zs-muted) !important; border-radius: 999px !important; font-weight: 600; font-size: 12.5px !important; padding: 6px 12px !important;
+}
+body.fcc-ui-zivi .fcc-product-summary-grid { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)) !important; gap: 12px !important; }
+body.fcc-ui-zivi .fcc-product-summary-card {
+  border: 1px solid #DDEFE6 !important; border-radius: 20px !important; padding: 18px !important; background: linear-gradient(170deg, #E9F7F0 0, #fff 80%) !important; box-shadow: none !important;
+}
+body.fcc-ui-zivi .fcc-product-summary-label { color: var(--zs-em) !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .12em; text-transform: uppercase; }
+body.fcc-ui-zivi .fcc-product-summary-value { color: var(--zs-ink) !important; font-size: 16px !important; font-weight: 800 !important; letter-spacing: -.01em; }
+body.fcc-ui-zivi .fcc-product-trust-note { margin-top: 12px; padding: 14px 18px; border-radius: 16px; background: #F4FAF7; color: var(--zs-muted); font-size: 14px; border: 0 !important; }
+body.fcc-ui-zivi .fcc-product-decision-panel { display: grid; gap: 16px; }
+body.fcc-ui-zivi .fcc-product-decision-panel :is(.card, [class*="decision-card"], .col-lg-6 > div) {
+  border: 1px solid #DDEFE6 !important; border-radius: 24px !important; background: linear-gradient(170deg, #E9F7F0 0, #fff 75%) !important; box-shadow: 0 10px 28px rgba(18,90,70,.06) !important; padding: 22px !important;
+}
+body.fcc-ui-zivi .fcc-product-check-chip { display: block; background: #fff !important; border: 1px solid #e3eee8 !important; border-radius: 14px !important; padding: 10px 14px !important; margin-bottom: 8px; color: #33504A !important; font-size: 14px; }
+body.fcc-ui-zivi :is(.fcc-product-decision-panel, .fcc-blog-toc, .fcc-product-faq-card, .fcc-related-card) :is(h2, h3, .fcc-blog-toc-title) { font-weight: 800 !important; letter-spacing: -.03em; color: var(--zs-ink); }
+body.fcc-ui-zivi :is(.fcc-blog-toc-eyebrow, .fcc-related-eyebrow, .fcc-product-card-eyebrow) { color: var(--zs-em) !important; font-weight: 700; letter-spacing: .12em; font-size: 11px; text-transform: uppercase; background: none !important; border: 0 !important; padding: 0 !important; }
+body.fcc-ui-zivi .fcc-blog-toc { background: none !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; margin-top: 40px; }
+body.fcc-ui-zivi .fcc-blog-toc-grid { display: grid !important; gap: 10px !important; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important; }
+body.fcc-ui-zivi .fcc-blog-toc-link {
+  display: flex !important; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; padding: 12px 18px !important;
+  border: 1px solid #e6eee9 !important; border-radius: 18px !important; background: #fff !important; color: var(--zs-ink) !important; font-weight: 700; text-decoration: none !important;
+}
+body.fcc-ui-zivi .fcc-blog-toc-link::after { content: "→"; flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #E3F4EC; color: var(--zs-em2); }
+body.fcc-ui-zivi .fcc-blog-toc-link:hover { border-color: #BFE3D2 !important; box-shadow: 0 10px 24px rgba(18,90,70,.08); }
+body.fcc-ui-zivi .fcc-blog-post-content { font-size: 16px; line-height: 1.78; color: #33504A; margin-top: 40px; }
+body.fcc-ui-zivi .fcc-blog-post-content > * { max-width: 74ch; }
+body.fcc-ui-zivi .fcc-blog-post-content :is(h2, h3) { font-weight: 800; letter-spacing: -.03em; color: var(--zs-ink); line-height: 1.15; margin: 36px 0 10px; }
+body.fcc-ui-zivi .fcc-blog-post-content h2 { font-size: clamp(24px, 2.4vw, 30px); }
+body.fcc-ui-zivi .fcc-blog-post-content li::marker { color: var(--zs-em); }
+body.fcc-ui-zivi .fcc-blog-post-content img { border-radius: 20px; }
+body.fcc-ui-zivi .fcc-blog-post-content a { color: var(--zs-em); font-weight: 700; }
+body.fcc-ui-zivi .fcc-product-faq-card { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin-top: 56px !important; }
+body.fcc-ui-zivi .fcc-category-faq-item { border: 1px solid #e6eee9 !important; border-radius: 20px !important; background: #fff !important; margin-bottom: 10px !important; box-shadow: 0 1px 2px rgba(14,42,34,.04); overflow: hidden; }
+body.fcc-ui-zivi .fcc-category-faq-question {
+  width: 100%; display: flex !important; align-items: center; justify-content: space-between; gap: 16px; min-height: 62px; padding: 0 20px !important;
+  background: none !important; border: 0 !important; text-align: left; font-size: 16.5px !important; font-weight: 700 !important; color: var(--zs-ink) !important;
+}
+body.fcc-ui-zivi .fcc-category-faq-question::after {
+  content: ""; flex: none; width: 32px; height: 32px; border-radius: 50%; background-color: #E3F4EC;
+  background-image: linear-gradient(var(--zs-em2), var(--zs-em2)), linear-gradient(var(--zs-em2), var(--zs-em2));
+  background-size: 12px 2px, 2px 12px; background-position: center; background-repeat: no-repeat; transition: transform .25s ease;
+}
+body.fcc-ui-zivi .fcc-category-faq-question[aria-expanded="true"]::after { transform: rotate(45deg); }
+body.fcc-ui-zivi .fcc-category-faq-answer { padding: 0 20px 20px !important; color: #33504A; font-size: 15.5px; line-height: 1.7; }
+body.fcc-ui-zivi .fcc-share-card > .card-body { padding: 28px !important; background: linear-gradient(170deg, #E9F7F0 0, #fff 70%); border-radius: 30px; }
+body.fcc-ui-zivi .fcc-share-helper { background: #fff !important; border: 1px solid #e3eee8 !important; border-radius: 16px !important; }
+body.fcc-ui-zivi .fcc-related-product-card { background: #fff !important; border: 1px solid #e6eee9 !important; border-radius: 24px !important; overflow: hidden; box-shadow: 0 10px 28px rgba(18,90,70,.06) !important; transition: transform .2s ease, box-shadow .2s ease; }
+body.fcc-ui-zivi .fcc-related-product-card:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(18,90,70,.12) !important; }
+body.fcc-ui-zivi .fcc-related-product-image-link { display: block; background: linear-gradient(160deg, #E6F6EE 0, #D6F0F4 100%); }
+body.fcc-ui-zivi .fcc-related-product-image { mix-blend-mode: multiply; border-radius: 0 !important; }
+body.fcc-ui-zivi :is(.fcc-related-product-link, .fcc-card-title) { color: var(--zs-ink) !important; font-weight: 800 !important; letter-spacing: -.02em; }
+body.fcc-ui-zivi .fcc-product-card-cta { color: var(--zs-em) !important; font-weight: 700; }
+body.fcc-ui-zivi .fcc-cta-btn-secondary { background: var(--zs-glass-strong) !important; color: var(--zs-em2) !important; border: 1px solid #e3eee8 !important; box-shadow: none !important; }
+@media (max-width: 800px) {
+  body.fcc-ui-zivi .fcc-article-hero { grid-template-columns: minmax(0, 1fr); }
+  body.fcc-ui-zivi .fcc-article-hero .fcc-hero-image-frame { grid-row: auto; margin-bottom: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { body.fcc-ui-zivi :is(.fcc-related-product-card, .fcc-category-faq-question::after) { transition: none; } }
+body.fcc-ui-zivi .fcc-article-hero { background: none !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; }
+body.fcc-ui-zivi .fcc-article-hero .fcc-hero-image-frame {
+  background: radial-gradient(46% 40% at 50% 46%, #fff 0, rgba(255,255,255,.9) 45%, rgba(255,255,255,0) 100%), linear-gradient(160deg, #E6F6EE 0, #D6F0F4 100%) !important;
+}
+body.fcc-ui-zivi .fcc-product-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (min-width: 1200px) { body.fcc-ui-zivi .fcc-product-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; } }
+@media (max-width: 480px) { body.fcc-ui-zivi .fcc-product-summary-grid { grid-template-columns: minmax(0, 1fr) !important; } }
+body.fcc-ui-zivi .fcc-product-action-band {
+  border: 1px solid rgba(255,255,255,.95) !important; border-radius: 28px !important; padding: clamp(22px, 3vw, 34px) !important;
+  background: radial-gradient(80% 120% at 0% 0%, #D3F1E3 0, transparent 60%), linear-gradient(135deg, #E9F7F0 0, #F6FBF8 100%) !important;
+  box-shadow: 0 18px 44px rgba(18,90,70,.10) !important;
+}
+body.fcc-ui-zivi .fcc-product-action-btn {
+  min-height: 48px; display: inline-flex !important; align-items: center; gap: 8px; padding: 0 18px !important; border-radius: 16px !important;
+  background: #fff !important; color: var(--zs-em2) !important; border: 1px solid #e3eee8 !important; font-weight: 700; box-shadow: 0 4px 12px rgba(18,90,70,.06) !important;
+}
+body.fcc-ui-zivi .fcc-product-action-btn.is-primary { background: var(--zs-grad) !important; color: #fff !important; border: 0 !important; box-shadow: 0 8px 20px rgba(18,119,91,.28) !important; }
+
+/* Contact card inside guide articles (its pilot stylesheet is not loaded on these pages) */
+body.fcc-ui-zivi .fcc-blog-post-content .fl-distributor {
+  display: grid; gap: 16px; max-width: 560px; margin: 28px 0; padding: 20px 22px; border-radius: 24px;
+  border: 1px solid #DDEFE6; background: linear-gradient(170deg, #E9F7F0 0, #fff 75%); box-shadow: 0 10px 28px rgba(18,90,70,.06);
+}
+body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-identity { display: flex; align-items: center; gap: 14px; }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-identity > div { display: grid; gap: 2px; line-height: 1.35; }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-person-mark { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #fff; background: var(--zs-grad); box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(59,185,164,.4); }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-distributor .fl-kicker { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--zs-em); }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-distributor strong { font-size: 17px; color: var(--zs-ink); }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-distributor a[data-fl-contact-profile] { font-size: 13.5px; }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-actions a { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 16px; border-radius: 14px; text-decoration: none; background: #fff; border: 1px solid #e3eee8; color: var(--zs-em2) !important; }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-actions a.fl-contact-whatsapp { background: var(--zs-grad); color: #fff !important; border: 0; box-shadow: 0 8px 20px rgba(18,119,91,.24); }
+body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-actions svg { width: 18px; height: 18px; }
+body.fcc-ui-zivi .fcc-blog-post-content :is(h2, h3) { border: 0 !important; padding-bottom: 0 !important; background-image: none !important; }
+body.fcc-ui-zivi .fcc-blog-post-content :is(h2, h3)::after { display: none !important; }
+
+/* Collapsible sections written inside guide articles */
+body.fcc-ui-zivi .fcc-blog-post-content details { border: 1px solid #e6eee9; border-radius: 20px; background: #fff; padding: 0 20px; margin: 0 0 10px; box-shadow: 0 1px 2px rgba(14,42,34,.04); max-width: 74ch; }
+body.fcc-ui-zivi .fcc-blog-post-content details[open] { border-color: #BFE3D2; box-shadow: 0 14px 34px rgba(18,90,70,.08); }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 62px; cursor: pointer; font-size: 16.5px; font-weight: 700; color: var(--zs-ink); }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary::marker { content: ""; }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary::after {
+  content: ""; flex: none; width: 32px; height: 32px; border-radius: 50%; background-color: #E3F4EC;
+  background-image: linear-gradient(var(--zs-em2), var(--zs-em2)), linear-gradient(var(--zs-em2), var(--zs-em2));
+  background-size: 12px 2px, 2px 12px; background-position: center; background-repeat: no-repeat; transition: transform .25s ease;
+}
+body.fcc-ui-zivi .fcc-blog-post-content details[open] > summary::after { transform: rotate(45deg); }
+body.fcc-ui-zivi .fcc-blog-post-content details > :not(summary) { padding-bottom: 16px; }
+
+/* Photos whose white background was removed in the browser no longer need blending */
+body.fcc-ui-zivi img[data-zs-cut="1"] { mix-blend-mode: normal !important; }
+
+/* Assurance row: quiet information, not buttons. One soft band, three items, thin dividers, one text link. */
+body.fcc-ui-zivi #fl-library .fl-trust-strip {
+  display: flex !important; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 0 !important;
+  margin-top: 26px !important; padding: 6px 8px !important; border-radius: 18px; background: #F5FAF7 !important; border: 1px solid #E6EFEA !important;
+}
+body.fcc-ui-zivi #fl-library .fl-trust-strip > * {
+  flex: 1 1 0; min-width: 190px; min-height: 46px; justify-content: center; gap: 9px; padding: 6px 14px !important;
+  background: none !important; box-shadow: none !important; border-radius: 0 !important; color: var(--zs-muted) !important; font-weight: 600; font-size: 13.5px;
+}
+body.fcc-ui-zivi #fl-library .fl-trust-strip > * + * { border-left: 1px solid #E1EBE5; }
+body.fcc-ui-zivi #fl-library .fl-trust-strip > *::before {
+  content: ""; flex: none; width: 26px; height: 26px; border-radius: 50%; background-color: var(--zs-tint-strong);
+  background-repeat: no-repeat; background-position: center; background-size: 14px;
+}
+body.fcc-ui-zivi #fl-library .fl-trust-strip > span:first-child svg { display: none; }
+body.fcc-ui-zivi #fl-library .fl-trust-strip > span:nth-child(1)::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%230B5A45' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+body.fcc-ui-zivi #fl-library .fl-trust-strip > span:nth-child(2)::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%230B5A45' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M3.5 12h17M12 3.5c2.6 2.4 2.6 14.6 0 17M12 3.5c-2.6 2.4-2.6 14.6 0 17'/%3E%3C/g%3E%3C/svg%3E"); }
+body.fcc-ui-zivi #fl-library .fl-trust-strip > a::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%230B5A45' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M7 3.5h7l4 4V20.5H7z'/%3E%3Cpath d='M10 12h5M10 15.5h5' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E"); }
+body.fcc-ui-zivi #fl-library .fl-trust-strip > a { color: var(--zs-em) !important; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, var(--zs-em) 35%, transparent); }
+body.fcc-ui-zivi #fl-library .fl-trust-strip > a:hover { text-decoration-color: var(--zs-em); }
+@media (max-width: 800px) {
+  body.fcc-ui-zivi #fl-library .fl-trust-strip { flex-direction: column; align-items: stretch; padding: 4px 6px !important; }
+  body.fcc-ui-zivi #fl-library .fl-trust-strip > * { justify-content: flex-start; min-width: 0; }
+  body.fcc-ui-zivi #fl-library .fl-trust-strip > * + * { border-left: 0; border-top: 1px solid #E1EBE5; }
+}
+
+/* Share dialog: networks for signed-in collaborators */
+body.fcc-ui-zivi .fl-share-networks { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #E6EFEA; }
+body.fcc-ui-zivi .fl-share-networks > span { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--zs-muted); }
+body.fcc-ui-zivi .fl-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+body.fcc-ui-zivi .fl-share-grid :is(a, button) {
+  display: grid; justify-items: center; gap: 6px; padding: 12px 6px 10px; border-radius: 16px; border: 1px solid #E3EEE8; background: #fff;
+  color: var(--zs-ink) !important; font: 600 12.5px/1.2 var(--zs-font) !important; text-decoration: none; cursor: pointer; min-height: 76px;
+}
+body.fcc-ui-zivi .fl-share-grid :is(a, button):hover { border-color: #BFE3D2; box-shadow: 0 8px 18px rgba(18,90,70,.08); }
+body.fcc-ui-zivi .fl-share-grid :is(a, button):focus-visible { outline: 3px solid rgba(59,185,164,.55); outline-offset: 2px; }
+body.fcc-ui-zivi .fl-share-grid i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+body.fcc-ui-zivi .fl-share-grid i svg { width: 18px; height: 18px; }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="facebook"] i { background: #1877F2; }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="messenger"] i { background: linear-gradient(135deg, #00B2FF, #A033FF); }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="viber"] i { background: #7360F2; }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="telegram"] i { background: #229ED9; }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="email"] i { background: #5B6D65; }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="link"] i { background: var(--zs-grad); }
+body.fcc-ui-zivi .fl-share-grid [data-fl-net="more"] i { background: #E3F4EC; color: var(--zs-em2); }
+body.fcc-ui-zivi .fl-share-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body.fcc-ui-zivi .fl-share-grid:has([data-fl-net="more"]:not([hidden])) [data-fl-net="email"] { display: none; }
+body.fcc-ui-zivi #fl-composer .fl-selected img { background: linear-gradient(160deg, #E6F6EE 0, #D6F0F4 100%) !important; mix-blend-mode: multiply; border-radius: 12px; }
+body.fcc-ui-zivi #fl-composer .fl-selected { isolation: isolate; }
+body.fcc-ui-zivi #fl-library .fl-discover { padding-bottom: 0 !important; margin-bottom: 0 !important; }
+body.fcc-ui-zivi #fl-library .fl-routine { margin-top: 48px !important; }
+
+/* ---------- Product photos, final approach ----------
+   The photo stays untouched. A white light sits right behind the product and the square edges of the
+   photo fade softly into it, so white packs keep their full shape in every browser. No blending, no cutouts. */
+body.fcc-ui-zivi :is(.fl-product-stage .fl-hero-image img, .fl-product-image img, .fl-related-card img, #fl-composer .fl-selected img) {
+  mix-blend-mode: normal !important;
+  -webkit-mask-image: radial-gradient(closest-side, #000 74%, rgba(0,0,0,0) 100%);
+          mask-image: radial-gradient(closest-side, #000 74%, rgba(0,0,0,0) 100%);
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image {
+  background: radial-gradient(closest-side, #fff 0, #fff 58%, rgba(255,255,255,.75) 74%, rgba(255,255,255,0) 100%) !important;
+}
+body.fcc-ui-zivi .fl-product-stage {
+  background: radial-gradient(120% 95% at 50% 45%, color-mix(in srgb, var(--fl-glow) 20%, #fff) 0, color-mix(in srgb, var(--fl-glow) 40%, #EEF7F2) 100%) !important;
+}
+body.fcc-ui-zivi .fl-product-stage::before { opacity: .55; }
+body.fcc-ui-zivi .fl-product-image {
+  background: radial-gradient(closest-side, #fff 0, #fff 55%, rgba(255,255,255,0) 100%), color-mix(in srgb, var(--fl-glow) 26%, #F3F9F5) !important;
+}
+body.fcc-ui-zivi .fl-related-card img { background: #fff !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image img {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent), linear-gradient(180deg, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent), linear-gradient(180deg, transparent, #000 4%, #000 96%, transparent); mask-composite: intersect;
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image { background: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image img { max-width: 86% !important; margin-inline: auto; }
+body.fcc-ui-zivi .fl-product-stage[style*="--zs-core"] {
+  background:
+    radial-gradient(circle calc(var(--zs-core) * 1.38) at var(--zs-cx) var(--zs-cy), #fff 0, #fff 72%, rgba(255,255,255,.6) 84%, rgba(255,255,255,0) 100%),
+    radial-gradient(120% 95% at 50% 45%, color-mix(in srgb, var(--fl-glow) 24%, #fff) 0, color-mix(in srgb, var(--fl-glow) 46%, #EEF7F2) 100%) !important;
+}
+body.fcc-ui-zivi .fl-product-stage[style*="--zs-core"]::before { display: none; }
+body.fcc-ui-zivi .fl-product-image[style*="--zs-core"] {
+  background:
+    radial-gradient(circle calc(var(--zs-core) * 1.38) at var(--zs-cx) var(--zs-cy), #fff 0, #fff 72%, rgba(255,255,255,.6) 84%, rgba(255,255,255,0) 100%),
+    color-mix(in srgb, var(--fl-glow) 30%, #F3F9F5) !important;
+}
+body.fcc-ui-zivi .fl-product-image img { -webkit-mask-image: none; mask-image: none; }
+body.fcc-ui-zivi .fl-related-card img { -webkit-mask-image: none !important; mask-image: none !important; background: #fff !important; }
+
+/* ---------- Product photos: studio stage (final) ----------
+   Like premium shops: the product sits on a flat surface of the same colour as its photo background.
+   Every FCC product photo has a pure white background, so the stage is pure white: no vignette, no glow,
+   no blending, nothing a browser can render differently. Depth comes from size, space and a soft floor shadow. */
+body.fcc-ui-zivi .fl-product-stage,
+body.fcc-ui-zivi .fl-product-stage[style*="--zs-core"] {
+  background: #fff !important; border: 1px solid #E8EEEA !important; border-radius: 28px !important;
+  box-shadow: 0 1px 2px rgba(14,42,34,.04), 0 24px 48px -28px rgba(14,42,34,.18) !important;
+}
+body.fcc-ui-zivi .fl-product-stage::before { display: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image { background: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image img {
+  -webkit-mask-image: none !important; mask-image: none !important; mix-blend-mode: normal !important;
+  max-width: 94% !important; max-height: 460px !important;
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image::after { background: radial-gradient(closest-side, rgba(14,42,34,.16), rgba(14,42,34,0)) !important; filter: blur(6px); height: 18px; }
+body.fcc-ui-zivi .fl-stage-label { background: #F3F6F4 !important; border: 0 !important; box-shadow: none !important; color: #3E5A51 !important; font-weight: 600 !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-photo-note { color: #8A9A93 !important; font-size: 12px !important; }
+@media (min-width: 801px) {
+  body.fcc-ui-zivi .fl-product-stage { align-self: start !important; aspect-ratio: 4 / 5; min-height: 0 !important; max-height: none !important; }
+}
+body.fcc-ui-zivi .fl-product-image,
+body.fcc-ui-zivi .fl-product-image[style*="--zs-core"] { background: #fff !important; }
+body.fcc-ui-zivi #fl-composer .fl-selected img { mix-blend-mode: normal !important; background: #fff !important; -webkit-mask-image: none !important; mask-image: none !important; }
+@media (max-width: 800px) {
+  body.fcc-ui-zivi #fl-library .fl-product-stage {
+    display: flex !important; flex-direction: column !important; align-items: stretch; gap: 6px;
+    height: auto !important; min-height: 0 !important; max-height: none !important; aspect-ratio: 1 / 1; padding: 14px !important;
+  }
+  body.fcc-ui-zivi #fl-library .fl-product-stage .fl-hero-image { flex: 1 1 auto; min-height: 0 !important; display: flex; align-items: center; justify-content: center; }
+  body.fcc-ui-zivi #fl-library .fl-product-stage .fl-hero-image img { width: auto !important; max-width: 88% !important; max-height: 100% !important; height: auto; padding: 0 !important; }
+  body.fcc-ui-zivi #fl-library .fl-product-stage .fl-photo-note { margin: 0 !important; }
+}
+body.fcc-ui-zivi #fl-library .fl-stage-label { padding: 7px 13px !important; border-radius: 999px !important; font-size: 12px !important; line-height: 1.2; }
+
+/* ---------- Premium form controls across the workspace and FCC's public pages (not admin) ----------
+   One select and one field style: white, 48px, 14px corners, soft border, chevron icon, clear focus ring. */
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]) {
+  -webkit-appearance: none !important; appearance: none !important;
+  min-height: 48px; padding: 0 44px 0 16px !important; border-radius: 14px !important; border: 1px solid #D6E5DC !important;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9.5l6 6 6-6' fill='none' stroke='%234C665C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 18px !important;
+  color: var(--zs-ink) !important; font: 600 15px/1.2 var(--zs-font) !important; cursor: pointer; box-shadow: 0 1px 2px rgba(14,42,34,.05) !important;
+  transition: border-color .15s ease, box-shadow .15s ease; text-overflow: ellipsis;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]):hover { border-color: #B9D8C8 !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]):focus,
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:not([multiple]):not([size]):focus-visible { outline: none !important; border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) select:is(.form-control-sm, .custom-select-sm) { min-height: 40px; font-size: 14px !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) :is(input[type="text"], input[type="search"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], input[type="date"], input[type="password"], textarea):not(.fl-plain) {
+  border-radius: 14px !important; border: 1px solid #D6E5DC !important; background-color: #fff !important; color: var(--zs-ink);
+  box-shadow: 0 1px 2px rgba(14,42,34,.05) !important; transition: border-color .15s ease, box-shadow .15s ease;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) :is(input[type="text"], input[type="search"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], input[type="date"], input[type="password"]) { min-height: 48px; padding-left: 16px; padding-right: 16px; font-size: 16px; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) :is(input, textarea):focus { outline: none !important; border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+body.fcc-ui-zivi:not([data-fcc-page="admin"]) label { color: var(--zs-ink); }
+
+/* Filter links become pills, the current one tinted */
+body.fcc-ui-zivi .fp-filter-row { gap: 8px !important; align-items: center; font-size: 13.5px !important; }
+body.fcc-ui-zivi .fp-filter-row > a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 16px !important; border-radius: 14px; text-decoration: none !important;
+  background: #fff; border: 1px solid #DCE8E1; color: var(--zs-ink) !important; font-weight: 600; box-shadow: 0 1px 2px rgba(14,42,34,.05);
+}
+body.fcc-ui-zivi .fp-filter-row > a:hover { border-color: #B9D8C8; }
+body.fcc-ui-zivi .fp-filter-row > a:is([aria-current], .is-active, .fb-filter-active, .active) { background: #E3F4EC; border-color: #E3F4EC; color: var(--zs-em2) !important; }
+
+/* ---------- FCC Top 10 ---------- */
+body.fcc-ui-zivi .ft-filters {
+  display: flex !important; flex-wrap: wrap; align-items: flex-end; gap: 14px !important; margin: 18px 0 0 !important; padding: 18px 20px !important;
+  border-radius: 24px; background: var(--zs-glass); border: 1px solid var(--zs-edge); box-shadow: var(--zs-shadow);
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi .ft-filters label { gap: 8px !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .06em; text-transform: uppercase; color: var(--zs-muted) !important; }
+body.fcc-ui-zivi .ft-filters label { flex: 1 1 190px; min-width: 0; }
+body.fcc-ui-zivi .ft-filters label :is(select, input) { width: 100% !important; min-width: 0 !important; }
+body.fcc-ui-zivi .ft-filters .fp-button { min-width: 120px; }
+body.fcc-ui-zivi :is(.ft-period-explanation, .ft-status) {
+  display: flex; gap: 10px; align-items: flex-start; margin: 10px 4px 0 !important; font-size: 12.5px !important; line-height: 1.55; color: var(--zs-muted) !important;
+}
+body.fcc-ui-zivi :is(.ft-period-explanation, .ft-status)::before {
+  content: ""; flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%; background: #E3F4EC no-repeat center / 12px;
+}
+body.fcc-ui-zivi .ft-period-explanation::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 10.5v6M12 7.2v.1' fill='none' stroke='%230B5A45' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E"); }
+body.fcc-ui-zivi .ft-status::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%230B5A45' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M12 7v5l3 2'/%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3C/g%3E%3C/svg%3E"); }
+body.fcc-ui-zivi .ft-status + * { margin-top: 22px !important; }
+body.fcc-ui-zivi .ft-grid { align-items: stretch !important; gap: 18px !important; }
+body.fcc-ui-zivi .ft-card { display: flex; flex-direction: column; margin: 0 !important; }
+body.fcc-ui-zivi .ft-card > :last-child { margin-top: auto; }
+body.fcc-ui-zivi .ft-card .ft-list li { border-radius: 12px; }
+body.fcc-ui-zivi .ft-card .ft-own { border-radius: 18px !important; background: rgba(255,255,255,.7) !important; border: 1px solid #E3EEE8; }
+body.fcc-ui-zivi .ft-counts span { border-radius: 999px !important; background: #F1F7F3 !important; border: 1px solid #E3EEE8; }
+body.fcc-ui-zivi .ft-rules summary, body.fcc-ui-zivi .ft-card details > summary { list-style: none; cursor: pointer; font-weight: 700; color: var(--zs-em); display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
+body.fcc-ui-zivi .ft-card details > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi .ft-card details > summary::before { content: "+"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #E3F4EC; color: var(--zs-em2); font-weight: 800; transition: transform .2s ease; }
+body.fcc-ui-zivi .ft-card details[open] > summary::before { transform: rotate(45deg); }
+@media (max-width: 800px) {
+  body.fcc-ui-zivi .ft-filters { padding: 14px !important; }
+  body.fcc-ui-zivi .ft-filters label { flex: 1 1 100%; }
+  body.fcc-ui-zivi .ft-filters .fp-button { flex: 1 1 100%; }
+}
+
+/* Product page country chooser: the library stylesheet targets it by id, so match that strength */
+html body.fcc-ui-zivi #fl-library .fl-country-form select {
+  -webkit-appearance: none !important; appearance: none !important; min-height: 48px !important; padding: 0 44px 0 16px !important; border-radius: 14px !important; border: 1px solid #D6E5DC !important;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9.5l6 6 6-6' fill='none' stroke='%234C665C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 18px !important;
+  font: 600 15px/1.2 var(--zs-font) !important; color: var(--zs-ink) !important; min-width: 180px;
+}
+html body.fcc-ui-zivi #fl-library .fl-country-form button { min-height: 48px; padding: 0 18px; border-radius: 14px; border: 1px solid #DCE8E1; background: #fff; color: var(--zs-em2); font-weight: 700; }
+
+/* Script-enhanced selects (select2) get the same premium look as native ones */
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection--single {
+  min-height: 48px !important; height: 48px; display: flex !important; align-items: center; padding: 0 44px 0 16px !important;
+  border-radius: 14px !important; border: 1px solid #D6E5DC !important; background: #fff !important; box-shadow: 0 1px 2px rgba(14,42,34,.05) !important;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection__rendered { padding: 0 !important; line-height: 1.2 !important; color: var(--zs-ink) !important; font: 600 15px/1.2 var(--zs-font) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection__arrow {
+  top: 0 !important; right: 12px !important; height: 100% !important; width: 22px !important;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9.5l6 6 6-6' fill='none' stroke='%234C665C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / 18px !important;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container .select2-selection__arrow b { display: none !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container--open .select2-selection--single,
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-container--focus .select2-selection--single { border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-dropdown {
+  border: 1px solid #DCE8E1 !important; border-radius: 16px !important; overflow: hidden; box-shadow: 0 18px 44px rgba(14,42,34,.16) !important; margin-top: 6px;
+}
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-results__option { padding: 10px 14px !important; font: 500 14.5px var(--zs-font) !important; color: var(--zs-ink) !important; background: #fff !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-results__option--highlighted[aria-selected] { background: #E3F4EC !important; color: var(--zs-em2) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-results__option[aria-selected="true"] { font-weight: 700 !important; color: var(--zs-em2) !important; }
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi:not([data-fcc-page="admin"]) .select2-search__field { min-height: 40px !important; border-radius: 10px !important; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-form { display: block !important; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-form > label { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-controls { display: flex !important; gap: 8px; width: 100%; }
+body.fcc-ui-zivi #fl-library .fl-country-switch .fl-country-controls > :is(select, .select2-container) { flex: 1 1 0% !important; width: auto !important; min-width: 0 !important; }
+/* The original select stays hidden when select2 replaces it */
+html body.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi.fcc-ui-zivi select.select2-hidden-accessible,
+html body.fcc-ui-zivi #fl-library .fl-country-form select.select2-hidden-accessible {
+  position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important; min-width: 0 !important; padding: 0 !important; border: 0 !important;
+  flex: none !important; overflow: hidden !important; clip: rect(0 0 0 0) !important; box-shadow: none !important;
+}
+
+/* ---------- FCC Top 10, layout (final) ----------
+   A strict grid instead of newspaper columns: the page reads in rows on every browser.
+   1. Overview and personal rhythm side by side. 2. The main CC ranking spans the width, its ten names in two columns.
+   3. The other boards sit in an even two-column grid, each showing its first five names with a toggle for the rest. */
+@media (min-width: 1000px) {
+  body.fcc-ui-zivi .fp-section-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; align-items: stretch; }
+  body.fcc-ui-zivi .fp-section-top > * { grid-column: 1 / -1; min-width: 0; }
+  body.fcc-ui-zivi .fp-section-top > .ft-overview { grid-column: 1; }
+  body.fcc-ui-zivi .fp-section-top > .ft-progress { grid-column: 2; }
+  body.fcc-ui-zivi .fp-section-top > :is(.ft-overview, .ft-progress) { margin-bottom: 18px !important; display: flex; flex-direction: column; }
+  body.fcc-ui-zivi .fp-section-top > :is(.ft-overview, .ft-progress) > :last-child { margin-top: auto; }
+}
+body.fcc-ui-zivi .ft-grid {
+  display: grid !important; column-count: auto !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px !important; align-items: stretch !important;
+}
+body.fcc-ui-zivi .ft-grid > .ft-card { display: flex !important; flex-direction: column; width: auto !important; margin: 0 !important; break-inside: auto; }
+body.fcc-ui-zivi .ft-grid > .ft-card:first-child { grid-column: 1 / -1; }
+body.fcc-ui-zivi .ft-grid > .ft-card:first-child .ft-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(5, auto); column-gap: 28px; }
+body.fcc-ui-zivi .ft-card-head { min-height: 0 !important; margin-bottom: 16px !important; }
+body.fcc-ui-zivi .ft-card .ft-own { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px !important; min-height: 76px; }
+body.fcc-ui-zivi .ft-card .ft-counts { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 !important; }
+body.fcc-ui-zivi .ft-card .ft-positive-note { font-size: 13px !important; color: var(--zs-muted) !important; margin: 0 0 6px !important; }
+body.fcc-ui-zivi .ft-card .ft-list { margin: 6px 0 0 !important; }
+body.fcc-ui-zivi .ft-card .ft-list > li { min-height: 46px; }
+body.fcc-ui-zivi .ft-card.zs-collapsed .ft-list > li:nth-child(n+6) { display: none !important; }
+body.fcc-ui-zivi .ft-card .zs-list-toggle {
+  align-self: flex-start; margin: 10px 0 2px; min-height: 40px; padding: 0 16px; border-radius: 12px; border: 1px solid #DCE8E1; background: #fff;
+  color: var(--zs-em2); font: 700 13.5px var(--zs-font); cursor: pointer;
+}
+body.fcc-ui-zivi .ft-card .zs-list-toggle:hover { border-color: #B9D8C8; }
+body.fcc-ui-zivi .ft-card > details:last-child, body.fcc-ui-zivi .ft-card > .ft-rules:last-child { margin-top: auto; padding-top: 12px; border-top: 1px solid #E8F0EB; }
+body.fcc-ui-zivi .ft-overview .ft-current-hint { border-top: 1px solid #E8F0EB; padding-top: 14px; margin-bottom: 0; }
+@media (max-width: 999px) {
+  body.fcc-ui-zivi .ft-grid { grid-template-columns: minmax(0, 1fr); }
+  body.fcc-ui-zivi .ft-grid > .ft-card:first-child .ft-list { grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; grid-template-rows: none; }
+}

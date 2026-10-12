@@ -65188,4 +65188,6 @@ Segíthetek a csatlakozásban?',
     'Moj put još nije uključen za tvoj račun' => 'Az utam program még nincs bekapcsolva a fiókodban',
     'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'A fejlődésed mentve van. Fordulj az ügyfélszolgálathoz, és megnézzük, miért nem nyílik meg a lépésed.',
     /* /Custom code: FC-2026-10-12 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Szia! Nézd meg ezt a terméket, szerintem érdekelhet: %s. Az oldalon megtalálod a leírást és a használat módját, kérdés esetén pedig annak a személynek az elérhetőségét is, aki segíthet.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'A hivatkozás megőrzi annak a személynek az ajánlását, akitől érkezett.',
 ];

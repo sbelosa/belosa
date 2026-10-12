@@ -12,6 +12,8 @@ parse_str((string)(parse_url($share_url,PHP_URL_QUERY)??''),$share_params);
 $lp_personal_share=is_logged_in() && !empty($share_params['ref']);
 $lp_can_share=!is_logged_in() || $lp_personal_share;
 $message=fcc_library_pilot_message($item['title'],$share_url);
+// Živi sloj: a visitor shares as a friend, not as the collaborator who can answer questions.
+if(fcc_ui_theme_is_zivi() && !is_logged_in()) $message=sprintf(fcc_lp_t('visitor_message'),$item['title'])."\n\n".$share_url;
 $content=(new \Altum\Shortcodes)->display_shortcodes($post->content,$data->referral??null);
 if(function_exists('fc_forever_ordering_copy_text')) $content=fc_forever_ordering_copy_text($content);
 $content=fcc_market_article_content($content,$post,$market,(string)($data->referral??''));
@@ -41,8 +43,19 @@ if($market && !isset($market_options[$market]))$market_options=[$market=>null]+$
   <div class="fl-product-stage fl-topic-<?= e($item['topic']) ?>"><span class="fl-stage-label"><?= e($item['format']) ?></span><button type="button" class="fl-hero-image fl-photo-open <?= $image_frame?'fl-framed-photo':'' ?>" data-fl-photo-open aria-label="<?= e($hr?fcc_t('Povećaj fotografiju proizvoda'):fcc_t('Enlarge product photograph')) ?>"><?php if($image_frame): ?><span class="fl-art-frame" style="<?= e($image_frame) ?>"><?php endif ?><img src="<?= e($image) ?>" alt="<?= e($item['title']) ?>" width="<?= (int)$photo['width'] ?>" height="<?= (int)$photo['height'] ?>" fetchpriority="high" decoding="async"><?php if($image_frame): ?></span><?php endif ?></button><p class="fl-photo-note"><?= e($item['photo_note']) ?></p><div class="fl-stage-caption"><span><?= htmlspecialchars(fcc_t('FOREVER LIVING'), ENT_QUOTES, 'UTF-8') ?></span><strong><?= e($item['format']) ?></strong></div></div>
   <div class="fl-article-intro">
    <section id="fl-purchase" class="fl-purchase" aria-label="<?= e(fcc_lp_t('store')) ?>">
+    <?php if(fcc_ui_theme_is_zivi()): /* Živi sloj: a recognised country is one quiet line; the chooser opens on demand. */ ?>
+    <details class="fl-country-switch"<?= $market?'':' open' ?>>
+     <summary><svg class="fl-country-pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><?php if($market): ?><span class="fl-country-text"><?= e($hr?fcc_t('Zemlja ponude:'):fcc_t('Offer country:')) ?> <strong><?= e(fcc_library_pilot_country_name($market)) ?></strong></span><span class="fl-country-change"><?= e($hr?fcc_t('Promijeni'):fcc_t('Change')) ?></span><?php else: ?><span class="fl-country-text"><strong><?= e($hr?fcc_t('Odaberi zemlju dostave'):fcc_t('Choose your delivery country')) ?></strong></span><?php endif ?></summary>
+     <form class="fl-country-form" method="get"><label for="fl-market"><?= e(fcc_lp_t('country')) ?></label><div class="fl-country-controls"><select id="fl-market" name="market" required onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()"><option value=""><?= e(fcc_forever_copy('select')) ?></option><?php foreach($market_options as $country=>$link): ?><option value="<?= e($country) ?>" <?= $country===$market?'selected':'' ?>><?= e(fcc_library_pilot_country_name($country)) ?></option><?php endforeach ?></select><button type="submit"><?= e(fcc_lp_t('change')) ?></button></div><?php if($data->referral): ?><input type="hidden" name="ref" value="<?= e($data->referral) ?>"><?php endif ?><?php if($return_to_share): ?><input type="hidden" name="from" value="share"><?php endif ?></form>
+    </details>
+    <?php else: ?>
     <form class="fl-country-form" method="get"><label for="fl-market"><?= e(fcc_lp_t('country')) ?></label><div class="fl-country-controls"><select id="fl-market" name="market" required><option value=""><?= e(fcc_forever_copy('select')) ?></option><?php foreach($market_options as $country=>$link): ?><option value="<?= e($country) ?>" <?= $country===$market?'selected':'' ?>><?= e(fcc_library_pilot_country_name($country)) ?></option><?php endforeach ?></select><button type="submit"><?= e(fcc_lp_t('change')) ?></button></div><?php if($data->referral): ?><input type="hidden" name="ref" value="<?= e($data->referral) ?>"><?php endif ?><?php if($return_to_share): ?><input type="hidden" name="from" value="share"><?php endif ?></form>
+    <?php endif ?>
+    <?php if(fcc_ui_theme_is_zivi() && !$market): ?>
+    <div data-fl-purchase-result><p class="fl-country-prompt"><?= e($hr?fcc_t('Odaberi zemlju i odmah vidiš cijenu i dostupnost u službenoj Forever trgovini.'):fcc_t('Choose your country to see the price and availability in the official Forever shop.')) ?></p></div>
+    <?php else: ?>
     <div data-fl-purchase-result><?php require THEME_PATH.'views/blog/product-offer.php'; ?></div>
+    <?php endif ?>
     <?php if(fcc_market_product_allowed($post,$market) && $offer_base && FccShopCatalog::clean($offer_base) && FccShopCatalog::market($offer_base)===$market && !FccShopCatalog::price($offer_base,(string)$market)): ?>
     <span class="fl-price-refresh fl-small fl-muted" role="status" data-fl-refresh="<?= e(url('blog-offer?'.http_build_query(['post'=>(int)$post->blog_post_id,'market'=>$market,'ref'=>$data->referral??'']))) ?>"><?= e(fcc_lp_t('refreshing_price')) ?></span>
     <?php endif ?>
@@ -69,7 +82,7 @@ if($market && !isset($market_options[$market]))$market_options=[$market=>null]+$
  <details data-fl-faq="delivery" class="fl-article-section"><summary><?= e($hr?fcc_t('Gdje provjeravam dostavu i konačnu cijenu?'):fcc_t('Where do I check delivery and the final price?')) ?></summary><p><?= e($hr?fcc_t('Naručivanje se nastavlja u službenoj Forever trgovini za odabranu zemlju. Tamo prije potvrde kupnje provjeri dostavu, cijenu, eventualne popuste i uvjete povrata.'):fcc_t('Ordering continues in the official Forever shop for your selected country. Before confirming a purchase, check delivery, price, any discounts and return conditions there.')) ?></p></details>
  <?php endif ?>
  </div></section>
- <article class="fl-reading" id="fl-details"><h2><?= e(fcc_lp_t('details')) ?></h2>
+ <article class="fl-reading" id="fl-details"><?php if(fcc_ui_theme_is_zivi()): ?><span class="fl-kicker"><?= e($hr?fcc_t('Sve o proizvodu'):fcc_t('Everything about it')) ?></span><?php endif ?><h2><?= e(fcc_lp_t('details')) ?></h2>
  <?php if($item['editorial']): ?>
   <details class="fl-article-section"><summary><?= e(fcc_lp_t('notes')) ?></summary><div class="fl-source-content"><p><?= e($item['notes']) ?></p><?php if($tracked): ?><a href="<?= e($tracked) ?>" target="_blank" rel="sponsored noopener noreferrer"><?= e(fcc_lp_t('official_details')) ?> ↗</a><?php endif ?></div></details>
   <div class="fl-deeper-heading"><p><?= e($hr?fcc_t('Istraži temu koja te zanima.'):fcc_t('Explore the topic that interests you.')) ?></p></div>

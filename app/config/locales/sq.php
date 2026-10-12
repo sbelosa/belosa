@@ -58112,4 +58112,6 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'Moj put još nije uključen za tvoj račun' => 'Udhëtimi im ende nuk është aktivizuar për llogarinë tënde',
     'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Përparimi yt është ruajtur. Kontakto mbështetjen dhe do të kontrollojmë pse hapi yt nuk hapet.',
     /* /Custom code: FC-2026-10-12 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Përshëndetje! Shiko këtë produkt, mendoj se mund të të interesojë: %s. Në faqe gjen përshkrimin dhe mënyrën e përdorimit, dhe nëse ke pyetje, edhe kontaktin e personit që mund të të ndihmojë.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Lidhja ruan rekomandimin e personit nga i cili erdhi.',
 ];
