@@ -6,13 +6,13 @@ defined('ALTUMCODE') || die();
 
 const FCC_UI_THEMES = ['classic', 'zivi'];
 
-/** Host default from FCC_UI_THEME, optionally overridden by the viewer's preview choice. */
+/** Živi sloj is the release look (user decision of 12 October 2026). FCC_UI_THEME=classic on the host restores the previous look. */
 function fcc_ui_theme(): string {
     static $theme = null;
     if($theme !== null) return $theme;
 
     $default = getenv('FCC_UI_THEME');
-    $theme = in_array($default, FCC_UI_THEMES, true) ? $default : 'classic';
+    $theme = in_array($default, FCC_UI_THEMES, true) ? $default : 'zivi';
 
     if(!fcc_ui_theme_preview_allowed()) return $theme;
 

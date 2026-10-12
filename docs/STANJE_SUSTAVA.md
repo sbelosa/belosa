@@ -90,6 +90,16 @@ Korisnik je 12. listopada 2026. odobrio sve prijedloge iz `docs/ANALIZA_MOJ_PUT_
 11. **Članak pomoći** Danas i Moj put ima novi odjeljak Tvoja staza i pomoć na 13 jezika. Svi novi tekstovi prevedeni su na 12 jezika.
 12. **Novi test** `scripts/test_journey_tracks.php` dodan je u deploy workflow.
 13. **Nakon objave** nije potrebna ručna radnja. Suradnici koji su već prošli zajednički dio vidjet će odabir staze pri sljedećem koraku.
+14. **Nitko se ne vraća na prvi korak.** Na kopiji baze od 11. listopada program ima 115 suradnika, najviše 15 dovršenih koraka. Svi zadržavaju napredak, otvoreni korak ostaje isti, a ostali nastavljaju sljedećim nedovršenim zajedničkim korakom. Kod devetero je to drugi korak nego prije, jer javni video dolazi nakon prve preporuke, a korak s gostom čeka prijavu gosta.
+15. **Jasna poruka o pristupu.** Umjesto općenite poruke Provjerimo pristup tvom koraku, suradnik vidi stvarni razlog i jednu radnju: pogledaj uvod, upiši Forever ID na Mojoj kartici, riješi Forever ID koji koriste dva računa ili se javi podršci (`themes/altum/views/partner/journey-access.php`). Na kopiji baze to se odnosi na jednog od 707 odobrenih suradnika.
+
+## 5f. Konačna verzija s dizajnom Živi sloj (lokalno, čeka objavu)
+
+1. Korisnik je 12. listopada 2026. odlučio da novi dizajn s `localhost:8100` ide na produkciju zajedno s Pozivnicom u tim i Mojim putem. Grana `claude/design-zivi-sloj-2026-10-12` (commit `5a410d3`) spojena je u `claude/live-baseline-2026-10-11` (commit `2e06fd5`). Preklapali su se samo dodani prijevodi, a zadržane su obje strane.
+2. Živi sloj je zadani izgled (`app/helpers/fcc_ui_theme.php`). Ako zatreba povratak, `FCC_UI_THEME` = `classic` u `fcc-partner-runtime.php` na poslužitelju vraća prijašnji izgled bez nove objave koda.
+3. Javne kartice suradnika ne učitavaju novi izgled. Njihova nadogradnja ostaje dobrovoljna, prema planu u FCC-Design `docs/DIZAJN_ZIVI_SLOJ_2026-10-12.md`.
+4. Provjereno na 8099: PHP lint za 1.878 datoteka, 15 testova, 22 javne, partnerske i administratorske stranice u novom izgledu bez greške, dvije kartice suradnika u starom izgledu, nove stranice Mojeg puta na računalu i mobitelu.
+5. Prije objave preostaje spremiti font DM Sans na vlastiti poslužitelj umjesto učitavanja s Google Fonts.
 
 ## 5b. Već provedeno na produkciji prije ove dorade
 
