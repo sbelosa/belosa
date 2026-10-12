@@ -561,4 +561,25 @@ return [
     'Kalendar' => 'Calendar',
     'Boja iza kartice. Tekst se sam prilagodi da ostane čitljiv.' => 'The colour behind the card. The text adjusts itself to stay readable.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: classic card options and Business Partner footer */
+    'Boje i oblik' => 'Colours and shape',
+    'Za staru karticu, kao u klasičnom uređivaču.' => 'For the classic card, as in the classic editor.',
+    'Bez pozadine' => 'No background',
+    'Debljina ruba' => 'Border width',
+    'Bez ruba' => 'No border',
+    'Boja ruba' => 'Border colour',
+    'Boja sjene' => 'Shadow colour',
+    'Boja ikona' => 'Icon colour',
+    'Bez sjene' => 'No shadow',
+    'Blaga' => 'Soft',
+    'Jača' => 'Stronger',
+    'Tvrda' => 'Hard',
+    'Oblik' => 'Shape',
+    'Sjena' => 'Shadow',
+    'Blagi' => 'Soft',
+    'Izraženi' => 'Strong',
+    'Bez sjaja' => 'No glow',
+    'Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.' => 'Independent Forever Business Partner. This is not an official Forever Living Products page.',
+    'Kartica neovisnog Forever Business Partnera' => 'Card of an independent Forever Business Partner',
+    /* /Custom code: FC-2026-10-12 */
 ];

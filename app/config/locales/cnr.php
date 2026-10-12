@@ -58397,4 +58397,25 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'Kalendar' => 'Kalendar',
     'Boja iza kartice. Tekst se sam prilagodi da ostane čitljiv.' => 'Boja iza kartice. Tekst se sam prilagodi da ostane čitljiv.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: classic card options and Business Partner footer */
+    'Boje i oblik' => 'Boje i oblik',
+    'Za staru karticu, kao u klasičnom uređivaču.' => 'Za staru karticu, kao u klasičnom uređivaču.',
+    'Bez pozadine' => 'Bez pozadine',
+    'Debljina ruba' => 'Debljina ivice',
+    'Bez ruba' => 'Bez ivice',
+    'Boja ruba' => 'Boja ivice',
+    'Boja sjene' => 'Boja sjenke',
+    'Boja ikona' => 'Boja ikona',
+    'Bez sjene' => 'Bez sjenke',
+    'Blaga' => 'Blaga',
+    'Jača' => 'Jača',
+    'Tvrda' => 'Tvrda',
+    'Oblik' => 'Oblik',
+    'Sjena' => 'Sjenka',
+    'Blagi' => 'Blagi',
+    'Izraženi' => 'Izraženi',
+    'Bez sjaja' => 'Bez sjaja',
+    'Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.' => 'Nezavisni Forever Business Partner. Ovo nije zvanična stranica Forever Living Products.',
+    'Kartica neovisnog Forever Business Partnera' => 'Kartica nezavisnog Forever Business Partnera',
+    /* /Custom code: FC-2026-10-12 */
 ];

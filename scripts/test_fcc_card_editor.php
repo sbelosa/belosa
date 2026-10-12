@@ -79,6 +79,14 @@ $member = (object) ['country' => 'SI', 'preferences' => json_encode(['meta' => [
 $assert(fc_get_user_default_whatsapp_phone($member) === '38641123456', 'registration number with the member country');
 $assert(fcc_card_editor_whatsapp_display('', $member) === '+386 41 123 456', 'the form shows the registration number');
 
+/* Classic card: the colours, shapes and shadows of the classic editor stay available. */
+$assert(fcc_card_editor_classic_fields('link') === ['text_color', 'background_color', 'border_radius', 'border_width', 'border_color', 'border_shadow_style', 'border_shadow_color'], 'classic button options');
+$assert(fcc_card_editor_color_parts('#00000000') === ['#000000', true] && fcc_card_editor_color_parts('#ffc600') === ['#FFC600', false] && fcc_card_editor_color_parts('#00000010') === ['#000000', false], 'stored colours read for colour inputs');
+$classic = fcc_card_editor_fields((object) ['type' => 'link_save_contact', 'location_url' => '', 'settings' => (object) ['name' => 'Spremi kontakt', 'text_color' => '#000000', 'background_color' => '#FFC600', 'border_radius' => 'rounded', 'border_shadow_style' => 'subtle', 'border_shadow_color' => '#00000010', 'border_width' => 0, 'border_color' => '#000000']]);
+$assert($classic['classic_background_color'] === '#FFC600' && $classic['classic_border_shadow_style'] === 'subtle' && $classic['classic_border_radius'] === 'rounded' && $classic['classic_border_width'] === '0', 'classic values shown in the form');
+$page_source = $source('themes/altum/views/partner/card-editor.php');
+$assert(str_contains($page_source, 'data-fe-classic') && str_contains($source('themes/altum/assets/css/fcc-card-editor.css'), '.fe[data-fe-v2="1"] [data-fe-classic] { display: none; }'), 'classic options shown only for classic cards');
+
 /* Block library: small, Forever first, every type has a form, retired lead forms are not offered. */
 $assert(count(FCC_CARD_EDITOR_LIBRARY) <= 15 && array_slice(FCC_CARD_EDITOR_LIBRARY, 0, 2) === ['link_forever_webshop_reg', 'link_forever_shop'], 'small library, Forever first');
 $assert(!array_intersect(FCC_CARD_EDITOR_LIBRARY, FCC_CARD_RETIRED_BLOCKS), 'no phone or e-mail forms');
@@ -91,7 +99,7 @@ foreach(['heading', 'paragraph', 'button', 'custom_html_whatsapp', 'link', 'vide
 foreach(['link', 'youtube', 'faq', 'review', 'link_forever_product'] as $type) {
     $assert(in_array($type, FCC_CARD_EDITOR_NEEDS_FIELDS, true), $type . ' is created only after its fields are filled');
 }
-$assert(fcc_card_editor_fields((object) ['type' => 'faq', 'location_url' => '', 'settings' => (object) ['items' => [(object) ['title' => 'Kako?', 'content' => 'Ovako.']]]]) === ['items' => [['title' => 'Kako?', 'content' => 'Ovako.']]], 'faq fields');
+$assert(fcc_card_editor_fields((object) ['type' => 'faq', 'location_url' => '', 'settings' => (object) ['items' => [(object) ['title' => 'Kako?', 'content' => 'Ovako.']]]])['items'] === [['title' => 'Kako?', 'content' => 'Ovako.']], 'faq fields');
 $assert(fcc_card_editor_fields((object) ['type' => 'custom_html_whatsapp', 'location_url' => '', 'settings' => (object) ['title' => 'WhatsApp', 'message' => 'Bok', 'phone' => '']])['message'] === 'Bok', 'whatsapp fields');
 
 /* Wiring: route, same-origin preview and saves, CSRF, entry points and translations. */

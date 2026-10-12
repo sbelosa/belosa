@@ -38,7 +38,7 @@ body.fcc-card--ponoc {
 
 /* Page */
 body.fcc-card {
-  background: radial-gradient(120% 55% at 50% 0%, var(--fc-glow) 0%, rgba(0,0,0,0) 62%), var(--fc-bg) !important;
+  background: radial-gradient(125% 60% at 50% 0%, color-mix(in srgb, var(--fc-accent) 14%, var(--fc-glow)) 0%, rgba(0,0,0,0) 66%), var(--fc-bg) !important;
   background-attachment: scroll !important;
   color: var(--fc-ink);
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
@@ -133,10 +133,10 @@ body.fcc-card.fcc-button-look-outline { --fc-btn-bg: transparent; --fc-btn-borde
 body.fcc-card.fcc-button-look-soft { --fc-btn-bg: var(--fc-accent-soft); --fc-btn-border: transparent; --fc-btn-shadow: none; }
 body.fcc-card.fcc-font-classic, body.fcc-card.fcc-font-classic :is(h1, h2, h3, h4, h5, h6, p, a, span, div, button) { font-family: Georgia, 'Times New Roman', serif !important; }
 body.fcc-card.fcc-font-simple, body.fcc-card.fcc-font-simple :is(h1, h2, h3, h4, h5, h6, p, a, span, div, button) { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important; }
-html:has(body.fcc-card.fcc-text-large) { font-size: 17.5px; }
-body.fcc-card.fcc-text-large { font-size: 17.5px; }
+body.fcc-card.fcc-text-large { font-size: 18px; }
 body.fcc-card.fcc-avatar-rounded [data-fcc-type="avatar"] .link-image { border-radius: 28px !important; }
 body.fcc-card.fcc-glow-off { background: var(--fc-bg) !important; }
+body.fcc-card.fcc-glow-strong { background: radial-gradient(140% 78% at 50% 0%, color-mix(in srgb, var(--fc-accent) 38%, var(--fc-glow)) 0%, rgba(0,0,0,0) 74%), radial-gradient(90% 55% at 100% 100%, color-mix(in srgb, var(--fc-accent) 20%, rgba(0,0,0,0)) 0%, rgba(0,0,0,0) 70%), var(--fc-bg) !important; }
 
 /* Each block's own look (wins over the card look because it sits closer to the button) */
 body.fcc-card [data-fcc-type][data-fcc-look="filled"] { --fc-btn-bg: var(--fc-accent); --fc-btn-ink: var(--fc-accent-ink); --fc-btn-border: var(--fc-accent); --fc-btn-icon: var(--fc-accent-ink); --fc-btn-shadow: var(--fc-shadow); }

@@ -58368,4 +58368,25 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'Kalendar' => 'Kalendar',
     'Boja iza kartice. Tekst se sam prilagodi da ostane čitljiv.' => 'Ngjyra pas kartës. Teksti përshtatet vetë që të mbetet i lexueshëm.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: classic card options and Business Partner footer */
+    'Boje i oblik' => 'Ngjyrat dhe forma',
+    'Za staru karticu, kao u klasičnom uređivaču.' => 'Për kartën e vjetër, si te redaktori klasik.',
+    'Bez pozadine' => 'Pa sfond',
+    'Debljina ruba' => 'Trashësia e kornizës',
+    'Bez ruba' => 'Pa kornizë',
+    'Boja ruba' => 'Ngjyra e kornizës',
+    'Boja sjene' => 'Ngjyra e hijes',
+    'Boja ikona' => 'Ngjyra e ikonave',
+    'Bez sjene' => 'Pa hije',
+    'Blaga' => 'E lehtë',
+    'Jača' => 'Më e fortë',
+    'Tvrda' => 'E fortë',
+    'Oblik' => 'Forma',
+    'Sjena' => 'Hija',
+    'Blagi' => 'I butë',
+    'Izraženi' => 'I theksuar',
+    'Bez sjaja' => 'Pa shkëlqim',
+    'Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.' => 'Forever Business Partner i pavarur. Kjo nuk është faqe zyrtare e Forever Living Products.',
+    'Kartica neovisnog Forever Business Partnera' => 'Karta e një Forever Business Partner të pavarur',
+    /* /Custom code: FC-2026-10-12 */
 ];

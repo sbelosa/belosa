@@ -124,7 +124,7 @@ $groups = fcc_card_block_groups();
             'font' => ['Font', ['modern' => 'Moderni', 'classic' => 'Klasični', 'simple' => 'Jednostavni']],
             'text' => ['Veličina teksta', ['normal' => 'Normalna', 'large' => 'Veća']],
             'avatar' => ['Fotografija', ['circle' => 'Krug', 'rounded' => 'Zaobljeni kvadrat']],
-            'glow' => ['Sjaj pozadine', ['on' => 'Uključen', 'off' => 'Isključen']],
+            'glow' => ['Sjaj pozadine', ['on' => 'Blagi', 'strong' => 'Izraženi', 'off' => 'Bez sjaja']],
         ];
         ?>
         <details class="fe-advanced" data-fe-style-panel <?= $style ? 'open' : '' ?>>

@@ -160,6 +160,9 @@
 .fe-more a { color: var(--fe-accent); font-weight: 600; }
 .fe:has([name=card_version][value=v1]:checked) [data-fe-style-panel] { display: none; }
 .fe[data-fe-v2="0"] [data-fe-look] { display: none; }
+.fe[data-fe-v2="1"] [data-fe-classic] { display: none; }
+.fe-color > strong { font-size: .88rem; }
+.fe-color > .fe-check { grid-column: 1 / -1; }
 
 /* Preview */
 .fe-preview { position: sticky; top: 16px; display: grid; justify-items: center; gap: 10px; }

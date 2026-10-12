@@ -58315,4 +58315,25 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'Kalendar' => 'Calendrier',
     'Boja iza kartice. Tekst se sam prilagodi da ostane čitljiv.' => 'La couleur derrière la carte. Le texte s’adapte pour rester lisible.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: classic card options and Business Partner footer */
+    'Boje i oblik' => 'Couleurs et forme',
+    'Za staru karticu, kao u klasičnom uređivaču.' => 'Pour la carte classique, comme dans l’éditeur classique.',
+    'Bez pozadine' => 'Sans fond',
+    'Debljina ruba' => 'Épaisseur de la bordure',
+    'Bez ruba' => 'Sans bordure',
+    'Boja ruba' => 'Couleur de la bordure',
+    'Boja sjene' => 'Couleur de l’ombre',
+    'Boja ikona' => 'Couleur des icônes',
+    'Bez sjene' => 'Sans ombre',
+    'Blaga' => 'Légère',
+    'Jača' => 'Plus marquée',
+    'Tvrda' => 'Nette',
+    'Oblik' => 'Forme',
+    'Sjena' => 'Ombre',
+    'Blagi' => 'Doux',
+    'Izraženi' => 'Prononcé',
+    'Bez sjaja' => 'Sans halo',
+    'Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.' => 'Forever Business Partner indépendant. Ceci n’est pas une page officielle de Forever Living Products.',
+    'Kartica neovisnog Forever Business Partnera' => 'Carte d’un Forever Business Partner indépendant',
+    /* /Custom code: FC-2026-10-12 */
 ];

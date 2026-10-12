@@ -90,7 +90,7 @@
         <?php endif ?>
         <style>
             html {
-                font-size: <?= $fcc_card_v2 ? '16px' : (int) ($this->link->settings->font_size ?? 16) . 'px' ?> !important;
+                font-size: <?= $fcc_card_v2 ? ((fcc_card_render_style($this->link, (int) $this->user->user_id)['text'] ?? '') === 'large' ? '18px' : '16px') : (int) ($this->link->settings->font_size ?? 16) . 'px' ?> !important;
                 <?php if(isset($_GET['preview_template'])) echo 'zoom: 75%'; ?>
             }
         </style>

@@ -72,6 +72,38 @@ $look_html = static function(string $type) use ($look_options, $t, $h): string {
     }
     return $html . '</div></details>';
 };
+// The classic card keeps the colours, shapes and shadows it always had.
+$classic_html = static function(string $type) use ($t, $h): string {
+    $keys = fcc_card_editor_classic_fields($type);
+    if(!$keys) return '';
+    $labels = ['text_color' => 'Boja teksta', 'background_color' => 'Boja pozadine', 'border_color' => 'Boja ruba', 'border_shadow_color' => 'Boja sjene', 'color' => 'Boja ikona'];
+    $choices = [
+        'border_radius' => ['Oblik', ['rounded' => 'Zaobljeni', 'round' => 'Okrugli', 'straight' => 'Ravni']],
+        'border_shadow_style' => ['Sjena', ['none' => 'Bez sjene', 'subtle' => 'Blaga', 'strong' => 'Jača', 'hard' => 'Tvrda']],
+        'text_alignment' => ['Poravnanje', ['center' => 'Sredina', 'left' => 'Lijevo', 'right' => 'Desno']],
+    ];
+    $html = '<details class="fe-advanced" data-fe-classic><summary><span><strong>' . $t('Boje i oblik') . '</strong><small>' . $t('Za staru karticu, kao u klasičnom uređivaču.') . '</small></span></summary><div class="fe-advanced-body"><input type="hidden" name="classic_present" value="1"><div class="fe-colors">';
+    foreach($keys as $key) {
+        if(!isset($labels[$key])) continue;
+        $html .= '<div class="fe-color"><strong>' . $t($labels[$key]) . '</strong><input type="color" name="classic_' . $key . '" aria-label="' . $t($labels[$key]) . '">';
+        if($key === 'background_color') $html .= '<label class="fe-check"><input type="checkbox" name="classic_background_color_none" value="1"> ' . $t('Bez pozadine') . '</label>';
+        $html .= '</div>';
+    }
+    $html .= '</div>';
+    foreach($keys as $key) {
+        if(isset($choices[$key])) {
+            [$label, $options] = $choices[$key];
+            $html .= '<fieldset class="fe-choice"><legend>' . $t($label) . '</legend><div class="fe-chips">';
+            foreach($options as $value => $option_label) $html .= '<label class="fe-chip"><input type="radio" name="classic_' . $key . '" value="' . $h($value) . '"><span>' . $t($option_label) . '</span></label>';
+            $html .= '</div></fieldset>';
+        } elseif($key === 'border_width') {
+            $html .= '<label class="fe-field"><span>' . $t('Debljina ruba') . '</span><select name="classic_border_width">';
+            foreach(range(0, 5) as $width) $html .= '<option value="' . $width . '">' . ($width === 0 ? $t('Bez ruba') : $width . ' px') . '</option>';
+            $html .= '</select></label>';
+        }
+    }
+    return $html . '</div></details>';
+};
 $form_for = static fn(string $type): string => match($type) {
     'link_forever_webshop_reg', 'link_forever_shop', 'link_discount', 'link_save_contact' => 'button',
     'youtube', 'vimeo' => 'video',
@@ -144,7 +176,7 @@ $copy = [
     </dialog>
 
     <?php foreach(FCC_CARD_EDITOR_TYPES as $type): ?>
-        <template data-fe-form="<?= $h($type) ?>"><?= $guide($type) ?><?= $forms[$form_for($type)] ?? '' ?><?= $look_html($type) ?></template>
+        <template data-fe-form="<?= $h($type) ?>"><?= $guide($type) ?><?= $forms[$form_for($type)] ?? '' ?><?= $look_html($type) ?><?= $classic_html($type) ?></template>
     <?php endforeach ?>
     <template data-fe-form="advanced"><p class="fe-guide"><?= $t('Sadržaj ovog bloka uređuješ u klasičnom uređivaču. Ovdje ga možeš sakriti, premjestiti ili ukloniti.') ?></p><p><a class="fe-button fe-button-soft" href="<?= url('link/' . (int) $link->link_id . '?tab=blocks') ?>" data-fe-advanced-link><?= $t('Otvori klasični uređivač') ?></a></p></template>
 

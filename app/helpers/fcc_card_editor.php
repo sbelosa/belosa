@@ -243,6 +243,33 @@ function fcc_card_editor_style_fields(string $type): array {
     };
 }
 
+/** Classic card: colours and shapes the classic editor offered for a block, kept until everyone moves to the new card. */
+function fcc_card_editor_classic_fields(string $type): array {
+    return match($type) {
+        'link', 'link_forever_webshop_reg', 'link_forever_shop', 'link_discount', 'link_save_contact', 'custom_html_whatsapp', 'link_forever_product' => ['text_color', 'background_color', 'border_radius', 'border_width', 'border_color', 'border_shadow_style', 'border_shadow_color'],
+        'heading' => ['text_color', 'text_alignment'],
+        'paragraph' => ['text_color', 'background_color', 'text_alignment'],
+        'socials' => ['color', 'background_color'],
+        'divider' => ['background_color'],
+        'faq' => ['text_color', 'background_color'],
+        default => [],
+    };
+}
+
+const FCC_CARD_CLASSIC_CHOICES = [
+    'border_radius' => ['rounded', 'round', 'straight'],
+    'border_shadow_style' => ['none', 'subtle', 'strong', 'hard'],
+    'text_alignment' => ['center', 'left', 'right'],
+];
+
+/** A stored colour for a colour input (#RRGGBB) and whether it is fully transparent. */
+function fcc_card_editor_color_parts(?string $stored, string $fallback = '#000000'): array {
+    $stored = trim((string) $stored);
+    $transparent = (bool) preg_match('/^#[0-9a-f]{6}00$/i', $stored) || $stored === 'transparent';
+    $hex = preg_match('/^#([0-9a-f]{6})/i', $stored, $m) ? '#' . mb_strtoupper($m[1]) : (fcc_card_hex($stored) ?: $fallback);
+    return [$hex, $transparent];
+}
+
 /** Field values for one block's form, already decoded for the inputs. */
 function fcc_card_editor_fields(object $block, ?object $owner = null): array {
     $s = $block->settings;
@@ -261,6 +288,18 @@ function fcc_card_editor_fields(object $block, ?object $owner = null): array {
         'avatar' => ['photo' => !empty($s->image) ? get_biolink_avatar_url($s) : ''],
         default => [],
     };
+    foreach(fcc_card_editor_classic_fields($block->type) as $key) {
+        if(isset(FCC_CARD_CLASSIC_CHOICES[$key])) {
+            $value = (string) ($s->{$key} ?? '');
+            $fields['classic_' . $key] = in_array($value, FCC_CARD_CLASSIC_CHOICES[$key], true) ? $value : FCC_CARD_CLASSIC_CHOICES[$key][0];
+        } elseif($key === 'border_width') {
+            $fields['classic_border_width'] = (string) max(0, min(5, (int) ($s->border_width ?? 0)));
+        } else {
+            [$hex, $transparent] = fcc_card_editor_color_parts($s->{$key} ?? null, $key === 'background_color' ? '#FFFFFF' : '#000000');
+            $fields['classic_' . $key] = $hex;
+            if($key === 'background_color') $fields['classic_background_color_none'] = $transparent;
+        }
+    }
     $look = fcc_card_block_style_clean($s->fcc_style ?? []);
     foreach(fcc_card_editor_style_fields($block->type) as $key) {
         $fields['style_' . $key] = $key === 'icon' ? (string) ($s->icon ?? '') : ($look[$key] ?? FCC_CARD_BLOCK_STYLE_OPTIONS[$key][0]);
@@ -538,6 +577,26 @@ function fcc_card_editor_apply_fields(object $user, object $link, object $block,
             break;
         default:
             throw new InvalidArgumentException(fcc_t('Ovaj blok uređuješ u naprednom uređivaču.'));
+    }
+
+    // Colours and shapes of the classic card. A colour that was not changed keeps its stored form (for example its transparency).
+    if(isset($input['classic_present'])) {
+        foreach(fcc_card_editor_classic_fields($type) as $key) {
+            if(isset(FCC_CARD_CLASSIC_CHOICES[$key])) {
+                $value = (string) ($input['classic_' . $key] ?? '');
+                if(in_array($value, FCC_CARD_CLASSIC_CHOICES[$key], true)) $settings[$key] = $value;
+            } elseif($key === 'border_width') {
+                $settings['border_width'] = max(0, min(5, (int) ($input['classic_border_width'] ?? ($settings['border_width'] ?? 0))));
+            } elseif($key === 'background_color' && !empty($input['classic_background_color_none'])) {
+                $settings['background_color'] = '#00000000';
+            } else {
+                $hex = fcc_card_hex((string) ($input['classic_' . $key] ?? ''));
+                if($hex === '') continue;
+                [$stored_hex, $stored_transparent] = fcc_card_editor_color_parts($settings[$key] ?? null);
+                if($hex === $stored_hex && !($key === 'background_color' && $stored_transparent)) continue;
+                $settings[$key] = $hex;
+            }
+        }
     }
 
     // The block's own look on the new card. Only options this block type offers are read.
