@@ -40,6 +40,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Custom code: FC-2026-10-12: the previous main commit tells which helper files are new.
+          fetch-depth: 0
 
       - name: Use PHP 8.3
         uses: shivammathur/setup-php@v2
@@ -95,6 +98,7 @@ jobs:
           # New FCC card: styles, PRO gating, core blocks and block guide
           php scripts/test_fcc_card.php
           php scripts/test_fcc_card_editor.php
+          php scripts/test_fcc_release_fixes.php
           # /Custom code: FC-2026-10-12
 
       - name: Verify immutable Forever click qualification
@@ -135,6 +139,57 @@ jobs:
           state-name: .ftp-deploy-sync-state-click-tracking.json
           dangerous-clean-slate: false
 
+      # Custom code: FC-2026-10-12: FTP is not atomic. Helper files that are new in this push are
+      # unknown to the running app/init.php, so they can arrive first; the new app/init.php then loads
+      # them before the controllers, changed helpers and themes that call them are uploaded. Each run
+      # keeps its own state files, so a later run never treats these files as removed.
+      - name: Prepare new helpers and app/init.php
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-prerequisites/helpers release-prerequisites/init
+          if [ -n "${BEFORE_SHA}" ] && ! [[ "${BEFORE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git diff --name-only --diff-filter=A "${BEFORE_SHA}" HEAD -- app/helpers > release-prerequisites/new-helpers.txt
+          else
+            # Without the previous commit (manual run) every helper that app/init.php requires goes first.
+            grep -o 'helpers/[A-Za-z0-9_]*\.php' app/init.php | sed 's#^#app/#' | sort -u > release-prerequisites/new-helpers.txt
+          fi
+          while read -r helper; do
+            case "${helper}" in
+              *.php) if [ -f "${helper}" ]; then cp "${helper}" release-prerequisites/helpers/; fi ;;
+            esac
+          done < release-prerequisites/new-helpers.txt
+          cp app/init.php release-prerequisites/init/
+          echo "Sent before app/init.php:"
+          ls -1 release-prerequisites/helpers
+
+      - name: Deploy new helpers before app/init.php
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-prerequisites/helpers/
+          server-dir: /public_html/app/helpers/
+          state-name: .ftp-deploy-sync-state-release-helpers-${{ github.run_id }}-${{ github.run_attempt }}.json
+          dangerous-clean-slate: false
+
+      - name: Deploy app/init.php before controllers
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-prerequisites/init/
+          server-dir: /public_html/app/
+          state-name: .ftp-deploy-sync-state-release-init-${{ github.run_id }}-${{ github.run_attempt }}.json
+          dangerous-clean-slate: false
+      # /Custom code: FC-2026-10-12
+
       - name: Deploy app/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -145,6 +200,16 @@ jobs:
           local-dir: ./app/
           server-dir: /public_html/app/
           dangerous-clean-slate: false
+          # Custom code: FC-2026-10-12: excluded files are neither uploaded nor deleted. GeoLite databases
+          # are refreshed by their own workflow, language caches are generated on the server from the newer
+          # sources, and the deployment marker stays current until the separate marker step replaces it.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/*.mmdb
+            languages/cache/**
+            config/deployment.php
 
       - name: Deploy themes/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

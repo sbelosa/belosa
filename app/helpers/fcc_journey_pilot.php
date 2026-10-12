@@ -245,7 +245,7 @@ function fcc_jp_mutate(int $uid,string $op,array $in,?DateTimeImmutable $now=nul
     fcc_partner_query('UPDATE fcc_partner_journey_steps SET content_json=? WHERE id=?',[json_encode($t,JSON_UNESCAPED_UNICODE),(int)$step['id']]);
     fcc_partner_query('UPDATE fcc_partner_journey_cycles SET version=version+1 WHERE id=?',[(int)$cycle['id']]);
     fcc_journey_event($uid,'step_completed','j90:'.$cycle['id'].':'.$step['id'],FCC_JP_VERSION,'pilot-known:'.$step['id']);
-    fcc_mp_after_complete($uid,(int)$s['completed']+1);
+    if(function_exists('fcc_mp_after_complete'))fcc_mp_after_complete($uid,(int)$s['completed']+1); /* FC-2026-10-12: safe while a deploy is still uploading the new helper */
     $result=(int)$step['id'];
    } else
    /* /Custom code: FC-2026-10-12 */

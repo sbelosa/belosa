@@ -284,11 +284,11 @@ function fcc_mp_stuck(int $uid, array $in): bool {
  return true;
 }
 
-/** One click answer after a saved step: easy, hard or needs help. */
+/** One click answer after a saved step: easy, hard or needs help. A step confirmed as already known is not a worked step and is never rated. */
 function fcc_mp_feedback(int $uid, array $in): string {
  $answer = fcc_partner_choice($in['answer'] ?? '', ['easy'=>1, 'hard'=>1, 'help'=>1]);
  $today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Zagreb')))->format('Y-m-d');
- $row = fcc_partner_one("SELECT o.outcome_id,o.journey_step_id,s.content_json FROM forever_business_daily_outcomes o LEFT JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id WHERE o.recorded_by_user_id=? AND o.journey_cycle_id IS NOT NULL AND o.status='done' AND o.action_date=? ORDER BY o.outcome_id DESC LIMIT 1", [$uid, $today]);
+ $row = fcc_partner_one("SELECT o.outcome_id,o.journey_step_id,s.content_json FROM forever_business_daily_outcomes o LEFT JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id WHERE o.recorded_by_user_id=? AND o.journey_cycle_id IS NOT NULL AND o.status='done' AND o.action_date=? AND (o.completion_mode IS NULL OR o.completion_mode<>'known') ORDER BY o.outcome_id DESC LIMIT 1", [$uid, $today]);
  if(!$row) throw new InvalidArgumentException(fcc_t('Danas još nema spremljenog koraka.'));
  fcc_partner_query('UPDATE forever_business_daily_outcomes SET difficulty=?,needs_help=?,updated_at=UTC_TIMESTAMP() WHERE outcome_id=? AND recorded_by_user_id=?', [$answer === 'easy' ? 'easy' : 'hard', $answer === 'help' ? 1 : 0, (int)$row['outcome_id'], $uid]);
  if($answer === 'help') {
@@ -305,7 +305,7 @@ function fcc_mp_feedback(int $uid, array $in): string {
 
 function fcc_mp_feedback_given(int $uid): bool {
  $today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Zagreb')))->format('Y-m-d');
- return (bool)fcc_partner_one("SELECT 1 FROM forever_business_daily_outcomes WHERE recorded_by_user_id=? AND journey_cycle_id IS NOT NULL AND status='done' AND action_date=? AND difficulty IN ('easy','hard') LIMIT 1", [$uid, $today]);
+ return (bool)fcc_partner_one("SELECT 1 FROM forever_business_daily_outcomes WHERE recorded_by_user_id=? AND journey_cycle_id IS NOT NULL AND status='done' AND action_date=? AND (completion_mode IS NULL OR completion_mode<>'known') AND difficulty IN ('easy','hard') LIMIT 1", [$uid, $today]);
 }
 
 /* ---------- Sponsor view ---------- */

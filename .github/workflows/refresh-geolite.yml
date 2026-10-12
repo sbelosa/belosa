@@ -14,8 +14,9 @@ on:
 permissions:
   contents: read
 
+# Same group as the code deploy, so the two FTP jobs never run at the same time.
 concurrency:
-  group: refresh-geolite
+  group: deploy-cpanel-ftp-production
   cancel-in-progress: false
 
 jobs:
@@ -82,6 +83,7 @@ jobs:
         if: steps.credentials.outputs.ready == 'true'
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_TLS_SERVER: ${{ secrets.FTP_TLS_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
@@ -90,12 +92,15 @@ jobs:
           set -euo pipefail
           umask 077
           work="$RUNNER_TEMP/geolite"
-          printf 'machine %s login %s password %s\n' "$FTP_SERVER" "$FTP_USERNAME" "$FTP_PASSWORD" > "$work/ftp-netrc"
+          # Credentials travel only over TLS (explicit FTPS). FTP_TLS_SERVER is the host name on the
+          # server certificate when it differs from FTP_SERVER; without TLS the upload stops.
+          host="${FTP_TLS_SERVER:-$FTP_SERVER}"
+          printf 'machine %s login %s password %s\n' "$host" "$FTP_USERNAME" "$FTP_PASSWORD" > "$work/ftp-netrc"
           for file in GeoLite2-Country.mmdb GeoLite2-City.mmdb; do
-            curl --fail --silent --show-error --retry 3 --netrc-file "$work/ftp-netrc" \
+            curl --fail --silent --show-error --retry 3 --ssl-reqd --netrc-file "$work/ftp-netrc" \
               --upload-file "$work/out/$file" \
               --quote "-RNFR $file.uploading" --quote "-RNTO $file" \
-              "ftp://${FTP_SERVER}:${FTP_PORT:-21}/public_html/app/includes/$file.uploading"
+              "ftp://${host}:${FTP_PORT:-21}/public_html/app/includes/$file.uploading"
             echo "Uploaded $file"
           done
           rm -f "$work/ftp-netrc"

@@ -35,11 +35,14 @@ function fcc_cm_ensure_table(): void {
   `new_value` longtext NULL,
   `applied_by` int unsigned NOT NULL,
   `applied_at` datetime NOT NULL,
+  `group_key` varchar(64) NULL,
   `reverted_by` int unsigned NULL,
   `reverted_at` datetime NULL,
   PRIMARY KEY (`id`),
   KEY `fcc_cm_key` (`migration_key`,`reverted_at`)
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+ // Tables made before the card switch existed get the card column too (MariaDB syntax, as in production).
+ database()->query("ALTER TABLE `fcc_content_migration_log` ADD COLUMN IF NOT EXISTS `group_key` varchar(64) NULL AFTER `applied_at`");
  $done = true;
 }
 
@@ -236,15 +239,16 @@ function fcc_cm_aloe_plan(): array {
   $history = is_array($settings->fcc_card_history ?? null) ? $settings->fcc_card_history : [];
   $history[] = ['from'=>'v1', 'to'=>'v2', 'at'=>gmdate('c'), 'by'=>'fcc'];
   $settings->fcc_card_history = array_slice($history, -20);
-  $changes[] = ['table'=>'links', 'id'=>(int)$link['link_id'], 'column'=>'settings', 'old'=>(string)$link['settings'], 'new'=>json_encode($settings), 'label'=>$label];
+  $card = (int)$link['link_id'];
+  $changes[] = ['table'=>'links', 'id'=>$card, 'column'=>'settings', 'old'=>(string)$link['settings'], 'new'=>json_encode($settings), 'label'=>$label, 'card'=>$card];
   // Core blocks that a package change switched off come back, as when the owner switches.
   foreach($own as $block) {
    if((int)$block['is_enabled'] !== 0 || !in_array($block['type'], FCC_CARD_CORE_BLOCKS, true)) continue;
    $blockSettings = fcc_card_settings((string)$block['settings']);
    if(empty($blockSettings->plan_auto_disabled)) continue;
    $blockSettings->plan_auto_disabled = false;
-   $changes[] = ['table'=>'biolinks_blocks', 'id'=>(int)$block['biolink_block_id'], 'column'=>'settings', 'old'=>(string)$block['settings'], 'new'=>json_encode($blockSettings), 'label'=>$label];
-   $changes[] = ['table'=>'biolinks_blocks', 'id'=>(int)$block['biolink_block_id'], 'column'=>'is_enabled', 'old'=>(string)$block['is_enabled'], 'new'=>'1', 'label'=>$label];
+   $changes[] = ['table'=>'biolinks_blocks', 'id'=>(int)$block['biolink_block_id'], 'column'=>'settings', 'old'=>(string)$block['settings'], 'new'=>json_encode($blockSettings), 'label'=>$label, 'card'=>$card];
+   $changes[] = ['table'=>'biolinks_blocks', 'id'=>(int)$block['biolink_block_id'], 'column'=>'is_enabled', 'old'=>(string)$block['is_enabled'], 'new'=>'1', 'label'=>$label, 'card'=>$card];
   }
  }
  return $changes;
@@ -269,6 +273,76 @@ function fcc_cm_aloe_after(string $action, array $linkIds): void {
 function fcc_cm_plan_for(string $migration): array {
  if($migration === 'aloe') return fcc_cm_aloe_plan();
  return $migration === 'notice' ? fcc_cm_notice_plan() : fcc_cm_plan();
+}
+
+/** A card and all its blocks, locked for the rest of the transaction. Null when the owner has touched
+ * the card: the card or any block carries a change date, or a block was added after $since (UTC). */
+function fcc_cm_aloe_lock_card(int $linkId, ?string $since = null): ?array {
+ $link = fcc_partner_one('SELECT link_id,settings,last_datetime FROM links WHERE link_id=? FOR UPDATE', [$linkId]);
+ if(!$link || $link['last_datetime'] !== null) return null;
+ $blocks = [];
+ foreach(fcc_partner_rows('SELECT biolink_block_id,link_id,settings,is_enabled,datetime,last_datetime FROM biolinks_blocks WHERE link_id=? FOR UPDATE', [$linkId]) as $block) {
+  if($block['last_datetime'] !== null) return null;
+  if($since !== null && (string)$block['datetime'] >= $since) return null;
+  $blocks[(int)$block['biolink_block_id']] = $block;
+ }
+ return ['link'=>$link, 'blocks'=>$blocks];
+}
+
+/** The current value of one logged or planned row inside a locked card, null when the row is gone. */
+function fcc_cm_aloe_value(array $card, string $table, int $id, string $column): ?string {
+ // The switch only ever writes these three columns; anything else is never touched.
+ if(!in_array($table.'.'.$column, ['links.settings', 'biolinks_blocks.settings', 'biolinks_blocks.is_enabled'], true)) return null;
+ if($table === 'links') return (int)$card['link']['link_id'] === $id && array_key_exists($column, $card['link']) ? (string)$card['link'][$column] : null;
+ return isset($card['blocks'][$id]) && array_key_exists($column, $card['blocks'][$id]) ? (string)$card['blocks'][$id][$column] : null;
+}
+
+/** Applies the switch card by card: every planned row of a card must still hold its old value. */
+function fcc_cm_aloe_apply_rows(array $plan, string $migrationKey, int $actor): array {
+ $applied = 0; $skipped = 0; $done = [];
+ $cards = [];
+ foreach($plan as $change) $cards[(int)($change['card'] ?? 0)][] = $change;
+ foreach($cards as $linkId => $changes) {
+  $card = $linkId > 0 ? fcc_cm_aloe_lock_card($linkId) : null;
+  $unchanged = $card !== null;
+  foreach($changes as $change) if($unchanged && fcc_cm_aloe_value($card, $change['table'], (int)$change['id'], $change['column']) !== $change['old']) $unchanged = false;
+  if(!$unchanged) { $skipped += count($changes); continue; }
+  foreach($changes as $change) {
+   fcc_partner_query('INSERT INTO fcc_content_migration_log (migration_key,table_name,row_id,column_name,old_value,new_value,applied_by,applied_at,group_key) VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),?)', [$migrationKey, $change['table'], $change['id'], $change['column'], $change['old'], $change['new'], $actor, 'link:'.$linkId]);
+   fcc_partner_query("UPDATE `{$change['table']}` SET `{$change['column']}`=? WHERE `".fcc_cm_primary_keys()[$change['table']]."`=?", [$change['new'], $change['id']]);
+   $applied++; $done[] = $change;
+  }
+ }
+ return ['applied'=>$applied, 'skipped'=>$skipped, 'done'=>$done];
+}
+
+/** Reverts a card only as a whole: the card and every block must be exactly as the switch left them and
+ * nothing may have been added since. Otherwise the owner has worked with the new card and it stays. */
+function fcc_cm_aloe_revert_rows(array $logs, int $actor): array {
+ $reverted = 0; $kept = 0; $undone = [];
+ $blockCards = [];
+ $unknown = array_values(array_unique(array_map(static fn($log) => (int)$log['row_id'], array_filter($logs, static fn($log) => empty($log['group_key']) && $log['table_name'] === 'biolinks_blocks'))));
+ foreach(array_chunk($unknown, 500) as $chunk) foreach(fcc_partner_rows('SELECT biolink_block_id,link_id FROM biolinks_blocks WHERE biolink_block_id IN ('.implode(',', $chunk).')') as $row) $blockCards[(int)$row['biolink_block_id']] = (int)$row['link_id'];
+ $cards = [];
+ foreach($logs as $log) {
+  if(!empty($log['group_key']) && preg_match('/^link:(\d+)$/D', (string)$log['group_key'], $m)) $linkId = (int)$m[1];
+  elseif($log['table_name'] === 'links') $linkId = (int)$log['row_id'];
+  else $linkId = $blockCards[(int)$log['row_id']] ?? 0;
+  $cards[$linkId][] = $log;
+ }
+ foreach($cards as $linkId => $cardLogs) {
+  $since = min(array_map(static fn($log) => (string)$log['applied_at'], $cardLogs));
+  $card = $linkId > 0 ? fcc_cm_aloe_lock_card($linkId, $since) : null;
+  $untouched = $card !== null;
+  foreach($cardLogs as $log) if($untouched && fcc_cm_aloe_value($card, $log['table_name'], (int)$log['row_id'], $log['column_name']) !== (string)$log['new_value']) $untouched = false;
+  if(!$untouched) { $kept += count($cardLogs); continue; }
+  foreach($cardLogs as $log) {
+   fcc_partner_query("UPDATE `{$log['table_name']}` SET `{$log['column_name']}`=? WHERE `".fcc_cm_primary_keys()[$log['table_name']]."`=?", [(string)$log['old_value'], (int)$log['row_id']]);
+   fcc_partner_query('UPDATE fcc_content_migration_log SET reverted_by=?,reverted_at=UTC_TIMESTAMP() WHERE id=?', [$actor, (int)$log['id']]);
+   $reverted++; $undone[] = $log;
+  }
+ }
+ return ['reverted'=>$reverted, 'kept'=>$kept, 'undone'=>$undone];
 }
 
 /** Link ids behind applied changes or reverted log rows. */
@@ -330,6 +404,10 @@ function fcc_cm_apply(int $actor, string $migration = 'mojput'): array {
  $plan = fcc_cm_plan_for($migration);
  database()->begin_transaction();
  try {
+  if($migration === 'aloe') {
+   ['applied'=>$applied, 'skipped'=>$skipped, 'done'=>$done] = fcc_cm_aloe_apply_rows($plan, $definition['key'], $actor);
+   $plan = [];
+  }
   foreach($plan as $change) {
    $table = $change['table']; $column = $change['column'];
    if(!isset($keys[$table]) || !preg_match('/^[a-z_]+$/D', $column)) { $skipped++; continue; }
@@ -358,7 +436,12 @@ function fcc_cm_revert(int $actor, string $migration = 'mojput'): array {
  $reverted = 0; $kept = 0; $undone = [];
  database()->begin_transaction();
  try {
-  foreach(fcc_partner_rows('SELECT * FROM fcc_content_migration_log WHERE migration_key=? AND reverted_at IS NULL ORDER BY id DESC', [$definition['key']]) as $log) {
+  $logs = fcc_partner_rows('SELECT * FROM fcc_content_migration_log WHERE migration_key=? AND reverted_at IS NULL ORDER BY id DESC', [$definition['key']]);
+  if($migration === 'aloe') {
+   ['reverted'=>$reverted, 'kept'=>$kept, 'undone'=>$undone] = fcc_cm_aloe_revert_rows($logs, $actor);
+   $logs = [];
+  }
+  foreach($logs as $log) {
    $table = $log['table_name']; $column = $log['column_name'];
    if(!isset($keys[$table]) || !preg_match('/^[a-z_]+$/D', $column)) { $kept++; continue; }
    $current = fcc_partner_one("SELECT `$column` v FROM `$table` WHERE `{$keys[$table]}`=? FOR UPDATE", [(int)$log['row_id']]);

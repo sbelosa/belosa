@@ -341,6 +341,24 @@ function fcc_card_editor_defaults(string $type, object $user, string $language):
     };
 }
 
+/** Files of the change in progress. A new upload is removed if the change fails; a replaced or
+ * removed photo is deleted only after the whole change has been saved. */
+function fcc_card_editor_files(string $action, ?string $name = null, string $folder = ''): array {
+    static $files = ['new' => [], 'old' => []];
+    $snapshot = $files;
+    // Reset hands back what was recorded before it empties the list.
+    if($action === 'reset') $files = ['new' => [], 'old' => []];
+    elseif(in_array($action, ['new', 'old'], true) && !empty($name) && basename($name) === $name) { $files[$action][] = [$name, $folder]; $snapshot = $files; }
+    return $snapshot;
+}
+
+function fcc_card_editor_files_finish(bool $saved): void {
+    $files = fcc_card_editor_files('reset');
+    foreach($saved ? $files['old'] : $files['new'] as [$name, $folder]) {
+        try { fcc_card_editor_remove_upload($name, $folder); } catch(\Throwable $e) { error_log('Card editor file cleanup: ' . get_class($e)); }
+    }
+}
+
 /** Stores an uploaded photo the same way the classic editor does. Returns the stored file name. */
 function fcc_card_editor_upload(string $field, ?string $existing, string $folder, float $size_limit_mb): ?string {
     $file = $_FILES[$field] ?? null;
@@ -360,13 +378,15 @@ function fcc_card_editor_upload(string $field, ?string $existing, string $folder
     if(\Altum\Plugin::is_active('offload') && settings()->offload->uploads_url) {
         $s3 = new \Aws\S3\S3Client(get_aws_s3_config());
         $s3->putObject(['Bucket' => settings()->offload->storage_name, 'Key' => UPLOADS_URL_PATH . $folder . $name, 'ContentType' => mime_content_type($file['tmp_name']), 'SourceFile' => $file['tmp_name'], 'ACL' => 'public-read']);
-        if(!empty($existing)) $s3->deleteObject(['Bucket' => settings()->offload->storage_name, 'Key' => UPLOADS_URL_PATH . $folder . $existing]);
+        fcc_card_editor_files('new', $name, $folder);
+        if(!empty($existing) && $existing !== $name) fcc_card_editor_files('old', $existing, $folder);
         return $name;
     }
 
     if(!is_writable(UPLOADS_PATH . $folder)) throw new InvalidArgumentException(fcc_t('Fotografija nije učitana. Pokušaj ponovno.'));
     if(!move_uploaded_file($file['tmp_name'], UPLOADS_PATH . $folder . $name)) throw new InvalidArgumentException(fcc_t('Fotografija nije učitana. Pokušaj ponovno.'));
-    if(!empty($existing) && basename($existing) === $existing && is_file(UPLOADS_PATH . $folder . $existing)) @unlink(UPLOADS_PATH . $folder . $existing);
+    fcc_card_editor_files('new', $name, $folder);
+    if(!empty($existing) && $existing !== $name) fcc_card_editor_files('old', $existing, $folder);
     return $name;
 }
 
@@ -463,7 +483,8 @@ function fcc_card_editor_check_limit(object $user, object $link): void {
 function fcc_card_editor_save_block(object $block, array $settings, ?string $location_url = null, bool $set_location = false): void {
     $update = ['settings' => json_encode($settings), 'last_datetime' => gmdate('Y-m-d H:i:s')];
     if($set_location) $update['location_url'] = $location_url;
-    db()->where('biolink_block_id', (int) $block->biolink_block_id)->where('user_id', (int) $block->user_id)->update('biolinks_blocks', $update);
+    // A failed write must fail the change, so a replaced photo is not deleted while the block still uses it.
+    if(db()->where('biolink_block_id', (int) $block->biolink_block_id)->where('user_id', (int) $block->user_id)->update('biolinks_blocks', $update) === false) throw new RuntimeException('Card block was not saved.');
 }
 
 /** Applies one block form. For a new block ($block->biolink_block_id = 0) it inserts the block. Returns the block id. */
@@ -517,14 +538,15 @@ function fcc_card_editor_apply_fields(object $user, object $link, object $block,
         case 'avatar':
             $folder = $type === 'avatar' ? 'avatars/' : 'block_images/';
             $limit = (float) ($type === 'avatar' ? (settings()->links->avatar_size_limit ?? 2) : (settings()->links->image_size_limit ?? 2));
-            $settings['image'] = fcc_card_editor_upload('photo', $settings['image'] ?? null, $folder, $limit);
-            if(empty($settings['image'])) throw new InvalidArgumentException(fcc_t('Odaberi fotografiju.'));
-            if($type === 'avatar') $settings['use_default_avatar'] = false;
+            // Everything else is checked first, so a refused form never touches the stored photo.
             if($type === 'image') {
                 $settings['image_alt'] = fcc_card_editor_line($input['alt'] ?? '', 100);
                 $location = fcc_card_editor_url($input['url'] ?? '', false, $user);
                 $set_location = true;
             }
+            $settings['image'] = fcc_card_editor_upload('photo', $settings['image'] ?? null, $folder, $limit);
+            if(empty($settings['image'])) throw new InvalidArgumentException(fcc_t('Odaberi fotografiju.'));
+            if($type === 'avatar') $settings['use_default_avatar'] = false;
             break;
         case 'review':
             $settings['author_name'] = fcc_card_editor_line($input['author_name'] ?? '', 64);
@@ -626,6 +648,7 @@ function fcc_card_editor_apply_fields(object $user, object $link, object $block,
         fcc_card_editor_check_limit($user, $link);
         $order = fcc_card_editor_insert_position($link);
         $id = fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, $type, $settings, $set_location ? $location : null, $order);
+        if($id <= 0) throw new RuntimeException('Card block was not added.');
         return $id;
     }
     fcc_card_editor_save_block($block, $settings, $location, $set_location);
@@ -658,7 +681,7 @@ function fcc_card_editor_save_profile(object $user, object $link, array $input):
             $settings['image'] = fcc_card_editor_upload('photo', $settings['image'] ?? null, 'avatars/', (float) (settings()->links->avatar_size_limit ?? 2));
             $settings['use_default_avatar'] = false;
         } elseif($remove_photo) {
-            fcc_card_editor_remove_upload($settings['image'] ?? null, 'avatars/');
+            fcc_card_editor_files('old', $settings['image'] ?? null, 'avatars/');
             $settings['image'] = null;
             $settings['use_default_avatar'] = true;
         }
@@ -743,7 +766,9 @@ function fcc_card_editor_mutate(object $user, int $link_id, array $input): array
     $is_v2 = fcc_card_is_v2($link);
     $plan = fcc_card_editor_plan_blocks($user);
     $result = ['message' => fcc_t('Spremljeno.'), 'block_id' => 0];
+    fcc_card_editor_files('reset');
 
+    try {
     switch($action) {
         case 'profile':
             fcc_card_editor_guard();
@@ -842,6 +867,11 @@ function fcc_card_editor_mutate(object $user, int $link_id, array $input): array
     }
 
     db()->where('link_id', $link_id)->update('links', ['last_datetime' => gmdate('Y-m-d H:i:s')]);
+    } catch(\Throwable $e) {
+        fcc_card_editor_files_finish(false);
+        throw $e;
+    }
+    fcc_card_editor_files_finish(true);
     fcc_card_clear_cache($link);
     return $result;
 }

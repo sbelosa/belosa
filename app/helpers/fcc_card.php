@@ -286,8 +286,14 @@ function fcc_card_intro_text(?string $language = null): string {
 }
 
 function fcc_card_own_vcard_url(int $user_id): ?string {
-    $vcard = db()->where('user_id', $user_id)->where('type', 'vcard')->where('is_enabled', 1)->orderBy('link_id', 'ASC')->getOne('links', ['url']);
-    return $vcard ? SITE_URL . $vcard->url : null;
+    // A vCard on the main site comes first; one on the member's own domain is served only there.
+    $vcard = db()->where('user_id', $user_id)->where('type', 'vcard')->where('is_enabled', 1)->orderBy('domain_id', 'ASC')->orderBy('link_id', 'ASC')->getOne('links', ['url', 'domain_id']);
+    if(!$vcard) return null;
+    if((int) ($vcard->domain_id ?? 0) > 0) {
+        $domain = db()->where('domain_id', (int) $vcard->domain_id)->where('user_id', $user_id)->where('is_enabled', 1)->getOne('domains', ['scheme', 'host']);
+        return $domain ? $domain->scheme . $domain->host . '/' . $vcard->url : null;
+    }
+    return SITE_URL . $vcard->url;
 }
 
 /** Blocks the new card recommends and which of them this card is missing. */
@@ -399,16 +405,34 @@ function fcc_card_localize_factory_label(object $row): void {
 }
 
 /** "Save contact" always saves the card owner's own contact. Returns false when the owner has none. */
+/** True only for the owner's own enabled vCard on this site or on the vCard's own custom domain. */
+function fcc_card_is_own_vcard_url(string $url, int $owner_id): bool {
+    $parts = parse_url(trim($url));
+    if(!is_array($parts)) return false;
+    $slug = trim((string) ($parts['path'] ?? ''), '/');
+    if($slug === '' || str_contains($slug, '/') || isset($parts['user']) || isset($parts['pass'])) return false;
+    $vcard = db()->where('url', $slug)->where('type', 'vcard')->where('user_id', $owner_id)->where('is_enabled', 1)->getOne('links', ['link_id', 'domain_id']);
+    if(!$vcard) return false;
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    if($host === '') return !isset($parts['scheme']);
+    $site = strtolower((string) parse_url(SITE_URL, PHP_URL_HOST));
+    if(in_array($host, [$site, 'www.' . $site], true) && (int) $vcard->domain_id === 0) return true;
+    if((int) $vcard->domain_id > 0) {
+        $domain = db()->where('domain_id', (int) $vcard->domain_id)->where('user_id', $owner_id)->getOne('domains', ['host']);
+        return $domain && strtolower((string) $domain->host) === $host;
+    }
+    return false;
+}
+
+/** Save contact always saves the card owner's contact. A button that points anywhere else (another
+ * member's vCard, a disabled or unknown page, another host) uses the owner's own vCard instead, and
+ * without one the button is hidden. Only the shown address changes; the stored block stays as it is. */
 function fcc_card_fix_save_contact(object $row, int $owner_id): bool {
     if($row->type !== 'link_save_contact') return true;
+    if(fcc_card_is_own_vcard_url((string) ($row->location_url ?? ''), $owner_id)) return true;
     $own = fcc_card_own_vcard_url($owner_id);
-    $path = trim((string) parse_url((string) ($row->location_url ?? ''), PHP_URL_PATH), '/');
-    $target = $path !== '' ? db()->where('url', basename($path))->where('type', 'vcard')->getOne('links', ['user_id']) : null;
-    if($target && (int) $target->user_id === $owner_id) return true;
-    if($target || $path === '') {
-        if(!$own) return false;
-        $row->location_url = $own;
-    }
+    if(!$own) return false;
+    $row->location_url = $own;
     return true;
 }
 
