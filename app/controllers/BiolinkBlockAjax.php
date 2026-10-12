@@ -162,7 +162,9 @@ class BiolinkBlockAjax extends Controller {
             }
             /* /Custom code: FC-2026-04-01 */
 
-            db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', ['is_enabled' => $new_is_enabled]);
+            /* Custom code: FC-2026-10-12: a classic editor change prevents an automatic Aloe revert. */
+            db()->where('biolink_block_id', $biolink_block->biolink_block_id)->update('biolinks_blocks', ['is_enabled' => $new_is_enabled, 'last_datetime' => get_date()]);
+            /* /Custom code: FC-2026-10-12 */
 
             /* Clear the cache */
             cache()->deleteItem('biolink_blocks?link_id=' . $biolink_block->link_id);
@@ -330,7 +332,9 @@ class BiolinkBlockAjax extends Controller {
                 $link['order'] = (int) $link['order'];
 
                 /* Update the link order */
-                db()->where('biolink_block_id', $link['biolink_block_id'])->where('user_id', $this->user->user_id)->update('biolinks_blocks', ['order' => $link['order']]);
+                /* Custom code: FC-2026-10-12: preserve manual ordering when an Aloe switch is reverted. */
+                db()->where('biolink_block_id', $link['biolink_block_id'])->where('user_id', $this->user->user_id)->update('biolinks_blocks', ['order' => $link['order'], 'last_datetime' => get_date()]);
+                /* /Custom code: FC-2026-10-12 */
             }
 
             if(isset($biolink_block)) {
@@ -7901,6 +7905,11 @@ class BiolinkBlockAjax extends Controller {
             die();
         }
 
+        /* Custom code: FC-2026-10-12: remember owner deletion even after its block row is gone. */
+        if(db()->where('link_id', $biolink_block->link_id)->where('user_id', $this->user->user_id)->update('links', ['last_datetime' => get_date()]) === false) {
+            Response::json(l('global.error_message.basic'), 'error');
+        }
+        /* /Custom code: FC-2026-10-12 */
         (new \Altum\Models\BiolinkBlock())->delete($biolink_block->biolink_block_id);
 
         Response::json(l('global.success_message.delete2'), 'success', ['url' => url('link/' . $biolink_block->link_id . '?tab=blocks')]);

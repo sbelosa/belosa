@@ -1,0 +1,313 @@
+{
+  "schema": 1,
+  "source_snapshot_sha256": "216eb4829dc47ccd677bb2c74a3b30884378a29583ccd2e540ba10ca927886f2",
+  "months": {
+    "2023-08": "G1",
+    "2023-09": "G1",
+    "2023-10": "G1",
+    "2023-11": "G1",
+    "2023-12": "G1",
+    "2024-01": "G1",
+    "2024-02": "G1",
+    "2024-03": "G1",
+    "2024-04": "G1",
+    "2024-05": "G1",
+    "2024-08": "G2",
+    "2024-09": "G2",
+    "2024-10": "G2",
+    "2024-11": "G2",
+    "2024-12": "G2",
+    "2025-01": "G2",
+    "2025-05": "G4",
+    "2025-06": "G4",
+    "2025-07": "G4",
+    "2025-08": "G4",
+    "2025-09": "G4",
+    "2025-10": "G4",
+    "2025-11": "G4",
+    "2025-12": "G4",
+    "2026-01": "G4",
+    "2026-05": "G5",
+    "2026-06": "G5"
+  },
+  "generations": {
+    "G1": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link",
+        "link",
+        "email_collector",
+        "phone_collector",
+        "vimeo"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link",
+        "vimeo",
+        "phone_collector",
+        "email_collector",
+        "link"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        4,
+        7,
+        6,
+        5,
+        3
+      ]
+    },
+    "G2": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "phone_collector",
+        "vimeo",
+        "link_forever_shop",
+        "link_save_contact"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link_forever_shop",
+        "vimeo",
+        "phone_collector",
+        "link_save_contact"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        5,
+        4,
+        3,
+        6
+      ]
+    },
+    "G3": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "vimeo",
+        "link_forever_shop",
+        "link_save_contact",
+        "link_discount",
+        "link_homescreen_android"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link_forever_shop",
+        "link_discount",
+        "vimeo",
+        "link_save_contact",
+        "link_homescreen_android"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        4,
+        6,
+        3,
+        5,
+        7
+      ]
+    },
+    "G4": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "phone_collector",
+        "vimeo",
+        "link_forever_shop",
+        "link_save_contact",
+        "custom_html_chatbot"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link_forever_shop",
+        "vimeo",
+        "phone_collector",
+        "link_save_contact",
+        "custom_html_chatbot"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        5,
+        4,
+        3,
+        6,
+        7
+      ]
+    },
+    "G5": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "vimeo",
+        "link_save_contact",
+        "custom_html_chatbot",
+        "custom_html_whatsapp",
+        "link_homescreen_android",
+        "link_forever_shop"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link_forever_shop",
+        "vimeo",
+        "link_save_contact",
+        "custom_html_chatbot",
+        "custom_html_whatsapp",
+        "link_homescreen_android"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        8,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "G6": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "vimeo",
+        "custom_html_chatbot",
+        "custom_html_whatsapp",
+        "link_homescreen_android",
+        "link_forever_shop"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "custom_html_whatsapp",
+        "socials",
+        "link_forever_shop",
+        "vimeo",
+        "custom_html_chatbot",
+        "link_homescreen_android"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        5,
+        2,
+        7,
+        3,
+        4,
+        6
+      ]
+    },
+    "G7": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "vimeo",
+        "link_save_contact",
+        "custom_html_chatbot",
+        "custom_html_whatsapp",
+        "link_homescreen_android",
+        "link_forever_shop",
+        "link_forever_webshop_reg"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link_forever_shop",
+        "vimeo",
+        "link_save_contact",
+        "custom_html_chatbot",
+        "custom_html_whatsapp",
+        "link_homescreen_android",
+        "link_forever_webshop_reg"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        8,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ]
+    },
+    "IMPORT_2023_07_07": {
+      "creation_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link",
+        "link",
+        "email_collector",
+        "phone_collector",
+        "vimeo"
+      ],
+      "display_types": [
+        "avatar",
+        "heading",
+        "socials",
+        "link",
+        "vimeo",
+        "phone_collector",
+        "email_collector",
+        "link"
+      ],
+      "display_creation_positions": [
+        0,
+        1,
+        2,
+        4,
+        7,
+        6,
+        5,
+        3
+      ]
+    }
+  },
+  "import": {
+    "generation": "IMPORT_2023_07_07",
+    "card_datetime": "2023-07-07 06:08:34",
+    "user_from": "2023-07-04 00:00:00",
+    "user_before": "2023-07-07 00:00:00"
+  },
+  "extension_batches": {
+    "2026-10-02 11:08": {
+      "from": "2026-10-02 11:08:04",
+      "through": "2026-10-02 11:08:07",
+      "types": [
+        "link_forever_shop",
+        "link_forever_webshop_reg"
+      ]
+    }
+  }
+}

@@ -7,6 +7,9 @@ name: Refresh GeoLite databases
 # partial file. The repository copies are left untouched.
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/refresh-geolite.yml']
   schedule:
     - cron: '23 3 * * 3'
   workflow_dispatch:
@@ -94,7 +97,7 @@ jobs:
           work="$RUNNER_TEMP/geolite"
           # Credentials travel only over TLS (explicit FTPS). FTP_TLS_SERVER is the host name on the
           # server certificate when it differs from FTP_SERVER; without TLS the upload stops.
-          host="${FTP_TLS_SERVER:-$FTP_SERVER}"
+          host="${FTP_TLS_SERVER:-litespeed.hiperweb.hr}"
           printf 'machine %s login %s password %s\n' "$host" "$FTP_USERNAME" "$FTP_PASSWORD" > "$work/ftp-netrc"
           for file in GeoLite2-Country.mmdb GeoLite2-City.mmdb; do
             curl --fail --silent --show-error --retry 3 --ssl-reqd --netrc-file "$work/ftp-netrc" \

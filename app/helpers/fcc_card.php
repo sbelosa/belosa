@@ -415,12 +415,22 @@ function fcc_card_is_own_vcard_url(string $url, int $owner_id): bool {
     if(!$vcard) return false;
     $host = strtolower((string) ($parts['host'] ?? ''));
     if($host === '') return !isset($parts['scheme']);
+    // Custom code: FC-2026-10-12: a matching host is insufficient when its scheme or port is wrong.
+    $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+    if(!in_array($scheme, ['http', 'https'], true)) return false;
+    $port = (int) ($parts['port'] ?? ($scheme === 'https' ? 443 : 80));
+    $sameOrigin = static function(array $expected) use ($scheme, $port): bool {
+        $expectedScheme = strtolower((string) ($expected['scheme'] ?? ''));
+        return $scheme === $expectedScheme && $port === (int) ($expected['port'] ?? ($expectedScheme === 'https' ? 443 : 80));
+    };
     $site = strtolower((string) parse_url(SITE_URL, PHP_URL_HOST));
-    if(in_array($host, [$site, 'www.' . $site], true) && (int) $vcard->domain_id === 0) return true;
+    if(in_array($host, [$site, 'www.' . $site], true) && (int) $vcard->domain_id === 0) return $sameOrigin(parse_url(SITE_URL));
     if((int) $vcard->domain_id > 0) {
-        $domain = db()->where('domain_id', (int) $vcard->domain_id)->where('user_id', $owner_id)->getOne('domains', ['host']);
-        return $domain && strtolower((string) $domain->host) === $host;
+        $domain = db()->where('domain_id', (int) $vcard->domain_id)->where('user_id', $owner_id)->where('is_enabled', 1)->getOne('domains', ['scheme', 'host']);
+        $origin = $domain ? parse_url($domain->scheme . $domain->host) : false;
+        return is_array($origin) && strtolower((string) ($origin['host'] ?? '')) === $host && $sameOrigin($origin);
     }
+    // /Custom code: FC-2026-10-12
     return false;
 }
 

@@ -692,7 +692,7 @@ function fcc_card_editor_save_profile(object $user, object $link, array $input):
             $settings['image'] = fcc_card_editor_upload('photo', null, 'avatars/', (float) (settings()->links->avatar_size_limit ?? 2));
             $settings['use_default_avatar'] = false;
         }
-        fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, 'avatar', $settings, null, -3);
+        if(fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, 'avatar', $settings, null, -3) <= 0) throw new RuntimeException('Card photo was not added.');
         $created = true;
     }
 
@@ -702,7 +702,7 @@ function fcc_card_editor_save_profile(object $user, object $link, array $input):
         $settings['text'] = $name;
         fcc_card_editor_save_block($by_id[$ids['heading']], $settings);
     } else {
-        fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, 'heading', ['text' => $name] + fcc_card_editor_defaults('heading', $user, $language), null, -2);
+        if(fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, 'heading', ['text' => $name] + fcc_card_editor_defaults('heading', $user, $language), null, -2) <= 0) throw new RuntimeException('Card name was not added.');
         $created = true;
     }
 
@@ -716,7 +716,7 @@ function fcc_card_editor_save_profile(object $user, object $link, array $input):
             fcc_card_editor_save_block($by_id[$ids['paragraph']], $settings);
         }
     } elseif($intro !== '') {
-        fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, 'paragraph', ['text' => $intro] + fcc_card_editor_defaults('paragraph', $user, $language), null, -1);
+        if(fcc_card_block_insert((int) $user->user_id, (int) $link->link_id, 'paragraph', ['text' => $intro] + fcc_card_editor_defaults('paragraph', $user, $language), null, -1) <= 0) throw new RuntimeException('Card introduction was not added.');
         $created = true;
     }
 
@@ -767,8 +767,14 @@ function fcc_card_editor_mutate(object $user, int $link_id, array $input): array
     $plan = fcc_card_editor_plan_blocks($user);
     $result = ['message' => fcc_t('Spremljeno.'), 'block_id' => 0];
     fcc_card_editor_files('reset');
+    // Custom code: FC-2026-10-12: keep profile and upload-bearing saves atomic in the shared mysqli connection.
+    $transaction = false;
 
     try {
+    if(in_array($action, ['profile', 'save'], true)) {
+        if(!database()->begin_transaction()) throw new RuntimeException('Card save could not start.');
+        $transaction = true;
+    }
     switch($action) {
         case 'profile':
             fcc_card_editor_guard();
@@ -866,12 +872,18 @@ function fcc_card_editor_mutate(object $user, int $link_id, array $input): array
             throw new InvalidArgumentException(fcc_t('Radnja nije prepoznata. Osvježi stranicu.'));
     }
 
-    db()->where('link_id', $link_id)->update('links', ['last_datetime' => gmdate('Y-m-d H:i:s')]);
+    if(db()->where('link_id', $link_id)->where('user_id', $uid)->update('links', ['last_datetime' => gmdate('Y-m-d H:i:s')]) === false) throw new RuntimeException('Card change date was not saved.');
+    if($transaction) {
+        if(!database()->commit()) throw new RuntimeException('Card save could not finish.');
+        $transaction = false;
+    }
     } catch(\Throwable $e) {
+        if($transaction) database()->rollback();
         fcc_card_editor_files_finish(false);
         throw $e;
     }
     fcc_card_editor_files_finish(true);
+    // /Custom code: FC-2026-10-12
     fcc_card_clear_cache($link);
     return $result;
 }

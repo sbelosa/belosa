@@ -78,9 +78,9 @@ namespace FccReleaseFixes {
     function fcc_partner_one(string $sql, array $args = []): ?array {
         $f = &$GLOBALS['FIX'];
         if(str_contains($sql, 'SELECT type,status FROM users')) return ['type' => 1, 'status' => 1];
-        if(str_contains($sql, 'SELECT link_id,settings,last_datetime FROM links WHERE link_id=? FOR UPDATE')) {
+        if(str_contains($sql, 'FROM links WHERE link_id=? FOR UPDATE')) {
             $row = $f['links'][(int) $args[0]] ?? null;
-            return $row ? ['link_id' => (string) $row['link_id'], 'settings' => $row['settings'], 'last_datetime' => $row['last_datetime']] : null;
+            return $row;
         }
         if(str_contains($sql, 'FROM forever_business_daily_outcomes')) {
             $rows = array_filter($f['outcomes'], static fn($row) => $row['recorded_by_user_id'] === $args[0] && $row['action_date'] === $args[1] && $row['status'] === 'done');
@@ -134,21 +134,21 @@ namespace FccReleaseFixes {
     try {
         /* ---------- 1. The Aloe switch goes back only as a whole card ---------- */
         $classic = '{"theme":"x"}';
-        $card = static fn(int $id) => ['link_id' => $id, 'user_id' => 100 + $id, 'url' => 'card' . $id, 'domain_id' => 0, 'type' => 'biolink', 'is_enabled' => 1, 'settings' => $classic, 'last_datetime' => null];
-        $block = static fn(int $id, int $link, string $type, array $settings = [], string $enabled = '1') => ['biolink_block_id' => $id, 'link_id' => $link, 'user_id' => 100 + $link, 'type' => $type, 'settings' => json_encode($settings ?: ['text' => 'x']), 'is_enabled' => $enabled, 'datetime' => '2025-01-01 10:00:00', 'last_datetime' => null];
+        $card = static fn(int $id) => ['link_id' => $id, 'user_id' => 100 + $id, 'url' => 'card' . $id, 'domain_id' => 0, 'type' => 'biolink', 'is_enabled' => 1, 'settings' => $classic, 'last_datetime' => null, 'datetime'=>'2025-01-01 10:00:00', 'user_datetime'=>'2025-01-01 10:00:00', 'first_link_id'=>$id];
+        $block = static fn(int $id, int $link, string $type, array $settings = [], string $enabled = '1') => ['biolink_block_id' => $id, 'link_id' => $link, 'user_id' => 100 + $link, 'type' => $type, 'settings' => json_encode($settings ?: ['text' => 'x']), 'is_enabled' => $enabled, 'datetime' => '2025-01-01 10:00:00', 'last_datetime' => null, 'order'=>array_search($type, ['avatar','heading','socials','link_forever_shop','vimeo','phone_collector','link_save_contact'], true)];
         $fresh = static function() use ($card, $block): void {
             $GLOBALS['FIX'] = ['links' => [1 => $card(1), 2 => $card(2)], 'biolinks_blocks' => [
-                11 => $block(11, 1, 'heading'), 12 => $block(12, 1, 'link_save_contact', ['plan_auto_disabled' => true], '0'),
-                21 => $block(21, 2, 'heading'),
+                101=>$block(101,1,'avatar'), 102=>$block(102,1,'heading'), 103=>$block(103,1,'socials'), 104=>$block(104,1,'phone_collector'), 105=>$block(105,1,'vimeo'), 106=>$block(106,1,'link_forever_shop'), 107=>$block(107,1,'link_save_contact',['plan_auto_disabled'=>true],'0'),
+                201=>$block(201,2,'avatar'), 202=>$block(202,2,'heading'), 203=>$block(203,2,'socials'), 204=>$block(204,2,'phone_collector'), 205=>$block(205,2,'vimeo'), 206=>$block(206,2,'link_forever_shop'), 207=>$block(207,2,'link_save_contact'),
             ], 'log' => [], 'notices' => [], 'withdrawn' => [], 'outcomes' => []];
-            $GLOBALS['NOW'] = '2026-10-13 07:00:00';
+            $GLOBALS['NOW'] = '2026-10-108 07:00:00';
         };
         $snapshot = static fn() => json_encode([$GLOBALS['FIX']['links'], $GLOBALS['FIX']['biolinks_blocks']]);
 
         $fresh(); $before = $snapshot();
         $applied = fcc_cm_apply(1, 'aloe');
         check($applied === ['applied' => 4, 'skipped' => 0], 'apply switches two cards and re-enables one block: ' . json_encode($applied));
-        check(fcc_card_is_v2((object) $GLOBALS['FIX']['links'][1]) && $GLOBALS['FIX']['biolinks_blocks'][12]['is_enabled'] === '1', 'card 1 is new and its core block is on');
+        check(fcc_card_is_v2((object) $GLOBALS['FIX']['links'][1]) && $GLOBALS['FIX']['biolinks_blocks'][107]['is_enabled'] === '1', 'card 1 is new and its core block is on');
         check(count(array_filter($GLOBALS['FIX']['log'], static fn($l) => $l['group_key'] === 'link:1')) === 3, 'log rows carry their card');
         check(count($GLOBALS['FIX']['notices']) === 2, 'both owners get one notice');
         $again = fcc_cm_apply(1, 'aloe');
@@ -160,32 +160,42 @@ namespace FccReleaseFixes {
 
         // Owner edits a block in the new editor: the block and the card get a change date.
         $fresh(); fcc_cm_apply(1, 'aloe');
-        $GLOBALS['FIX']['biolinks_blocks'][11]['settings'] = '{"text":"Owner"}';
-        $GLOBALS['FIX']['biolinks_blocks'][11]['last_datetime'] = '2026-10-13 08:00:00';
-        $GLOBALS['FIX']['links'][1]['last_datetime'] = '2026-10-13 08:00:00';
+        $GLOBALS['FIX']['biolinks_blocks'][102]['settings'] = '{"text":"Owner"}';
+        $GLOBALS['FIX']['biolinks_blocks'][102]['last_datetime'] = '2026-10-108 08:00:00';
+        $GLOBALS['FIX']['links'][1]['last_datetime'] = '2026-10-108 08:00:00';
         $reverted = fcc_cm_revert(1, 'aloe');
         check($reverted === ['reverted' => 1, 'kept' => 3], 'the edited card stays whole, the other card goes back: ' . json_encode($reverted));
-        check(fcc_card_is_v2((object) $GLOBALS['FIX']['links'][1]) && $GLOBALS['FIX']['biolinks_blocks'][12]['is_enabled'] === '1', 'nothing of the edited card is reverted');
+        check(fcc_card_is_v2((object) $GLOBALS['FIX']['links'][1]) && $GLOBALS['FIX']['biolinks_blocks'][107]['is_enabled'] === '1', 'nothing of the edited card is reverted');
 
         // Owner changes the style and a block: no partial revert that would hide an edited block.
         $fresh(); fcc_cm_apply(1, 'aloe');
         $GLOBALS['FIX']['links'][1]['settings'] = json_encode(['fcc_card' => 'v2', 'fcc_card_theme' => 'smaragd']);
-        $GLOBALS['FIX']['biolinks_blocks'][12]['settings'] = '{"plan_auto_disabled":false,"name":"Owner"}';
+        $GLOBALS['FIX']['biolinks_blocks'][107]['settings'] = '{"plan_auto_disabled":false,"name":"Owner"}';
         fcc_cm_revert(1, 'aloe');
-        check($GLOBALS['FIX']['biolinks_blocks'][12]['is_enabled'] === '1', 'an edited block is never switched off by a revert');
+        check($GLOBALS['FIX']['biolinks_blocks'][107]['is_enabled'] === '1', 'an edited block is never switched off by a revert');
 
         // A block added later with the classic editor (no card change date) keeps the card.
         $fresh(); fcc_cm_apply(1, 'aloe');
-        $GLOBALS['FIX']['biolinks_blocks'][13] = $block(13, 1, 'link') + [];
-        $GLOBALS['FIX']['biolinks_blocks'][13]['datetime'] = '2026-10-13 09:00:00';
+        $GLOBALS['FIX']['biolinks_blocks'][108] = $block(108, 1, 'link') + [];
+        $GLOBALS['FIX']['biolinks_blocks'][108]['datetime'] = '2026-10-108 09:00:00';
         $reverted = fcc_cm_revert(1, 'aloe');
         check($reverted['kept'] === 3 && fcc_card_is_v2((object) $GLOBALS['FIX']['links'][1]), 'a card with a block added after the switch stays');
 
         // A plan that went stale before apply skips the whole card.
         $fresh(); $plan = fcc_cm_aloe_plan();
-        $GLOBALS['FIX']['biolinks_blocks'][12]['last_datetime'] = '2026-10-13 06:59:00';
-        $result = fcc_cm_aloe_apply_rows($plan, 'card-aloe-2026-10-12', 1);
+        $GLOBALS['FIX']['biolinks_blocks'][107]['last_datetime'] = '2026-10-108 06:59:00';
+        $result = fcc_cm_aloe_apply_rows($plan, 'card-aloe-2026-10-107', 1);
         check($result['applied'] === 1 && $result['skipped'] === 3 && !fcc_card_is_v2((object) $GLOBALS['FIX']['links'][1]), 'apply skips a card changed after the plan');
+
+        // A new block or removed factory block between planning and locking must skip the whole card.
+        $fresh(); $plan = fcc_cm_aloe_plan();
+        $GLOBALS['FIX']['biolinks_blocks'][108] = $block(108, 1, 'link_forever_webshop_reg', ['factory_shop'=>true]);
+        $GLOBALS['FIX']['biolinks_blocks'][108]['datetime'] = '2026-10-13 06:59:00';
+        $result = fcc_cm_aloe_apply_rows($plan, 'card-aloe-2026-10-12', 1);
+        check($result['applied'] === 1 && $result['skipped'] === 3 && count($result['done']) === 1 && $result['done'][0]['card'] === 2 && !fcc_card_is_v2((object)$GLOBALS['FIX']['links'][1]), 'a later added block without a change date skips the card under its lock');
+        $fresh(); $plan = fcc_cm_aloe_plan(); unset($GLOBALS['FIX']['biolinks_blocks'][102]);
+        $result = fcc_cm_aloe_apply_rows($plan, 'card-aloe-2026-10-12', 1);
+        check($result['applied'] === 1 && $result['skipped'] === 3 && count($result['done']) === 1 && $result['done'][0]['card'] === 2 && !fcc_card_is_v2((object)$GLOBALS['FIX']['links'][1]), 'an unmarked removed factory block skips the card under its lock');
 
         /* ---------- 2. Photos: the old file goes only after a saved change ---------- */
         $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jA1sAAAAASUVORK5CYII=');
@@ -251,7 +261,7 @@ namespace FccReleaseFixes {
         $order = array_map(static fn($name) => strpos($deploy, '- name: ' . $name . "\n"), ['Deploy new helpers before app/init.php', 'Deploy app/init.php before controllers', 'Deploy app/', 'Deploy themes/', 'Publish verified deployment marker']);
         check(!in_array(false, $order, true) && $order === array_values(array_unique($order)) && $order == array_values((static function($o) { sort($o); return $o; })($order)), 'new helpers, then app/init.php, then app/, themes and the marker');
         check(str_contains($deploy, '--diff-filter=A "${BEFORE_SHA}" HEAD -- app/helpers') && str_contains($deploy, 'fetch-depth: 0'), 'new helpers come from the previous main commit');
-        check(substr_count($deploy, 'state-name: .ftp-deploy-sync-state-release-') === 2 && substr_count($deploy, '${{ github.run_id }}-${{ github.run_attempt }}.json') === 2, 'each run keeps its own prerequisite state, so nothing is deleted later');
+        check(substr_count($deploy, 'state-name: .ftp-deploy-sync-state-release-') === 5 && substr_count($deploy, '${{ github.run_id }}-${{ github.run_attempt }}.json') === 5, 'each run keeps its own prerequisite states, so nothing is deleted later');
         foreach(['**/*.mmdb', 'languages/cache/**', 'config/deployment.php', '**/.git*'] as $pattern) check(str_contains($deploy, "            " . $pattern . "\n"), 'app deploy excludes ' . $pattern);
         $geolite = (string) file_get_contents($root . '/.github/workflows/refresh-geolite.yml');
         check(str_contains($geolite, '--ssl-reqd') && !preg_match('/curl(?:(?!--ssl-reqd)[^\n])*\\\\\n\s*--upload-file/', $geolite), 'GeoLite upload requires TLS');

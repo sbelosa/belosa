@@ -9,6 +9,11 @@ on:
       - 'themes/**'
       - '.github/workflows/deploy-cpanel-ftp.yml'
   workflow_dispatch:
+    inputs:
+      previous_main_sha:
+        description: Currently deployed commit used to stage newly added dependencies
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -99,6 +104,9 @@ jobs:
           php scripts/test_fcc_card.php
           php scripts/test_fcc_card_editor.php
           php scripts/test_fcc_release_fixes.php
+          php scripts/test_fcc_editor_transaction.php
+          php scripts/test_fcc_classic_aloe.php
+          php scripts/test_fcc_aloe_provenance.php
           # /Custom code: FC-2026-10-12
 
       - name: Verify immutable Forever click qualification
@@ -118,7 +126,9 @@ jobs:
       - name: Deploy click destination helpers
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
@@ -130,7 +140,9 @@ jobs:
       - name: Deploy click tracking and schema helpers
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
@@ -145,30 +157,71 @@ jobs:
       # keeps its own state files, so a later run never treats these files as removed.
       - name: Prepare new helpers and app/init.php
         env:
-          BEFORE_SHA: ${{ github.event.before }}
+          BEFORE_SHA: ${{ github.event.before || inputs.previous_main_sha }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p release-prerequisites/helpers release-prerequisites/init
+          mkdir -p release-prerequisites/helpers release-prerequisites/init release-prerequisites/app release-prerequisites/themes release-prerequisites/views/altum/views/partner
           if [ -n "${BEFORE_SHA}" ] && ! [[ "${BEFORE_SHA}" =~ ^0+$ ]] && git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
             git diff --name-only --diff-filter=A "${BEFORE_SHA}" HEAD -- app/helpers > release-prerequisites/new-helpers.txt
           else
-            # Without the previous commit (manual run) every helper that app/init.php requires goes first.
-            grep -o 'helpers/[A-Za-z0-9_]*\.php' app/init.php | sed 's#^#app/#' | sort -u > release-prerequisites/new-helpers.txt
+            echo 'A valid currently deployed commit is required before FTP changes.' >&2
+            exit 1
           fi
+          git diff --name-only --diff-filter=A "${BEFORE_SHA}" HEAD -- app/config app/controllers themes > release-prerequisites/new-dependencies.txt
+          while read -r dependency; do
+            case "${dependency}" in
+              app/config/*|app/controllers/*) target="release-prerequisites/app/${dependency#app/}" ;;
+              themes/*) target="release-prerequisites/themes/${dependency#themes/}" ;;
+              *) continue ;;
+            esac
+            mkdir -p "$(dirname "${target}")"
+            cp "${dependency}" "${target}"
+          done < release-prerequisites/new-dependencies.txt
           while read -r helper; do
             case "${helper}" in
               *.php) if [ -f "${helper}" ]; then cp "${helper}" release-prerequisites/helpers/; fi ;;
             esac
           done < release-prerequisites/new-helpers.txt
           cp app/init.php release-prerequisites/init/
+          cp themes/altum/views/partner/journey.php themes/altum/views/partner/journey-pilot.php release-prerequisites/views/altum/views/partner/
           echo "Sent before app/init.php:"
           ls -1 release-prerequisites/helpers
+
+      - name: Deploy new app dependencies before controllers
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-prerequisites/app/
+          server-dir: /public_html/app/
+          state-name: .ftp-deploy-sync-state-release-app-${{ github.run_id }}-${{ github.run_attempt }}.json
+          dangerous-clean-slate: false
+
+      - name: Deploy new themes dependencies before controllers
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-prerequisites/themes/
+          server-dir: /public_html/themes/
+          state-name: .ftp-deploy-sync-state-release-themes-${{ github.run_id }}-${{ github.run_attempt }}.json
+          dangerous-clean-slate: false
 
       - name: Deploy new helpers before app/init.php
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
@@ -180,7 +233,9 @@ jobs:
       - name: Deploy app/init.php before controllers
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
@@ -188,12 +243,27 @@ jobs:
           server-dir: /public_html/app/
           state-name: .ftp-deploy-sync-state-release-init-${{ github.run_id }}-${{ github.run_attempt }}.json
           dangerous-clean-slate: false
+      - name: Deploy compatible journey views before changed helpers
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./release-prerequisites/views/
+          server-dir: /public_html/themes/
+          state-name: .ftp-deploy-sync-state-release-views-${{ github.run_id }}-${{ github.run_attempt }}.json
+          dangerous-clean-slate: false
       # /Custom code: FC-2026-10-12
 
       - name: Deploy app/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
@@ -214,7 +284,9 @@ jobs:
       - name: Deploy themes/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
@@ -292,7 +364,9 @@ jobs:
       - name: Publish verified deployment marker
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_TLS_SERVER || 'litespeed.hiperweb.hr' }}
+          protocol: ftps
+          security: strict
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}

@@ -210,29 +210,85 @@ function fcc_cm_aloe_basic_types(): array {
  return array_merge(FCC_CARD_CORE_BLOCKS, ['link_forever_webshop_reg', 'link_forever_shop', 'custom_html_chatbot', 'vimeo', 'phone_collector', 'email_collector', 'link_homescreen_android', 'link_homescreen_ios', 'share']);
 }
 
-/** Enabled cards of active collaborators that nobody has edited since they were made: the card and every
- * block keep an empty last change date, and every block is a template or system block. Plain links count
- * only when they came with the template, within an hour of the card's first block. */
+/* Custom code: FC-2026-10-12: frozen historical factory generations protect owner edits that
+ * the old classic editor did not timestamp. Unknown months and shapes stay with their owner. */
+function fcc_cm_aloe_provenance(): array {
+ static $definition;
+ if($definition !== null) return $definition;
+ $path = APP_PATH.'config/fcc_card_template_generations_2026_10_12.json';
+ if(!is_file($path)) return $definition = [];
+ $decoded = json_decode((string)file_get_contents($path), true);
+ return $definition = is_array($decoded) ? $decoded : [];
+}
+
+/** UTC database dates must be valid, never interpreted in the server's local timezone. */
+function fcc_cm_aloe_timestamp($value): ?int {
+ if(!is_string($value)) return null;
+ $date = \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $value, new \DateTimeZone('UTC'));
+ return $date && $date->format('Y-m-d H:i:s') === $value ? $date->getTimestamp() : null;
+}
+
+/** First registration card, exact documented generation and display order, no owner changes.
+ * An explicit system batch is the only permitted source of later factory blocks. */
+function fcc_cm_aloe_untouched(array $link, array $blocks): bool {
+ $definition = fcc_cm_aloe_provenance();
+ $created = fcc_cm_aloe_timestamp($link['datetime'] ?? null);
+ $registered = fcc_cm_aloe_timestamp($link['user_datetime'] ?? null);
+ if(!$blocks || $created === null || $registered === null
+  || (int)($link['first_link_id'] ?? 0) !== (int)$link['link_id'] || ($link['last_datetime'] ?? null) !== null) return false;
+ $import = $definition['import'] ?? [];
+ $isImport = ($link['datetime'] ?? '') === ($import['card_datetime'] ?? null)
+  && (string)$link['user_datetime'] >= ($import['user_from'] ?? '') && (string)$link['user_datetime'] < ($import['user_before'] ?? '');
+ if(!$isImport && abs($created - $registered) > 600) return false;
+ $month = substr((string)$link['user_datetime'], 0, 7);
+ $generation = $definition['generations'][$isImport ? ($import['generation'] ?? '') : ($definition['months'][$month] ?? '')] ?? null;
+ if(!is_array($generation) || empty($generation['creation_types']) || empty($generation['display_creation_positions'])) return false;
+ $template = []; $extensions = [];
+ foreach($blocks as $block) {
+  $at = fcc_cm_aloe_timestamp($block['datetime'] ?? null);
+  if($at === null || ($block['last_datetime'] ?? null) !== null) return false;
+  $settings = fcc_card_settings((string)$block['settings']);
+  if((int)$block['is_enabled'] === 0 && empty($settings->plan_auto_disabled)) return false;
+  $minute = substr((string)$block['datetime'], 0, 16);
+  $batch = $definition['extension_batches'][$minute] ?? [];
+  $fromImport = $isImport && (string)$block['datetime'] === ($import['card_datetime'] ?? null);
+  if((!$isImport && abs($at - $registered) <= 600) || $fromImport) $template[] = $block;
+  elseif(in_array($block['type'], $batch['types'] ?? [], true)
+   && (string)$block['datetime'] >= ($batch['from'] ?? '') && (string)$block['datetime'] <= ($batch['through'] ?? '')
+   && !empty($settings->factory_shop)) $extensions[] = $block;
+  else return false;
+ }
+ usort($template, static fn($a, $b) => (int)$a['biolink_block_id'] <=> (int)$b['biolink_block_id']);
+ if(array_column($template, 'type') !== $generation['creation_types']) return false;
+ foreach($template as $position => &$block) $block['creation_position'] = $position;
+ unset($block);
+ usort($template, static fn($a, $b) => [(int)$a['order'], (int)$a['biolink_block_id']] <=> [(int)$b['order'], (int)$b['biolink_block_id']]);
+ if(array_column($template, 'creation_position') !== $generation['display_creation_positions']) return false;
+ $last = max(array_column($template, 'order'));
+ $seen = array_column($template, 'type');
+ usort($extensions, static fn($a, $b) => (int)$a['biolink_block_id'] <=> (int)$b['biolink_block_id']);
+ foreach($extensions as $block) {
+  if((int)$block['order'] <= (int)$last || in_array($block['type'], $seen, true)) return false;
+  $seen[] = $block['type'];
+  $last = (int)$block['order'];
+ }
+ return true;
+}
+
+/** Only enabled cards of active collaborators with proven historical factory structure. */
 function fcc_cm_aloe_plan(): array {
- $links = fcc_partner_rows("SELECT l.link_id,l.user_id,l.url,l.settings,u.name FROM links l JOIN users u ON u.user_id=l.user_id WHERE l.type='biolink' AND l.is_enabled=1 AND l.last_datetime IS NULL AND u.status=1 AND u.type=0 AND u.plan_id<>'vip_demo'");
+ $links = fcc_partner_rows("SELECT l.link_id,l.user_id,l.url,l.settings,l.datetime,l.last_datetime,u.datetime user_datetime,u.name,(SELECT MIN(x.link_id) FROM links x WHERE x.user_id=l.user_id AND x.type='biolink') first_link_id FROM links l JOIN users u ON u.user_id=l.user_id WHERE l.type='biolink' AND l.is_enabled=1 AND l.last_datetime IS NULL AND u.status=1 AND u.type=0 AND u.plan_id<>'vip_demo'");
  if(!$links) return [];
  $blocks = [];
  foreach(array_chunk(array_column($links, 'link_id'), 500) as $chunk) {
-  foreach(fcc_partner_rows('SELECT biolink_block_id,link_id,type,settings,is_enabled,datetime,last_datetime FROM biolinks_blocks WHERE link_id IN ('.implode(',', array_map('intval', $chunk)).')') as $block) $blocks[(int)$block['link_id']][] = $block;
+  foreach(fcc_partner_rows('SELECT biolink_block_id,link_id,type,`order`,settings,is_enabled,datetime,last_datetime FROM biolinks_blocks WHERE link_id IN ('.implode(',', array_map('intval', $chunk)).')') as $block) $blocks[(int)$block['link_id']][] = $block;
  }
- $basic = fcc_cm_aloe_basic_types();
  $changes = [];
  foreach($links as $link) {
   $settings = fcc_card_settings((string)$link['settings']);
   $own = $blocks[(int)$link['link_id']] ?? [];
   if(($settings->fcc_card ?? '') === 'v2' || !$own) continue;
-  $first = min(array_map(static fn($b) => strtotime((string)$b['datetime']), $own));
-  $untouched = true;
-  foreach($own as $block) {
-   $template = $block['type'] === 'link' && strtotime((string)$block['datetime']) - $first <= 3600;
-   if($block['last_datetime'] !== null || (!in_array($block['type'], $basic, true) && !$template)) { $untouched = false; break; }
-  }
-  if(!$untouched) continue;
+  if(!fcc_cm_aloe_untouched($link, $own)) continue;
   $label = $link['url'].' · '.$link['name'];
   $settings->fcc_card = 'v2';
   $settings->fcc_card_theme = 'aloe';
@@ -278,14 +334,15 @@ function fcc_cm_plan_for(string $migration): array {
 /** A card and all its blocks, locked for the rest of the transaction. Null when the owner has touched
  * the card: the card or any block carries a change date, or a block was added after $since (UTC). */
 function fcc_cm_aloe_lock_card(int $linkId, ?string $since = null): ?array {
- $link = fcc_partner_one('SELECT link_id,settings,last_datetime FROM links WHERE link_id=? FOR UPDATE', [$linkId]);
+ $link = fcc_partner_one("SELECT link_id,user_id,settings,last_datetime,datetime,(SELECT datetime FROM users WHERE users.user_id=links.user_id) user_datetime,(SELECT MIN(x.link_id) FROM links x WHERE x.user_id=links.user_id AND x.type='biolink') first_link_id FROM links WHERE link_id=? FOR UPDATE", [$linkId]);
  if(!$link || $link['last_datetime'] !== null) return null;
  $blocks = [];
- foreach(fcc_partner_rows('SELECT biolink_block_id,link_id,settings,is_enabled,datetime,last_datetime FROM biolinks_blocks WHERE link_id=? FOR UPDATE', [$linkId]) as $block) {
+ foreach(fcc_partner_rows('SELECT biolink_block_id,link_id,type,`order`,settings,is_enabled,datetime,last_datetime FROM biolinks_blocks WHERE link_id=? FOR UPDATE', [$linkId]) as $block) {
   if($block['last_datetime'] !== null) return null;
   if($since !== null && (string)$block['datetime'] >= $since) return null;
   $blocks[(int)$block['biolink_block_id']] = $block;
  }
+ if($since === null && !fcc_cm_aloe_untouched($link, array_values($blocks))) return null;
  return ['link'=>$link, 'blocks'=>$blocks];
 }
 
@@ -395,13 +452,16 @@ function fcc_cm_clear_cache(): void {
  }
 }
 
-function fcc_cm_apply(int $actor, string $migration = 'mojput'): array {
+function fcc_cm_apply(int $actor, string $migration = 'mojput', ?callable $review_plan = null): array {
  fcc_cm_require_admin($actor);
  fcc_cm_ensure_table();
  $definition = fcc_cm_definition($migration);
  $keys = fcc_cm_primary_keys();
  $applied = 0; $skipped = 0; $done = [];
  $plan = fcc_cm_plan_for($migration);
+ // Custom code: FC-2026-10-12: a CLI release may validate the exact internal plan before any content write.
+ if($review_plan !== null) $review_plan($plan);
+ // /Custom code: FC-2026-10-12
  database()->begin_transaction();
  try {
   if($migration === 'aloe') {
