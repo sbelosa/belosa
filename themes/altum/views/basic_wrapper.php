@@ -78,9 +78,10 @@ fcc_public_assets();
         <style><?= settings()->custom->head_css ?></style>
     <?php endif ?>
 <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-auth.css?v=<?= filemtime(ASSETS_PATH . 'css/fcc-auth.css') ?>">
+<?= fcc_ui_theme_assets('auth') ?>
 </head>
 
-<body class="fcc-public-mode fcc-auth-mode <?= l('direction') == 'rtl' ? 'rtl' : '' ?>" data-theme-style="light" data-fcc-auth-design="20261001">
+<body class="fcc-public-mode fcc-auth-mode <?= fcc_ui_theme_body_class() ?> <?= l('direction') == 'rtl' ? 'rtl' : '' ?>" data-theme-style="light" data-fcc-auth-design="20261001">
 <?php if(!empty(settings()->custom->body_content)): ?>
     <?= settings()->custom->body_content ?>
 <?php endif ?>

@@ -100,6 +100,7 @@ fcc_mobile_nav_assets();
             <style><?= settings()->custom->head_css ?></style>
         <?php endif ?>
 <?php if(in_array(\Altum\Router::$controller_key, ['blog','page','pages'], true)): ?><link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-library.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-library.css') ?>"><script defer src="<?= ASSETS_FULL_URL ?>js/fcc-partner-library.js?v=<?= filemtime(ASSETS_PATH.'js/fcc-partner-library.js') ?>"></script><?php endif ?>
+    <?= fcc_ui_theme_assets('public') ?>
     </head>
 
     <?php
@@ -107,7 +108,7 @@ fcc_mobile_nav_assets();
     $fcc_is_blog_route = preg_match('/^(?:[a-z]{2}\/)?blog(?:\/|$)/i', \Altum\Router::$original_request) === 1;
     /* /Custom code: FC-2026-02-26 */
     ?>
-    <body data-fcc-public-design="20261001" class="fcc-public-mode <?= in_array(\Altum\Router::$controller_key, ['page','pages'], true) ? 'fcc-guides-mode' : '' ?> <?= in_array(\Altum\Router::$controller_key, ['blog','page','pages'], true) ? 'fcc-library-mode' : '' ?> index <?= l('direction') == 'rtl' ? 'rtl' : null ?>  <?= $fcc_is_blog_route ? 'fcc-blog-route' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
+    <body data-fcc-public-design="20261001" class="fcc-public-mode <?= fcc_ui_theme_body_class() ?> <?= in_array(\Altum\Router::$controller_key, ['page','pages'], true) ? 'fcc-guides-mode' : '' ?> <?= in_array(\Altum\Router::$controller_key, ['blog','page','pages'], true) ? 'fcc-library-mode' : '' ?> index <?= l('direction') == 'rtl' ? 'rtl' : null ?>  <?= $fcc_is_blog_route ? 'fcc-blog-route' : null ?>" data-theme-style="<?= \Altum\ThemeStyle::get() ?>">
         <?php if(!empty(settings()->custom->body_content)): ?>
             <?= settings()->custom->body_content ?>
         <?php endif ?>

@@ -1,0 +1,205 @@
+/* FCC Živi sloj. Optional layer loaded after every existing FCC stylesheet when fcc_ui_theme() is "zivi".
+   Scope: signed-in workspace (fcc-partner-mode), sign-in pages (fcc-auth-mode) and FCC's own public pages (fcc-public-mode).
+   Collaborators' public cards use the biolink wrapper and never receive this file or the fcc-ui-zivi class. */
+
+body.fcc-ui-zivi {
+  --zs-ink: #0E2A22; --zs-muted: #4C665C; --zs-em: #12775B; --zs-em2: #0B5A45; --zs-aqua: #3BB9A4; --zs-lime: #B6E36B; --zs-sky: #CDEFF7;
+  --zs-glass: rgba(255,255,255,.66); --zs-glass-strong: rgba(255,255,255,.86); --zs-edge: rgba(255,255,255,.9);
+  --zs-line: rgba(14,42,34,.09); --zs-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 12px 30px rgba(18,90,70,.10);
+  --zs-blur: blur(22px) saturate(1.4); --zs-grad: linear-gradient(135deg, #12775B, #0B5A45);
+  --zs-ring: conic-gradient(from 200deg, #3BB9A4, #B6E36B, #7FD3E6, #12775B, #3BB9A4);
+  --zs-mesh: radial-gradient(60% 45% at 12% 6%, #B9F0D8 0, transparent 70%), radial-gradient(55% 40% at 96% 22%, #CDEFF7 0, transparent 70%), radial-gradient(70% 50% at 70% 100%, #E3F6C9 0, transparent 70%), #EAF5EF;
+  --zs-font: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Existing FCC tokens, retuned */
+  --fp-ink: var(--zs-ink); --fp-muted: var(--zs-muted); --fp-green: var(--zs-em); --fp-line: #d6e6dd; --fp-paper: #EAF5EF; --fp-light: rgba(59,185,164,.14);
+  --fp-radius: 24px; --fp-control-height: 48px; --fp-glass: var(--zs-glass); --fp-shadow: var(--zs-shadow); --fp-gloss: var(--zs-grad);
+  --fp-tool-ink: var(--zs-ink); --fp-tool-muted: var(--zs-muted); --fp-tool-line: #d6e6dd; --fp-tool-paper: var(--zs-glass-strong); --fp-tool-soft: rgba(255,255,255,.55);
+  --fcw-ink: var(--zs-ink); --fcw-muted: var(--zs-muted); --fcw-green: var(--zs-em); --fcw-line: #d6e6dd;
+  font-family: var(--zs-font) !important;
+  color: var(--zs-ink);
+  font-optical-sizing: auto;
+}
+body.fcc-ui-zivi.app.fcc-partner-mode,
+body.fcc-ui-zivi.fcc-public-mode { background: var(--zs-mesh) !important; background-attachment: fixed !important; }
+body.fcc-ui-zivi :is(h1, h2, h3, h4, .h1, .h2, .h3, .h4) { font-family: var(--zs-font); }
+body.fcc-ui-zivi :is(button, input, select, textarea) { font-family: var(--zs-font); }
+
+/* ---------- Glass surfaces ---------- */
+body.fcc-ui-zivi :is(.fp-panel, .fp-menu-item, .fp-tool-item, .fp-card-grid > *, .fcc-pc-card, .fcc-pc-table, .fcc-language-panel, .fp-empty) {
+  background: var(--zs-glass) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important;
+  box-shadow: var(--zs-shadow) !important;
+  border-radius: 24px;
+}
+body.fcc-ui-zivi .fp-panel { padding: 22px; margin-bottom: 16px; }
+body.fcc-ui-zivi .fp-panel .fp-panel { background: rgba(255,255,255,.55) !important; box-shadow: none !important; border-radius: 18px; }
+
+/* ---------- Typography ---------- */
+body.fcc-ui-zivi :is(.fp-page h1, .fp-editor-heading h1, .fp-page-heading h1) { font-weight: 800; letter-spacing: -.04em; line-height: 1.05; font-size: clamp(28px, 3vw, 38px); }
+body.fcc-ui-zivi :is(.fp-page h2, .fp-section-title) { font-weight: 800; letter-spacing: -.03em; }
+body.fcc-ui-zivi .fp-page h3 { font-weight: 700; letter-spacing: -.02em; }
+body.fcc-ui-zivi .fp-eyebrow, body.fcc-ui-zivi .fcc-pc-eyebrow { color: var(--zs-em); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+body.fcc-ui-zivi :is(.fp-muted, .fp-lead, .fp-page-heading p) { color: var(--zs-muted); }
+body.fcc-ui-zivi :is(.fp-page-heading p, .fp-lead) { font-size: 14.5px; line-height: 1.55; }
+body.fcc-ui-zivi :is(.fp-count, .fcc-pc-price, .fp-cc-values b, .fp-cc-values strong) { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+body.fcc-ui-zivi a.fp-link, body.fcc-ui-zivi .fp-text-button { color: var(--zs-em); font-weight: 700; }
+
+/* ---------- Buttons ---------- */
+body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary) {
+  min-height: 48px; border-radius: 16px !important; border: 0 !important;
+  background: var(--zs-grad) !important; color: #fff !important; font-weight: 700;
+  box-shadow: 0 8px 20px rgba(18,119,91,.28) !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary):hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(18,119,91,.34) !important; }
+body.fcc-ui-zivi :is(.fp-button.fp-button-outline, .fp-button-outline, .fp-button.fp-button-light, .fp-button-light, .btn-outline-primary, .btn-light) {
+  background: var(--zs-glass-strong) !important; color: var(--zs-em2) !important;
+  border: 1px solid var(--zs-edge) !important; box-shadow: 0 4px 12px rgba(18,90,70,.08) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi :is(.fp-button, .fp-button-outline, .fp-text-button, .fp-icon-button, a, button):focus-visible { outline: 3px solid rgba(59,185,164,.55) !important; outline-offset: 2px; }
+
+/* ---------- Forms ---------- */
+body.fcc-ui-zivi :is(.fp-form input:not([type=checkbox]):not([type=radio]), .fp-form select, .fp-form textarea, .fp-search input, .form-control, .custom-select) {
+  min-height: 48px; border-radius: 14px !important; border: 1px solid #d3e4da !important;
+  background: rgba(255,255,255,.82) !important; color: var(--zs-ink); font-size: 16px;
+}
+body.fcc-ui-zivi :is(.fp-form input, .fp-form select, .fp-form textarea, .fp-search input, .form-control, .custom-select):focus { border-color: var(--zs-aqua) !important; box-shadow: 0 0 0 4px rgba(59,185,164,.18) !important; }
+
+/* ---------- Status and progress ---------- */
+body.fcc-ui-zivi .fp-progress { height: 8px; border-radius: 99px; background: rgba(18,119,91,.12) !important; overflow: hidden; }
+body.fcc-ui-zivi .fp-progress > * { background: linear-gradient(90deg, var(--zs-aqua), var(--zs-em)) !important; border-radius: 99px; }
+body.fcc-ui-zivi progress { accent-color: var(--zs-em); }
+body.fcc-ui-zivi .fcc-pro-badge { background: linear-gradient(135deg, var(--zs-em), var(--zs-aqua)) !important; color: #fff !important; border: 0 !important; border-radius: 999px; letter-spacing: .1em; }
+
+/* ---------- Top bar ---------- */
+body.fcc-ui-zivi .fp-topbar {
+  background: rgba(240,249,244,.72) !important; border: 0 !important; border-bottom: 1px solid rgba(255,255,255,.8) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: 0 6px 20px rgba(18,90,70,.06) !important;
+}
+body.fcc-ui-zivi :is(.fp-icon-button, .fp-help-menu summary) {
+  background: var(--zs-glass-strong) !important; border: 1px solid var(--zs-edge) !important; box-shadow: 0 4px 12px rgba(18,90,70,.08);
+}
+body.fcc-ui-zivi :is(.fp-avatar, .fp-profile-avatar) { background: var(--zs-grad) !important; border: 2px solid #fff !important; color: #fff !important; box-shadow: 0 0 0 2px rgba(59,185,164,.45), 0 4px 12px rgba(18,90,70,.18) !important; }
+
+/* ---------- Desktop sidebar ---------- */
+body.fcc-ui-zivi .fp-sidebar {
+  background: rgba(255,255,255,.58) !important; border-right: 1px solid rgba(255,255,255,.85) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: 8px 0 30px rgba(18,90,70,.06) !important;
+}
+body.fcc-ui-zivi .fp-sidebar .fp-brand small, body.fcc-ui-zivi .fp-nav-caption { color: var(--zs-muted) !important; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link { color: var(--zs-ink) !important; border-radius: 16px; font-weight: 600; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link:hover { background: rgba(255,255,255,.7) !important; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link.is-active { color: #fff !important; background: var(--zs-grad) !important; border-color: transparent !important; box-shadow: 0 8px 20px rgba(18,119,91,.28) !important; }
+body.fcc-ui-zivi .fp-sidebar .fp-nav-link.is-active svg { color: #D9F5E6 !important; }
+body.fcc-ui-zivi .fp-sidebar-bottom a { color: var(--zs-em2) !important; }
+body.fcc-ui-zivi .fp-sidebar-bottom > span { color: var(--zs-muted) !important; }
+
+/* ---------- Mobile: floating glass tab bar ---------- */
+@media (max-width: 800px) {
+  body.fcc-ui-zivi.fcc-partner-mode .fp-bottom-nav, body.fcc-ui-zivi.fcc-partner-mode > .fp-mobile-shell > .fp-bottom-nav {
+    position: relative !important; inset: auto !important; width: auto !important; box-sizing: border-box !important;
+    margin: 0 10px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 6px !important; border-radius: 24px !important; border: 1px solid var(--zs-edge) !important;
+    background: rgba(255,255,255,.72) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+    box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 14px 34px rgba(18,90,70,.18) !important;
+  }
+  body.fcc-ui-zivi .fp-bottom-nav a { color: var(--zs-muted) !important; border-radius: 18px !important; min-height: 50px; font-size: 10.5px; font-weight: 700; }
+  body.fcc-ui-zivi .fp-bottom-nav a.is-active { color: #fff !important; background: var(--zs-grad) !important; box-shadow: 0 6px 16px rgba(18,119,91,.3); }
+  body.fcc-ui-zivi .fp-bottom-nav a.is-active svg { background: transparent !important; box-shadow: none !important; color: #fff !important; }
+  body.fcc-ui-zivi .fp-bottom-nav a:hover { color: var(--zs-em2) !important; }
+  body.fcc-ui-zivi .fp-bottom-nav a.is-active:hover { color: #fff !important; }
+  body.fcc-ui-zivi .fcc-mobile-navigation:not([hidden]) { background: rgba(240,249,244,.78); border-bottom-color: rgba(255,255,255,.8); }
+  body.fcc-ui-zivi .fp-panel { padding: 18px; border-radius: 22px; }
+}
+
+/* ---------- Coach launcher ---------- */
+body.fcc-ui-zivi .fcc-chat-extreme__launcher {
+  border: 2px solid transparent !important;
+  background-image: linear-gradient(rgba(255,255,255,.92), rgba(255,255,255,.92)), var(--zs-ring) !important;
+  background-origin: border-box !important; background-clip: padding-box, border-box !important;
+  box-shadow: 0 12px 28px rgba(18,90,70,.22) !important;
+}
+
+/* ---------- Dialogs and menus ---------- */
+body.fcc-ui-zivi :is(.modal-content, .dropdown-menu) {
+  background: rgba(255,255,255,.94) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important; border-radius: 24px !important; box-shadow: 0 24px 60px rgba(14,42,34,.18) !important;
+}
+body.fcc-ui-zivi .dropdown-menu { border-radius: 18px !important; }
+
+/* ---------- Package comparison ---------- */
+body.fcc-ui-zivi .fcc-pc-card:has(.fcc-pc-cell-pro), body.fcc-ui-zivi .fcc-pc-card.is-pro, body.fcc-ui-zivi .fcc-pc-card-pro {
+  border: 1.5px solid transparent !important;
+  background-image: linear-gradient(rgba(255,255,255,.86), rgba(255,255,255,.86)), var(--zs-ring) !important;
+  background-origin: border-box !important; background-clip: padding-box, border-box !important;
+}
+
+/* ---------- Sign-in, registration and FCC's own public pages ---------- */
+body.fcc-ui-zivi.fcc-auth-mode, body.fcc-ui-zivi.fcc-public-mode { background: var(--zs-mesh) !important; background-attachment: fixed !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-header { background: rgba(240,249,244,.72) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); border-bottom: 1px solid rgba(255,255,255,.8) !important; }
+body.fcc-ui-zivi.fcc-public-mode :is(h1, .h1) { font-weight: 800; letter-spacing: -.045em; line-height: 1.02; }
+
+/* ---------- Accessibility and weaker devices ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body.fcc-ui-zivi { --zs-glass: rgba(255,255,255,.95); --zs-glass-strong: #fff; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  body.fcc-ui-zivi { --zs-glass: #fff; --zs-glass-strong: #fff; --zs-blur: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary) { transition: none; }
+  body.fcc-ui-zivi :is(.fp-button, .fcc-pc-button, .btn-primary):hover { transform: none; }
+}
+@media print {
+  body.fcc-ui-zivi { background: #fff !important; }
+  body.fcc-ui-zivi * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+}
+
+/* ---------- Journey, team notices and segmented tabs ---------- */
+body.fcc-ui-zivi :is(.jf-team, .fp-cc-summary, .fp-cc4-group) {
+  background: var(--zs-glass) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important; box-shadow: var(--zs-shadow) !important; border-radius: 24px !important;
+}
+body.fcc-ui-zivi .jp-tabs {
+  display: flex; gap: 4px; padding: 4px; border: 1px solid var(--zs-edge) !important; border-radius: 18px;
+  background: rgba(255,255,255,.55); -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi .jp-tabs a { flex: 1; min-height: 44px; display: grid; place-items: center; border-radius: 14px; border: 0 !important; color: var(--zs-muted) !important; font-weight: 700; }
+body.fcc-ui-zivi .jp-tabs a:is(.is-active, [aria-current], [aria-selected="true"]) { background: #fff !important; color: var(--zs-em2) !important; box-shadow: 0 4px 12px rgba(18,90,70,.12); }
+body.fcc-ui-zivi .fp-icon-button { width: 44px; height: 44px; border-radius: 50% !important; display: inline-grid; place-items: center; }
+body.fcc-ui-zivi .jw-step .jp-meta { color: var(--zs-em); font-weight: 700; }
+body.fcc-ui-zivi .jw-result { background: rgba(182,227,107,.22) !important; border: 0 !important; border-radius: 16px !important; }
+
+/* ---------- Help context and share navigation ---------- */
+body.fcc-ui-zivi .fh-context {
+  background: var(--zs-glass) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+  border: 1px solid var(--zs-edge) !important; border-radius: 20px !important; box-shadow: var(--zs-shadow) !important;
+}
+body.fcc-ui-zivi :is(.fp-share-navigation, .fp-share-nav) {
+  background: rgba(255,255,255,.5) !important; border: 1px solid var(--zs-edge) !important; border-radius: 22px !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
+}
+body.fcc-ui-zivi :is(.fp-share-navigation, .fp-share-nav) a { border-radius: 16px !important; color: var(--zs-muted) !important; }
+body.fcc-ui-zivi :is(.fp-share-navigation, .fp-share-nav) a:is(.is-active, [aria-current]) { background: #fff !important; color: var(--zs-em2) !important; box-shadow: 0 4px 12px rgba(18,90,70,.12) !important; }
+
+/* ---------- FCC public home ---------- */
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel {
+  background: var(--zs-glass) !important; color: var(--zs-ink) !important; border: 1px solid var(--zs-edge) !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: var(--zs-shadow) !important; border-radius: 28px !important;
+}
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel h2 { color: var(--zs-ink) !important; font-weight: 800; letter-spacing: -.035em; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel .fcw-eyebrow { color: var(--zs-em) !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel .fcw-steps li { background: rgba(255,255,255,.8) !important; border: 1px solid var(--zs-edge) !important; color: var(--zs-ink) !important; border-radius: 16px !important; box-shadow: 0 4px 12px rgba(18,90,70,.08); }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-panel .fcw-steps li::before { color: var(--zs-em) !important; font-weight: 800; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-welcome-note { color: var(--zs-muted) !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-orbit { background: var(--zs-ring) !important; opacity: .35; filter: blur(18px); }
+body.fcc-ui-zivi.fcc-public-mode :is(.fcw-explore-card, .fcw-feature, .fcw-person, .fcw-closing) {
+  background: var(--zs-glass) !important; border: 1px solid var(--zs-edge) !important; border-radius: 24px !important;
+  -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur); box-shadow: var(--zs-shadow) !important;
+}
+body.fcc-ui-zivi.fcc-public-mode .fcw-button { border-radius: 16px !important; background: var(--zs-grad) !important; color: #fff !important; box-shadow: 0 10px 24px rgba(18,119,91,.3) !important; min-height: 52px; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-text-link { color: var(--zs-em) !important; font-weight: 700; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-hero-copy h1 { background: linear-gradient(100deg, var(--zs-ink) 30%, var(--zs-em) 70%, var(--zs-aqua)); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+body.fcc-ui-zivi.fcc-public-mode .fcw-feature-icon { background: rgba(59,185,164,.16) !important; color: var(--zs-em) !important; border-radius: 14px !important; }
