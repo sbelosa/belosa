@@ -8,3 +8,4 @@
  </nav>
  <div class="fp-editor-context"><p data-editor-description><?= htmlspecialchars(fcc_t('Dodirni blok za uređivanje. Povuci ručicu za promjenu redoslijeda.'), ENT_QUOTES, 'UTF-8') ?></p><button class="fp-button" type="button" data-editor-add data-toggle="modal" data-target="#biolink_link_create_modal"><?= fcc_partner_icon('plus') ?> <?= htmlspecialchars(fcc_t('Dodaj blok'), ENT_QUOTES, 'UTF-8') ?></button></div>
 </div>
+<?php /* Custom code: FC-2026-10-12 */ if(function_exists('fcc_card_is_v2')) require THEME_PATH.'views/partner/card-design-panel.php'; ?>

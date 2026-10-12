@@ -142,6 +142,8 @@ class Partner extends Controller {
       'pilot_known'=>'Korak je označen kao poznat. Nastavi sa sljedećim korakom.',
       'mp_celebration'=>'Hvala, tvoj odgovor je spremljen.',
       'mp_rhythm'=>'Zabilježeno. Tvoj tjedni ritam je ažuriran.',
+      'card_design'=>'Izgled kartice je spremljen. Blokovi su ostali isti.',
+      'card_recommended'=>'Preporučeni blokovi su dodani. Možeš ih urediti ili ukloniti.',
       default=>'Spremljeno. Podaci su ažurirani na webu i u aplikaciji.'
      };
      \Altum\Alerts::add_success(fcc_t($message));
@@ -334,6 +336,15 @@ class Partner extends Controller {
    else fcc_partner_remove_card($uid,$input);
    return 'partner/cards';
   }
+  /* Custom code: FC-2026-10-12: the new card, its style and the recommended blocks */
+  if(in_array($action,['card_design','card_recommended'],true)) {
+   if($section!=='cards') throw new \InvalidArgumentException(fcc_t('Izgled kartice mijenja se u uređivaču kartice.'));
+   $link_id=(int)($input['link_id']??0);
+   if($action==='card_design') fcc_card_set_design($uid,$link_id,(string)($input['card_version']??''),(string)($input['card_theme']??''));
+   else fcc_card_add_recommended($uid,$link_id);
+   return 'link/'.$link_id.'?tab=settings&editor=design';
+  }
+  /* /Custom code: FC-2026-10-12 */
   if($action==='coach_feedback_resolve') {
    if(!\Altum\Authentication::is_admin()||$section!=='admin') throw new \InvalidArgumentException(fcc_t('Ova radnja dostupna je administratoru.'));
    fcc_ai_mark_feedback_resolved_by_admin((int)($input['feedback_id']??0),$uid);

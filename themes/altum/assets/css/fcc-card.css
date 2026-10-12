@@ -1,0 +1,194 @@
+/* Custom code: FC-2026-10-12: the new FCC card.
+ * Loaded only for cards with settings.fcc_card = "v2". Every rule is scoped to body.fcc-card, so the
+ * classic card and the rest of the site are not affected. Block colours chosen in the old editor are
+ * overridden on purpose: each style keeps text readable on its own background. */
+
+@font-face {
+  font-family: 'DM Sans'; font-style: normal; font-weight: 400 800; font-display: swap;
+  src: url('../fonts/dm-sans/dm-sans-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'DM Sans'; font-style: normal; font-weight: 400 800; font-display: swap;
+  src: url('../fonts/dm-sans/dm-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Styles. Aloe is the default for everyone, the others are PRO. */
+body.fcc-card, body.fcc-card--aloe {
+  --fc-bg: #EEF6F1; --fc-glow: #CDEBDD; --fc-surface: #FFFFFF; --fc-ink: #10261F; --fc-muted: #4A6359;
+  --fc-line: #D5E6DC; --fc-accent: #12775B; --fc-accent-ink: #FFFFFF; --fc-accent-soft: #DDEFE5; --fc-shadow: 0 1px 2px rgba(16,38,31,.06), 0 6px 18px rgba(16,38,31,.06);
+}
+body.fcc-card--smaragd {
+  --fc-bg: #0E2B23; --fc-glow: #17493A; --fc-surface: #153A30; --fc-ink: #EAF6F0; --fc-muted: #A8C7BA;
+  --fc-line: #24503F; --fc-accent: #7FD9B3; --fc-accent-ink: #08251C; --fc-accent-soft: #1C4A3C; --fc-shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 22px rgba(0,0,0,.22);
+}
+body.fcc-card--zlato {
+  --fc-bg: #121110; --fc-glow: #2A2312; --fc-surface: #1D1B18; --fc-ink: #F6F1E6; --fc-muted: #BDB3A0;
+  --fc-line: #34302A; --fc-accent: #D9AE3A; --fc-accent-ink: #1A1406; --fc-accent-soft: #2C2617; --fc-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.28);
+}
+body.fcc-card--pijesak {
+  --fc-bg: #F6F0E7; --fc-glow: #EADBC4; --fc-surface: #FFFDF9; --fc-ink: #2B2118; --fc-muted: #6E5D4C;
+  --fc-line: #E6DACB; --fc-accent: #8A5A2B; --fc-accent-ink: #FFFFFF; --fc-accent-soft: #EFE3D3; --fc-shadow: 0 1px 2px rgba(43,33,24,.06), 0 6px 18px rgba(43,33,24,.07);
+}
+body.fcc-card--ponoc {
+  --fc-bg: #101B2E; --fc-glow: #1B2F4F; --fc-surface: #17253D; --fc-ink: #EEF3FA; --fc-muted: #A5B3C8;
+  --fc-line: #26385A; --fc-accent: #6FD3A6; --fc-accent-ink: #0B1A14; --fc-accent-soft: #1D3150; --fc-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}
+
+/* Page */
+body.fcc-card {
+  background: radial-gradient(120% 55% at 50% 0%, var(--fc-glow) 0%, rgba(0,0,0,0) 62%), var(--fc-bg) !important;
+  background-attachment: scroll !important;
+  color: var(--fc-ink);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
+  font-size: 16px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+body.fcc-card .link-body-backdrop { display: none !important; }
+body.fcc-card .container { max-width: 520px; padding: 0 16px; }
+body.fcc-card .container > .row { margin-left: 0; margin-right: 0; }
+body.fcc-card .link-content { flex: 0 0 100%; max-width: 100%; padding: 28px 0 8px; }
+body.fcc-card #links { margin: 0 !important; }
+body.fcc-card #links > .row { margin: 0; }
+body.fcc-card #links > .row > [class*="col-"] { padding-left: 0; padding-right: 0; margin-top: 6px !important; margin-bottom: 6px !important; }
+body.fcc-card a { color: var(--fc-accent); }
+
+/* Profile */
+body.fcc-card [data-fcc-type="avatar"] { margin-bottom: 2px !important; }
+body.fcc-card [data-fcc-type="avatar"] .link-image {
+  width: 112px !important; height: 112px !important; border-radius: 50% !important; object-fit: cover !important;
+  border: 0 !important; background: var(--fc-surface);
+  box-shadow: 0 0 0 4px var(--fc-surface), 0 0 0 6px var(--fc-accent-soft), var(--fc-shadow) !important;
+}
+body.fcc-card [data-fcc-type="heading"] h1, body.fcc-card [data-fcc-type="heading"] h2, body.fcc-card [data-fcc-type="heading"] h3,
+body.fcc-card [data-fcc-type="heading"] h4, body.fcc-card [data-fcc-type="heading"] h5, body.fcc-card [data-fcc-type="heading"] h6 {
+  color: var(--fc-ink) !important; font-family: inherit; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; text-align: center !important;
+}
+body.fcc-card [data-fcc-type="heading"] h1, body.fcc-card [data-fcc-type="heading"] h2 { font-size: 1.625rem; }
+body.fcc-card [data-fcc-type="heading"] h3, body.fcc-card [data-fcc-type="heading"] h4 { font-size: 1.25rem; }
+body.fcc-card [data-fcc-type="heading"] h5, body.fcc-card [data-fcc-type="heading"] h6 { font-size: 1.0625rem; }
+body.fcc-card .link-verified-small { color: var(--fc-accent) !important; }
+body.fcc-card [data-fcc-type="paragraph"] .card { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+body.fcc-card [data-fcc-type="paragraph"] .card > div { color: var(--fc-muted) !important; padding: 0 8px !important; text-align: center; }
+body.fcc-card [data-fcc-type="paragraph"] .ql-content, body.fcc-card [data-fcc-type="paragraph"] .ql-content * { color: var(--fc-muted) !important; font-size: 1rem; line-height: 1.55; }
+body.fcc-card [data-fcc-type="paragraph"] .ql-content p { margin: 0 0 .5rem; }
+body.fcc-card [data-fcc-type="paragraph"] .ql-content p:last-child { margin-bottom: 0; }
+
+/* Buttons: every button is calm and readable; the shop button is the main action. */
+body.fcc-card .link-btn {
+  display: flex !important; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 14px 18px !important; border-radius: 16px !important;
+  background: var(--fc-surface) !important; color: var(--fc-ink) !important;
+  border: 1px solid var(--fc-line) !important; box-shadow: var(--fc-shadow) !important;
+  font-family: inherit !important; font-size: 1rem !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;
+  text-align: center !important; white-space: normal; line-height: 1.3;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+  animation: none !important;
+}
+body.fcc-card .link-btn:hover, body.fcc-card .link-btn:focus { transform: translateY(-1px); text-decoration: none; }
+body.fcc-card .link-btn:focus-visible { outline: 3px solid var(--fc-accent); outline-offset: 2px; }
+body.fcc-card .link-btn [data-icon] { color: var(--fc-accent); display: inline-flex; }
+body.fcc-card .link-btn [data-icon] :is(i, svg), body.fcc-card .link-btn > :is(i, svg) { color: inherit; font-size: 1.15em; margin: 0 !important; }
+body.fcc-card .link-btn [data-icon]:empty { display: none; }
+body.fcc-card .link-btn :is(small, .text-muted) { color: var(--fc-muted) !important; opacity: 1 !important; }
+body.fcc-card :is([data-fcc-type="link_forever_webshop_reg"], [data-fcc-type="link_discount"]) .link-btn :is(small, .text-muted) { color: var(--fc-accent-ink) !important; opacity: .85 !important; }
+body.fcc-card .link-btn .link-btn-image-wrapper { position: static; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px !important; overflow: hidden; margin: 0; }
+body.fcc-card .link-btn .link-btn-image { width: 100%; height: 100%; object-fit: cover; }
+
+body.fcc-card [data-fcc-type="link_forever_webshop_reg"] .link-btn,
+body.fcc-card [data-fcc-type="link_discount"] .link-btn {
+  background: var(--fc-accent) !important; color: var(--fc-accent-ink) !important; border-color: var(--fc-accent) !important;
+  min-height: 60px; font-size: 1.0625rem !important; font-weight: 700 !important;
+}
+body.fcc-card [data-fcc-type="link_forever_webshop_reg"] .link-btn [data-icon],
+body.fcc-card [data-fcc-type="link_discount"] .link-btn [data-icon] { color: var(--fc-accent-ink); }
+
+/* Partnership: a soft invitation, not a second shop button. */
+body.fcc-card [data-fcc-type="link_forever_shop"] .link-btn {
+  background: var(--fc-accent-soft) !important; border: 1px dashed var(--fc-accent) !important; box-shadow: none !important; color: var(--fc-ink) !important;
+}
+
+/* WhatsApp and Save contact side by side when they follow each other. */
+body.fcc-card [data-fcc-type="custom_html_whatsapp"] .link-btn [data-icon] { color: #1FA855; }
+body.fcc-card #links > .row > [data-fcc-type="custom_html_whatsapp"]:has(+ [data-fcc-type="link_save_contact"]),
+body.fcc-card #links > .row > [data-fcc-type="custom_html_whatsapp"] + [data-fcc-type="link_save_contact"] { flex: 0 0 calc(50% - 5px); max-width: calc(50% - 5px); }
+body.fcc-card #links > .row > [data-fcc-type="custom_html_whatsapp"]:has(+ [data-fcc-type="link_save_contact"]) { margin-right: 10px; }
+body.fcc-card #links > .row > [data-fcc-type="custom_html_whatsapp"]:has(+ [data-fcc-type="link_save_contact"]) .link-btn,
+body.fcc-card #links > .row > [data-fcc-type="custom_html_whatsapp"] + [data-fcc-type="link_save_contact"] .link-btn { flex-direction: column; gap: 6px; min-height: 76px; padding: 12px 10px !important; font-size: .9375rem !important; }
+
+/* Country line under the shop button */
+body.fcc-card .fcc-card-country { margin: -2px 0 6px !important; padding: 0 8px !important; text-align: center; font-size: .875rem; line-height: 1.45; color: var(--fc-muted); }
+body.fcc-card .fcc-card-country a { color: var(--fc-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Social icons */
+body.fcc-card [data-fcc-type="socials"] .link-socials-button-wrapper {
+  width: 46px !important; height: 46px !important; margin: 4px 5px !important; padding: 0 !important;
+  display: flex; align-items: center; justify-content: center; border-radius: 50% !important;
+  background: var(--fc-surface) !important; border: 1px solid var(--fc-line); box-shadow: var(--fc-shadow);
+}
+body.fcc-card [data-fcc-type="socials"] .link-socials-button-wrapper a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+body.fcc-card [data-fcc-type="socials"] .link-socials-button-wrapper :is(i, svg) { color: var(--fc-accent) !important; font-size: 1.15rem !important; }
+
+/* Media and content blocks */
+body.fcc-card .embed-responsive, body.fcc-card iframe { border-radius: 18px !important; overflow: hidden; }
+body.fcc-card [data-fcc-type="youtube"] .embed-responsive, body.fcc-card [data-fcc-type="vimeo"] .embed-responsive { box-shadow: var(--fc-shadow); background: var(--fc-surface); }
+body.fcc-card [data-fcc-type="youtube"] .h5, body.fcc-card [data-fcc-type="vimeo"] .h5,
+body.fcc-card [data-fcc-type="youtube"] [style*="font-size"], body.fcc-card [data-fcc-type="vimeo"] [style*="font-size"] { color: var(--fc-ink) !important; font-family: inherit; font-weight: 700 !important; font-size: 1.0625rem !important; }
+body.fcc-card [data-fcc-type="image"] img { border-radius: 18px !important; box-shadow: var(--fc-shadow); }
+body.fcc-card [data-fcc-type="divider"] hr, body.fcc-card [data-fcc-type="divider"] > div { border-color: var(--fc-line) !important; background: transparent !important; opacity: 1; }
+body.fcc-card [data-fcc-type="divider"] :is(i, svg) { color: var(--fc-muted) !important; }
+body.fcc-card #links .card:not(.fcc-forever-product-card) { background: var(--fc-surface) !important; border: 1px solid var(--fc-line) !important; border-radius: 18px !important; color: var(--fc-ink) !important; box-shadow: var(--fc-shadow) !important; }
+body.fcc-card #links [data-fcc-type="paragraph"] .card { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+body.fcc-card #links .card .card-body, body.fcc-card #links .card .card-body * { color: inherit; }
+body.fcc-card [data-fcc-type="faq"] .card .btn, body.fcc-card [data-fcc-type="faq"] .card-header { background: transparent !important; color: var(--fc-ink) !important; font-weight: 600; text-align: left; }
+body.fcc-card [data-fcc-type="review"] .card, body.fcc-card [data-fcc-type="review"] .card * { color: var(--fc-ink) !important; }
+
+/* Product card */
+body.fcc-card .fcc-forever-product-card {
+  background: var(--fc-surface) !important; color: var(--fc-ink) !important; border: 1px solid var(--fc-line) !important;
+  border-radius: 18px !important; box-shadow: var(--fc-shadow) !important; justify-content: space-between !important; min-height: 92px;
+}
+body.fcc-card .fcc-forever-product-card .fcc-forever-product-title { color: var(--fc-ink) !important; }
+body.fcc-card .fcc-forever-product-card .fcc-forever-product-description { color: var(--fc-muted) !important; opacity: 1 !important; }
+
+/* "Ask the advisor" inside the card instead of the floating owl */
+body.fcc-card .fcc-card-advisor {
+  display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; text-align: left; cursor: pointer;
+  background: var(--fc-surface); color: var(--fc-ink); border: 1px solid var(--fc-line); border-radius: 18px; box-shadow: var(--fc-shadow);
+  font-family: inherit; transition: transform .15s ease;
+}
+body.fcc-card .fcc-card-advisor:hover { transform: translateY(-1px); }
+body.fcc-card .fcc-card-advisor:focus-visible { outline: 3px solid var(--fc-accent); outline-offset: 2px; }
+body.fcc-card .fcc-card-advisor-icon { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--fc-accent-soft); color: var(--fc-accent); font-size: 1.1rem; }
+body.fcc-card .fcc-card-advisor strong { display: block; font-size: 1rem; font-weight: 700; }
+body.fcc-card .fcc-card-advisor small { display: block; margin-top: 2px; font-size: .875rem; line-height: 1.4; color: var(--fc-muted); }
+body.fcc-card .fcc-chat-extreme__launcher-stack.is-product-advisor { display: none !important; }
+
+/* Footer */
+body.fcc-card .link-footer { margin-top: 18px; padding-bottom: 28px; }
+body.fcc-card .link-footer-branding, body.fcc-card .link-verified { color: var(--fc-muted) !important; }
+body.fcc-card .fcc-card-legal { text-align: center; font-size: .8125rem; line-height: 1.5; color: var(--fc-muted); }
+body.fcc-card .fcc-card-legal p { margin: 0 0 4px; }
+body.fcc-card .fcc-card-legal a { color: var(--fc-muted); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Blocks from the classic editor keep their content but take the style's colours, so text stays readable. */
+body.fcc-card #links [data-fcc-type]:not([data-fcc-type="advisor"]):not([data-fcc-type="paragraph"]):not([data-fcc-type="heading"]) :is(h1, h2, h3, h4, h5, h6, p, li, span, div, small, strong, em, b, td, th, label, dt, dd, a, button.btn-link):not(.link-btn):not(.link-btn *):not(.btn:not(.btn-link)):not(.btn:not(.btn-link) *) { color: var(--fc-ink) !important; }
+body.fcc-card #links [data-fcc-type] :is(div, section, li, h2)[style*="background"]:not([style*="url("]):not(.link-btn):not(.btn):not(.embed-responsive) { background: var(--fc-surface) !important; }
+body.fcc-card [data-fcc-type="alert"] .alert { background: var(--fc-accent-soft) !important; border: 1px solid var(--fc-line) !important; border-radius: 16px !important; box-shadow: none !important; }
+body.fcc-card [data-fcc-type="alert"] .alert [data-icon] { color: var(--fc-accent) !important; }
+body.fcc-card [data-fcc-type="faq"] .card { box-shadow: none !important; }
+body.fcc-card [data-fcc-type="faq"] .btn-link { text-decoration: none !important; font-weight: 600; }
+
+/* Plain text blocks keep the style's colours */
+body.fcc-card [data-fcc-type="text"], body.fcc-card [data-fcc-type="text"] * { color: var(--fc-ink) !important; }
+
+@media (min-width: 768px) {
+  body.fcc-card .link-content { padding-top: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.fcc-card .link-btn, body.fcc-card .fcc-card-advisor { transition: none; }
+  body.fcc-card .link-btn:hover, body.fcc-card .fcc-card-advisor:hover { transform: none; }
+}
+/* /Custom code: FC-2026-10-12 */

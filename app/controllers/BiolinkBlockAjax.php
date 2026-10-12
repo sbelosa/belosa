@@ -60,8 +60,14 @@ class BiolinkBlockAjax extends Controller {
         return (bool) ($enabled_biolink_blocks->{$block_type} ?? false);
     }
 
-    private function validate_block_access_for_current_plan(string $block_type): void {
+    private function validate_block_access_for_current_plan(string $block_type, int $link_id = 0): void {
         if(in_array($block_type,['link_forever_webshop_reg','link_forever_shop'],true))return;
+        /* Custom code: FC-2026-10-12: the new card opens its core blocks to every package */
+        if($link_id && function_exists('fcc_card_core_block') && fcc_card_core_block($block_type)) {
+            $fcc_card_link = db()->where('link_id', $link_id)->where('user_id', $this->user->user_id)->getOne('links', ['link_id', 'settings']);
+            if($fcc_card_link && fcc_card_is_v2($fcc_card_link)) return;
+        }
+        /* /Custom code: FC-2026-10-12 */
         if($block_type === 'vip_funnel_hub' && function_exists('vip_funnel_resolve_access_state')) {
             $vip_funnel_access_state = vip_funnel_resolve_access_state($this->user);
 
@@ -152,7 +158,7 @@ class BiolinkBlockAjax extends Controller {
 
             /* Custom code: FC-2026-04-01: do not let disabled plan blocks be re-enabled manually */
             if($new_is_enabled === 1) {
-                $this->validate_block_access_for_current_plan($biolink_block->type);
+                $this->validate_block_access_for_current_plan($biolink_block->type, (int) $biolink_block->link_id);
             }
             /* /Custom code: FC-2026-04-01 */
 
@@ -188,7 +194,7 @@ class BiolinkBlockAjax extends Controller {
         }
 
         /* Custom code: FC-2026-04-01: prevent duplicating blocks that the current package no longer allows */
-        $this->validate_block_access_for_current_plan($biolink_block->type);
+        $this->validate_block_access_for_current_plan($biolink_block->type, (int) $biolink_block->link_id);
         /* /Custom code: FC-2026-04-01 */
 
 
@@ -350,7 +356,12 @@ class BiolinkBlockAjax extends Controller {
             $_POST['link_id'] = (int) $_POST['link_id'];
 
             /* Custom code: FC-2026-04-01: backend plan gate for block creation */
-            $this->validate_block_access_for_current_plan($_POST['block_type']);
+            /* Custom code: FC-2026-10-12: the phone and e-mail forms are no longer offered; existing ones keep working */
+            if(defined('FCC_CARD_RETIRED_BLOCKS') && in_array($_POST['block_type'], FCC_CARD_RETIRED_BLOCKS, true)) {
+                Response::json(fcc_t('Ovaj blok više se ne nudi. Za kontakt dodaj WhatsApp ili Spremi kontakt.'), 'error');
+            }
+            /* /Custom code: FC-2026-10-12 */
+            $this->validate_block_access_for_current_plan($_POST['block_type'], (int) $_POST['link_id']);
             /* /Custom code: FC-2026-04-01 */
 
             $is_handled = false;
@@ -408,7 +419,7 @@ class BiolinkBlockAjax extends Controller {
                 $this->biolink_block->settings = json_decode($this->biolink_block->settings ?? '');
 
                 /* Custom code: FC-2026-04-01: backend plan gate for block updates based on the actual stored block type */
-                $this->validate_block_access_for_current_plan($this->biolink_block->type);
+                $this->validate_block_access_for_current_plan($this->biolink_block->type, (int) $this->biolink_block->link_id);
                 /* /Custom code: FC-2026-04-01 */
 
                 /* Check for the plan limit */

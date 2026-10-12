@@ -356,7 +356,19 @@ class User extends Model {
             return;
         }
 
+        /* Custom code: FC-2026-10-12: WhatsApp is a core block of the new card on every package */
+        $fcc_card_v2_link_ids = [];
+        if(!$can_use_whatsapp_block && function_exists('fcc_card_is_v2')) {
+            $fcc_link_ids = array_values(array_unique(array_map(static fn($block) => (int) $block->link_id, $whatsapp_blocks)));
+            foreach(db()->where('link_id', $fcc_link_ids, 'IN')->get('links', null, ['link_id', 'settings']) ?: [] as $fcc_link) {
+                if(fcc_card_is_v2($fcc_link)) $fcc_card_v2_link_ids[(int) $fcc_link->link_id] = true;
+            }
+        }
+        $can_use_whatsapp_block_default = $can_use_whatsapp_block;
+        /* /Custom code: FC-2026-10-12 */
+
         foreach($whatsapp_blocks as $biolink_block) {
+            $can_use_whatsapp_block = $can_use_whatsapp_block_default || isset($fcc_card_v2_link_ids[(int) $biolink_block->link_id]);
             $settings = $this->normalize_link_settings($biolink_block->settings ?? '{}');
             $was_auto_disabled = (bool) ($settings->plan_auto_disabled ?? false);
             $is_enabled = (int) $biolink_block->is_enabled === 1;
@@ -1551,6 +1563,15 @@ class User extends Model {
 
         fc_ensure_factory_shop_block((int)$user->user_id, (int)$link_id);
         $this->hydrate_biolink_from_user_data($user->user_id, $link_id, $vcard_url);
+        /* Custom code: FC-2026-10-12: every new member starts on the new card in the Aloe style */
+        if(function_exists('fcc_card_prepare_new')) {
+            try {
+                fcc_card_prepare_new((int) $user->user_id, (int) $link_id);
+            } catch(\Throwable $exception) {
+                error_log('FCC new card setup failed for user ' . (int) $user->user_id . ': ' . $exception->getMessage());
+            }
+        }
+        /* /Custom code: FC-2026-10-12 */
 
         $qr_code_settings = require APP_PATH . 'includes/qr_codes.php';
         $available_qr_codes = require APP_PATH . 'includes/enabled_qr_codes.php';

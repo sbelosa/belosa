@@ -905,6 +905,15 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     </div>
                 </div>
 
+                <?php /* Custom code: FC-2026-10-12: simple guide first, the full library below */
+                $fcc_guide_link = $data->link ?? null;
+                $fcc_guide_plan_blocks = $fcc_enabled_biolink_blocks;
+                $fcc_guide_blocks = $data->biolink_blocks ?? [];
+                if($fcc_guide_link && function_exists('fcc_card_block_catalog')) require THEME_PATH . 'views/link/settings/fcc_card_block_guide.php';
+                ?>
+                <details class="fcc-card-guide-all">
+                <summary><?= htmlspecialchars(fcc_t('Svi ostali blokovi'), ENT_QUOTES, 'UTF-8') ?><small><?= htmlspecialchars(fcc_t('Dodatni blokovi za posebne potrebe. Većini kartica nisu potrebni.'), ENT_QUOTES, 'UTF-8') ?></small></summary>
+                <?php /* /Custom code: FC-2026-10-12 */ ?>
                 <?php if(fcc_partner_enabled()): ?>
                 <div class="fp-block-picker-modes" role="group" aria-label="<?= htmlspecialchars(fcc_t('Izbor blokova'), ENT_QUOTES, 'UTF-8') ?>">
                     <button type="button" data-block-mode="basic" aria-pressed="true"><?= htmlspecialchars(fcc_t('Osnovni blokovi'), ENT_QUOTES, 'UTF-8') ?></button>
@@ -943,6 +952,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
 
                 <?php foreach(require APP_PATH . 'includes/enabled_biolink_blocks.php' as $key => $value): ?>
                     <?php if(in_array($key, ['link_discount', 'link_forever_living_bih', 'link_forever_living_alb_kosovo'], true)) continue ?>
+                    <?php /* Custom code: FC-2026-10-12: the phone and e-mail forms are no longer offered */ if(defined('FCC_CARD_RETIRED_BLOCKS') && in_array($key, FCC_CARD_RETIRED_BLOCKS, true)) continue ?>
 
                     <?php
                     $is_block_enabled_for_plan = (bool) ($fcc_enabled_biolink_blocks->{$key} ?? false);
@@ -959,6 +969,9 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                     }
 
                     if(in_array($key,['link_forever_shop','link_forever_webshop_reg'],true))$is_block_enabled_for_plan=true;
+                    /* Custom code: FC-2026-10-12: the new card opens its core blocks to every package */
+                    if(!empty($data->link) && function_exists('fcc_card_is_v2') && fcc_card_is_v2($data->link) && fcc_card_core_block($key)) $is_block_enabled_for_plan = true;
+                    /* /Custom code: FC-2026-10-12 */
                     $block_card_attributes = $is_block_enabled_for_plan ? null : get_plan_feature_disabled_info();
                     $block_button_attributes = 'data-dismiss="modal" data-toggle="modal" data-target="#create_biolink_' . $key . '"';
                     $block_subtitle = l('biolink_' . $key . '.subheader');
@@ -1107,6 +1120,7 @@ $fcc_block_picker_coach_notice = $fcc_is_hr
                         <button type="button" class="btn btn-outline-light btn-sm" data-reset-filters><?= $fcc_picker_copy['reset_filters'] ?></button>
                     </div>
                 </div>
+                </details><?php /* FC-2026-10-12 */ ?>
             </div>
         </div>
     </div>

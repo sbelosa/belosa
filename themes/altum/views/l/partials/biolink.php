@@ -39,18 +39,27 @@
 ?>
 <!-- /Custom code -->
 
+<?php /* Custom code: FC-2026-10-12: the new FCC card */
+$fcc_card_v2 = function_exists('fcc_card_is_v2') && fcc_card_is_v2($data->link);
+$fcc_card_theme_key = $fcc_card_v2 ? fcc_card_theme($data->link, (int) $data->user->user_id) : '';
+$fcc_card_country_shown = false;
+/* /Custom code: FC-2026-10-12 */ ?>
+<?php if($fcc_card_v2): ?>
+<body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> link-body fcc-card fcc-card--<?= $fcc_card_theme_key ?>">
+<?php else: ?>
 <body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> link-body <?= $data->link->design->background_class ?>" style="<?= $data->link->design->background_style ?>">
+<?php endif ?>
 <?php if(!empty(settings()->custom->body_content_biolink)): ?>
     <?= settings()->custom->body_content_biolink ?>
 <?php endif ?>
 
-<?php if((is_string($data->link->settings->background) && string_ends_with('.mp4', $data->link->settings->background)) || isset($_GET['preview'])): ?>
+<?php if(!$fcc_card_v2 && ((is_string($data->link->settings->background) && string_ends_with('.mp4', $data->link->settings->background)) || isset($_GET['preview']))): ?>
     <video autoplay muted loop playsinline class="link-video-background <?= is_string($data->link->settings->background) && string_ends_with('.mp4', $data->link->settings->background) ? '' : 'd-none' ?>">
         <source src="<?= is_string($data->link->settings->background) && string_ends_with('.mp4', $data->link->settings->background) ? \Altum\Uploads::get_full_url('backgrounds') . $data->link->settings->background : null; ?>" type="video/mp4">
     </video>
 <?php endif ?>
 
-<div id="backdrop" class="link-body-backdrop" style="<?= $data->link->design->backdrop_style ?>"></div>
+<div id="backdrop" class="link-body-backdrop" style="<?= $fcc_card_v2 ? '' : $data->link->design->backdrop_style ?>"></div>
 
 <div class="fcc-biolink-theme-scope">
 <div class="container animate__animated animate__fadeIn <?= isset($_GET['preview']) ? 'container-disabled-simple' : null ?>">
@@ -137,6 +146,11 @@
 
                             <?php
                             $row->settings = json_decode($row->settings ?? '');
+                            /* Custom code: FC-2026-10-12: factory labels in the visitor's language; the new card retires the phone and e-mail forms */
+                            if(function_exists('fcc_card_localize_factory_label')) fcc_card_localize_factory_label($row);
+                            if($fcc_card_v2 && in_array($row->type, FCC_CARD_RETIRED_BLOCKS, true)) continue;
+                            if($fcc_card_v2) { fcc_card_whatsapp_phone($row, $data->user); fcc_card_tidy_label($row); }
+                            /* /Custom code: FC-2026-10-12 */
 
                             /* Resolve localized product copy and always retain the card owner. */
                             if($row->type === 'link_forever_product' && !fcc_product_render_block($row, $data->link)) continue;
@@ -195,6 +209,9 @@
                             }
 
                             if(in_array($row->type,['link_forever_shop','link_forever_webshop_reg'],true))$is_biolink_block_enabled_for_plan=true;
+                            /* Custom code: FC-2026-10-12: the new card shows its core blocks on every package */
+                            if($fcc_card_v2 && fcc_card_core_block($row->type)) $is_biolink_block_enabled_for_plan = true;
+                            /* /Custom code: FC-2026-10-12 */
                             if(!$is_biolink_block_enabled_for_plan) {
                                 continue;
                             }
@@ -253,6 +270,9 @@
                                     continue;
                                 }                                
                             }                              
+                            /* Custom code: FC-2026-10-12: "Save contact" always saves the owner's own contact */
+                            if($row->type === 'link_save_contact' && function_exists('fcc_card_fix_save_contact') && !fcc_card_fix_save_contact($row, (int) $data->user->user_id)) continue;
+                            /* /Custom code: FC-2026-10-12 */
                             if(in_array($row->type,['link_forever_shop','link_forever_webshop_reg','link_discount','link_forever_living_bih','link_forever_living_alb_kosovo'],true)) {
                                 $row->location_url=fcc_forever_entry_url((string)$data->link->url,$row->type==='link_forever_shop'?'business':'shop',(int)$row->biolink_block_id);
                             }
@@ -274,8 +294,17 @@
                             $row->utm = $data->link->settings->utm;
                             ?>
 
-                            <?= \Altum\Link::get_biolink_link($row, $data->user, $this->biolink_theme ?? null, $data->link) ?? null ?>
-                            <?php if(in_array($row->type,['link_forever_shop','link_forever_webshop_reg','link_discount'],true)): ?><div class="col-12 text-center mb-2"><small><?= htmlspecialchars(fcc_forever_copy('automatic'),ENT_QUOTES,'UTF-8') ?> <a href="<?= htmlspecialchars($row->location_url.'&choose=1',ENT_QUOTES,'UTF-8') ?>"><?= htmlspecialchars(fcc_forever_copy('change'),ENT_QUOTES,'UTF-8') ?></a></small></div><?php endif ?>
+                            <?php /* Custom code: FC-2026-10-12: new card markup hooks, readable country line shown once */
+                            $fcc_block_html = (string) (\Altum\Link::get_biolink_link($row, $data->user, $this->biolink_theme ?? null, $data->link) ?? '');
+                            echo $fcc_card_v2 ? fcc_card_mark_block($fcc_block_html, $row->type) : $fcc_block_html;
+                            if($fcc_card_v2 && $row->type === 'custom_html_chatbot' && function_exists('fcc_ai_user_has_public_ai_access') && fcc_ai_user_has_public_ai_access((int) $data->user->user_id)): ?>
+                                <div class="col-12" data-fcc-type="advisor"><button type="button" class="fcc-card-advisor" onclick="var t=document.getElementById('<?= 'fcc-chatbot-' . (int) $row->biolink_block_id . '-toggle' ?>');if(t)t.click();"><span class="fcc-card-advisor-icon" aria-hidden="true"><i class="fas fa-wand-magic-sparkles"></i></span><span><strong><?= htmlspecialchars(fcc_t('Pitaj savjetnika'), ENT_QUOTES, 'UTF-8') ?></strong><small><?= htmlspecialchars(fcc_t('Opiši što trebaš, a savjetnik predloži proizvod.'), ENT_QUOTES, 'UTF-8') ?></small></span></button></div>
+                            <?php endif;
+                            if(!$fcc_card_country_shown && in_array($row->type, ['link_forever_shop', 'link_forever_webshop_reg', 'link_discount'], true) && $fcc_block_html !== '') {
+                                $fcc_card_country_shown = true;
+                                echo fcc_card_country_line($country_code, $row->location_url . '&choose=1', $fcc_card_v2, (string) ($data->link->settings->text_color ?? ''));
+                            }
+                            /* /Custom code: FC-2026-10-12 */ ?>
 
                         <?php endforeach ?>
                     <?php endif ?>
@@ -292,7 +321,11 @@
                 <?php endif ?>
 
                 <div id="branding" class="link-footer-branding">
-                    <?php if($data->link->settings->display_branding): ?>
+                    <?php /* Custom code: FC-2026-10-12: footer in the visitor's language */ if($fcc_card_v2): ?>
+                        <?= fcc_card_footer_html(true) ?>
+                    <?php elseif($data->link->settings->display_branding && empty($data->link->settings->branding->name ?? '') && function_exists('fcc_card_footer_html')): ?>
+                        <span style="<?= $data->link->design->text_style ?>"><?= fcc_card_footer_html(false) ?></span>
+                    <?php elseif($data->link->settings->display_branding): ?><?php /* /Custom code: FC-2026-10-12 */ ?>
                         <?php if(isset($data->link->settings->branding, $data->link->settings->branding->name, $data->link->settings->branding->url) && !empty($data->link->settings->branding->name)): ?>
                             <a href="<?= !empty($data->link->settings->branding->url) ? $data->link->settings->branding->url : '#' ?>" style="<?= $data->link->design->text_style ?>"><?= $data->link->settings->branding->name ?></a>
                         <?php else: ?>

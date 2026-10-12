@@ -1,6 +1,8 @@
 # FCC kartice: analiza i prijedlog nove kartice
 
-Datum: 12. listopada 2026. Izvor: kod grane `claude/live-baseline-2026-10-11` i lokalna kopija produkcijske baze od 11. listopada 2026. Kartice i uređivač pregledani su na http://localhost:8099 na širini mobitela od 375 px. Pregledna verzija s prikazom na mobitelu: https://claude.ai/artifact/8GT7jrGsqGr3uJedBFaLKp. Ništa nije implementirano.
+Datum: 12. listopada 2026. Izvor: kod grane `claude/live-baseline-2026-10-11` i lokalna kopija produkcijske baze od 11. listopada 2026. Kartice i uređivač pregledani su na http://localhost:8099 na širini mobitela od 375 px. Pregledna verzija s prikazom na mobitelu: https://claude.ai/artifact/8GT7jrGsqGr3uJedBFaLKp.
+
+**Stanje 12. listopada 2026.** Korisnik je odlučio: nove registracije dobivaju novu karticu bez izbora, zadani stil je Aloe, obrasci za telefon i e-mail više se ne nude, postojeći suradnici biraju novu ili staru karticu, a PRO suradnici biraju između više stilova. Ispravci iz prve faze i nova kartica izrađeni su lokalno na 8099 i čekaju objavu. Opis izvedbe je u `docs/STANJE_SUSTAVA.md`, odjeljak 5g. Novi uređivač iz odjeljka 5 i pilot s mjerenjem iz odjeljka 6 ostaju otvoreni.
 
 ## 1. Kako kartica nastaje danas
 

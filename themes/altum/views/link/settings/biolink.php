@@ -2462,6 +2462,16 @@ $fcc_biolink_editor_tours = [
                                             <?php endif ?>
                                         </div>
                                     <?php endif ?>
+									<?php /* Custom code: FC-2026-10-12: what the block is for and how to use it, in plain words */
+									$fcc_block_help = function_exists('fcc_card_block_catalog') ? (fcc_card_block_catalog()[$row->type] ?? null) : null;
+									if(defined('FCC_CARD_RETIRED_BLOCKS') && in_array($row->type, FCC_CARD_RETIRED_BLOCKS, true)) $fcc_block_help = ['title' => $row->type === 'phone_collector' ? 'Obrazac za telefon' : 'Obrazac za e-mail', 'what' => 'Ovaj blok više se ne nudi. Postojeći obrazac i dalje radi na staroj kartici, a nova kartica ga ne prikazuje.', 'how' => 'Za kontakt koristi WhatsApp i Spremi kontakt. Prikupljeni podaci ostaju sačuvani.'];
+									if($fcc_block_help): ?>
+										<div class="fcc-block-help" style="margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#EEF6F1;border:1px solid #d5e6dc;color:#183b37;font-size:.875rem;line-height:1.5">
+											<strong style="display:block;font-size:.95rem;margin-bottom:2px"><?= htmlspecialchars(fcc_t($fcc_block_help['title']), ENT_QUOTES, 'UTF-8') ?></strong>
+											<span style="display:block"><?= htmlspecialchars(fcc_t($fcc_block_help['what']), ENT_QUOTES, 'UTF-8') ?></span>
+											<span style="display:block;margin-top:4px;color:#526b65"><?= htmlspecialchars(fcc_t($fcc_block_help['how']), ENT_QUOTES, 'UTF-8') ?></span>
+										</div>
+									<?php endif; /* /Custom code: FC-2026-10-12 */ ?>
 									<?php require THEME_PATH . 'views/link/settings/biolink_blocks/' . $row->type . '/' . $row->type . '_update_form.php' ?>
                                 </div>
                             </div>
