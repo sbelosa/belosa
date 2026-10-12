@@ -117,6 +117,19 @@
       if (net === 'more') { e.preventDefault(); navigator.share({ title: current.title, text: textWithoutLink(), url: current.url }).catch(function () {}); }
     });
   }
-  function init() { scan(); networks(); }
+  /* FCC Top 10: boards after the main ranking show five names, the rest on request. */
+  function topBoards() {
+    var lang = (document.documentElement.lang || 'hr').slice(0, 2);
+    var more = { hr: 'Prikaži cijelu listu', sl: 'Prikaži celoten seznam', de: 'Ganze Liste anzeigen', es: 'Ver la lista completa', en: 'Show the full list' }[lang] || 'Show the full list';
+    var less = { hr: 'Prikaži manje', sl: 'Prikaži manj', de: 'Weniger anzeigen', es: 'Ver menos', en: 'Show less' }[lang] || 'Show less';
+    document.querySelectorAll('.ft-grid > .ft-card:not(:first-child)').forEach(function (card) {
+      var list = card.querySelector('.ft-list'); if (!list || list.children.length <= 5) return;
+      card.classList.add('zs-collapsed');
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'zs-list-toggle'; b.textContent = more; b.setAttribute('aria-expanded', 'false');
+      b.addEventListener('click', function () { var open = card.classList.toggle('zs-collapsed') === false; b.textContent = open ? less : more; b.setAttribute('aria-expanded', String(open)); });
+      list.insertAdjacentElement('afterend', b);
+    });
+  }
+  function init() { scan(); networks(); topBoards(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

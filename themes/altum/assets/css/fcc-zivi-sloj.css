@@ -744,3 +744,40 @@ html body.fcc-ui-zivi #fl-library .fl-country-form select.select2-hidden-accessi
   position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important; min-width: 0 !important; padding: 0 !important; border: 0 !important;
   flex: none !important; overflow: hidden !important; clip: rect(0 0 0 0) !important; box-shadow: none !important;
 }
+
+/* ---------- FCC Top 10, layout (final) ----------
+   A strict grid instead of newspaper columns: the page reads in rows on every browser.
+   1. Overview and personal rhythm side by side. 2. The main CC ranking spans the width, its ten names in two columns.
+   3. The other boards sit in an even two-column grid, each showing its first five names with a toggle for the rest. */
+@media (min-width: 1000px) {
+  body.fcc-ui-zivi .fp-section-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; align-items: stretch; }
+  body.fcc-ui-zivi .fp-section-top > * { grid-column: 1 / -1; min-width: 0; }
+  body.fcc-ui-zivi .fp-section-top > .ft-overview { grid-column: 1; }
+  body.fcc-ui-zivi .fp-section-top > .ft-progress { grid-column: 2; }
+  body.fcc-ui-zivi .fp-section-top > :is(.ft-overview, .ft-progress) { margin-bottom: 18px !important; display: flex; flex-direction: column; }
+  body.fcc-ui-zivi .fp-section-top > :is(.ft-overview, .ft-progress) > :last-child { margin-top: auto; }
+}
+body.fcc-ui-zivi .ft-grid {
+  display: grid !important; column-count: auto !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px !important; align-items: stretch !important;
+}
+body.fcc-ui-zivi .ft-grid > .ft-card { display: flex !important; flex-direction: column; width: auto !important; margin: 0 !important; break-inside: auto; }
+body.fcc-ui-zivi .ft-grid > .ft-card:first-child { grid-column: 1 / -1; }
+body.fcc-ui-zivi .ft-grid > .ft-card:first-child .ft-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(5, auto); column-gap: 28px; }
+body.fcc-ui-zivi .ft-card-head { min-height: 0 !important; margin-bottom: 16px !important; }
+body.fcc-ui-zivi .ft-card .ft-own { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px !important; min-height: 76px; }
+body.fcc-ui-zivi .ft-card .ft-counts { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 !important; }
+body.fcc-ui-zivi .ft-card .ft-positive-note { font-size: 13px !important; color: var(--zs-muted) !important; margin: 0 0 6px !important; }
+body.fcc-ui-zivi .ft-card .ft-list { margin: 6px 0 0 !important; }
+body.fcc-ui-zivi .ft-card .ft-list > li { min-height: 46px; }
+body.fcc-ui-zivi .ft-card.zs-collapsed .ft-list > li:nth-child(n+6) { display: none !important; }
+body.fcc-ui-zivi .ft-card .zs-list-toggle {
+  align-self: flex-start; margin: 10px 0 2px; min-height: 40px; padding: 0 16px; border-radius: 12px; border: 1px solid #DCE8E1; background: #fff;
+  color: var(--zs-em2); font: 700 13.5px var(--zs-font); cursor: pointer;
+}
+body.fcc-ui-zivi .ft-card .zs-list-toggle:hover { border-color: #B9D8C8; }
+body.fcc-ui-zivi .ft-card > details:last-child, body.fcc-ui-zivi .ft-card > .ft-rules:last-child { margin-top: auto; padding-top: 12px; border-top: 1px solid #E8F0EB; }
+body.fcc-ui-zivi .ft-overview .ft-current-hint { border-top: 1px solid #E8F0EB; padding-top: 14px; margin-bottom: 0; }
+@media (max-width: 999px) {
+  body.fcc-ui-zivi .ft-grid { grid-template-columns: minmax(0, 1fr); }
+  body.fcc-ui-zivi .ft-grid > .ft-card:first-child .ft-list { grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; grid-template-rows: none; }
+}
