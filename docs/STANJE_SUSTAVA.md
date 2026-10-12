@@ -36,7 +36,7 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 
 1. Prikaz paketa i stranica Moj paket prosljeđivali su `'+10 years'` kroz prijevod. Na njemačkom, slovenskom i drugim jezicima PHP je tada uspoređivao s današnjim datumom. Zato je obnovljivi PRO mogao biti prikazan kao doživotni, a gumb onemogućen.
 
-## 5a. Pojednostavljenje za suradnike (lokalno, čeka objavu)
+## 5a. Pojednostavljenje za suradnike (na produkciji od 12. listopada 2026., commit 300355f)
 
 1. **Više** ima četiri skupine: Učenje, Susreti i događaji, Rezultati i tim te Paket i postavke. Tehnički alati su u zatvorenom odjeljku Napredni alati: poveznice, QR kodovi, funneli, statistika, pikseli, domene, projekti, uvodne stranice i kanali obavijesti. Nijedan alat nije uklonjen, a poveznica `partner/more#tools` otvara odjeljak.
 2. **Danas** počinje današnjim korakom Mojeg puta. Iznad njega su samo stvarni zadaci koji čekaju, poslovni upiti i dospjela timska javljanja. Događaj, mjesečni bodovi i sponzor slijede ispod. Vlastita promjena CC bodova više se ne prikazuje dvaput.
@@ -46,7 +46,7 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 6. Akademija i usporedba paketa unutar radnog prostora koriste zajedničku paletu `--fp-*` iz `fcc-partner-premium.css`.
 7. Svi novi tekstovi prevedeni su na 12 jezika u `app/config/locales`.
 
-## 5c. Veliki update prema CC bodovima (lokalno, čeka objavu)
+## 5c. Veliki update prema CC bodovima (na produkciji od 12. listopada 2026., commit 300355f)
 
 1. **Javni popisi prate CC iz FLP360.** Istaknute aplikacije traže PRO i najmanje 1 osobni CC, a Preporučeni sponzori PRO i potvrđenu 4CC aktivnost. Oba uvjeta vrijede za tekući ili prošli kalendarski mjesec po vremenu Europe/Zagreb. Jedini izvor pravila je `app/helpers/fcc_cc_visibility.php`. Iznosi CC bodova nigdje se javno ne prikazuju. Na kopiji podataka popis Istaknutih aplikacija narastao je s 14 na 46, a Preporučenih sponzora s 5 na oko 25.
 2. **Klikovi su samo statistika.** FCC Rezultati, uređivač kartice, statistika i Coach više ne spominju pragove 15+ i 50+. Emailovi o prelasku praga klikova su ugašeni.
@@ -58,6 +58,21 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 8. **Pravila su javna.** Prikazana su na stranicama Istaknute aplikacije i Preporučeni sponzori, a novi članak „Javni popisi, CC bodovi i 4CC grupa” u Uputama za FCC postoji na 13 jezika.
 9. **Novi test** `scripts/test_cc_visibility.php` dodan je u deploy workflow.
 
+## 5d. Pozivnica u tim, Moj put i GeoLite (lokalno, čeka objavu)
+
+1. **Pozivnica u tim.** Svaki odobreni suradnik s aktivnom karticom i Forever ID-jem automatski dobiva trajnu kratku poveznicu `forevercard.club/poziv/<kod>` s QR kodom. Poveznica vodi na model Upoznaj poslovanje s ugrađenom preporukom. Logika je u `app/helpers/fcc_business_invite.php`, ruta u `BusinessInvite`, a tablice `fcc_business_invites` i `fcc_business_invite_registrations` nastaju pri prvom upisu.
+2. **Javna stranica** (`themes/altum/views/partner/business-public.php`) dobila je poglavlja Što dobivaš u našem timu i Nakon narudžbe, gumb za kopiranje broja sponzora i poveznicu na FCC registraciju s kodom pozivnice. Osobni uvod prikazuje se u svim modelima.
+3. **PRO dodaje** osobni YouTube ili Vimeo video i uvod (stupci `personal_video_*` u `fcc_business_presentations`) te detaljnu statistiku. Beginner vidi pozivnicu, QR kod i broj registracija.
+4. **Obavijesti sponzoru:** kada posjetitelj otvori službenu narudžbu (jednom po posjetitelju i danu) i kada se netko registrira u FCC preko pozivnice. Upiti su već imali obavijest.
+5. **Izbornik Podijeli** ima tri izbora: Pozivnica u tim, Proizvodi te Webinari i događaji s podizbornikom.
+6. **Administracija** (`partner/admin#invite-admin`): prekidač za otvaranje pozivnice svim suradnicima (`fcc_business_landing_settings.release_mode`) i rokovi provjerenih podataka o Start paketu. Administratori dobivaju tjedni podsjetnik kada do isteka provjere ostane 7 dana ili manje.
+7. **AI savjetnik** na kartici nudi trajnu pozivnicu, a nikad poveznicu koja gostu vraća 404.
+8. **Moj put umjesto 120-dnevnog plana.** Naslovnica na 13 jezika, članak pomoći i vodič u kodu govore o programu Moj put s 90 koraka. Sadržaj u bazi (članak `120-dnevni-plan` postaje `moj-put` na 13 jezika, spominjanja u člancima `ai-savjetnik`, `start-paket`, `zasto-sustav-ima-smisla`, stranica `how-it-works` i dvije kartice Stjepanovog vodiča) mijenja se gumbom u `partner/admin#content-migration`. Svaka stara vrijednost sprema se u `fcc_content_migration_log`, a gumb Vrati vraća sve što nakon toga nitko nije uređivao. Stara adresa članka preusmjerava na `moj-put` tek kada novi članak postoji.
+9. **Oznake telefona u prijevodima.** Srpski, švedski i rumunjski članci koriste `[telefon]`, a francuski `[téléphone]` (ukupno 392 članka). `app/core/Shortcodes.php` ih sada prepoznaje, pa se broj suradnika prikazuje.
+10. **GeoLite.** Workflow `.github/workflows/refresh-geolite.yml` svake srijede preuzima službene MaxMind baze, provjerava kontrolni zbroj i sadržaj (`scripts/check_geolite.py`) i FTP-om zamjenjuje samo dvije `.mmdb` datoteke. Dok nema tajni `MAXMIND_ACCOUNT_ID` i `MAXMIND_LICENSE_KEY`, preskače rad bez greške.
+11. **Novi test** `scripts/test_invite_content_migration.php` dodan je u deploy workflow.
+12. **Nakon objave administrator:** u `partner/admin` otvara Pozivnicu u tim svima i primjenjuje Ažuriranje sadržaja: Moj put. Video na Vimeu `1188447137` u Stjepanovom vodiču možda i dalje spominje 120 dana, to može zamijeniti samo autor.
+
 ## 5b. Već provedeno na produkciji prije ove dorade
 
 1. Svi aktivni suradnici dobivaju sadržaj programa v8. Ciklusi označeni s v6 ili v7 otvaraju sljedeći korak iz v8 kataloga, pa migracija podataka nije potrebna.
@@ -67,13 +82,13 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 
 ## 6. Otvorene stavke
 
-1. **GeoLite baze su stare.** `app/includes/GeoLite2-City.mmdb` i `GeoLite2-Country.mmdb` su iz travnja 2026. Kod koristi lokalnu bazu samo ako je mlađa od 60 dana, pa svaki novi posjetitelj čeka vanjski geo servis. Potrebno je preuzeti svježe MaxMind datoteke i uvesti njihovo redovito osvježavanje.
+1. **GeoLite baze su stare.** `app/includes/GeoLite2-City.mmdb` i `GeoLite2-Country.mmdb` su iz travnja 2026. Kod koristi lokalnu bazu samo ako je mlađa od 60 dana. Tjedni workflow je pripremljen (odjeljak 5d) i čeka da korisnik otvori besplatni MaxMind račun i doda dvije GitHub tajne.
 2. **Deploy workflow koristi običan FTP bez šifriranja.** Treba prijeći na `protocol: ftps` s imenom poslužitelja koje odgovara TLS certifikatu. Za to treba ažurirati GitHub Secret `FTP_SERVER`.
 3. **Ručni workflow `sync-live-to-github.yml` isključuje provjeru certifikata.** Nakon objedinjavanja ga treba ukinuti ili ispraviti.
 4. **Smeće na produkciji.** `themes/__MACOSX` ima 2099 datoteka iz raspakirane arhive. Uz to postoje `.ftp-deploy-sync-state*` datoteke izvan uobičajenog stanja workflowa. Treba ih ukloniti pri kontroliranoj objavi.
 5. **`vendor/phpmailer/phpmailer/src/AcmHandler.php`** je AltumCodeov mehanizam praćenja licence koji se aktivira samo pri instalaciji ili ažuriranju. Nije zlonamjeran i ostaje.
 6. **Produkcijski ključ `FCC_OPS_READONLY_KEY`** pojavio se u zapisniku Claude razgovora 11. listopada. Preporučena je zamjena ključa.
-7. **Stjepanov osobni vodič** u `app/helpers/vip_funnel_stjepan_guide.php` nudi 120-dnevni početni plan i povezan je s videom `120_dnevni_plan`, dok program ima 90 koraka. Tekst nije mijenjan jer bi se razlikovao od videa. Odluka pripada autoru.
+7. **120-dnevni plan** zamijenjen je programom Moj put prema odluci korisnika od 12. listopada 2026. (odjeljak 5d). Ostaje samo provjera videa u Stjepanovom vodiču.
 8. **Urednik sadržaja edukacije** nije izrađen. Sadržaj od oko 128 MB i dalje je u PHP konfiguraciji, a svaka izmjena traži objavu koda. To je zaseban veći projekt.
 9. **Najveće datoteke** `fcc_ai.php` (30.574 retka), `vip_funnel.php` i `AiPlan.php` nisu dijeljene. Razdvajati ih postupno, pri sljedećim doradama tih područja.
 
@@ -83,6 +98,7 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 1. Okruženje se pokreće iz `ClaudeWorkspaces/FCC-runtime` naredbom `docker compose up -d`, a otvara na `http://localhost:8099`.
 2. Može se prijaviti stvarnim produkcijskim podacima, jer je baza kopija. Lokalni testni računi, administratorski i Beginner, nalaze se u privatnoj datoteci `FCC-runtime/LOCAL_TEST_ACCOUNT.txt`.
 3. Provjereno 11. listopada: PHP lint za 1.862 datoteke, 14 testova koji se pokreću prije objave i 42 stranice za PRO i Beginner račun, uključujući engleski i njemački. Nije bilo PHP grešaka ni upozorenja.
+4. Provjereno 12. listopada: PHP lint za 1.867 datoteka i 14 testova prije objave bez greške. Migracija sadržaja na kopiji baze: 145 izmjena primijenjeno, vraćeno i ponovno primijenjeno, nakon čega nema spominjanja 120 dana. Pozivnica u tim provjerena je sa sintetičkim Beginner i PRO računima: kratka poveznica, QR kod, javna stranica na hrvatskom, engleskom, slovenskom, mađarskom i njemačkom, osobni video, obavijest pri otvaranju narudžbe i bilježenje registracije. Lokalni runtime nema tajni ključ poslovnog modula, pa je klik na narudžbu provjeren iz naredbenog retka.
 
 ## 7. Put objave
 

@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Comparte una presentación del negocio",
-      "summary": "Presenta las oportunidades de colaboración y haz seguimiento de las consultas voluntarias desde tu cuenta.",
+      "title": "Invitación al equipo",
+      "summary": "Tu enlace permanente para que una persona nueva conozca el negocio, pida el paquete Start contigo y se registre en FCC.",
       "keywords": [
-        "negocio",
+        "invitación al equipo",
+        "presentación de negocio",
         "plan de marketing",
         "colaboración",
         "paquete de inicio",
-        "presentación"
+        "patrocinio",
+        "código QR"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Enlace personal para conversar",
+          "title": "Un enlace para una persona nueva",
           "paragraphs": [
-            "La presentación del negocio es independiente del webinar. La vista disponible y la preparación de una presentación personal dependen del acceso de la cuenta y del paquete. Ir a la página del paquete de inicio no confirma una inscripción."
+            "Tienes tu invitación al equipo automáticamente cuando tienes una tarjeta FCC activa y tu Forever ID en el perfil. El enlace es permanente y ya incluye tu recomendación y tu número de patrocinador.",
+            "En ella la persona ve cómo funciona el negocio, qué recibe en el equipo, el paquete Start para su país y tres pasos desde el pedido hasta el registro en FCC. La invitación no promete ingresos."
           ]
         },
         {
           "id": "steps",
-          "title": "Prepara la conversación y haz seguimiento",
+          "title": "Cómo usarla",
           "steps": [
-            "En Compartir, abre Plan de marketing o la Presentación del negocio disponible.",
-            "Lee tu propia vista previa y comprueba la recomendación personal y el contacto.",
-            "Adapta la invitación a los intereses de la persona, sin prometer ingresos ni resultados.",
-            "Envía personalmente el enlace preparado y acuerda una conversación si la persona quiere.",
-            "Busca las consultas voluntarias en tus Contactos y anota el siguiente acuerdo."
+            "En Compartir, abre Invitación al equipo.",
+            "Envía el enlace por WhatsApp, cópialo en un mensaje o enseña el código QR en persona.",
+            "Cuando recibas un aviso de que alguien abrió el pedido o envió una consulta, contacta el mismo día.",
+            "Después del pedido, recuerda a la persona que se registre en FCC con su Forever ID desde el enlace de la invitación.",
+            "Cuando aparezca en tu equipo, añádela a los grupos y empezad juntos el programa Mi recorrido."
           ]
         },
         {
           "id": "faq",
-          "title": "Qué significa el resultado",
+          "title": "Preguntas frecuentes",
           "questions": [
             {
-              "question": "¿Hacer clic en el paquete de inicio significa que hay una nueva colaboración?",
-              "answer": "No. La compra y la inscripción se completan en el destino oficial de Forever. En el registro de FCC, distingue entre un clic, una consulta de contacto y un resultado confirmado personalmente."
+              "question": "¿Qué añade PRO?",
+              "answer": "PRO añade un vídeo y una introducción personales arriba en la invitación y estadísticas detalladas de visitas, clics y consultas. La invitación básica es igual para todos."
+            },
+            {
+              "question": "¿Un clic en el pedido es un registro nuevo?",
+              "answer": "No. La compra y el registro se completan en la web oficial de Forever. El resultado de la invitación es el registro en FCC, y el patrocinador se confirma automáticamente."
+            },
+            {
+              "question": "¿Puedo enviar otra versión?",
+              "answer": "Sí. En Otra versión de la presentación puedes preparar una invitación personal o una versión que empieza por los productos."
             }
           ]
         }

@@ -57,3 +57,6 @@
 !docs/STANJE_SUSTAVA.md
 !docs/ANALIZA_MODULA_2026-10-11.md
 !scripts/test_cc_visibility.php
+!scripts/check_geolite.py
+!scripts/test_invite_content_migration.php
+!docs/ANALIZA_POSLOVNA_PREZENTACIJA_2026-10-12.md

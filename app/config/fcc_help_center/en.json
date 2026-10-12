@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Share a business presentation",
-      "summary": "Introduce the opportunity and follow voluntary enquiries through your account.",
+      "title": "Team invitation",
+      "summary": "Your permanent link that lets a new person get to know the business, order the Start pack with you and register with FCC.",
       "keywords": [
-        "business",
+        "team invitation",
+        "business presentation",
         "marketing plan",
-        "opportunity",
+        "business",
         "starter pack",
-        "presentation"
+        "sponsoring",
+        "QR code"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "A personal conversation link",
+          "title": "One link for a new person",
           "paragraphs": [
-            "The business presentation is separate from webinars. Its available view and personal preparation depend on account access and plan. Opening a starter pack is not confirmed registration."
+            "You get your team invitation automatically once you have an active FCC card and your Forever ID in your profile. The link is permanent and already contains your referral and sponsor ID.",
+            "On it, the person sees how the business works, what they get in the team, the Start pack for their country and three steps from the order to the FCC registration. The invitation does not promise earnings."
           ]
         },
         {
           "id": "steps",
-          "title": "Prepare and follow the conversation",
+          "title": "How to use it",
           "steps": [
-            "In Share, open Marketing plan or the available Business presentation.",
-            "Read your preview and check your referral and contact details.",
-            "Adapt the invitation to the person's interest without promising earnings or results.",
-            "Send the prepared link yourself and arrange a conversation if the person wants one.",
-            "Find a voluntary enquiry in your Contacts and record the next agreement."
+            "In Share, open Team invitation.",
+            "Send the link on WhatsApp, copy it into a message or show the QR code when you meet in person.",
+            "When you are notified that someone opened the order or sent an enquiry, get in touch the same day.",
+            "After the order, remind the person to register with FCC with their Forever ID through the link on the invitation.",
+            "When they appear in your team, add them to the groups and start the My journey program together."
           ]
         },
         {
           "id": "faq",
-          "title": "Understanding results",
+          "title": "Frequently asked questions",
           "questions": [
             {
-              "question": "Is a starter pack click a new business relationship?",
-              "answer": "No. Purchases and registration are completed at the official Forever destination. Distinguish a click, contact enquiry and personally confirmed outcome in FCC."
+              "question": "What does PRO add?",
+              "answer": "PRO adds a personal video and introduction at the top of the invitation and detailed statistics on visits, clicks and enquiries. The basic invitation is the same for everyone."
+            },
+            {
+              "question": "Is a click on the order a new registration?",
+              "answer": "No. The purchase and registration are completed on the official Forever website. The result of the invitation is an FCC registration, and the sponsor is confirmed automatically."
+            },
+            {
+              "question": "Can I send a different version?",
+              "answer": "Yes. Under Another version of the presentation you can prepare a personal invitation or a version that starts with the products."
             }
           ]
         }

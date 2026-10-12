@@ -208,6 +208,9 @@ function fcc_partner_notifications_run(?DateTimeImmutable $now=null): array {
   $users=fcc_partner_rows('SELECT user_id,type FROM users WHERE status=1 AND user_id>? ORDER BY user_id LIMIT 100',[$cursor]);
   foreach($users as $u) fcc_partner_notification_sync_user($u,$now);
   fcc_partner_notification_config_save('user_cursor',count($users)===100?(int)end($users)['user_id']:0);
+  /* Custom code: FC-2026-10-12: weekly reminder before reviewed Start pack facts expire */
+  if(function_exists('fcc_invite_starter_review_reminders')){try{fcc_invite_starter_review_reminders();}catch(\Throwable $e){error_log('Starter review reminder: '.get_class($e));}}
+  /* /Custom code: FC-2026-10-12 */
   fcc_partner_query("INSERT IGNORE INTO fcc_partner_push_deliveries (notification_id,subscription_id,available_at,updated_at) SELECT n.id,s.id,UTC_TIMESTAMP(),UTC_TIMESTAMP() FROM fcc_partner_notifications n JOIN fcc_partner_push_subscriptions s ON s.user_id=n.user_id AND s.active=1 WHERE n.expires_at>UTC_TIMESTAMP() AND n.created_at>=s.created_at AND n.event_key NOT LIKE 'top:%'");
   $stats=fcc_partner_push_deliver($now);
   fcc_partner_notification_config_save(getenv('FCC_PHONE_PILOT')==='1'?'heartbeat_phone':'heartbeat',['at'=>gmdate('c'),'accounts'=>count($users),'transport'=>fcc_partner_push_mode(),'result'=>$stats]);

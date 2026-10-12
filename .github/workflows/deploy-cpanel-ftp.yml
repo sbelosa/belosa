@@ -88,6 +88,7 @@ jobs:
           php scripts/test_vip_funnel_persistence_guards.php
           # Custom code: FC-2026-10-11: CC-based public visibility and 4CC group rules
           php scripts/test_cc_visibility.php
+          php scripts/test_invite_content_migration.php
           # /Custom code: FC-2026-10-11
 
       - name: Verify immutable Forever click qualification

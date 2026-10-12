@@ -237,32 +237,35 @@
       ]
     },
     "business": {
-      "title": "Deli poslovno predstavitev",
-      "summary": "Predstavi možnosti sodelovanja in spremljaj prostovoljna vprašanja na svojem računu.",
+      "title": "Povabilo v ekipo",
+      "summary": "Tvoja stalna povezava, s katero nova oseba spozna posel, naroči začetni paket s tabo in se registrira v FCC.",
       "keywords": [
-        "poslovanje",
+        "povabilo v ekipo",
+        "poslovna predstavitev",
         "marketinški načrt",
         "sodelovanje",
         "začetni paket",
-        "predstavitev"
+        "sponzoriranje",
+        "koda QR"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Preden začneš",
+          "title": "Ena povezava za novo osebo",
           "paragraphs": [
-            "Poslovna predstavitev je ločena od webinarja. Prikaz in osebna priprava sta odvisna od dostopa računa in paketa. Odprtje začetnega paketa ne potrjuje registracije."
+            "Povabilo v ekipo dobiš samodejno, ko imaš aktivno kartico FCC in Forever ID v profilu. Povezava je stalna in že vsebuje tvoje priporočilo in številko sponzorja.",
+            "Oseba na njej vidi, kako poteka delo, kaj dobi v ekipi, začetni paket za svojo državo in tri korake od naročila do registracije v FCC. Povabilo ne obljublja zaslužka."
           ]
         },
         {
           "id": "steps",
-          "title": "Korak za korakom",
+          "title": "Kako ga uporabljati",
           "steps": [
-            "V Deli odpri Marketinški načrt ali razpoložljivo Poslovno predstavitev.",
-            "Preberi svoj predogled ter preveri priporočilo in kontakt.",
-            "Povabilo prilagodi zanimanju osebe, brez obljub zaslužka ali rezultatov.",
-            "Povezavo pošlji osebno in dogovori pogovor, če ga oseba želi.",
-            "Prostovoljno vprašanje poišči v svojih Stikih in zabeleži naslednji dogovor."
+            "V Deli odpri Povabilo v ekipo.",
+            "Pošlji povezavo po WhatsAppu, jo kopiraj v sporočilo ali pokaži kodo QR ob srečanju v živo.",
+            "Ko dobiš obvestilo, da je nekdo odprl naročilo ali poslal povpraševanje, se oglasi isti dan.",
+            "Po naročilu osebo spomni, naj se s svojim Forever ID registrira v FCC prek povezave na povabilu.",
+            "Ko se pojavi v tvoji ekipi, jo dodaj v skupine in skupaj začnita s programom Moja pot."
           ]
         },
         {
@@ -270,8 +273,16 @@
           "title": "Pogosta vprašanja",
           "questions": [
             {
-              "question": "Ali klik na začetni paket pomeni novo sodelovanje?",
-              "answer": "Ne. Nakup in registracija se zaključita na uradni strani Forever. V FCC razlikuj klik, kontaktno vprašanje in osebno potrjen izid."
+              "question": "Kaj dobim s paketom PRO?",
+              "answer": "PRO doda osebni video in uvod na vrh povabila ter podrobno statistiko obiskov, klikov in povpraševanj. Osnovno povabilo je enako za vse."
+            },
+            {
+              "question": "Je klik na naročilo nova registracija?",
+              "answer": "Ne. Nakup in prijava se zaključita na uradni strani Forever. Kot rezultat povabila šteje registracija v FCC, sponzor pa se potrdi samodejno."
+            },
+            {
+              "question": "Lahko pošljem drugačno različico?",
+              "answer": "Da. V delu Druga različica predstavitve lahko pripraviš osebno povabilo ali različico, ki začne pri izdelkih."
             }
           ]
         }

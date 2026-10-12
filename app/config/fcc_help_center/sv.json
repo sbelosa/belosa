@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Dela en affärspresentation",
-      "summary": "Presentera möjligheter till samarbete och följ upp frivilliga förfrågningar via ditt konto.",
+      "title": "Inbjudan till teamet",
+      "summary": "Din permanenta länk som låter en ny person lära känna verksamheten, beställa startpaketet med dig och registrera sig hos FCC.",
       "keywords": [
-        "affärsverksamhet",
-        "marknadsföringsplan",
+        "inbjudan till teamet",
+        "affärspresentation",
+        "marknadsplan",
         "samarbete",
         "startpaket",
-        "presentation"
+        "sponsring",
+        "QR-kod"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Personlig länk för samtal",
+          "title": "En länk för en ny person",
           "paragraphs": [
-            "Affärspresentationen är separat från webbinariet. Vilken vy som finns tillgänglig och möjligheten att förbereda en personlig presentation beror på kontots åtkomst och paket. Att gå vidare till startpaketet bekräftar inte en registrering."
+            "Du får din inbjudan till teamet automatiskt när du har ett aktivt FCC-kort och ditt Forever ID i profilen. Länken är permanent och innehåller redan din rekommendation och ditt sponsor-ID.",
+            "Där ser personen hur verksamheten fungerar, vad hen får i teamet, startpaketet för sitt land och tre steg från beställning till registrering hos FCC. Inbjudan lovar inga intäkter."
           ]
         },
         {
           "id": "steps",
-          "title": "Förbered och följ upp samtalet",
+          "title": "Så använder du den",
           "steps": [
-            "Öppna Marknadsföringsplanen eller den tillgängliga affärspresentationen under Dela.",
-            "Läs igenom din egen översikt och kontrollera den personliga rekommendationen och kontakten.",
-            "Anpassa inbjudan efter personens intresse utan att lova inkomst eller resultat.",
-            "Skicka den förberedda länken personligen och kom överens om ett samtal om personen vill.",
-            "Leta efter frivilliga förfrågningar i Kontakter och notera nästa överenskommelse."
+            "Öppna Inbjudan till teamet under Dela.",
+            "Skicka länken på WhatsApp, kopiera den till ett meddelande eller visa QR-koden när ni ses.",
+            "När du får ett meddelande om att någon öppnat beställningen eller skickat en förfrågan, hör av dig samma dag.",
+            "Efter beställningen, påminn personen om att registrera sig hos FCC med sitt Forever ID via länken i inbjudan.",
+            "När personen syns i ditt team, lägg till hen i grupperna och börja programmet Min resa tillsammans."
           ]
         },
         {
           "id": "faq",
-          "title": "Vad resultatet betyder",
+          "title": "Vanliga frågor",
           "questions": [
             {
-              "question": "Är ett klick på startpaketet ett nytt samarbete?",
-              "answer": "Nej. Köp och registrering slutförs på Forever:s officiella destination. I FCC-registreringen skiljer du mellan klick, kontaktförfrågan och personligen bekräftat resultat."
+              "question": "Vad ger PRO?",
+              "answer": "PRO lägger till en personlig video och introduktion överst i inbjudan samt detaljerad statistik över besök, klick och förfrågningar. Grundinbjudan är densamma för alla."
+            },
+            {
+              "question": "Är ett klick på beställningen en ny registrering?",
+              "answer": "Nej. Köp och registrering slutförs på Forevers officiella webbplats. Resultatet av inbjudan är registreringen hos FCC, och sponsorn bekräftas automatiskt."
+            },
+            {
+              "question": "Kan jag skicka en annan version?",
+              "answer": "Ja. Under En annan version av presentationen kan du förbereda en personlig inbjudan eller en version som börjar med produkterna."
             }
           ]
         }

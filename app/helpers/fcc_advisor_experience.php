@@ -115,9 +115,18 @@ function fcc_advisor_medical_contact(object $user, object $link, string $questio
 function fcc_advisor_business_actions(object $user,object $link,string $language,string $market): array {
     if((int)$user->user_id!==(int)$link->user_id)return [];
     $items=[];$ui=fcc_advisor_ui($language);
-    if(function_exists('fcc_business_enabled')&&fcc_business_enabled((int)$user->user_id)) {
+    /* Custom code: FC-2026-10-12: the permanent Pozivnica u tim comes first */
+    $invite_code=function_exists('fcc_invite_code_for_user')&&function_exists('fcc_business_landing_access')&&fcc_business_landing_access((int)$user->user_id)?fcc_invite_code_for_user((int)$user->user_id):'';
+    if($invite_code!=='') {
+        $items[]=['kind'=>'business_presentation','title'=>$ui['presentation'],'url'=>fcc_invite_url($invite_code).($market?'?country='.rawurlencode($market):'')];
+    }
+    /* /Custom code: FC-2026-10-12 */
+    if($invite_code===''&&function_exists('fcc_business_enabled')&&fcc_business_enabled((int)$user->user_id)) {
         $shares=fcc_partner_rows('SELECT s.public_token FROM fcc_business_shares s JOIN fcc_business_presentations p ON p.id=s.presentation_id AND p.user_id=s.user_id WHERE s.user_id=? AND p.link_id=? AND p.status=? AND s.revoked_at IS NULL ORDER BY s.id DESC LIMIT 5',[(int)$user->user_id,(int)$link->link_id,'active']);
         foreach($shares as $row){$s=fcc_business_public($row['public_token']);if(!$s||!$s['available'])continue;
+            /* Custom code: FC-2026-10-12: offer only a presentation that a guest can open */
+            if(function_exists('fcc_business_landing_public_allowed')&&!fcc_business_landing_public_allowed($s,0))continue;
+            /* /Custom code: FC-2026-10-12 */
             $destination=fcc_business_share_destination($s,$language);
             if(!empty($destination['expires'])&&$destination['expires']<=time())continue;
             $items[]=['kind'=>'business_presentation','title'=>$ui['presentation'],'url'=>$destination['url'].($market?'?country='.rawurlencode($market):'')];break;

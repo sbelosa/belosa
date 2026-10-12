@@ -69,6 +69,10 @@ class Register extends Controller {
 
         \Altum\CustomHooks::user_initiate_registration();
 
+        /* Custom code: FC-2026-10-12: remember the Pozivnica u tim that opened registration */
+        if(function_exists('fcc_invite_remember_from_request')) fcc_invite_remember_from_request();
+        /* /Custom code: FC-2026-10-12 */
+
         $redirect = process_and_get_redirect_params() ?? 'dashboard';
         $redirect_append = $redirect ? '?redirect=' . $redirect : null;
 
@@ -299,6 +303,10 @@ class Register extends Controller {
                     json_encode(['terms_version'=>fcc_legal_config()['version'],'privacy_notice_version'=>fcc_legal_config()['version'],'accepted_at'=>gmdate('c'),'source'=>'registration']),
                     (int)$registered_user['user_id'],
                 ]);
+
+                /* Custom code: FC-2026-10-12: attribute the registration to its Pozivnica u tim */
+                if(function_exists('fcc_invite_record_registration')) fcc_invite_record_registration((int) $registered_user['user_id']);
+                /* /Custom code: FC-2026-10-12 */
 
                 $create_links = (new \Altum\Models\User())->create_links($registered_user['user_id']);
                 if(function_exists('fcc_partner_enabled') && fcc_partner_enabled()) {

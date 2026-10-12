@@ -169,10 +169,16 @@ class Shortcodes {
 
 		$content = str_replace(['\\[', '\\]'], ['[', ']'], $content);
 
-		$content = preg_replace_callback('/\[\s*(name|email|phone|forever_id|aff_biolink)\s*\]/i', function($matches) use ($params) {
-			$key = strtolower($matches[1]);
+		/* Custom code: FC-2026-10-12: translated articles use [telefon] or [téléphone] for the referral phone */
+		$shortcode_value = function($matches) use ($params) {
+			$key = mb_strtolower($matches[1]);
+			if($key === 'telefon' || $key === 'téléphone') $key = 'phone';
 			return isset($params[$key]) && $params[$key] !== null ? $params[$key] : '';
-		}, $content);
+		};
+		// Invalid UTF-8 cannot use the Unicode pattern; it keeps the original placeholders.
+		$content = preg_replace_callback('/\[\s*(name|email|phone|telefon|téléphone|forever_id|aff_biolink)\s*\]/iu', $shortcode_value, $content)
+			?? preg_replace_callback('/\[\s*(name|email|phone|telefon|forever_id|aff_biolink)\s*\]/i', $shortcode_value, $content);
+		/* /Custom code: FC-2026-10-12 */
 
 		return $content;
 		/* /Custom code: FC-2026-02-26 */

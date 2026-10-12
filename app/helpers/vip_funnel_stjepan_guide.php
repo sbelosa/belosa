@@ -326,18 +326,18 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
         stjepan_fcc_guide_block('mentor_hero', 'headline', [
             'badge' => 'Moj tim',
             'title' => 'Ne krećeš sam/a. Dobivaš plan, sustav i moje mentorstvo.',
-            'text' => 'Kad kreneš kroz moj tim, cilj je da prvih 120 dana ne lutaš, nego da točno znaš što radiš, kojim tempom i kojim redoslijedom.',
+            'text' => 'Kad kreneš kroz moj tim, cilj je da kroz 90 koraka programa Moj put ne lutaš, nego da točno znaš što radiš, kojim tempom i kojim redoslijedom.',
             'title_size' => 48,
         ]),
         stjepan_fcc_guide_block('mentor_video', 'video', [
-            'title' => '120-dnevni početni plan i podrška',
+            'title' => 'Program Moj put i podrška',
             'text' => 'Ovdje kasnije ubacuješ video o planu, AI asistentu, mentorstvu i prvim zadacima.',
             'media_url' => $video('120_dnevni_plan'),
         ]),
         stjepan_fcc_guide_block('mentor_list_a', 'proof_card', [
             'badge' => 'Dobivaš',
             'title' => 'Start paket, ulazak kao Forever suradnik, FCC aplikaciju, AI savjetnika i NFC karticu.',
-            'text' => 'Uz to dobivaš WhatsApp podršku, pristup grupama i 120-dnevni početni plan.',
+            'text' => 'Uz to dobivaš WhatsApp podršku, pristup grupama i program Moj put s 90 koraka.',
             'layout_width' => 'half',
         ]),
         stjepan_fcc_guide_block('mentor_list_b', 'proof_card', [
@@ -367,7 +367,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
             'ab_enabled' => true,
             'variant_b_blocks' => stjepan_fcc_guide_variant($mentor_blocks, [
                 'mentor_hero' => [
-                    'title' => '120 dana jasnog početka i mentorstvo dok si aktivan/na u timu.',
+                    'title' => '90 jasnih koraka za početak i mentorstvo dok si aktivan/na u timu.',
                     'text' => 'Plan se prilagođava tvom vremenu, iskustvu i cilju. Rezultati ovise o tvojoj aktivnosti, ali ne ulaziš naslijepo.',
                 ],
                 'mentor_actions' => [
@@ -717,7 +717,7 @@ function stjepan_fcc_guide_build_payload($user = null, array $options = []): arr
         ]),
         stjepan_fcc_guide_block('start_team', 'proof_card', [
             'badge' => 'Od Stjepana',
-            'title' => 'Dobivaš mentorstvo, 120-dnevni plan, FCC aplikaciju, AI vodiča, NFC karticu i WhatsApp podršku.',
+            'title' => 'Dobivaš mentorstvo, program Moj put, FCC aplikaciju, AI vodiča, NFC karticu i WhatsApp podršku.',
             'text' => 'Nakon narudžbe javiš mi se, dogovorimo prvi korak i spojim te na potrebne upute.',
             'layout_width' => 'half',
         ]),

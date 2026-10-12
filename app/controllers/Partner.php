@@ -305,6 +305,21 @@ class Partner extends Controller {
    return 'partner/admin#cc4-group';
   }
   /* /Custom code: FC-2026-10-11 */
+  /* Custom code: FC-2026-10-12: one click Moj put content migration with backup and revert. */
+  if(in_array($action,['content_migration_apply','content_migration_revert'],true)) {
+   if(!\Altum\Authentication::is_admin()||$section!=='admin') throw new \InvalidArgumentException(fcc_t('Ova radnja dostupna je administratoru.'));
+   if(empty($input['confirm'])) throw new \InvalidArgumentException(fcc_t('Potvrdi radnju označavanjem polja.'));
+   $result=$action==='content_migration_apply'?fcc_cm_apply($uid):fcc_cm_revert($uid);
+   $_SESSION['fcc_cm_result']=$result+['action'=>$action];
+   return 'partner/admin#content-migration';
+  }
+  if($action==='business_release') {
+   if(!\Altum\Authentication::is_admin()||$section!=='admin') throw new \InvalidArgumentException(fcc_t('Ova radnja dostupna je administratoru.'));
+   if(empty($input['confirm'])) throw new \InvalidArgumentException(fcc_t('Potvrdi radnju označavanjem polja.'));
+   fcc_business_landing_release_save($uid,(string)($input['mode']??''));
+   return 'partner/admin#invite-admin';
+  }
+  /* /Custom code: FC-2026-10-12 */
   if($action==='team_group_joined'){fcc_journey_team_group_confirm($uid,$input);return fcc_jp_is_cycle(fcc_j90_cycle($uid))?'partner?view=step':'partner?view=pilot';}
   if(in_array($action,['card_delete_prepare','card_delete','card_delete_cancel'],true)) {
    if($section!=='cards') throw new \InvalidArgumentException(fcc_t('Uklanjanje kartica dostupno je u rubrici Moje kartice.'));

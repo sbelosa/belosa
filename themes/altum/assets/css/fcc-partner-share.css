@@ -102,3 +102,10 @@ body.fcc-partner-mode .fp-webinar-invite [data-invite-event-form]>button{flex:0 
  .fp-webinar-invite :is(.fp-invite-picker-field,.fp-invite-picker-control,.fp-invite-options-body,.fp-share-coach-body){min-width:0;max-width:100%;box-sizing:border-box}
  .fp-webinar-invite :is(input,select,textarea){min-width:0;max-width:100%;box-sizing:border-box}
 }
+
+/* Custom code: FC-2026-10-12: second level choice for webinars and events */
+.fp-share-subnav{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 18px}
+.fp-share-subnav a{padding:7px 14px;border:1px solid #d5e4dc;border-radius:999px;font-size:13px;font-weight:600;color:#365e53;text-decoration:none;background:#fff}
+.fp-share-subnav a[aria-current="page"]{background:#173f36;border-color:#173f36;color:#fff}
+/* /Custom code: FC-2026-10-12 */
+

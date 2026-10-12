@@ -216,6 +216,10 @@ require_once APP_PATH . 'helpers/fcc_partner_notifications.php';
 /* Custom code: FC-2026-10-11: CC-based public visibility and 4CC group */
 require_once APP_PATH . 'helpers/fcc_cc_visibility.php';
 /* /Custom code: FC-2026-10-11 */
+/* Custom code: FC-2026-10-12: audited content migration (Moj put) */
+require_once APP_PATH . 'helpers/fcc_content_migration.php';
+require_once APP_PATH . 'helpers/fcc_business_invite.php';
+/* /Custom code: FC-2026-10-12 */
 require_once APP_PATH . 'helpers/fcc_team.php';
 require_once APP_PATH . 'helpers/fcc_team_notifications.php';
 require_once APP_PATH . 'helpers/fcc_team_work.php';

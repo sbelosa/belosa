@@ -10,6 +10,9 @@ class PartnerMarketing extends Controller {
     if(!is_string($_POST['token']??null)||!hash_equals(\Altum\Csrf::get(),$_POST['token']))throw new \InvalidArgumentException(fcc_t('Sesija je istekla. Osvježi stranicu.'));
     $action=(string)($_POST['action']??'');
     if($action==='landing_prepare'){$share=fcc_business_landing_prepare($uid,$_POST);redirect('partner-marketing?share='.$share['id']);}
+    /* Custom code: FC-2026-10-12: PRO personal video and introduction for the Pozivnica u tim */
+    elseif($action==='invite_personal'){fcc_invite_personal_save($uid,$_POST);redirect('partner-marketing?saved=1#invite-personal');}
+    /* /Custom code: FC-2026-10-12 */
     elseif($action==='quick_prepare'){$share=fcc_business_quick_prepare($uid,$_POST);redirect('partner-marketing?share='.$share['id']);}
     elseif($action==='response'){$cid=fcc_business_response($uid,$_POST);redirect('partner/contacts?id='.$cid);}
     elseif($action==='preferences'){fcc_business_preferences_save($uid,$_POST);redirect('partner-marketing?saved=1');}
@@ -34,8 +37,11 @@ class PartnerMarketing extends Controller {
   $view=($_GET['view']??'')==='mail'&&fcc_business_local()?'mail':'compose';
   $mail=$view==='mail'?fcc_partner_rows('SELECT j.* FROM fcc_business_jobs j JOIN fcc_business_leads r ON r.id=j.lead_id WHERE r.user_id=? ORDER BY j.id DESC LIMIT 60',[$uid]):[];
   $landing=fcc_business_landing_access($uid)&&$view==='compose';if($landing&&$share&&!fcc_business_landing_is_new($share)){$share=null;$p=null;}
+  /* Custom code: FC-2026-10-12: the member's permanent Pozivnica u tim */
+  $invite=null;$inviteError='';if($landing){try{$invite=fcc_invite_for_user($uid);}catch(\InvalidArgumentException $e){$inviteError=$e->getMessage();}}
+  /* /Custom code: FC-2026-10-12 */
   \Altum\Title::set($landing?fcc_business_landing_translate(fcc_locale(),'Poslovna prezentacija'):'Marketing plan');$v=new \Altum\View($landing?'partner/business-landing-workspace':'partner/business-workspace',(array)$this);
-  $this->add_view_content('content',$v->run(['error'=>$error,'values'=>$input,'presentation'=>$p,'share'=>$share,'owner'=>$owner,'assets'=>fcc_business_assets(),'presentations'=>$presentations,'pro'=>fcc_business_pro($uid),'share_type'=>'business','view'=>$view,'mail'=>$mail,'step_id'=>(int)($_GET['step_id']??0),'preferences'=>fcc_business_preferences($uid),'work'=>fcc_business_work($uid),'editing'=>isset($_GET['id'])||isset($_GET['new']),'landing_access'=>$landing,'landing_stats'=>$landing?fcc_business_landing_stats($uid,$uid):null]));
+  $this->add_view_content('content',$v->run(['error'=>$error,'values'=>$input,'presentation'=>$p,'share'=>$share,'owner'=>$owner,'assets'=>fcc_business_assets(),'presentations'=>$presentations,'pro'=>fcc_business_pro($uid),'share_type'=>'business','view'=>$view,'mail'=>$mail,'step_id'=>(int)($_GET['step_id']??0),'preferences'=>fcc_business_preferences($uid),'work'=>fcc_business_work($uid),'editing'=>isset($_GET['id'])||isset($_GET['new']),'landing_access'=>$landing,'landing_stats'=>$landing?fcc_business_landing_stats($uid,$uid):null,'invite'=>$invite,'invite_error'=>$inviteError,'invite_registrations'=>$landing?fcc_invite_registrations($uid):null,'invite_personal'=>$invite?fcc_invite_personal_values($uid,$invite['share']):null,'saved'=>!empty($_GET['saved'])]));
  }
  private function json(array $value): void {\Altum\Router::$controller_settings['has_view']=false;header('Content-Type: application/json');echo fcc_business_json($value);}
 }

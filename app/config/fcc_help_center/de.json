@@ -237,32 +237,35 @@
       ]
     },
     "business": {
-      "title": "Eine Geschäftspräsentation teilen",
-      "summary": "Stelle die Zusammenarbeit vor und verfolge freiwillige Anfragen in deinem Konto.",
+      "title": "Teameinladung",
+      "summary": "Dein dauerhafter Link, mit dem eine neue Person das Geschäft kennenlernt, das Start Paket mit dir bestellt und sich bei FCC registriert.",
       "keywords": [
-        "Geschäft",
+        "Teameinladung",
+        "Geschäftspräsentation",
         "Marketingplan",
         "Zusammenarbeit",
         "Starterpaket",
-        "Präsentation"
+        "Sponsoring",
+        "QR Code"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Vor dem Start",
+          "title": "Ein Link für eine neue Person",
           "paragraphs": [
-            "Die Geschäftspräsentation ist unabhängig vom Webinar. Darstellung und persönliche Vorbereitung hängen von Kontozugang und Paket ab. Ein geöffnetes Starterpaket bestätigt keine Registrierung."
+            "Deine Teameinladung bekommst du automatisch, sobald du eine aktive FCC Karte und deine Forever ID im Profil hast. Der Link ist dauerhaft und enthält bereits deine Empfehlung und Sponsor ID.",
+            "Die Person sieht dort, wie das Geschäft funktioniert, was sie im Team bekommt, das Start Paket für ihr Land und drei Schritte von der Bestellung bis zur Registrierung bei FCC. Die Einladung verspricht keine Einnahmen."
           ]
         },
         {
           "id": "steps",
-          "title": "Schritt für Schritt",
+          "title": "So nutzt du sie",
           "steps": [
-            "Öffne unter Teilen den Marketingplan oder die verfügbare Geschäftspräsentation.",
-            "Lies deine Vorschau und prüfe persönliche Empfehlung und Kontakt.",
-            "Passe die Einladung an das Interesse an, ohne Einkommen oder Ergebnisse zu versprechen.",
-            "Sende den vorbereiteten Link selbst und vereinbare auf Wunsch ein Gespräch.",
-            "Finde die freiwillige Anfrage in deinen Kontakten und erfasse die nächste Vereinbarung."
+            "Öffne unter Teilen die Teameinladung.",
+            "Schick den Link per WhatsApp, kopiere ihn in eine Nachricht oder zeige den QR Code bei einem persönlichen Treffen.",
+            "Wenn du benachrichtigt wirst, dass jemand die Bestellung geöffnet oder eine Anfrage gesendet hat, melde dich am selben Tag.",
+            "Erinnere die Person nach der Bestellung daran, sich mit ihrer Forever ID über den Link in der Einladung bei FCC zu registrieren.",
+            "Sobald sie in deinem Team erscheint, füge sie den Gruppen hinzu und startet gemeinsam mit dem Programm Mein Weg."
           ]
         },
         {
@@ -270,8 +273,16 @@
           "title": "Häufige Fragen",
           "questions": [
             {
-              "question": "Bedeutet ein Starterpaket Klick eine neue Partnerschaft?",
-              "answer": "Nein. Bestellung und Registrierung erfolgen am offiziellen Forever Ziel. Unterscheide in FCC Klick, Kontaktanfrage und persönlich bestätigtes Ergebnis."
+              "question": "Was bringt PRO?",
+              "answer": "PRO fügt oben in der Einladung ein persönliches Video und eine Einleitung hinzu und liefert detaillierte Statistiken zu Besuchen, Klicks und Anfragen. Die Grundeinladung ist für alle gleich."
+            },
+            {
+              "question": "Ist ein Klick auf die Bestellung eine neue Registrierung?",
+              "answer": "Nein. Kauf und Anmeldung werden auf der offiziellen Forever Website abgeschlossen. Als Ergebnis der Einladung zählt die Registrierung bei FCC, der Sponsor wird automatisch bestätigt."
+            },
+            {
+              "question": "Kann ich eine andere Version senden?",
+              "answer": "Ja. Unter Eine andere Version der Präsentation kannst du eine persönliche Einladung oder eine Version vorbereiten, die mit den Produkten beginnt."
             }
           ]
         }

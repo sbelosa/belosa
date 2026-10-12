@@ -43,6 +43,9 @@ function fcc_business_landing_prepare(int $uid,array $in): array {
  $pref=fcc_business_preferences($uid);$language=fcc_business_language($in['language']??$pref['language']);
  $key=fcc_partner_text($in['request_key']??'',64);
  if(!preg_match('/^[a-f0-9]{32,64}$/D',$key))throw new InvalidArgumentException(fcc_t('Osvježi obrazac.'));
+ /* Custom code: FC-2026-10-12: a personal introduction and video choice are PRO additions */
+ if(!fcc_business_pro($uid))unset($in['intro'],$in['asset_id']);
+ /* /Custom code: FC-2026-10-12 */
  return fcc_business_atomic($uid,function()use($uid,$in,$model,$country,$language,$key){
   if(!fcc_business_landing_access($uid))throw new InvalidArgumentException(fcc_t('Pristup nije dostupan.'));
   $prior=fcc_partner_one('SELECT * FROM fcc_business_shares WHERE user_id=? AND request_key=?',[$uid,$key]);
@@ -122,7 +125,11 @@ function fcc_business_landing_track(array $s,string $kind,string $country='',?ar
  $reason=fcc_business_landing_test_reason($s,$context);
  $hash=hash_hmac('sha256','landing:visitor:'.$visitor,fcc_business_key());
  $statement=fcc_partner_query('INSERT IGNORE INTO fcc_business_landing_events (share_id,user_id,landing_model,kind,country,visitor_hash,event_day,is_test,test_reason,created_at) VALUES (?,?,?,?,?,?,UTC_DATE(),?,?,UTC_TIMESTAMP())',[(int)$s['id'],(int)$s['user_id'],$s['landing_model'],$kind,$country,$hash,$reason!==''?1:0,$reason]);
- return $statement->affected_rows===1;
+ $recorded=$statement->affected_rows===1;
+ /* Custom code: FC-2026-10-12: tell the sponsor once per visitor and day when a real visitor opens the official order */
+ if($recorded&&$kind==='outbound'&&$reason===''&&function_exists('fcc_invite_notify_order'))fcc_invite_notify_order($s,$country,$hash);
+ /* /Custom code: FC-2026-10-12 */
+ return $recorded;
 }
 /** Attach the immutable source model to a received form. The existing consent, CRM and delivery flow stays authoritative. */
 function fcc_business_landing_lead(array $s,int $leadId,?array $context=null): bool {

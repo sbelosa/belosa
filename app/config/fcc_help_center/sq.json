@@ -237,32 +237,35 @@
       ]
     },
     "business": {
-      "title": "Ndaj prezantimin e biznesit",
-      "summary": "Paraqit bashkëpunimin dhe ndiq pyetjet vullnetare përmes llogarisë sate.",
+      "title": "Ftesë në ekip",
+      "summary": "Lidhja jote e përhershme me të cilën personi i ri njihet me biznesin, porosit paketën Start me ty dhe regjistrohet në FCC.",
       "keywords": [
-        "biznesi",
-        "plani i marketingut",
-        "bashkëpunimi",
+        "ftesë në ekip",
+        "prezantim biznesi",
+        "plan marketingu",
+        "bashkëpunim",
         "paketa fillestare",
-        "prezantimi"
+        "sponsorizim",
+        "kodi QR"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Para se të fillosh",
+          "title": "Një lidhje për personin e ri",
           "paragraphs": [
-            "Prezantimi i biznesit është i ndarë nga webinari. Pamja dhe përgatitja personale varen nga qasja dhe paketa. Hapja e paketës fillestare nuk konfirmon regjistrim."
+            "Ftesën në ekip e ke automatikisht kur ke një kartë aktive FCC dhe Forever ID-në në profil. Lidhja është e përhershme dhe përmban tashmë rekomandimin tënd dhe numrin e sponsorit.",
+            "Aty personi sheh si punohet, çfarë merr në ekip, paketën Start për vendin e tij dhe tre hapa nga porosia deri te regjistrimi në FCC. Ftesa nuk premton fitime."
           ]
         },
         {
           "id": "steps",
-          "title": "Hapat e veprimit",
+          "title": "Si ta përdorësh",
           "steps": [
-            "Te Ndaj, hap Planin e marketingut ose prezantimin e biznesit të disponueshëm.",
-            "Lexo pamjen tënde dhe kontrollo rekomandimin dhe kontaktin.",
-            "Përshtat ftesën me interesin e personit pa premtime fitimi ose rezultatesh.",
-            "Dërgo lidhjen personalisht dhe cakto bisedën nëse personi e dëshiron.",
-            "Gjej pyetjen vullnetare te Kontaktet dhe regjistro marrëveshjen tjetër."
+            "Te Ndaj, hap Ftesë në ekip.",
+            "Dërgoje lidhjen në WhatsApp, kopjoje në një mesazh ose trego kodin QR në një takim të drejtpërdrejtë.",
+            "Kur merr njoftim se dikush hapi porosinë ose dërgoi një pyetje, kontaktoje të njëjtën ditë.",
+            "Pas porosisë kujtoja personit të regjistrohet në FCC me Forever ID-në e tij përmes lidhjes në ftesë.",
+            "Kur të shfaqet në ekipin tënd, shtoje në grupe dhe nisni së bashku programin Udhëtimi im."
           ]
         },
         {
@@ -270,8 +273,16 @@
           "title": "Pyetje të shpeshta",
           "questions": [
             {
-              "question": "A është klikimi i paketës fillestare bashkëpunim i ri?",
-              "answer": "Jo. Blerja dhe regjistrimi përfundojnë në destinacionin zyrtar Forever. Në FCC dallo klikimin, kërkesën për kontakt dhe rezultatin e konfirmuar personalisht."
+              "question": "Çfarë shton PRO?",
+              "answer": "PRO shton video dhe hyrje personale në krye të ftesës dhe statistika të hollësishme për vizitat, klikimet dhe pyetjet. Ftesa bazë është e njëjtë për të gjithë."
+            },
+            {
+              "question": "A është klikimi te porosia regjistrim i ri?",
+              "answer": "Jo. Blerja dhe regjistrimi përfundojnë në faqen zyrtare të Forever. Si rezultat i ftesës llogaritet regjistrimi në FCC, ndërsa sponsori konfirmohet automatikisht."
+            },
+            {
+              "question": "A mund të dërgoj një version tjetër?",
+              "answer": "Po. Te Një version tjetër i prezantimit mund të përgatitësh një ftesë personale ose një version që nis nga produktet."
             }
           ]
         }

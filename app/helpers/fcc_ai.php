@@ -8168,7 +8168,10 @@ function fcc_ai_get_business_article_slugs(): array {
         'forever-card-club',
         'ai-savjetnik',
         'nfc',
+        /* Custom code: FC-2026-10-12: Moj put replaces the retired 120 day plan article */
+        'moj-put',
         '120-dnevni-plan',
+        /* /Custom code: FC-2026-10-12 */
         'forever-card-edukacija',
         'start-paket',
         'referral-portal',

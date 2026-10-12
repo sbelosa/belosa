@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Udostępnij prezentację biznesową",
-      "summary": "Przedstaw możliwości współpracy i śledź dobrowolne zapytania za pośrednictwem swojego konta.",
+      "title": "Zaproszenie do zespołu",
+      "summary": "Twój stały link, dzięki któremu nowa osoba poznaje biznes, zamawia z tobą pakiet Start i rejestruje się w FCC.",
       "keywords": [
-        "biznes",
+        "zaproszenie do zespołu",
+        "prezentacja biznesowa",
         "plan marketingowy",
         "współpraca",
         "pakiet startowy",
-        "prezentacja"
+        "sponsorowanie",
+        "kod QR"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Osobisty link do rozmowy",
+          "title": "Jeden link dla nowej osoby",
           "paragraphs": [
-            "Prezentacja biznesowa jest oddzielona od webinaru. Dostępny widok i możliwość przygotowania osobistej prezentacji zależą od dostępu do konta i pakietu. Przejście do pakietu podstawowego nie potwierdza rejestracji."
+            "Zaproszenie do zespołu dostajesz automatycznie, gdy masz aktywną kartę FCC i swój Forever ID w profilu. Link jest stały i zawiera już twoje polecenie i numer sponsora.",
+            "Osoba widzi na nim, jak wygląda praca, co dostaje w zespole, pakiet Start dla swojego kraju i trzy kroki od zamówienia do rejestracji w FCC. Zaproszenie nie obiecuje zarobków."
           ]
         },
         {
           "id": "steps",
-          "title": "Przygotuj się do rozmowy i śledź jej przebieg",
+          "title": "Jak z niego korzystać",
           "steps": [
-            "W sekcji Udostępnij otwórz Plan marketingowy lub dostępną Prezentację biznesową.",
-            "Przeczytaj własne podsumowanie i sprawdź osobiste rekomendacje oraz kontakt.",
-            "Dostosuj zaproszenie do zainteresowań tej osoby, nie obiecując zarobków ani wyników.",
-            "Wyślij przygotowany link osobiście i umów się na rozmowę, gdy ta osoba będzie chciała.",
-            "Dobrowolnego zapytania szukaj w swoich Kontaktach i zanotuj ustalenia dotyczące kolejnego kontaktu."
+            "W Udostępnij otwórz Zaproszenie do zespołu.",
+            "Wyślij link przez WhatsApp, skopiuj go do wiadomości lub pokaż kod QR przy spotkaniu na żywo.",
+            "Gdy dostaniesz powiadomienie, że ktoś otworzył zamówienie lub wysłał zapytanie, odezwij się tego samego dnia.",
+            "Po zamówieniu przypomnij osobie, aby zarejestrowała się w FCC swoim Forever ID przez link w zaproszeniu.",
+            "Gdy pojawi się w twoim zespole, dodaj ją do grup i zacznijcie razem program Moja droga."
           ]
         },
         {
           "id": "faq",
-          "title": "Znaczenie wyników",
+          "title": "Najczęstsze pytania",
           "questions": [
             {
-              "question": "Czy kliknięcie pakietu podstawowego oznacza nową współpracę?",
-              "answer": "Nie. Zakup i rejestracja są finalizowane w oficjalnym serwisie Forever. W ewidencji FCC rozróżniaj kliknięcie, zapytanie kontaktowe i osobiście potwierdzony wynik."
+              "question": "Co daje PRO?",
+              "answer": "PRO dodaje osobisty film i wstęp na górze zaproszenia oraz szczegółowe statystyki odwiedzin, kliknięć i zapytań. Podstawowe zaproszenie jest takie samo dla wszystkich."
+            },
+            {
+              "question": "Czy kliknięcie zamówienia to nowa rejestracja?",
+              "answer": "Nie. Zakup i rejestracja kończą się na oficjalnej stronie Forever. Wynikiem zaproszenia jest rejestracja w FCC, a sponsor jest potwierdzany automatycznie."
+            },
+            {
+              "question": "Czy mogę wysłać inną wersję?",
+              "answer": "Tak. W części Inna wersja prezentacji możesz przygotować osobiste zaproszenie lub wersję zaczynającą się od produktów."
             }
           ]
         }

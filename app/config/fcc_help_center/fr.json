@@ -237,32 +237,35 @@
       ]
     },
     "business": {
-      "title": "Partager une présentation commerciale",
-      "summary": "Présente la collaboration et suis les demandes volontaires depuis ton compte.",
+      "title": "Invitation dans l’équipe",
+      "summary": "Ton lien permanent pour qu’une nouvelle personne découvre l’activité, commande le pack Start avec toi et s’inscrive à FCC.",
       "keywords": [
-        "activité",
+        "invitation dans l’équipe",
+        "présentation d’activité",
         "plan marketing",
         "collaboration",
         "pack de démarrage",
-        "présentation"
+        "parrainage",
+        "QR code"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Avant de commencer",
+          "title": "Un lien pour une nouvelle personne",
           "paragraphs": [
-            "La présentation commerciale est indépendante du webinaire. L’affichage et la préparation personnelle dépendent de l’accès et de l’offre du compte. Ouvrir un pack de démarrage ne confirme pas une inscription."
+            "Tu reçois automatiquement ton invitation dans l’équipe dès que tu as une carte FCC active et ton Forever ID dans ton profil. Le lien est permanent et contient déjà ta recommandation et ton numéro de parrain.",
+            "La personne y découvre le fonctionnement de l’activité, ce qu’elle reçoit dans l’équipe, le pack Start de son pays et trois étapes de la commande à l’inscription à FCC. L’invitation ne promet aucun revenu."
           ]
         },
         {
           "id": "steps",
-          "title": "Les étapes",
+          "title": "Comment l’utiliser",
           "steps": [
-            "Dans Partager, ouvre le Plan marketing ou la Présentation commerciale disponible.",
-            "Lis ton aperçu et vérifie recommandation personnelle et contact.",
-            "Adapte l’invitation à l’intérêt de la personne sans promettre revenus ou résultats.",
-            "Envoie personnellement le lien et propose une conversation si la personne la souhaite.",
-            "Trouve la demande volontaire dans tes Contacts et note le prochain accord."
+            "Dans Partager, ouvre Invitation dans l’équipe.",
+            "Envoie le lien sur WhatsApp, copie-le dans un message ou montre le QR code lors d’une rencontre.",
+            "Quand tu es averti qu’une personne a ouvert la commande ou envoyé une demande, contacte-la le jour même.",
+            "Après la commande, rappelle à la personne de s’inscrire à FCC avec son Forever ID via le lien de l’invitation.",
+            "Quand elle apparaît dans ton équipe, ajoute-la aux groupes et commencez ensemble le programme Mon parcours."
           ]
         },
         {
@@ -270,8 +273,16 @@
           "title": "Questions fréquentes",
           "questions": [
             {
-              "question": "Un clic sur le pack de démarrage signifie une nouvelle collaboration ?",
-              "answer": "Non. Achat et inscription se terminent sur la destination officielle Forever. Distingue clic, demande de contact et résultat personnellement confirmé dans FCC."
+              "question": "Qu’apporte PRO ?",
+              "answer": "PRO ajoute une vidéo et une introduction personnelles en haut de l’invitation ainsi que des statistiques détaillées sur les visites, les clics et les demandes. L’invitation de base est la même pour tous."
+            },
+            {
+              "question": "Un clic sur la commande est-il une nouvelle inscription ?",
+              "answer": "Non. L’achat et l’inscription se terminent sur le site officiel de Forever. Le résultat de l’invitation est l’inscription à FCC, et le parrain est confirmé automatiquement."
+            },
+            {
+              "question": "Puis-je envoyer une autre version ?",
+              "answer": "Oui. Dans Une autre version de la présentation, tu peux préparer une invitation personnelle ou une version qui commence par les produits."
             }
           ]
         }

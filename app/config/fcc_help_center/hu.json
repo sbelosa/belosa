@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Oszd meg az üzleti bemutatót",
-      "summary": "Mutasd be az együttműködési lehetőségeket, és a fiókodon keresztül kövesd nyomon az önkéntes érdeklődéseket.",
+      "title": "Csapatmeghívó",
+      "summary": "Az állandó linked, amellyel az új érdeklődő megismeri a vállalkozást, megrendeli veled a Start csomagot és regisztrál az FCC-be.",
       "keywords": [
-        "üzlet",
+        "csapatmeghívó",
+        "üzleti bemutató",
         "marketingterv",
         "együttműködés",
-        "kezdőcsomag",
-        "bemutató"
+        "induló csomag",
+        "szponzorálás",
+        "QR kód"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Személyes beszélgetési hivatkozás",
+          "title": "Egy link az új érdeklődőnek",
           "paragraphs": [
-            "Az üzleti bemutató különálló a webináriumtól. A személyes bemutató megtekintése és előkészítése a fiókhozzáféréstől és a csomagtól függ. A kezdőcsomag oldalának megnyitása nem jelenti a regisztráció megerősítését."
+            "A csapatmeghívót automatikusan megkapod, ha van aktív FCC kártyád és a profilodban szerepel a Forever azonosítód. A link állandó, és már tartalmazza az ajánlásodat és a szponzor azonosítódat.",
+            "Az érdeklődő itt látja, hogyan működik a vállalkozás, mit kap a csapatban, a Start csomagot az országára és három lépést a rendeléstől az FCC regisztrációig. A meghívó nem ígér bevételt."
           ]
         },
         {
           "id": "steps",
-          "title": "Készítsd elő és kövesd nyomon a beszélgetést",
+          "title": "Hogyan használd",
           "steps": [
-            "A Megosztás menüpontban nyisd meg a Marketingtervet vagy az elérhető üzleti bemutatót.",
-            "Olvasd el az áttekintést, és ellenőrizd a személyes ajánlást és az elérhetőséget.",
-            "Az illető érdeklődéséhez igazítsd a meghívást, és ne ígérj bevételt vagy eredményt.",
-            "Személyesen küldd el az előkészített hivatkozást, és egyeztess beszélgetést, amikor az illető szeretné.",
-            "Az önkéntes érdeklődést keresd meg a Kapcsolataid között, és jegyezd fel a következő egyeztetést."
+            "A Megosztás menüben nyisd meg a Csapatmeghívót.",
+            "Küldd el a linket WhatsAppon, másold be egy üzenetbe, vagy mutasd meg a QR kódot személyes találkozáskor.",
+            "Ha értesítést kapsz, hogy valaki megnyitotta a rendelést vagy érdeklődött, még aznap keresd meg.",
+            "A rendelés után emlékeztesd, hogy a Forever azonosítójával regisztráljon az FCC-be a meghívón lévő linken.",
+            "Amikor megjelenik a csapatodban, add hozzá a csoportokhoz, és kezdjétek el együtt az „Az utam” programot."
           ]
         },
         {
           "id": "faq",
-          "title": "Az eredmény jelentése",
+          "title": "Gyakori kérdések",
           "questions": [
             {
-              "question": "Új együttműködésnek számít a kezdőcsomagra kattintás?",
-              "answer": "Nem. A vásárlás és a regisztráció a hivatalos Forever oldalon fejeződik be. Az FCC nyilvántartásában különböztesd meg a kattintást, a kapcsolatfelvételi érdeklődést és a személyesen megerősített eredményt."
+              "question": "Mit ad a PRO?",
+              "answer": "A PRO személyes videót és bemutatkozást ad a meghívó tetejére, valamint részletes statisztikát a látogatásokról, kattintásokról és érdeklődésekről. Az alap meghívó mindenkinek ugyanaz."
+            },
+            {
+              "question": "Egy kattintás a rendelésre új regisztráció?",
+              "answer": "Nem. A vásárlás és a regisztráció a hivatalos Forever oldalon fejeződik be. A meghívó eredménye az FCC regisztráció, a szponzort pedig a rendszer automatikusan megerősíti."
+            },
+            {
+              "question": "Küldhetek másik változatot?",
+              "answer": "Igen. A bemutató másik változata részben személyes meghívót vagy a termékekkel kezdődő változatot készíthetsz."
             }
           ]
         }

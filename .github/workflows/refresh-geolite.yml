@@ -1,0 +1,101 @@
+name: Refresh GeoLite databases
+
+# Custom code: FC-2026-10-12: keep the local visitor country databases fresh.
+# MaxMind publishes GeoLite2 on Tuesdays and Fridays; the app trusts a local
+# database only while it is younger than 60 days. Only the two .mmdb files are
+# uploaded, under a temporary name and then renamed, so readers never see a
+# partial file. The repository copies are left untouched.
+
+on:
+  schedule:
+    - cron: '23 3 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-geolite
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check MaxMind credentials
+        id: credentials
+        env:
+          MAXMIND_ACCOUNT_ID: ${{ secrets.MAXMIND_ACCOUNT_ID }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
+        run: |
+          # Until the secrets exist the refresh is skipped quietly instead of failing every week.
+          if [ -z "$MAXMIND_ACCOUNT_ID" ] || [ -z "$MAXMIND_LICENSE_KEY" ]; then
+            echo '::notice::GeoLite refresh skipped. Add the MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY repository secrets.'
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download and verify checksums
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          MAXMIND_ACCOUNT_ID: ${{ secrets.MAXMIND_ACCOUNT_ID }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          work="$RUNNER_TEMP/geolite"
+          mkdir -p "$work/download" "$work/out"
+          printf 'machine download.maxmind.com login %s password %s\n' "$MAXMIND_ACCOUNT_ID" "$MAXMIND_LICENSE_KEY" > "$work/netrc"
+          for edition in GeoLite2-Country GeoLite2-City; do
+            url="https://download.maxmind.com/geoip/databases/${edition}/download"
+            curl --fail --silent --show-error --location --retry 3 --netrc-file "$work/netrc" \
+              --output "$work/download/${edition}.tar.gz" "${url}?suffix=tar.gz"
+            curl --fail --silent --show-error --location --retry 3 --netrc-file "$work/netrc" \
+              --output "$work/download/${edition}.tar.gz.sha256" "${url}?suffix=tar.gz.sha256"
+            expected="$(cut -d' ' -f1 "$work/download/${edition}.tar.gz.sha256")"
+            actual="$(sha256sum "$work/download/${edition}.tar.gz" | cut -d' ' -f1)"
+            if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
+              echo "::error::Checksum mismatch for ${edition}."
+              exit 1
+            fi
+            tar -xzf "$work/download/${edition}.tar.gz" -C "$work/download" --wildcards "*/${edition}.mmdb"
+            find "$work/download" -name "${edition}.mmdb" -type f -exec mv {} "$work/out/${edition}.mmdb" \;
+          done
+          rm -f "$work/netrc"
+
+      - name: Validate databases
+        if: steps.credentials.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet 'maxminddb==2.6.2'
+          python3 scripts/check_geolite.py "$RUNNER_TEMP/geolite/out/GeoLite2-Country.mmdb" "$RUNNER_TEMP/geolite/out/GeoLite2-City.mmdb"
+
+      - name: Upload to cPanel
+        if: steps.credentials.outputs.ready == 'true'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          work="$RUNNER_TEMP/geolite"
+          printf 'machine %s login %s password %s\n' "$FTP_SERVER" "$FTP_USERNAME" "$FTP_PASSWORD" > "$work/ftp-netrc"
+          for file in GeoLite2-Country.mmdb GeoLite2-City.mmdb; do
+            curl --fail --silent --show-error --retry 3 --netrc-file "$work/ftp-netrc" \
+              --upload-file "$work/out/$file" \
+              --quote "-RNFR $file.uploading" --quote "-RNTO $file" \
+              "ftp://${FTP_SERVER}:${FTP_PORT:-21}/public_html/app/includes/$file.uploading"
+            echo "Uploaded $file"
+          done
+          rm -f "$work/ftp-netrc"

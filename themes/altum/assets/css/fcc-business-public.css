@@ -34,3 +34,10 @@
 }
 @media(max-width:380px){.fb-final .fb-public-header{padding-left:16px;padding-right:16px}.fb-final .fb-brand img{width:132px}.fb-final .fb-nav-contact{padding:8px 10px;font-size:10px!important}.fb-final .fb-public-main{padding-left:16px;padding-right:16px}.fb-final h1{font-size:35px}.fb-final .fb-start{padding:23px 17px}.fb-final .fb-starter-copy{padding:20px 16px}.fb-final .fb-support,.fb-final .fb-contact-section{padding:24px 19px}.fb-final .fb-mobile-dock .fb-button{font-size:11px}.fb-final .fb-footer{width:calc(100% - 32px)}}
 @media(prefers-reduced-motion:reduce){.fb-final *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Custom code: FC-2026-10-12: sponsor ID copy and registration link */
+.fb-final .fb-referral .fb-copy-button{justify-self:start;margin-top:8px;padding:6px 12px;border:1px solid #c9d9c0;border-radius:999px;background:#fff;color:#2b503b;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.fb-final .fb-referral .fb-copy-button:hover,.fb-final .fb-referral .fb-copy-button:focus-visible{background:#f0f5e8;outline:none;box-shadow:0 0 0 3px rgba(53,92,57,.18)}
+.fb-final .fb-process .fb-text-link{grid-column:1/-1;justify-self:start;display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:#2b503b;white-space:nowrap}
+@media (max-width:760px){.fb-final .fb-process>li>.fb-text-link{grid-column:2}}
+/* /Custom code: FC-2026-10-12 */

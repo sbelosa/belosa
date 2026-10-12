@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Podijeli poslovnu prezentaciju",
-      "summary": "Predstavi mogućnosti suradnje i prati dobrovoljne upite preko svojeg računa.",
+      "title": "Pozivnica u tim",
+      "summary": "Tvoja trajna poveznica s kojom nova osoba upoznaje posao, naruči Start paket uz tebe i registrira se u FCC.",
       "keywords": [
-        "poslovanje",
+        "pozivnica u tim",
+        "poslovna prezentacija",
         "marketing plan",
         "suradnja",
         "početni paket",
-        "prezentacija"
+        "sponzoriranje",
+        "QR kod"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Osobna poveznica za razgovor",
+          "title": "Jedna poveznica za novu osobu",
           "paragraphs": [
-            "Poslovna prezentacija je odvojena od webinara. Dostupni prikaz i priprema osobne prezentacije ovise o pristupu računa i paketu. Odlazak na početni paket nije potvrda registracije."
+            "Pozivnicu u tim imaš automatski kada imaš aktivnu FCC karticu i Forever ID u profilu. Poveznica je trajna i već sadrži tvoju preporuku i broj sponzora.",
+            "Osoba na njoj vidi kako se radi, što dobiva u timu, Start paket za svoju zemlju i tri koraka od narudžbe do registracije u FCC. Pozivnica ne obećava zaradu."
           ]
         },
         {
           "id": "steps",
-          "title": "Pripremi i prati razgovor",
+          "title": "Kako je koristiti",
           "steps": [
-            "U Podijeli otvori Marketing plan ili dostupnu Poslovnu prezentaciju.",
-            "Pročitaj vlastiti pregled i provjeri osobnu preporuku i kontakt.",
-            "Prilagodi poziv interesu osobe, bez obećanja zarade ili rezultata.",
-            "Osobno pošalji pripremljenu poveznicu i dogovori razgovor kada osoba želi.",
-            "Dobrovoljni upit potraži u svojim Kontaktima i zabilježi sljedeći dogovor."
+            "U Podijeli otvori Pozivnica u tim.",
+            "Pošalji poveznicu na WhatsApp, kopiraj je u poruku ili pokaži QR kod pri susretu uživo.",
+            "Kada dobiješ obavijest da je netko otvorio narudžbu ili poslao upit, javi se istog dana.",
+            "Nakon narudžbe podsjeti osobu da se svojim Forever ID-jem registrira u FCC preko poveznice na pozivnici.",
+            "Kada se pojavi u tvom timu, dodaj je u grupe i krenite zajedno s programom Moj put."
           ]
         },
         {
           "id": "faq",
-          "title": "Značenje rezultata",
+          "title": "Česta pitanja",
           "questions": [
             {
-              "question": "Je li klik na početni paket nova suradnja?",
-              "answer": "Ne. Kupnja i registracija dovršavaju se na službenom Forever odredištu. U FCC evidenciji razlikuj klik, kontaktni upit i osobno potvrđeni ishod."
+              "question": "Što dobivam uz PRO?",
+              "answer": "PRO dodaje osobni video i uvod na vrhu pozivnice te detaljnu statistiku posjeta, klikova i upita. Osnovna pozivnica jednaka je za sve."
+            },
+            {
+              "question": "Je li klik na narudžbu nova registracija?",
+              "answer": "Ne. Kupnja i prijava dovršavaju se na službenoj Forever stranici. Kao rezultat pozivnice računa se registracija u FCC, a sponzor se potvrđuje automatski."
+            },
+            {
+              "question": "Mogu li poslati drugačiju verziju?",
+              "answer": "Da. U dijelu Druga verzija prezentacije možeš pripremiti osobni poziv ili verziju koja kreće od proizvoda."
             }
           ]
         }

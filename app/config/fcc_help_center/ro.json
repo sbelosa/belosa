@@ -237,41 +237,52 @@
       ]
     },
     "business": {
-      "title": "Distribuie o prezentare de afaceri",
-      "summary": "Prezintă oportunitățile de colaborare și urmărește solicitările voluntare prin contul tău.",
+      "title": "Invitație în echipă",
+      "summary": "Linkul tău permanent prin care o persoană nouă cunoaște afacerea, comandă pachetul Start cu tine și se înregistrează în FCC.",
       "keywords": [
-        "afaceri",
+        "invitație în echipă",
+        "prezentare de afaceri",
         "plan de marketing",
         "colaborare",
-        "pachet de început",
-        "prezentare"
+        "pachet de start",
+        "sponsorizare",
+        "cod QR"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Link personal pentru conversație",
+          "title": "Un link pentru o persoană nouă",
           "paragraphs": [
-            "Prezentarea de afaceri este separată de webinar. Vizualizarea disponibilă și pregătirea prezentării personale depind de accesul contului și de plan. Accesarea planului de bază nu confirmă înregistrarea."
+            "Primești automat invitația în echipă când ai un card FCC activ și Forever ID-ul în profil. Linkul este permanent și conține deja recomandarea ta și ID-ul de sponsor.",
+            "Persoana vede acolo cum funcționează afacerea, ce primește în echipă, pachetul Start pentru țara sa și trei pași de la comandă până la înregistrarea în FCC. Invitația nu promite câștiguri."
           ]
         },
         {
           "id": "steps",
-          "title": "Pregătește și urmărește conversația",
+          "title": "Cum o folosești",
           "steps": [
-            "În Distribuie, deschide Planul de marketing sau Prezentarea de afaceri disponibilă.",
-            "Citește prezentarea și verifică recomandarea personală și datele de contact.",
-            "Adaptează invitația la interesul persoanei, fără să promiți câștiguri sau rezultate.",
-            "Trimite personal linkul pregătit și stabiliți o conversație atunci când persoana dorește.",
-            "Caută solicitarea voluntară în Contacte și notează următorul pas convenit."
+            "În Distribuie, deschide Invitație în echipă.",
+            "Trimite linkul pe WhatsApp, copiază-l într-un mesaj sau arată codul QR la o întâlnire față în față.",
+            "Când primești o notificare că cineva a deschis comanda sau a trimis o solicitare, ia legătura în aceeași zi.",
+            "După comandă, amintește persoanei să se înregistreze în FCC cu Forever ID-ul său prin linkul din invitație.",
+            "Când apare în echipa ta, adaug-o în grupuri și începeți împreună programul Călătoria mea."
           ]
         },
         {
           "id": "faq",
-          "title": "Ce înseamnă rezultatele",
+          "title": "Întrebări frecvente",
           "questions": [
             {
-              "question": "Accesarea planului de bază înseamnă o nouă colaborare?",
-              "answer": "Nu. Cumpărarea și înregistrarea se finalizează pe site-ul oficial Forever. În evidența FCC, diferențiază între accesare, solicitare de contact și rezultat confirmat personal."
+              "question": "Ce adaugă PRO?",
+              "answer": "PRO adaugă un videoclip și o introducere personală în partea de sus a invitației și statistici detaliate despre vizite, clicuri și solicitări. Invitația de bază este aceeași pentru toți."
+            },
+            {
+              "question": "Un clic pe comandă înseamnă o înregistrare nouă?",
+              "answer": "Nu. Cumpărarea și înregistrarea se finalizează pe site-ul oficial Forever. Rezultatul invitației este înregistrarea în FCC, iar sponsorul este confirmat automat."
+            },
+            {
+              "question": "Pot trimite o altă versiune?",
+              "answer": "Da. În O altă versiune a prezentării poți pregăti o invitație personală sau o versiune care începe cu produsele."
             }
           ]
         }

@@ -139,6 +139,15 @@ class Blog extends Controller {
             'postani-forever-living-products-partner' => 'start-paket',
         ];
 
+        /* Custom code: FC-2026-10-12: the 120 day plan article becomes Moj put once its content migration ran */
+        if($normalized_slug === '120-dnevni-plan') {
+            $moj_put = database()->query("SELECT `blog_post_id` FROM `blog_posts` WHERE `url` = 'moj-put' AND (`language` = '" . database()->escape_string($language) . "' OR `language` IS NULL) AND `is_published` = 1 LIMIT 1")->fetch_object();
+            if($moj_put) {
+                $legacy_aliases['120-dnevni-plan'] = 'moj-put';
+            }
+        }
+        /* /Custom code: FC-2026-10-12 */
+
         if(!isset($legacy_aliases[$normalized_slug])) {
             return;
         }
