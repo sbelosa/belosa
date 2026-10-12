@@ -183,6 +183,9 @@ jobs:
               *.php) if [ -f "${helper}" ]; then cp "${helper}" release-prerequisites/helpers/; fi ;;
             esac
           done < release-prerequisites/new-helpers.txt
+          # Custom code: FC-2026-10-12: existing editor helpers add compatible routing functions.
+          # They must arrive before Link/Partner controllers or the editor view calls those functions.
+          cp app/helpers/fcc_card_editor.php release-prerequisites/helpers/
           cp app/init.php release-prerequisites/init/
           cp themes/altum/views/partner/journey.php themes/altum/views/partner/journey-pilot.php release-prerequisites/views/altum/views/partner/
           echo "Sent before app/init.php:"

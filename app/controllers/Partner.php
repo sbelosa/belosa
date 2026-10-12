@@ -295,7 +295,7 @@ class Partner extends Controller {
    catch(\Throwable $e) { error_log('Card editor: '.get_class($e).': '.$e->getMessage()); $json(500,['ok'=>false,'message'=>fcc_t('Spremanje nije uspjelo. Pokušaj ponovno.')]); }
    return;
   }
-  if($_SERVER['REQUEST_METHOD']!=='GET') { \Altum\Router::$controller_settings['has_view']=false; http_response_code(405); header('Allow: GET, POST'); return; }
+  if(!in_array($_SERVER['REQUEST_METHOD'],['GET','HEAD'],true)) { \Altum\Router::$controller_settings['has_view']=false; http_response_code(405); header('Allow: GET, HEAD, POST'); return; }
   try { $link=fcc_card_editor_link($uid,$link_id); } catch(\InvalidArgumentException $e) { throw_404(); }
   if(isset($_GET['products'])) { \Altum\Router::$controller_settings['has_view']=false; $json(200,['ok'=>true,'products'=>fcc_card_editor_products($link,(string)($_GET['q']??''))]); return; }
   if(isset($_GET['fragment'])) { \Altum\Router::$controller_settings['has_view']=false; $json(200,['ok'=>true]+$this->card_editor_payload($uid,$link_id)); return; }

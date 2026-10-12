@@ -186,6 +186,19 @@ foreach([['classic' => '1'], ['tab' => 'blocks'], ['tab' => 'settings', 'editor'
 $assert(fcc_card_design_return_path(7, true, 'card_design') === 'partner/card/7?step=design', 'switching to the new card continues in the new editor');
 $assert(fcc_card_design_return_path(7, true, 'card_recommended') === 'partner/card/7?step=content', 'recommended blocks continue in the content step');
 $assert(fcc_card_design_return_path(7, false, 'card_design') === 'link/7?tab=settings&editor=design', 'switching to the classic card stays in the classic editor');
+// Execute the destination controller's actual method guard, so a HEAD redirect cannot end at 405.
+preg_match('~\n  (if\([^\n]+http_response_code\(405\)[^\n]+)\n  try \{ \$link=fcc_card_editor_link~', $partner, $methodGuard);
+$assert(isset($methodGuard[1]), 'destination method guard found');
+eval('namespace Altum; class Router { public static $controller_settings = []; }');
+$destinationAllows = eval('return static function() { ' . $methodGuard[1] . ' return true; };');
+foreach(['GET' => true, 'HEAD' => true, 'PUT' => false, 'DELETE' => false, 'OPTIONS' => false] as $method => $allowed) {
+    $_SERVER['REQUEST_METHOD'] = $method;
+    http_response_code(200);
+    $assert(($destinationAllows() === true) === $allowed, 'destination handles ' . $method);
+    $assert(http_response_code() === ($allowed ? 200 : 405), 'destination response for ' . $method);
+}
+unset($_SERVER['REQUEST_METHOD']);
+$assert(str_contains($methodGuard[1], "header('Allow: GET, HEAD, POST')"), 'destination advertises supported methods');
 $linkController = $source('app/controllers/Link.php');
 $routeAt = strpos($linkController, 'fcc_card_editor_route($this->link, $this->params, $_GET');
 $assert($routeAt !== false && $routeAt > strpos($linkController, "->where('user_id', \$this->user->user_id)->getOne('links')") && $routeAt > strpos($linkController, "redirect('links?type=' . \$this->link->type)") && $routeAt < strpos($linkController, 'switch($method)'), 'Link::index routes after the owner and plan checks, before the editor is built');
