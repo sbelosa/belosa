@@ -214,4 +214,16 @@ $assert(str_contains($source('themes/altum/views/partner/card-editor.php'), 'dat
 $cardList = $source('themes/altum/views/partner/index.php');
 $assert(str_contains($cardList, "url('link/'.(int)\$card['link_id'].'?editor=preview')") && str_contains($cardList, "<?php if(empty(\$card['fcc_v2'])): ?><a class=\"fp-link fp-card-advanced\" href=\"<?= url('link/'.(int)\$card['link_id']) ?>\""), 'card list: preview keeps the classic view, Klasični uređivač only for classic cards');
 
+/* FC-2026-10-12: on phones Spremi izgled stays in reach and the app menu never covers the open panel. */
+$steps = $source('themes/altum/views/partner/card-editor-steps.php');
+$barAt = strpos($steps, '<div class="fe-save-bar">');
+$assert($barAt !== false && $barAt < strpos($steps, 'data-fe-design-note', $barAt) && strpos($steps, 'data-fe-design-note', $barAt) < strpos($steps, "\$t('Spremi izgled')", $barAt) && strpos($steps, "\$t('Spremi izgled')", $barAt) < strpos($steps, 'data-fe-error', $barAt) && strpos($steps, 'data-fe-error', $barAt) < strpos($steps, '</form>', $barAt), 'the save bar holds the preview note, Spremi izgled and the error, inside the design form');
+$editorJs = $source('themes/altum/assets/js/fcc-card-editor.js');
+$assert(str_contains($editorJs, "document.documentElement.classList.add('fe-sheet-open');") && str_contains($editorJs, "document.documentElement.classList.remove('fe-lock', 'fe-sheet-open');"), 'opening the panel hides the app menu, closing it brings the menu back');
+$editorCss = $source('themes/altum/assets/css/fcc-card-editor.css');
+$phoneAt = strpos($editorCss, '@media (max-width: 991px) {');
+foreach(['html.fe-sheet-open body .fp-bottom-nav { display: none !important; }', '.fe-panel .fe-save-bar { position: sticky; bottom: calc(-24px - env(safe-area-inset-bottom, 0px));'] as $rule) {
+    $assert($phoneAt !== false && strpos($editorCss, $rule) > $phoneAt, 'phone only rule: ' . $rule);
+}
+
 echo "fcc card editor checks passed\n";

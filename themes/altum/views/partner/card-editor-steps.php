@@ -153,9 +153,12 @@ $groups = fcc_card_block_groups();
                 <button type="button" class="fe-button fe-button-soft" data-fe-style-reset><?= $t('Vrati izgled stila') ?></button>
             </div>
         </details>
-        <p class="fe-preview-note" data-fe-design-note hidden><span><?= $t('Pregled prikazuje odabrani izgled. Spremi ga da ga vide i posjetitelji.') ?></span> <button type="button" class="fe-link-button" data-fe-design-revert><?= $t('Vrati spremljeno') ?></button></p>
-        <div class="fe-form-actions"><button type="submit" class="fe-button"><?= $t('Spremi izgled') ?></button></div>
-        <p class="fe-form-error" role="alert" data-fe-error hidden></p>
+        <?php /* On phones this bar stays at the bottom of the panel, so Spremi izgled is always in reach. */ ?>
+        <div class="fe-save-bar">
+            <p class="fe-preview-note" data-fe-design-note hidden><span><?= $t('Pregled prikazuje odabrani izgled. Spremi ga da ga vide i posjetitelji.') ?></span> <button type="button" class="fe-link-button" data-fe-design-revert><?= $t('Vrati spremljeno') ?></button></p>
+            <div class="fe-form-actions"><button type="submit" class="fe-button"><?= $t('Spremi izgled') ?></button></div>
+            <p class="fe-form-error" role="alert" data-fe-error hidden></p>
+        </div>
     </form>
     <?php if(!$state['is_v2']): ?><p class="fe-note"><?= $t('Teme, boje i fontove stare kartice uređuješ u klasičnom uređivaču.') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=settings&editor=design') ?>"><?= $t('Otvori klasični uređivač') ?></a></p><?php endif ?>
     <p class="fe-more"><?= $t('Adresu kartice, naslov za tražilice i ostale postavke nalaziš u klasičnom uređivaču.') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=settings&editor=settings') ?>"><?= $t('Postavke kartice') ?></a></p>

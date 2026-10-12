@@ -56,6 +56,7 @@
 .fe-field-icon > span i { color: var(--fe-accent); }
 .fe-check { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: .85rem; color: var(--fe-muted); }
 .fe-form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.fe-save-bar { display: grid; gap: 14px; }
 .fe-form-error { margin: 0; padding: 10px 12px; border-radius: 12px; background: #FDF0EF; color: var(--fe-danger); font-size: .9rem; font-weight: 600; }
 .fe-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: #FFF6E5; color: #6B4E0E; font-size: .85rem; line-height: 1.45; }
 .fe-note a { color: inherit; font-weight: 700; }
@@ -228,7 +229,11 @@
   .fe-panel-bar { display: flex; align-items: center; justify-content: center; position: relative; padding: 10px 14px 4px; }
   .fe-panel-bar .fe-icon-button { position: absolute; right: 12px; top: 8px; }
   .fe-panel-grip { display: block; width: 44px; height: 5px; border-radius: 999px; background: #C9D4CF; }
-  .fe-panel-body { overflow-y: auto; padding: 6px 16px 24px; overscroll-behavior: contain; }
+  .fe-panel-body { overflow-y: auto; padding: 6px 16px calc(24px + env(safe-area-inset-bottom, 0px)); overscroll-behavior: contain; }
+  /* Spremi izgled stays at the bottom of the open panel, and the app menu steps aside while the panel is open. */
+  .fe-panel .fe-save-bar { position: sticky; bottom: calc(-24px - env(safe-area-inset-bottom, 0px)); z-index: 2; gap: 10px; margin: 0 -16px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--fe-surface); box-shadow: 0 -10px 24px rgba(16, 38, 31, .08); }
+  .fe-panel .fe-save-bar .fe-button { width: 100%; justify-content: center; }
+  html.fe-sheet-open body .fp-bottom-nav { display: none !important; }
   .fe-sheet { width: 100%; max-width: 100%; max-height: 90dvh; margin: auto 0 0; border-radius: 22px 22px 0 0; }
   .fe-sheet > form { max-height: 90dvh; }
   .fe-sheet-head { padding-top: 22px; }

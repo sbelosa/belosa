@@ -94,4 +94,7 @@ $assert(str_contains($pilot, '<span class="jp-tab-long"><?= htmlspecialchars(fcc
 $assert(str_contains((string) file_get_contents(dirname(__DIR__) . '/themes/altum/views/partner/event-next.php'), '<section class="fp-panel fp-event-next"'), 'next event card is addressable');
 $assert(str_contains((string) file_get_contents(dirname(__DIR__) . '/themes/altum/assets/css/fcc-partner-premium.css'), '.fp-page :is(.jp-done,.fp-event-next)>.fp-actions:not(:last-child){margin-bottom:18px}'), 'buttons keep a gap to the text below');
 
+$zivi = (string) file_get_contents(dirname(__DIR__) . '/themes/altum/assets/css/fcc-zivi-sloj.css');
+$assert(str_contains($zivi, '@media (max-width: 480px) { body.fcc-ui-zivi .jp-tabs .jp-nav-more { position: static; } body.fcc-ui-zivi .jp-tabs .jp-nav-more > summary { min-width: 44px; } body.fcc-ui-zivi .jp-tabs .jp-nav-more > div { left: auto; right: 4px; max-width: calc(100% - 8px); } }'), 'on phones the More menu has a 44 px target and opens inside the tab row');
+
 echo 'journey tracks: ok' . PHP_EOL;

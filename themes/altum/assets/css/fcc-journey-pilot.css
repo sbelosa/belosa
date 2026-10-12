@@ -116,4 +116,4 @@ body.fcc-partner-mode .fp-section-today:has(.jp-page)>.alert{animation:none!impo
 .jp-tabs>a,.jp-nav-more>summary{white-space:nowrap}.jp-tab-short{display:none}
 .jp-done .jp-done-actions{margin-top:4px}
 @media(max-width:640px){.jp-done .jp-done-actions{flex-direction:column;align-items:stretch;gap:10px}.jp-done .jp-done-actions .fp-button{width:100%;justify-content:center;text-align:center}}
-@media(max-width:480px){.jp-tabs .jp-tab-long{display:none}.jp-tabs .jp-tab-short{display:inline}}
+@media(max-width:480px){.jp-tabs .jp-tab-long{display:none}.jp-tabs .jp-tab-short{display:inline}.jp-tabs{position:relative}.jp-nav-more{position:static}.jp-nav-more>summary{min-width:44px}.jp-nav-more>div{left:auto;right:4px;max-width:calc(100% - 8px)}}

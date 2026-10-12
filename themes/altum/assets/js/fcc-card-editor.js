@@ -57,11 +57,13 @@
   const peek = () => activeStep === 'design' && phone.matches;
   const openPanel = () => {
     panel.classList.add('is-open');
+    // The app menu steps aside while the panel is open, so nothing covers the panel's buttons.
+    document.documentElement.classList.add('fe-sheet-open');
     root.classList.toggle('fe-peek', peek());
     document.documentElement.classList.toggle('fe-lock', !peek());
     if (peek()) window.scrollTo({ top: Math.max(0, frame.getBoundingClientRect().top + window.scrollY - 8), behavior: 'smooth' });
   };
-  const closePanel = () => { panel.classList.remove('is-open'); root.classList.remove('fe-peek'); document.documentElement.classList.remove('fe-lock'); };
+  const closePanel = () => { panel.classList.remove('is-open'); root.classList.remove('fe-peek'); document.documentElement.classList.remove('fe-lock', 'fe-sheet-open'); };
 
   root.querySelectorAll('[data-fe-nav]').forEach((button) => button.addEventListener('click', () => {
     if (phone.matches && panel.classList.contains('is-open') && activeStep === button.dataset.feNav) { closePanel(); return; }
