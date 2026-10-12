@@ -395,6 +395,9 @@ body.fcc-ui-zivi .jp-tabs .jp-nav-more[open] > summary { background: #fff; color
 body.fcc-ui-zivi .jp-tabs .jp-nav-more > div { position: absolute; right: 0; top: calc(100% + 8px); min-width: 220px; padding: 6px; display: grid; gap: 2px; }
 body.fcc-ui-zivi .jp-tabs .jp-nav-more > div a { flex: none; place-items: center start; padding: 0 14px; border-radius: 12px; color: var(--zs-ink) !important; font-weight: 600; }
 body.fcc-ui-zivi .jp-tabs .jp-nav-more > div a:hover { background: var(--fp-light) !important; }
+/* Custom code: FC-2026-10-12: on phones every journey tab stays on one line. */
+@media (max-width: 480px) { body.fcc-ui-zivi .jp-tabs > a, body.fcc-ui-zivi .jp-tabs .jp-nav-more > summary { flex: 1 1 auto; padding: 0 10px; font-size: 13px; } }
+@media (max-width: 360px) { body.fcc-ui-zivi .jp-tabs { gap: 2px; } body.fcc-ui-zivi .jp-tabs > a, body.fcc-ui-zivi .jp-tabs .jp-nav-more > summary { padding: 0 6px; font-size: 12.5px; } }
 body.fcc-ui-zivi #fl-library .fl-benefits { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)) !important; }
 body.fcc-ui-zivi #fl-library .fl-reading > .fl-kicker { display: block; margin-bottom: 10px; color: var(--zs-em); font-weight: 700; letter-spacing: .12em; }
 

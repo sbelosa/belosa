@@ -665,3 +665,5 @@ body.fcc-partner-mode .fp-results-milestones progress::-webkit-progress-value{ba
 body.fcc-partner-mode .fp-results-milestones progress::-moz-progress-bar{background:#247c68;border-radius:99px}
 body.fcc-partner-mode .fp-section-notifications #preferences>p{font-size:13px;line-height:1.7}
 @media(max-width:650px){body.fcc-partner-mode .fp-page .fp-card-preview{padding:0 20px 20px}body.fcc-partner-mode .fp-page .fp-card-preview .fp-card-cover{margin:0 -20px 18px;padding:18px 20px;height:76px!important}}
+/* Custom code: FC-2026-10-12: on Danas the buttons of the saved step and next event cards never touch the text below them. */
+.fp-page :is(.jp-done,.fp-event-next)>.fp-actions:not(:last-child){margin-bottom:18px}

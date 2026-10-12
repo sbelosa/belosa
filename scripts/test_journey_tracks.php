@@ -86,4 +86,12 @@ $assert(str_contains($team, "<details class=\"mp-team-more\"><summary><span clas
 $assert(str_contains($team, "<span class=\"fp-count\"><?= count(\$mpOverview['groups'][\$mpKey]) ?></span>"), 'group count still shows the whole group');
 foreach(['en', 'de', 'es', 'fr', 'sl', 'sq', 'hu', 'ro', 'pl', 'sv'] as $locale) $assert(fcc_t('Prikaži još %d', [], $locale) !== 'Prikaži još %d' && str_contains(fcc_t('Prikaži još %d', [], $locale), '%d'), $locale . ' translation: Prikaži još %d');
 
+/* Danas on phones: the saved step card explains first and closes with its buttons; tabs stay on one line. */
+$pilot = (string) file_get_contents(dirname(__DIR__) . '/themes/altum/views/partner/journey-pilot.php');
+$doneAt = strpos($pilot, '<section class="fp-panel jp-done">');
+$assert($doneAt !== false && strpos($pilot, 'bez dodatnog obveznog zadatka', $doneAt) < strpos($pilot, '<div class="fp-actions jp-done-actions">', $doneAt), 'saved step card: text before its buttons');
+$assert(str_contains($pilot, '<span class="jp-tab-long"><?= htmlspecialchars(fcc_t(\'Moji suradnici\')') && str_contains($pilot, '<span class="jp-tab-short"><?= htmlspecialchars(fcc_t(\'Suradnici\')'), 'team tab has a short name for phones');
+$assert(str_contains((string) file_get_contents(dirname(__DIR__) . '/themes/altum/views/partner/event-next.php'), '<section class="fp-panel fp-event-next"'), 'next event card is addressable');
+$assert(str_contains((string) file_get_contents(dirname(__DIR__) . '/themes/altum/assets/css/fcc-partner-premium.css'), '.fp-page :is(.jp-done,.fp-event-next)>.fp-actions:not(:last-child){margin-bottom:18px}'), 'buttons keep a gap to the text below');
+
 echo 'journey tracks: ok' . PHP_EOL;
