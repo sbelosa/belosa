@@ -143,6 +143,10 @@ foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'
 /* FC-2026-10-12: install page, home screen invitation, Coach knowledge and push details. */
 $install = $source('themes/altum/views/partner/install.php');
 foreach(['data-install-done', 'data-install-inapp', 'data-install-desktop', 'data-install-howto', 'SquareEye::instance()', "fcc_ui_theme_assets('app')"] as $part) $assert(str_contains($install, $part), 'install page has ' . $part);
+// data-copy is the shared copy-to-clipboard hook: only real copy buttons may carry it, or every click is captured.
+preg_match_all('~<([a-z]+)\b[^>]*\sdata-copy=~i', $install, $copyTags);
+$assert($copyTags[1] !== [] && array_unique(array_map('strtolower', $copyTags[1])) === ['button'] && str_contains($install, 'data-install-copy='), 'only copy buttons use data-copy on the install page');
+$assert(str_contains($source('themes/altum/assets/js/fcc-partner-install.js'), 'dataset.installCopy') && !str_contains($source('themes/altum/assets/js/fcc-partner-install.js'), 'dataset.copy'), 'install script reads its texts from data-install-copy');
 $installJs = $source('themes/altum/assets/js/fcc-partner-install.js');
 $assert(str_contains($installJs, 'location.origin + (new URL(') && !str_contains($installJs, 'status.textContent = window.fccT(\'Instalaciju trenutačno'), 'the worker uses the page origin and a failure is not shown as an error');
 $nudge = $source('themes/altum/assets/js/fcc-partner-install-nudge.js');

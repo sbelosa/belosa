@@ -1,5 +1,6 @@
 <?php defined('ALTUMCODE') || die(); header('Cache-Control: no-store');
-/* Custom code: FC-2026-10-12: install page in the Živi sloj look. It shows one clear action for the
+/* Custom code: FC-2026-10-12: install page in the Živi sloj look. Its texts for the script live in
+   data-install-copy; data-copy is the shared copy-to-clipboard hook and would capture every click. It shows one clear action for the
    visitor's device (one tap install, Safari steps, open in browser or a QR code on a computer) and
    explains what the app gives a collaborator, so more people add FCC to the home screen. */
 $install_url=url('partner/install');
@@ -44,7 +45,7 @@ $menu_icon='<svg class="install-inline-icon" viewBox="0 0 24 24" width="18" heig
 <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-premium.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-premium.css') ?>">
 <?= $zivi?fcc_ui_theme_assets('app'):'' ?>
 <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-install.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-partner-install.css') ?>">
-</head><body class="fcc-partner-mode install-body<?= $zivi?' fcc-ui-zivi':'' ?>"><main class="install-shell" data-install-page data-copy="<?= htmlspecialchars(json_encode($copy, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>">
+</head><body class="fcc-partner-mode install-body<?= $zivi?' fcc-ui-zivi':'' ?>"><main class="install-shell" data-install-page data-install-copy="<?= htmlspecialchars(json_encode($copy, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>">
 
 <nav class="install-top">
  <a class="install-back" href="<?= $open_url ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span><?= $ht('Povratak na FCC') ?></span></a>

@@ -9,7 +9,7 @@
  const status=document.querySelector('[data-install-status]');
  const mode=window.matchMedia('(display-mode: standalone)');
  const standalone=()=>mode.matches||navigator.standalone===true;
- let copy={};try{copy=JSON.parse(page?.dataset.copy||'{}');}catch{}
+ let copy={};try{copy=JSON.parse(page?.dataset.installCopy||'{}');}catch{}
  const t=(key,fallback)=>copy[key]||(window.fccT?window.fccT(fallback):fallback);
  const ua=navigator.userAgent||'';
  const ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
