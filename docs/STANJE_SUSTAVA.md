@@ -73,6 +73,24 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 11. **Novi test** `scripts/test_invite_content_migration.php` dodan je u deploy workflow.
 12. **Nakon objave administrator:** u `partner/admin` otvara Pozivnicu u tim svima i primjenjuje Ažuriranje sadržaja: Moj put. Video na Vimeu `1188447137` u Stjepanovom vodiču možda i dalje spominje 120 dana, to može zamijeniti samo autor.
 
+## 5e. Moj put: tri staze, napredak suradnika i jasniji koraci (lokalno, čeka objavu)
+
+Korisnik je 12. listopada 2026. odobrio sve prijedloge iz `docs/ANALIZA_MOJ_PUT_2026-10-12.md`. Logika je u `app/helpers/fcc_journey_tracks.php`. Svi zapisi koriste postojeće tablice `fcc_partner_pilot_events` i `forever_business_daily_outcomes`, pa nova tablica ni migracija nisu potrebne.
+
+1. **Tri staze.** Prvih 15 koraka isti su za sve. Nakon njih suradnik bira Koristim i preporučujem, Gradim dodatni prihod ili Gradim tim. Svih 90 koraka ostaje, mijenja se redoslijed. Napredak se računa po dovršenim danima kataloga, pa promjena staze ništa ne briše niti ponavlja. Otvoreni korak ostaje na svom zadatku.
+2. **Stvarni trenutak.** Koraci s kupcem, novim članom tima, gostom na webinaru ili vlastitim susretom otvaraju se kada to suradnik stvarno ima. Do tada dobiva korak koji može odmah raditi. Pregled 90 koraka prikazuje stazu, sljedećih osam koraka i što čeka.
+3. **Ovo već znam i radim.** Iskusni suradnik može potvrditi zajednički korak među prvih 15. Takav korak ne troši dnevni korak i ne računa se kao vježba ni kao primjena.
+4. **Zapeo/la sam, javi mojem sponzoru** uz korak i pitanje nakon spremljenog koraka (lako, teško, trebam pomoć). Pomoć i prekretnice javljaju se sponzoru.
+5. **Svi sponzori vide napredak izravnih suradnika** na `partner?view=team-progress`, bez obzira na paket. Suradnici su složeni u skupine Trebaju pomoć, Stoje tri dana ili više, Još nisu krenuli, Još nisu otvorili FCC i Napreduju, s gumbom za WhatsApp i gotovom porukom. Sadržaj poruka i bilješki se ne prikazuje. Na stranici Danas sponzor vidi koliko suradnika danas treba njegovu poruku. Ponedjeljkom od 8 sati stiže tjedni sažetak.
+6. **Prekretnice** 7, 15, 30, 60 i 90 koraka te prvi osobni CC i prva 4CC aktivnost (samo tekući ili prošli mjesec). Suradnik dobiva čestitku i bira smije li se uspjeh spomenuti. Bez potvrde se ne spominje.
+7. **Moj ritam** nakon 90 koraka: četiri tjedne navike.
+8. **Administracija** (`partner/admin`) ima pregled Moj put: kako ga tim koristi, s tokom suradnika, stazama, povratnim informacijama, koracima na kojima ljudi zastaju i prekretnicama koje se smiju spomenuti.
+9. **Neutralan jezik.** Upute, završne rečenice i primjeri poruka u svih 90 koraka više ne koriste muški rod. Promjena je u sloju revizije (`neutral` u `fcc90.review-20260930.json`), pa dovršeni koraci zadržavaju svoj tekst. Slovenski i srpski prijevodi su također neutralni, a ostali jezici zadržavaju postojeći prijevod. Za crnogorski i poljski, koje trenutačno nitko ne koristi, dio rečenica ostaje u muškom rodu.
+10. **Obavijesti sponzoru** spremaju se na hrvatskom i prikazuju na jeziku osobe koja ih čita.
+11. **Članak pomoći** Danas i Moj put ima novi odjeljak Tvoja staza i pomoć na 13 jezika. Svi novi tekstovi prevedeni su na 12 jezika.
+12. **Novi test** `scripts/test_journey_tracks.php` dodan je u deploy workflow.
+13. **Nakon objave** nije potrebna ručna radnja. Suradnici koji su već prošli zajednički dio vidjet će odabir staze pri sljedećem koraku.
+
 ## 5b. Već provedeno na produkciji prije ove dorade
 
 1. Svi aktivni suradnici dobivaju sadržaj programa v8. Ciklusi označeni s v6 ili v7 otvaraju sljedeći korak iz v8 kataloga, pa migracija podataka nije potrebna.
@@ -99,6 +117,7 @@ Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-1
 2. Može se prijaviti stvarnim produkcijskim podacima, jer je baza kopija. Lokalni testni računi, administratorski i Beginner, nalaze se u privatnoj datoteci `FCC-runtime/LOCAL_TEST_ACCOUNT.txt`.
 3. Provjereno 11. listopada: PHP lint za 1.862 datoteke, 14 testova koji se pokreću prije objave i 42 stranice za PRO i Beginner račun, uključujući engleski i njemački. Nije bilo PHP grešaka ni upozorenja.
 4. Provjereno 12. listopada: PHP lint za 1.867 datoteka i 14 testova prije objave bez greške. Migracija sadržaja na kopiji baze: 145 izmjena primijenjeno, vraćeno i ponovno primijenjeno, nakon čega nema spominjanja 120 dana. Pozivnica u tim provjerena je sa sintetičkim Beginner i PRO računima: kratka poveznica, QR kod, javna stranica na hrvatskom, engleskom, slovenskom, mađarskom i njemačkom, osobni video, obavijest pri otvaranju narudžbe i bilježenje registracije. Lokalni runtime nema tajni ključ poslovnog modula, pa je klik na narudžbu provjeren iz naredbenog retka.
+5. Provjereno 12. listopada za Moj put: PHP lint za sve izmijenjene datoteke i 15 testova prije objave bez greške. Na svih 115 stvarnih ciklusa novi raspored daje 0 grešaka i nijedan ponovljeni korak. Sintetički Beginner prošao je zajednički dio, korake označene kao poznate, odabir staze, Zapeo/la sam i povratnu informaciju. Sponzorski pregled, obavijesti na hrvatskom, slovenskom, srpskom i engleskom, administratorski pregled i članak pomoći provjereni su preko HTTP-a, a stranice staze i sponzora i na širini mobitela.
 
 ## 7. Put objave
 

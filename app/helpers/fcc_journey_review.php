@@ -21,10 +21,21 @@ function fcc_journey_review_catalog(array $catalog): array {
   $task['content_support']=$task['ui']['mode']==='social';
   $task['inline_coach']=($update['coach']??true)&&($task['communication']['example']!==''||$task['communication']['composer']['kind']==='article'||$task['ui']['mode']==='social')&&(int)$task['day']!==54;
   if(isset($update['recipient']))$task['recipient']=$update['recipient'];
+  /* Custom code: FC-2026-10-12: gender neutral instructions and examples; completed snapshots keep their text. */
+  if(!empty($review['neutral']))$task=fcc_journey_review_neutral($task,$review['neutral']);
  }
  unset($task);
  foreach($catalog['tasks'] as $i=>&$task)if(isset($catalog['tasks'][$i+1]))$task['next_step']='Slijedi: '.$catalog['tasks'][$i+1]['title'].'.';
  unset($task);return $catalog;
+}
+/** Replaces reviewed phrases in every display string; previous_example keeps the original for draft matching. */
+function fcc_journey_review_neutral(array $value,array $phrases): array {
+ foreach($value as $key=>$item){
+  if($key==='previous_example')continue;
+  if(is_array($item))$value[$key]=fcc_journey_review_neutral($item,$phrases);
+  elseif(is_string($item))$value[$key]=strtr($item,$phrases);
+ }
+ return $value;
 }
 function fcc_journey_review_coach_copy(array $task): array {
  $social=$task['ui']['mode']==='social';$day=(int)$task['day'];

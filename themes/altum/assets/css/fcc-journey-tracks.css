@@ -1,0 +1,43 @@
+/* Custom code: FC-2026-10-12: Moj put tracks, sponsor view, milestones and feedback */
+.mp-tracks p{max-width:720px}
+.mp-track-form{display:grid;gap:12px;margin-top:16px}
+.mp-track{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border:1px solid var(--fp-line,#d5e4dc);border-radius:16px;background:#fff;cursor:pointer}
+.mp-track:has(input:checked){border-color:#155845;box-shadow:0 0 0 3px rgba(21,88,69,.12)}
+.mp-track input{margin-top:4px;accent-color:#155845}
+.mp-track strong{display:block;font-size:16px;color:var(--fp-ink,#173f36)}
+.mp-track strong em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#155845;background:#e7f2ec;border-radius:999px;padding:2px 8px;margin-left:6px}
+.mp-track small{display:block;margin-top:4px;font-size:13px;line-height:1.6;color:var(--fp-muted,#4d6a61)}
+.mp-track-form .fp-button{justify-self:start}
+.mp-tracks .mp-note{font-size:13px;color:var(--fp-muted,#4d6a61)}
+.mp-waiting{margin:10px 0 0;padding-left:18px;color:var(--fp-muted,#4d6a61);font-size:13px}
+.mp-upcoming{margin:10px 0 0;padding-left:20px}
+.mp-upcoming li{margin:4px 0}
+.mp-upcoming li.is-waiting{color:var(--fp-muted,#4d6a61)}
+.mp-celebration{border:1px solid #cfe3d6;background:linear-gradient(145deg,#f4fbf6,#fff)}
+.mp-celebration h2{margin:6px 0 8px}
+.mp-celebration .fp-actions,.mp-feedback .fp-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.mp-celebration form,.mp-feedback form{margin:0}
+.mp-feedback{display:grid;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--fp-line,#d5e4dc)}
+.mp-feedback small{color:var(--fp-muted,#4d6a61)}
+.mp-team-summary{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.mp-team-summary strong{display:block;font-size:17px;margin:4px 0;color:var(--fp-ink,#173f36)}
+.mp-team-summary small{color:var(--fp-muted,#4d6a61)}
+.mp-team-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.mp-team-totals div{border:1px solid var(--fp-line,#d5e4dc);border-radius:14px;padding:14px 16px;background:#f8fbf9}
+.mp-team-totals strong{display:block;font-size:26px;line-height:1.1;color:var(--fp-ink,#173f36)}
+.mp-team-totals span{font-size:12px;color:var(--fp-muted,#4d6a61)}
+.mp-team-help{border-color:#e8c9a8}
+.mp-member-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.mp-member{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--fp-line,#d5e4dc);border-radius:14px;background:#fff}
+.mp-member-main{display:grid;gap:4px;min-width:0;flex:1 1 260px}
+.mp-member-main strong{color:var(--fp-ink,#173f36)}
+.mp-member-main small{color:var(--fp-muted,#4d6a61);overflow-wrap:anywhere}
+.mp-member-main progress{width:100%;max-width:280px;height:6px;accent-color:#155845}
+.mp-member-actions{display:flex;flex-wrap:wrap;gap:8px}
+.mp-team-privacy{margin-top:12px;font-size:12px}
+.mp-stuck{margin-top:14px;padding-top:14px;border-top:1px solid var(--fp-line,#d5e4dc)}
+.mp-rhythm-list{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-wrap:wrap;gap:10px}
+.mp-rhythm-list form{margin:0}
+.mp-rhythm-done{display:inline-block;padding:10px 16px;border-radius:12px;background:#e7f2ec;color:#155845;font-weight:600}
+@media (max-width:640px){.mp-member-actions{width:100%}.mp-member-actions .fp-button{flex:1 1 auto;text-align:center}.mp-team-summary .fp-button{width:100%;text-align:center}}
+/* /Custom code: FC-2026-10-12 */

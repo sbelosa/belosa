@@ -44,7 +44,7 @@
     },
     "daily": {
       "title": "Danas i Moje putovanje",
-      "summary": "Uči jednu stvar, primeni je i tačno zabeleži šta si napravio.",
+      "summary": "Uči jednu stvar, primeni je i tačno zabeleži ono što je urađeno.",
       "keywords": [
         "danas",
         "moj put",
@@ -69,6 +69,16 @@
             "Izvedi radnju koju osoba želi ili izaberi ponuđenu vežbu kada nemaš odgovarajuću situaciju.",
             "Potvrdi samo stvarni ishod prema kriterijumu koraka. Klik i nacrt nisu poslata poruka.",
             "U Moj napredak pregledaj zapise i u osvrtu napiši šta ti je pomoglo ili gde je zapelo."
+          ]
+        },
+        {
+          "id": "tracks",
+          "title": "Tvoja staza i pomoć",
+          "steps": [
+            "Prvih 15 koraka isti su za sve. Posle njih biraš stazu: Koristim i preporučujem, Gradim dodatni prihod ili Gradim tim. Svih 90 koraka ostaje, menja se samo redosled, a stazu možeš da promeniš u Pregledu 90 koraka.",
+            "Koraci sa kupcem, novim članom tima, gostom ili sopstvenim susretom otvaraju se kada to stvarno imaš. Do tada dobijaš korak koji možeš odmah da radiš.",
+            "Ako neki od prvih 15 koraka već redovno radiš, izaberi Ovo već znam i radim i odmah pređi na sledeći.",
+            "Ako negde zapne, izaberi Zapelo mi je, javi mom sponzoru. Posle sačuvanog koraka odgovori da li ti je bio lak, težak ili ti treba pomoć. Tvoj sponzor vidi tvoj napredak i može da ti se javi."
           ]
         },
         {

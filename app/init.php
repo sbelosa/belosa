@@ -219,6 +219,7 @@ require_once APP_PATH . 'helpers/fcc_cc_visibility.php';
 /* Custom code: FC-2026-10-12: audited content migration (Moj put) */
 require_once APP_PATH . 'helpers/fcc_content_migration.php';
 require_once APP_PATH . 'helpers/fcc_business_invite.php';
+require_once APP_PATH . 'helpers/fcc_journey_tracks.php';
 /* /Custom code: FC-2026-10-12 */
 require_once APP_PATH . 'helpers/fcc_team.php';
 require_once APP_PATH . 'helpers/fcc_team_notifications.php';

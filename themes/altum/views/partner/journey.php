@@ -1,6 +1,7 @@
 <?php defined('ALTUMCODE') || die();
-$j=$data->journey;$j['action']=fcc_localize_copy($j['action']);$j['material']=fcc_localize_copy($j['material']);$a=$j['action'];$v=$data->journey_view;$p=$j['profile'];
+$j=$data->journey;$j['action']=is_array($j['action']??null)?fcc_localize_copy($j['action']):[];$j['material']=is_array($j['material']??null)?fcc_localize_copy($j['material']):[];$a=$j['action'];$v=$data->journey_view;$p=$j['profile'];
 if($v==='materials'){require THEME_PATH.'views/partner/journey-materials.php';return;}
+/* Custom code: FC-2026-10-12 */ if($v==='team-progress'&&function_exists('fcc_mp_sponsor_overview')){require THEME_PATH.'views/partner/journey-team.php';return;} /* /Custom code: FC-2026-10-12 */
 if((fcc_jp_enabled((int)$this->user->user_id)&&in_array($v,['pilot','today','step','coach'],true))||(!empty($j['journey90']['pilot'])&&$v==='progress')){require THEME_PATH.'views/partner/journey-pilot.php';return;}
 if(fcc_jp_enabled((int)$this->user->user_id)&&empty($j['journey90']['pilot']))echo '<section class="fp-panel"><strong>'.fcc_t('Moj put · 90 praktičnih koraka').'</strong><p>'.fcc_t('Objave, razgovori, preporuke i mentorska pomoć.').'</p><a class="fp-button" href="'.url('partner?view=pilot').'">'.fcc_t('Pregledaj novi program →').'</a></section>';
 if(!empty($j['journey90'])&&in_array($v,['today','step','progress','coach'],true)){require THEME_PATH.'views/partner/journey90.php';return;}

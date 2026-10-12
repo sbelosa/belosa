@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Az irányod és a segítség",
+          "steps": [
+            "Az első 15 lépés mindenkinek ugyanaz. Utána irányt választasz: Használom és ajánlom, Kiegészítő jövedelmet építek vagy Csapatot építek. Mind a 90 lépés megmarad, csak a sorrend változik, az irányt pedig A 90 lépés áttekintése részben módosíthatod.",
+            "Az ügyféllel, új csapattaggal, vendéggel vagy saját találkozóval kapcsolatos lépések akkor nyílnak meg, amikor ez valóban megvan. Addig olyan lépést kapsz, amelyet azonnal megtehetsz.",
+            "Ha az első 15 lépés valamelyikét már rendszeresen csinálod, válaszd az Ezt már ismerem és csinálom lehetőséget, és lépj tovább a következőre.",
+            "Ha elakadsz, válaszd az Elakadtam, szólj a szponzoromnak lehetőséget. Egy mentett lépés után jelezd, hogy könnyű vagy nehéz volt, vagy segítségre van szükséged. A szponzorod látja a fejlődésedet, és jelentkezhet."
+          ]
+        },
+        {
           "id": "example",
           "title": "Gyakorlati példa",
           "paragraphs": [

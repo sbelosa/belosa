@@ -52,7 +52,9 @@ function fcc_journey_warm_coach_draft(int $uid,array $input): void {
 function fcc_journey_warm_context(int $uid,array $task,?DateTimeImmutable $now=null): array {
  $now=fcc_j90_now($now);$requirement=$task['context_requirement']??'';$practice=false;
  if($requirement==='customer')$practice=!fcc_partner_one("SELECT id FROM fcc_partner_contacts WHERE user_id=? AND sales_stage='customer' AND contact_permission<>'do_not_contact' LIMIT 1",[$uid]);
- if($requirement==='team')$practice=!fcc_pro_has_access($uid)||!fcc_team_ready()||!fcc_team_visible_members($uid,fcc_team_graph());
+ /* Custom code: FC-2026-10-12: any sponsor with a direct member works with the real team; PRO is no longer required. */
+ if($requirement==='team')$practice=function_exists('fcc_mp_has_team')?!fcc_mp_has_team($uid):(!fcc_pro_has_access($uid)||!fcc_team_ready()||!fcc_team_visible_members($uid,fcc_team_graph()));
+ /* /Custom code: FC-2026-10-12 */
  if($requirement==='guest')$practice=!fcc_partner_one("SELECT r.id FROM fcc_webinar_registrations r JOIN fcc_webinar_sessions s ON s.id=r.session_id WHERE r.user_id=? AND r.status='registered' AND r.is_demo=0 AND r.is_self=0 AND r.needs_review=0 AND s.status='scheduled' AND s.ends_at_utc>? LIMIT 1",[$uid,$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s')]);
  if($requirement==='event')$practice=!fcc_partner_one("SELECT id FROM fcc_webinar_sessions WHERE owner_user_id=? AND status='scheduled' AND starts_at_utc<=? AND ends_at_utc>=? LIMIT 1",[$uid,$now->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),$now->modify('-7 days')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s')]);
  if($practice){
@@ -61,7 +63,9 @@ function fcc_journey_warm_context(int $uid,array $task,?DateTimeImmutable $now=n
   $task['communication']=['example'=>'Bok! Danas želim uvježbati: '.mb_strtolower(mb_substr($task['title'],0,1)).mb_substr($task['title'],1).'. Kada možemo kratko proći jedan primjer?','composer'=>['kind'=>'text','template'=>'']];
   $task['communication']['composer']['template']=$task['communication']['example'];$task['tool']='mentor';
  }else $task['delivery_mode']='applied';
- if($task['tool']==='business'&&!fcc_business_pro($uid)){
+ /* Custom code: FC-2026-10-12: with the Team invitation open, every member shares the business presentation. */
+ if($task['tool']==='business'&&!fcc_business_pro($uid)&&!(function_exists('fcc_business_landing_access')&&fcc_business_landing_access($uid))){
+ /* /Custom code: FC-2026-10-12 */
   $task['tool']='webinar';$task['actions']=array_map(static fn($s)=>str_ireplace(['marketing plana','marketing plan'],['predstavljanja','standardni poziv na predstavljanje'],$s),$task['actions']);
  }
  if($task['tool']==='webinar'&&!fcc_journey_warm_event($uid,$now)){
@@ -104,7 +108,7 @@ function fcc_journey_warm_tools(int $uid,array $task,int $step=0): array {
  'mentor'=>['Poveži se sa sponzorom','partner?view=materials#mentor'],
  'education'=>['Pronađi svoju edukaciju','partner?view=materials#business-learning'],
  'coach'=>[$pro?'Otvori svojeg Coacha':'Prođi temu sa sponzorom',$pro?'partner?view=coach':'partner?view=materials#mentor'],
- 'team'=>[$pro?'Otvori svoj tim':'Prođi primjer sa sponzorom',$pro?'partner/team':'partner?view=materials#mentor'],
+ /* Custom code: FC-2026-10-12 */ 'team'=>$pro?['Otvori svoj tim','partner/team']:(function_exists('fcc_mp_has_team')&&fcc_mp_has_team($uid)?['Pogledaj napredak svojih suradnika','partner?view=team-progress']:['Prođi primjer sa sponzorom','partner?view=materials#mentor']), /* /Custom code: FC-2026-10-12 */
  'registrations'=>['Pronađi svojeg gosta','partner-webinar?view=activity'],
  'events'=>[$pro?'Pripremi svoj susret':'Dogovori susret sa sponzorom',$pro?'partner-webinar?view=events':'partner?view=materials#mentor'],
  'webinar'=>['Pripremi osobni poziv','partner/share?type=webinar'],

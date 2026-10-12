@@ -45,7 +45,11 @@ function fcc_jp_state(int $uid,array $access,?DateTimeImmutable $now=null): arra
  $fast=fcc_jp_fast($uid);$done=!$fast&&fcc_j90_daily_done($uid,$now->format('Y-m-d'));$webinar=fcc_j90_webinar($now);$webinar['is_today']=false; // Calendar events supplement the warm daily task, never replace it.
  $step=$position<=FCC_JP_TOTAL?fcc_partner_one('SELECT * FROM fcc_partner_journey_steps WHERE user_id=? AND cycle_id=? AND position=?',[$uid,(int)$cycle['id'],$position]):null;
  // Refresh only unfinished content. Completed snapshots and the owner's draft stay intact.
- $t=$position<=FCC_JP_TOTAL?fcc_jp_content($position):null;
+ /* Custom code: FC-2026-10-12: the member's track and real context choose the next task. */
+ $mpDay=$position<=FCC_JP_TOTAL?(function_exists('fcc_mp_next_day')?fcc_mp_next_day($uid,$rows,$step,$now):$position):null;
+ $needsTrack=$position<=FCC_JP_TOTAL&&$mpDay===null;
+ $t=$mpDay?fcc_jp_content($mpDay):null;
+ /* /Custom code: FC-2026-10-12 */
  if($t&&fcc_journey_warm($t)){
   $saved=$step?json_decode($step['content_json'],true):null;
   $t=($saved['id']??'')===$t['id']?fcc_journey_warm_refresh($saved,$t,$uid,$now):fcc_journey_warm_context($uid,$t,$now);
@@ -64,7 +68,7 @@ function fcc_jp_state(int $uid,array $access,?DateTimeImmutable $now=null): arra
  return ['pilot'=>true,'cycle'=>$cycle,'rows'=>$rows,'position'=>$position,'completed'=>count($rows),'published_total'=>FCC_JP_TOTAL,'step'=>$step,'content'=>$t,'draft'=>$draft,'enabled'=>$enabled,'paused'=>$paused,'daily_done'=>$done,'webinar'=>$webinar,'action'=>$action,'fast'=>$fast,'pilot_finished'=>$position>FCC_JP_TOTAL,'readiness'=>['proposed_level'=>null],
  'due'=>fcc_partner_rows("SELECT id,name,next_followup FROM fcc_partner_contacts WHERE user_id=? AND next_followup<=? AND contact_permission<>'do_not_contact' ORDER BY next_followup,id LIMIT 3",[$uid,$now->format('Y-m-d')]),
  'events'=>$step?fcc_partner_rows('SELECT * FROM fcc_partner_pilot_events WHERE user_id=? AND step_id=? ORDER BY id DESC LIMIT 20',[$uid,(int)$step['id']]):[],
- 'mentor'=>fcc_jp_mentor($uid),'cc'=>fcc_j90_cc($uid,$access,$now),'capabilities'=>fcc_jp_capabilities(),'needs_help'=>false];
+ 'mentor'=>fcc_jp_mentor($uid),'cc'=>fcc_j90_cc($uid,$access,$now),'needs_track'=>$needsTrack,'track'=>function_exists('fcc_mp_track')?fcc_mp_track($uid):null,'day'=>$mpDay,'capabilities'=>fcc_jp_capabilities(),'needs_help'=>false];
 }
 function fcc_jp_capabilities(): array {
  // This pilot deliberately has no order adapter. Never infer customers or SKUs from aggregate CC.
@@ -156,7 +160,7 @@ function fcc_jp_event(int $uid,int $step,string $kind,string $detail,string $key
 /** Called only inside the per-user mutation transaction. */
 function fcc_jp_record_action(int $uid,array $step,array $t,array $draft,array $in,string $key,string $at): int {
      $kind=fcc_partner_choice($in['kind']??'',fcc_jp_event_labels());$detail=fcc_partner_text($in['detail']??'',500);
-     if(empty($in['confirmed']))throw new InvalidArgumentException(fcc_t('Potvrdi što si stvarno napravio.'));
+     if(empty($in['confirmed']))throw new InvalidArgumentException(fcc_t('Potvrdi što je stvarno napravljeno.'));
      if($kind==='practice'&&mb_strlen($detail)<15)throw new InvalidArgumentException(fcc_t('Dodaj kratak rezultat vježbe, npr. pripremljenu rečenicu.'));
      $contactId=(int)($draft['contact_id']??0);$contact=$contactId?fcc_partner_contact($uid,$contactId):null;
      $direct=in_array($kind,['message_sent','conversation_reported'],true);$real=in_array($kind,['message_sent','conversation_reported','publication_reported'],true);
@@ -175,7 +179,7 @@ function fcc_jp_complete_action(int $uid,array $s,array $cycle,array $step,array
      if(empty($in['self_check']))throw new InvalidArgumentException(fcc_t('Potvrdi kriterij ovog koraka.'));
      $event=fcc_partner_one('SELECT * FROM fcc_partner_pilot_events WHERE id=? AND user_id=? AND step_id=? FOR UPDATE',[(int)($in['evidence_id']??0),$uid,(int)$step['id']]);
      if(!$event||!in_array($event['kind'],['message_sent','publication_reported','conversation_reported','preparation_reported','practice'],true))throw new InvalidArgumentException(fcc_t('Prvo zabilježi izvršenu radnju ili konkretnu vježbu. Nacrt i otvaranje WhatsAppa nisu izvršenje.'));
-     if(!in_array($event['kind'],fcc_jp_allowed_evidence($s['position']),true))throw new InvalidArgumentException(fcc_t('Ova vrsta radnje ne odgovara kriteriju današnjeg koraka.'));
+     if(!in_array($event['kind'],fcc_jp_allowed_evidence((int)($t['day']??$s['position'])),true))throw new InvalidArgumentException(fcc_t('Ova vrsta radnje ne odgovara kriteriju današnjeg koraka.'));
      $mode=$event['kind']==='practice'?'practice':'applied';$output=match($event['kind']){'practice'=>'practised','message_sent'=>'sent','publication_reported'=>'published',default=>'performed'};
      if($event['activity_id']&&fcc_partner_one('SELECT outcome_id FROM forever_business_daily_outcomes WHERE interaction_id=?',[(int)$event['activity_id']]))throw new InvalidArgumentException(fcc_t('Ta radnja već je iskorištena.'));
      $resultType=match($event['kind']){'practice','preparation_reported'=>'training','publication_reported'=>'content',default=>$t['core']==='Recruitment'?'invitation':'recommendation'};
@@ -183,6 +187,7 @@ function fcc_jp_complete_action(int $uid,array $s,array $cycle,array $step,array
      fcc_partner_query('UPDATE fcc_partner_journey_steps SET content_json=? WHERE id=?',[json_encode($t,JSON_UNESCAPED_UNICODE),(int)$step['id']]);
      fcc_partner_query("UPDATE fcc_partner_journey_cycles SET version=version+1,status=?,completed_at=? WHERE id=?",[$s['position']===FCC_JP_TOTAL?'completed':'active',$s['position']===FCC_JP_TOTAL?$at:null,(int)$cycle['id']]);
      fcc_journey_event($uid,'step_completed','j90:'.$cycle['id'].':'.$step['id'],FCC_JP_VERSION,'pilot-done:'.$step['id']);
+     /* Custom code: FC-2026-10-12 */ if(function_exists('fcc_mp_after_complete'))fcc_mp_after_complete($uid,(int)$s['completed']+1); /* /Custom code: FC-2026-10-12 */
      return $result;
 }
 /** Same per-user lock, request ledger and transaction boundary as v4. */
@@ -228,7 +233,24 @@ function fcc_jp_mutate(int $uid,string $op,array $in,?DateTimeImmutable $now=nul
    if(!fcc_jp_is_cycle($cycle)||($cycle['status']!=='active'&&!$can_continue_legacy))throw new InvalidArgumentException(fcc_t('Nema aktivnog programa.'));
    if((int)($in['cycle_id']??0)!==(int)$cycle['id']||(int)($in['cycle_version']??0)!==(int)$cycle['version'])throw new InvalidArgumentException(fcc_t('Program je promijenjen u drugom prozoru. Osvježi prikaz.'));
    $s=fcc_jp_state($uid,$access,$now);
+   /* Custom code: FC-2026-10-12: a known shared step is confirmed without using the daily step. */
+   if($op==='known') {
+    $t=$s['content'];
+    if(!$t||!function_exists('fcc_mp_known_allowed')||!fcc_mp_known_allowed((int)$t['day'],(int)$s['position']))throw new InvalidArgumentException(fcc_t('Ovaj korak se ne može označiti kao poznat.'));
+    if(empty($in['confirm_known']))throw new InvalidArgumentException(fcc_t('Potvrdi da ovo već znaš i redovito radiš.'));
+    $step=$s['step'];
+    if($step&&(int)($in['step_id']??0)!==(int)$step['id'])throw new InvalidArgumentException(fcc_t('Ovaj korak nije tvoj aktualni korak.'));
+    if(!$step){fcc_partner_query('INSERT INTO fcc_partner_journey_steps (cycle_id,user_id,position,content_json,opened_at) VALUES (?,?,?,?,?)',[(int)$cycle['id'],$uid,$s['position'],json_encode($t,JSON_UNESCAPED_UNICODE),$at]);$step=fcc_partner_one('SELECT * FROM fcc_partner_journey_steps WHERE id=?',[(int)database()->insert_id]);}
+    fcc_partner_query("INSERT INTO forever_business_daily_outcomes (fbo_id,action_date,core_key,action_key,status,outcome_count,outcome_type,result_type,difficulty,sequence_position,note,recorded_by_user_id,completion_mode,journey_cycle_id,journey_step_id,learning_mode,output_status,created_at,updated_at) VALUES (?,?,?,?,'done',1,'journey90','training','ok',?,?,?,'known',?,?,'known','known',?,?)",[$access['fbo_id'],$day,$t['core'],$t['id'],$s['position'],fcc_t('Već poznato i primijenjeno'),$uid,(int)$cycle['id'],(int)$step['id'],$at,$at]);
+    fcc_partner_query('UPDATE fcc_partner_journey_steps SET content_json=? WHERE id=?',[json_encode($t,JSON_UNESCAPED_UNICODE),(int)$step['id']]);
+    fcc_partner_query('UPDATE fcc_partner_journey_cycles SET version=version+1 WHERE id=?',[(int)$cycle['id']]);
+    fcc_journey_event($uid,'step_completed','j90:'.$cycle['id'].':'.$step['id'],FCC_JP_VERSION,'pilot-known:'.$step['id']);
+    fcc_mp_after_complete($uid,(int)$s['completed']+1);
+    $result=(int)$step['id'];
+   } else
+   /* /Custom code: FC-2026-10-12 */
    if($op==='open') {
+    /* Custom code: FC-2026-10-12 */ if(!empty($s['needs_track']))throw new InvalidArgumentException(fcc_t('Najprije odaberi svoju stazu.')); /* /Custom code: FC-2026-10-12 */
     if($s['daily_done']||$s['webinar']['is_today'])throw new InvalidArgumentException(fcc_t('Za danas je predviđen spremljeni korak ili nedjeljni webinar.'));
     if($s['pilot_finished'])throw new InvalidArgumentException(fcc_t('Svih 90 koraka je završeno. Napredak je sačuvan.'));
     if($s['step'])$result=(int)$s['step']['id'];

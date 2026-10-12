@@ -54,7 +54,7 @@ function fcc_journey_task_tools(int $uid,array $task,int $step=0): array {
   'cards'=>['Otvori moje FCC kartice',SITE_URL.'partner/cards',false],
   'contacts'=>['Otvori moje Kontakte',SITE_URL.'partner/contacts',false],
   'products'=>['Pronađi proizvod i provjeri detalje',SITE_URL.'partner/share',false],
-  'business'=>['Otvori Marketing plan',SITE_URL.'partner-marketing',false],
+  /* Custom code: FC-2026-10-12 */ 'business'=>[function_exists('fcc_business_landing_access')&&fcc_business_landing_access($uid)?'Otvori Pozivnicu u tim':'Otvori Marketing plan',SITE_URL.'partner-marketing',false], /* /Custom code: FC-2026-10-12 */
   'progress'=>['Pregledaj moj napredak',SITE_URL.'partner?view=progress',false],
  ];
  $links=isset($map[$tool])?[$map[$tool]]:[];

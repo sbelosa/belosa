@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Traseul tău și ajutorul",
+          "steps": [
+            "Primii 15 pași sunt la fel pentru toți. După ei îți alegi traseul: Folosesc și recomand, Îmi construiesc un venit suplimentar sau Îmi construiesc o echipă. Toți cei 90 de pași rămân, se schimbă doar ordinea, iar traseul îl poți schimba în Prezentarea generală a celor 90 de pași.",
+            "Pașii cu un client, un membru nou al echipei, un invitat sau o întâlnire proprie se deschid când chiar le ai. Până atunci primești un pas pe care îl poți face imediat.",
+            "Dacă faci deja în mod regulat unul dintre primii 15 pași, alege Știu deja asta și o fac și treci direct la următorul.",
+            "Dacă te blochezi, alege M-am blocat, anunță-mi sponsorul. După un pas salvat, răspunde dacă a fost ușor, greu sau dacă ai nevoie de ajutor. Sponsorul tău îți vede progresul și te poate contacta."
+          ]
+        },
+        {
           "id": "example",
           "title": "Exemplu practic",
           "paragraphs": [

@@ -134,11 +134,14 @@ function fcc_rollout_enter(int $uid): void {
     $cid=(int)$cycle['id'];
    }else{
    if($cycle&&$cycle['status']==='active')fcc_partner_query("UPDATE fcc_partner_journey_cycles SET status='archived',version=version+1 WHERE id=?",[(int)$cycle['id']]);
-   fcc_partner_query('INSERT INTO fcc_partner_journey_cycles(user_id,catalog_version,policy_version,started_at) VALUES(?,?,?,UTC_TIMESTAMP())',[$uid,FCC_JP_VERSION,fcc_jp_catalog()['policy']['id']]);$cid=(int)$db->insert_id;
+   fcc_partner_query('INSERT INTO fcc_partner_journey_cycles(user_id,catalog_version,policy_version,started_at) VALUES(?,?,?,UTC_TIMESTAMP())',[$uid,FCC_JP_VERSION,fcc_jp_catalog()['policy']['id']]);$cid=(int)$db->insert_id;$mpStarted=true; /* Custom code: FC-2026-10-12 */
    }
    fcc_partner_query('UPDATE fcc_partner_rollout_access SET education_cycle_id=? WHERE user_id=?',[$cid,$uid]);
   }
   $db->commit();
+  /* Custom code: FC-2026-10-12: the sponsor hears when a new member starts Moj put. */
+  if(!empty($mpStarted)&&function_exists('fcc_mp_notify_sponsor_start'))fcc_mp_notify_sponsor_start($uid);
+  /* /Custom code: FC-2026-10-12 */
  }catch(Throwable $e){$db->rollback();throw $e;}
 }
 function fcc_rollout_new_education(int $uid): bool {

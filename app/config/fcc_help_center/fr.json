@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Ta voie et l’aide",
+          "steps": [
+            "Les 15 premières étapes sont les mêmes pour tous. Ensuite, tu choisis une voie : J’utilise et je recommande, Je développe un revenu complémentaire ou Je développe une équipe. Les 90 étapes restent, seul l’ordre change, et tu peux changer de voie dans l’Aperçu des 90 étapes.",
+            "Les étapes avec un client, un nouveau membre de l’équipe, un invité ou ta propre rencontre s’ouvrent quand tu les as vraiment. En attendant, tu reçois une étape que tu peux faire tout de suite.",
+            "Si tu fais déjà régulièrement l’une des 15 premières étapes, choisis Je connais et je fais déjà ça et passe directement à la suivante.",
+            "Si tu bloques, choisis Je bloque, préviens mon parrain. Après une étape enregistrée, indique si elle était facile, difficile ou si tu as besoin d’aide. Ton parrain voit ta progression et peut te contacter."
+          ]
+        },
+        {
           "id": "example",
           "title": "Un exemple concret",
           "paragraphs": [

@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Tvoja smer in pomoč",
+          "steps": [
+            "Prvih 15 korakov je enakih za vse. Nato izbereš smer: Uporabljam in priporočam, Gradim dodaten prihodek ali Gradim ekipo. Vseh 90 korakov ostane, spremeni se le vrstni red, smer pa lahko zamenjaš v Pregledu 90 korakov.",
+            "Koraki s kupcem, novim članom ekipe, gostom ali lastnim srečanjem se odprejo, ko to dejansko imaš. Do takrat dobiš korak, ki ga lahko narediš takoj.",
+            "Če katerega od prvih 15 korakov že redno izvajaš, izberi To že znam in delam in takoj preidi na naslednjega.",
+            "Če se kje zatakne, izberi Zataknilo se mi je, obvesti mojega sponzorja. Po shranjenem koraku odgovori, ali je bil lahek, težak ali potrebuješ pomoč. Tvoj sponzor vidi tvoj napredek in se ti lahko oglasi."
+          ]
+        },
+        {
           "id": "example",
           "title": "Primer iz prakse",
           "paragraphs": [

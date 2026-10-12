@@ -134,11 +134,14 @@ class Partner extends Controller {
     $target=$this->mutate($uid,$section,$_POST);
     fcc_los_event($uid,fcc_los_module('partner',$section,(string)($_GET['type']??'')),$losAction,'success',$losRequest);
     try{fcc_rel_usage($uid,$section,true);}catch(\Throwable $ignored){}
-    if(!in_array($_POST['action']??'',['pilot_open','card_delete_prepare','card_delete_cancel'],true)) {
+    if(!in_array($_POST['action']??'',['pilot_open','card_delete_prepare','card_delete_cancel','mp_track','mp_stuck','mp_feedback'],true)) {
      $message=match($_POST['action']??'') {
       'pilot_draft'=>'Tvoj nacrt je spremljen.',
       'pilot_finish'=>'Korak je spremljen. Tvoj napredak je ažuriran.',
       'card_delete'=>'Kartica je uklonjena.',
+      'pilot_known'=>'Korak je označen kao poznat. Nastavi sa sljedećim korakom.',
+      'mp_celebration'=>'Hvala, tvoj odgovor je spremljen.',
+      'mp_rhythm'=>'Zabilježeno. Tvoj tjedni ritam je ažuriran.',
       default=>'Spremljeno. Podaci su ažurirani na webu i u aplikaciji.'
      };
      \Altum\Alerts::add_success(fcc_t($message));
@@ -237,7 +240,7 @@ class Partner extends Controller {
     $from=(new \DateTimeImmutable(fcc_partner_today(),new \DateTimeZone('Europe/Zagreb')))->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
     $data['journey90_activities']=fcc_partner_rows("SELECT a.id,a.created_at,c.name contact_name FROM fcc_partner_activities a LEFT JOIN fcc_partner_contacts c ON c.id=a.contact_id AND c.user_id=a.user_id WHERE a.user_id=? AND a.created_at>=? AND a.kind IN ('contacted','journey_sent','journey_performed') AND (c.contact_permission IS NULL OR c.contact_permission<>'do_not_contact') AND NOT EXISTS (SELECT 1 FROM forever_business_daily_outcomes o WHERE o.interaction_id=a.id) ORDER BY a.id DESC LIMIT 30",[$uid,$from]);
    }
-   $data['journey_view']=in_array($_GET['view']??'',['goal','materials','progress','history','review','coach','step','pilot'],true)?$_GET['view']:'today';
+   $data['journey_view']=in_array($_GET['view']??'',['goal','materials','progress','history','review','coach','step','pilot','team-progress'],true)?$_GET['view']:'today'; /* Custom code: FC-2026-10-12: team-progress */
    $data['journey_plans']=fcc_partner_rows("SELECT * FROM fcc_partner_plans WHERE user_id=? AND status IN ('draft','active','archived') ORDER BY id DESC LIMIT 50",[$uid]);
    if(isset($_GET['plan_id'])) {
     $selected=fcc_partner_one('SELECT * FROM fcc_partner_plans WHERE user_id=? AND id=?',[$uid,(int)$_GET['plan_id']]);if(!$selected)throw_404();
@@ -339,6 +342,13 @@ class Partner extends Controller {
   if($action==='pilot_mentor_assign') {
    fcc_jp_assign_mentor($uid,$input);return 'partner/admin?pilot=1&pilot_user='.(int)($input['user_id']??0);
   }
+  /* Custom code: FC-2026-10-12: Moj put track, help request, feedback, milestones and rhythm. */
+  if($action==='mp_track'){fcc_mp_set_track($uid,$input);\Altum\Alerts::add_success(fcc_t('Tvoja staza je spremljena. Sljedeći korak je spreman.'));return 'partner?view=step';}
+  if($action==='mp_stuck'){$notified=fcc_mp_stuck($uid,$input);\Altum\Alerts::add_success($notified?fcc_t('Tvoj sponzor je obaviješten i javit će ti se. Do tada možeš otvoriti pomoć uz korak.'):fcc_t('Zabilježeno je. Tvoj sponzor još nije povezan u FCC-u, pa se za pomoć javi podršci.'));return 'partner?view=step';}
+  if($action==='mp_feedback'){$answer=fcc_mp_feedback($uid,$input);\Altum\Alerts::add_success($answer==='help'?fcc_t('Hvala. Sponzor je obaviješten da trebaš pomoć.'):fcc_t('Hvala na odgovoru.'));return 'partner';}
+  if($action==='mp_celebration'){fcc_mp_celebration_respond($uid,$input);return 'partner';}
+  if($action==='mp_rhythm'){fcc_mp_rhythm_save($uid,$input);return 'partner';}
+  /* /Custom code: FC-2026-10-12 */
   if(str_starts_with($action,'pilot_')) {
    if($action==='pilot_message_coach') {
     fcc_journey_warm_coach_draft($uid,$input);return 'partner?view=coach&purpose=message&compose=1';
@@ -349,7 +359,7 @@ class Partner extends Controller {
     return 'feedback-tickets?journey_step='.(int)$state['position'].'#fcc-support-create';
    }
    if($op==='draft'&&($input['navigate']??'')==='coach') return 'partner?view=step&coach=1';
-   return 'partner'.($op==='opportunity'?'?view=progress':(in_array($op,['draft','event','open'],true)?'?view=step':''));
+   return 'partner'.($op==='opportunity'?'?view=progress':(in_array($op,['draft','event','open','known'],true)?'?view=step':'')); /* Custom code: FC-2026-10-12: known */
   }
   if(str_starts_with($action,'journey90_')) {
    $op=substr($action,10);

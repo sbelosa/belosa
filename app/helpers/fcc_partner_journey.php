@@ -34,7 +34,7 @@ function fcc_journey_reminder(int $uid,DateTimeImmutable $now): ?array {
  if($seen&&$seen<$now->modify('-7 days')->getTimestamp()&&!$due&&!$tasks&&$now->format('N')!=='1')return null;
  $webinar=!(function_exists('fcc_events_enabled')&&fcc_events_enabled())&&empty($program['journey90']['webinar']['cancelled'])&&$now->format('N')==='7'&&(int)$now->format('G')===18&&!empty($categories['webinar']);
  return ['title'=>$webinar?'Tvoj korak i webinar u 19:00':'Tvoj današnji korak','body'=>($due?'Imaš dogovoreno javljanje. Otvori svoj dnevni pregled i nastavi razgovor.':($hasStep?'Danas: '.($program['action']['title']??'tvoj sljedeći korak').'. Otvori svoju pripremu.':'Tvoj osobni dogovor je spreman za pregled.')).($webinar?' Danas je webinar u 19:00 Europe/Zagreb; poziv je u odjeljku Podijeli.':''),
- 'path'=>'partner','step_key'=>$hasStep?($program['action']['key']??''):''];
+ 'path'=>!$due&&$hasStep?'partner?view=step':'partner','step_key'=>$hasStep?($program['action']['key']??''):'']; /* Custom code: FC-2026-10-12: the reminder opens today's step directly */
 }
 
 

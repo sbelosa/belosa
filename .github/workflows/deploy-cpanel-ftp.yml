@@ -90,6 +90,9 @@ jobs:
           php scripts/test_cc_visibility.php
           php scripts/test_invite_content_migration.php
           # /Custom code: FC-2026-10-11
+          # Custom code: FC-2026-10-12: Moj put tracks, known steps, neutral copy and sponsor notices
+          php scripts/test_journey_tracks.php
+          # /Custom code: FC-2026-10-12
 
       - name: Verify immutable Forever click qualification
         env:

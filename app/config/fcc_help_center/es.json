@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Tu ruta y ayuda",
+          "steps": [
+            "Los 15 primeros pasos son iguales para todos. Después eliges una ruta: Uso y recomiendo, Construyo ingresos adicionales o Construyo un equipo. Los 90 pasos se mantienen, solo cambia el orden, y puedes cambiar de ruta en el Resumen de los 90 pasos.",
+            "Los pasos con un cliente, un nuevo miembro del equipo, un invitado o un encuentro propio se abren cuando de verdad los tienes. Mientras tanto recibes un paso que puedes hacer enseguida.",
+            "Si ya haces con regularidad alguno de los 15 primeros pasos, elige Esto ya lo sé y lo hago y pasa directamente al siguiente.",
+            "Si te atascas, elige Me he atascado, avisa a mi patrocinador. Después de guardar un paso, indica si fue fácil, difícil o si necesitas ayuda. Tu patrocinador ve tu progreso y puede ponerse en contacto contigo."
+          ]
+        },
+        {
           "id": "example",
           "title": "Ejemplo práctico",
           "paragraphs": [

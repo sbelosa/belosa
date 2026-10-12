@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Twój kierunek i pomoc",
+          "steps": [
+            "Pierwsze 15 kroków jest takich samych dla wszystkich. Potem wybierasz kierunek: Używam i polecam, Buduję dodatkowy dochód albo Buduję zespół. Wszystkie 90 kroków zostaje, zmienia się tylko kolejność, a kierunek możesz zmienić w Przeglądzie 90 kroków.",
+            "Kroki z klientem, nową osobą w zespole, gościem lub własnym spotkaniem otwierają się, gdy naprawdę je masz. Do tego czasu dostajesz krok, który możesz zrobić od razu.",
+            "Jeśli któryś z pierwszych 15 kroków już regularnie wykonujesz, wybierz To już znam i robię i od razu przejdź do następnego.",
+            "Jeśli pojawi się trudność, wybierz Mam trudność, powiadom mojego sponsora. Po zapisanym kroku odpowiedz, czy był łatwy, trudny, czy potrzebujesz pomocy. Twój sponsor widzi twoje postępy i może się odezwać."
+          ]
+        },
+        {
           "id": "example",
           "title": "Przykład z praktyki",
           "paragraphs": [

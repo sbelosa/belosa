@@ -210,6 +210,7 @@ function fcc_partner_notifications_run(?DateTimeImmutable $now=null): array {
   fcc_partner_notification_config_save('user_cursor',count($users)===100?(int)end($users)['user_id']:0);
   /* Custom code: FC-2026-10-12: weekly reminder before reviewed Start pack facts expire */
   if(function_exists('fcc_invite_starter_review_reminders')){try{fcc_invite_starter_review_reminders();}catch(\Throwable $e){error_log('Starter review reminder: '.get_class($e));}}
+  if(function_exists('fcc_mp_weekly_summaries')){try{fcc_mp_weekly_summaries($now);}catch(\Throwable $e){error_log('Moj put weekly summary: '.get_class($e));}}
   /* /Custom code: FC-2026-10-12 */
   fcc_partner_query("INSERT IGNORE INTO fcc_partner_push_deliveries (notification_id,subscription_id,available_at,updated_at) SELECT n.id,s.id,UTC_TIMESTAMP(),UTC_TIMESTAMP() FROM fcc_partner_notifications n JOIN fcc_partner_push_subscriptions s ON s.user_id=n.user_id AND s.active=1 WHERE n.expires_at>UTC_TIMESTAMP() AND n.created_at>=s.created_at AND n.event_key NOT LIKE 'top:%'");
   $stats=fcc_partner_push_deliver($now);
@@ -230,6 +231,7 @@ function fcc_partner_notification_display(array $notice,?string $locale=null): a
   if($event&&!empty(fcc_event_definition($event)['managed']))return $notice;
  }
  if(str_starts_with($notice['event_key']??'','top:')){$kind=str_starts_with($notice['event_key'],'top:weekly:')?'weekly':'milestone';$notice['title']=fcc_top_t($kind.'_title',[],$locale);$notice['body']=fcc_top_t($kind.'_body',[],$locale);return $notice;}
+ /* Custom code: FC-2026-10-12 */ if(str_starts_with($notice['event_key']??'','mp:')&&function_exists('fcc_mp_notice_display'))return fcc_mp_notice_display($notice,$locale); /* /Custom code: FC-2026-10-12 */
  if(str_starts_with($notice['event_key']??'','cc:')){$items=fcc_cc_notice_items((int)$notice['user_id'],(int)$notice['id']);$notice['title']=fcc_cc_t('digest_title',[],$locale);$notice['body']=$items?fcc_cc_digest_text($items,$locale):fcc_cc_t('notification_removed',[],$locale);return $notice;}
  $locale=fcc_locale($locale);if(!in_array($locale,['sl','en','de','sr', 'sq', 'cnr', 'fr', 'es','sv','hu','pl','ro'],true))return $notice;
  $key=(string)($notice['event_key']??'');

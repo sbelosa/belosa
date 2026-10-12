@@ -149,8 +149,9 @@ if(\Altum\Router::$controller_key === 'link' && ($this->link->type ?? null) === 
 
                 <main class="altum-animate altum-animate-fill-none altum-animate-fade-in">
                     <?php if($fp_tool_context) require THEME_PATH . 'views/partner/tool-context.php'; ?>
-                    <?php if(fcc_partner_enabled()&&function_exists('fcc_journey_team_group_joined')&&fcc_jp_schema())require THEME_PATH.'views/partner/journey-team-group.php'; ?>
-                    <?php if(fcc_partner_enabled())require THEME_PATH.'views/partner/device-notifications.php'; ?>
+                    <?php $fp_focus_step=\Altum\Router::$controller_key==='partner'&&in_array($_GET['view']??'',['step','team-progress'],true); /* Custom code: FC-2026-10-12: today's step opens without cards above it */ ?>
+                    <?php if(!$fp_focus_step&&fcc_partner_enabled()&&function_exists('fcc_journey_team_group_joined')&&fcc_jp_schema())require THEME_PATH.'views/partner/journey-team-group.php'; ?>
+                    <?php if(!$fp_focus_step&&fcc_partner_enabled())require THEME_PATH.'views/partner/device-notifications.php'; ?>
                     <?php if(fcc_help_enabled())require THEME_PATH.'views/partner/help-context.php'; ?>
                     <?= $this->views['content'] ?>
                 </main>

@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Drejtimi yt dhe ndihma",
+          "steps": [
+            "15 hapat e parë janë të njëjtë për të gjithë. Pas tyre zgjedh drejtimin: Përdor dhe rekomandoj, Ndërtoj të ardhura shtesë ose Ndërtoj ekip. Të 90 hapat mbeten, ndryshon vetëm radha, dhe drejtimin mund ta ndryshosh te Përmbledhja e 90 hapave.",
+            "Hapat me një klient, një anëtar të ri të ekipit, një të ftuar ose një takim tëndin hapen kur i ke vërtet. Deri atëherë merr një hap që mund ta bësh menjëherë.",
+            "Nëse e bën tashmë rregullisht një nga 15 hapat e parë, zgjidh Këtë e di dhe e bëj tashmë dhe kalo menjëherë te tjetri.",
+            "Nëse ngec, zgjidh Kam ngecur, njofto sponsorin tim. Pas një hapi të ruajtur, përgjigju nëse ishte i lehtë, i vështirë apo të duhet ndihmë. Sponsori yt sheh përparimin tënd dhe mund të të kontaktojë."
+          ]
+        },
+        {
           "id": "example",
           "title": "Shembull praktik",
           "paragraphs": [

@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Your path and help",
+          "steps": [
+            "The first 15 steps are the same for everyone. After them you choose a path: I use and recommend, I'm building extra income or I'm building a team. All 90 steps stay, only the order changes, and you can change your path in the Overview of 90 steps.",
+            "Steps with a customer, a new team member, a guest or your own meeting open when you actually have one. Until then you get a step you can do right away.",
+            "If you already do one of the first 15 steps regularly, choose I already know and do this and move straight on to the next one.",
+            "If you get stuck, choose I'm stuck, let my sponsor know. After a saved step, answer whether it was easy, hard or whether you need help. Your sponsor sees your progress and can get in touch."
+          ]
+        },
+        {
           "id": "example",
           "title": "A practical example",
           "paragraphs": [

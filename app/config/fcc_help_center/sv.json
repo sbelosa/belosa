@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Ditt spår och hjälp",
+          "steps": [
+            "De första 15 stegen är desamma för alla. Därefter väljer du spår: Jag använder och rekommenderar, Jag bygger en extra inkomst eller Jag bygger ett team. Alla 90 steg finns kvar, bara ordningen ändras, och du kan byta spår i Översikt över 90 steg.",
+            "Steg med en kund, en ny teammedlem, en gäst eller en egen träff öppnas när du verkligen har det. Fram till dess får du ett steg som du kan göra direkt.",
+            "Om du redan gör något av de första 15 stegen regelbundet väljer du Det här kan jag redan och gör och går direkt till nästa.",
+            "Om det tar stopp väljer du Jag har kört fast, meddela min sponsor. Efter ett sparat steg svarar du om det var lätt, svårt eller om du behöver hjälp. Din sponsor ser dina framsteg och kan höra av sig."
+          ]
+        },
+        {
           "id": "example",
           "title": "Exempel från verkligheten",
           "paragraphs": [

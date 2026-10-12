@@ -13,6 +13,7 @@
 <?php foreach([['Suradnici',$a['users']['total'],'admin/users'],[fcc_t('Čekaju odobrenje'),$a['users']['pending'],'admin/users'],[fcc_t('Aktivan PRO pristup'),$a['users']['paid'],'admin/users'],[fcc_t('Otvorena pitanja'),$a['support']['open'],'admin/feedback-tickets'],[fcc_t('Aktivne kartice'),$a['cards']['active'],'admin/links'],[fcc_t('Objavljeni članci'),$a['content']['published'],'admin/blog-posts']] as [$label,$value,$href]): ?><a class="fp-panel" href="<?= url($href) ?>"><small><?= $label ?></small><strong><?= (int)$value ?></strong></a><?php endforeach ?>
 </div>
 <?php require THEME_PATH.'views/partner/admin-cc4-group.php'; /* Custom code: FC-2026-10-11 */ ?>
+<?php require THEME_PATH.'views/partner/admin-journey.php'; /* Custom code: FC-2026-10-12 */ ?>
 <?php require THEME_PATH.'views/partner/admin-invite.php'; /* Custom code: FC-2026-10-12 */ ?>
 <?php require THEME_PATH.'views/partner/admin-content-migration.php'; /* Custom code: FC-2026-10-12 */ ?>
 <div class="fp-menu-grid fp-admin-groups"><?php foreach(fcc_partner_admin_groups() as [$title,$description,$links]): ?><section class="fp-panel"><h2><?= $h($title) ?></h2><p><?= $h($description) ?></p><div class="fp-admin-links"><?php foreach($links as [$label,$href]): ?><a href="<?= url($href) ?>"><?= $h($label) ?> <span>→</span></a><?php endforeach ?></div></section><?php endforeach ?></div>

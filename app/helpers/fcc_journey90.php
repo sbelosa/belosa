@@ -67,7 +67,7 @@ function fcc_j90_content(int $position,int $level=1,string $version='fcc90-2026-
  $t['catalog_version']=$version;$t['policy_version']=$c['policy']['id'];return $t;
 }
 function fcc_j90_daily_done(int $uid,string $day): bool {
- return !!fcc_partner_one("SELECT outcome_id FROM forever_business_daily_outcomes WHERE recorded_by_user_id=? AND action_date=? AND status='done' AND ((action_key LIKE 'vip26\\_%' AND action_key<>'vip26_activator_d01') OR journey_cycle_id IS NOT NULL) LIMIT 1",[$uid,$day]);
+ return !!fcc_partner_one("SELECT outcome_id FROM forever_business_daily_outcomes WHERE recorded_by_user_id=? AND action_date=? AND status='done' AND COALESCE(completion_mode,'')<>'known' AND ((action_key LIKE 'vip26\\_%' AND action_key<>'vip26_activator_d01') OR journey_cycle_id IS NOT NULL) LIMIT 1",[$uid,$day]); /* Custom code: FC-2026-10-12: known steps never use the daily step */
 }
 function fcc_j90_webinar(DateTimeImmutable $now): array {
  $event=forever_business_get_marketing_plan_state($now);
@@ -107,7 +107,7 @@ function fcc_j90_mutate(int $uid,string $operation,array $in,?DateTimeImmutable 
   $access=fcc_j90_access($uid);$cycle=fcc_j90_cycle($uid);$result=0;
   if(fcc_jp_is_cycle($cycle)&&$operation!=='webinar')throw new InvalidArgumentException(fcc_t('Nastavi u aktualnom pilotu. Stari program ostaje u povijesti.'));
   if($operation==='start') {
-   if($cycle)throw new InvalidArgumentException(fcc_t('Tvoj program već postoji. Nastavi gdje si stao.'));
+   if($cycle)throw new InvalidArgumentException(fcc_t('Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.'));
    if(empty($in['confirm']))throw new InvalidArgumentException(fcc_t('Potvrdi da želiš krenuti od prvog koraka uz sačuvanu povijest.'));
    $c=fcc_j90_catalog();fcc_partner_query("INSERT INTO fcc_partner_journey_cycles (user_id,catalog_version,policy_version,started_at) VALUES (?,?,?,?)",[$uid,$c['catalog_version'],$c['policy']['id'],$at]);$result=(int)database()->insert_id;
    fcc_journey_event($uid,'cycle_started','cycle:'.$result,$c['catalog_version'],'cycle:'.$result);

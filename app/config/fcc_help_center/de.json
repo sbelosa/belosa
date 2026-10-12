@@ -72,6 +72,16 @@
           ]
         },
         {
+          "id": "tracks",
+          "title": "Dein Pfad und Hilfe",
+          "steps": [
+            "Die ersten 15 Schritte sind für alle gleich. Danach wählst du einen Pfad: Ich nutze und empfehle, Ich baue ein Zusatzeinkommen auf oder Ich baue ein Team auf. Alle 90 Schritte bleiben, nur die Reihenfolge ändert sich, und du kannst den Pfad in der Übersicht über 90 Schritte wechseln.",
+            "Schritte mit einem Kunden, einem neuen Teammitglied, einem Gast oder einem eigenen Treffen öffnen sich, sobald du sie wirklich hast. Bis dahin bekommst du einen Schritt, den du sofort machen kannst.",
+            "Wenn du einen der ersten 15 Schritte schon regelmäßig machst, wähle Das kenne und mache ich schon und gehe direkt zum nächsten.",
+            "Wenn du nicht weiterkommst, wähle Ich komme nicht weiter, sag meinem Sponsor Bescheid. Beantworte nach einem gespeicherten Schritt, ob er leicht oder schwer war oder ob du Hilfe brauchst. Dein Sponsor sieht deinen Fortschritt und kann sich melden."
+          ]
+        },
+        {
           "id": "example",
           "title": "Ein praktisches Beispiel",
           "paragraphs": [
