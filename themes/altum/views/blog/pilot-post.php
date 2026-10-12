@@ -80,7 +80,7 @@ if($market && !isset($market_options[$market]))$market_options=[$market=>null]+$
  <details data-fl-faq="delivery" class="fl-article-section"><summary><?= e($hr?fcc_t('Gdje provjeravam dostavu i konačnu cijenu?'):fcc_t('Where do I check delivery and the final price?')) ?></summary><p><?= e($hr?fcc_t('Naručivanje se nastavlja u službenoj Forever trgovini za odabranu zemlju. Tamo prije potvrde kupnje provjeri dostavu, cijenu, eventualne popuste i uvjete povrata.'):fcc_t('Ordering continues in the official Forever shop for your selected country. Before confirming a purchase, check delivery, price, any discounts and return conditions there.')) ?></p></details>
  <?php endif ?>
  </div></section>
- <article class="fl-reading" id="fl-details"><h2><?= e(fcc_lp_t('details')) ?></h2>
+ <article class="fl-reading" id="fl-details"><?php if(fcc_ui_theme_is_zivi()): ?><span class="fl-kicker"><?= e($hr?fcc_t('Sve o proizvodu'):fcc_t('Everything about it')) ?></span><?php endif ?><h2><?= e(fcc_lp_t('details')) ?></h2>
  <?php if($item['editorial']): ?>
   <details class="fl-article-section"><summary><?= e(fcc_lp_t('notes')) ?></summary><div class="fl-source-content"><p><?= e($item['notes']) ?></p><?php if($tracked): ?><a href="<?= e($tracked) ?>" target="_blank" rel="sponsored noopener noreferrer"><?= e(fcc_lp_t('official_details')) ?> ↗</a><?php endif ?></div></details>
   <div class="fl-deeper-heading"><p><?= e($hr?fcc_t('Istraži temu koja te zanima.'):fcc_t('Explore the topic that interests you.')) ?></p></div>
