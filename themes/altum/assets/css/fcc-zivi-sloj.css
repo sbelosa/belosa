@@ -605,3 +605,38 @@ body.fcc-ui-zivi .fl-product-image[style*="--zs-core"] {
 }
 body.fcc-ui-zivi .fl-product-image img { -webkit-mask-image: none; mask-image: none; }
 body.fcc-ui-zivi .fl-related-card img { -webkit-mask-image: none !important; mask-image: none !important; background: #fff !important; }
+
+/* ---------- Product photos: studio stage (final) ----------
+   Like premium shops: the product sits on a flat surface of the same colour as its photo background.
+   Every FCC product photo has a pure white background, so the stage is pure white: no vignette, no glow,
+   no blending, nothing a browser can render differently. Depth comes from size, space and a soft floor shadow. */
+body.fcc-ui-zivi .fl-product-stage,
+body.fcc-ui-zivi .fl-product-stage[style*="--zs-core"] {
+  background: #fff !important; border: 1px solid #E8EEEA !important; border-radius: 28px !important;
+  box-shadow: 0 1px 2px rgba(14,42,34,.04), 0 24px 48px -28px rgba(14,42,34,.18) !important;
+}
+body.fcc-ui-zivi .fl-product-stage::before { display: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image { background: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image img {
+  -webkit-mask-image: none !important; mask-image: none !important; mix-blend-mode: normal !important;
+  max-width: 94% !important; max-height: 460px !important;
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image::after { background: radial-gradient(closest-side, rgba(14,42,34,.16), rgba(14,42,34,0)) !important; filter: blur(6px); height: 18px; }
+body.fcc-ui-zivi .fl-stage-label { background: #F3F6F4 !important; border: 0 !important; box-shadow: none !important; color: #3E5A51 !important; font-weight: 600 !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-photo-note { color: #8A9A93 !important; font-size: 12px !important; }
+@media (min-width: 801px) {
+  body.fcc-ui-zivi .fl-product-stage { align-self: start !important; aspect-ratio: 4 / 5; min-height: 0 !important; max-height: none !important; }
+}
+body.fcc-ui-zivi .fl-product-image,
+body.fcc-ui-zivi .fl-product-image[style*="--zs-core"] { background: #fff !important; }
+body.fcc-ui-zivi #fl-composer .fl-selected img { mix-blend-mode: normal !important; background: #fff !important; -webkit-mask-image: none !important; mask-image: none !important; }
+@media (max-width: 800px) {
+  body.fcc-ui-zivi #fl-library .fl-product-stage {
+    display: flex !important; flex-direction: column !important; align-items: stretch; gap: 6px;
+    height: auto !important; min-height: 0 !important; max-height: none !important; aspect-ratio: 1 / 1; padding: 14px !important;
+  }
+  body.fcc-ui-zivi #fl-library .fl-product-stage .fl-hero-image { flex: 1 1 auto; min-height: 0 !important; display: flex; align-items: center; justify-content: center; }
+  body.fcc-ui-zivi #fl-library .fl-product-stage .fl-hero-image img { width: auto !important; max-width: 88% !important; max-height: 100% !important; height: auto; padding: 0 !important; }
+  body.fcc-ui-zivi #fl-library .fl-product-stage .fl-photo-note { margin: 0 !important; }
+}
+body.fcc-ui-zivi #fl-library .fl-stage-label { padding: 7px 13px !important; border-radius: 999px !important; font-size: 12px !important; line-height: 1.2; }
