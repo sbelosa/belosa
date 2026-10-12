@@ -53,5 +53,6 @@ function fcc_ui_theme_assets(string $shell): string {
     return '<link rel="preconnect" href="https://fonts.googleapis.com">'
         . '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
         . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap">'
-        . '<link rel="stylesheet" href="' . ASSETS_FULL_URL . $file . '?v=' . $version . '" data-fcc-ui="zivi">';
+        . '<link rel="stylesheet" href="' . ASSETS_FULL_URL . $file . '?v=' . $version . '" data-fcc-ui="zivi">'
+        . '<script defer src="' . ASSETS_FULL_URL . 'js/fcc-zivi-sloj.js?v=' . (is_file(ASSETS_PATH . 'js/fcc-zivi-sloj.js') ? filemtime(ASSETS_PATH . 'js/fcc-zivi-sloj.js') : PRODUCT_CODE) . '"></script>';
 }

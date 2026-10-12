@@ -203,3 +203,47 @@ body.fcc-ui-zivi.fcc-public-mode .fcw-button { border-radius: 16px !important; b
 body.fcc-ui-zivi.fcc-public-mode .fcw-text-link { color: var(--zs-em) !important; font-weight: 700; }
 body.fcc-ui-zivi.fcc-public-mode .fcw-hero-copy h1 { background: linear-gradient(100deg, var(--zs-ink) 30%, var(--zs-em) 70%, var(--zs-aqua)); -webkit-background-clip: text; background-clip: text; color: transparent !important; }
 body.fcc-ui-zivi.fcc-public-mode .fcw-feature-icon { background: rgba(59,185,164,.16) !important; color: var(--zs-em) !important; border-radius: 14px !important; }
+
+/* ---------- Product stage: white-background photos sit on a studio backdrop ----------
+   Every product photo is an opaque square with a white background. Multiply blending lets that
+   white become the stage itself, a soft contact shadow grounds the pack, and the glow takes the
+   packaging's own colour (set by fcc-zivi-sloj.js, topic colour as fallback). */
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image) { --fl-glow: #A8E0C2; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-bee { --fl-glow: #F2C66B; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-care { --fl-glow: #9FD8C4; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-drinks { --fl-glow: #8FD6B0; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-personal { --fl-glow: #A9CDEB; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-supplement { --fl-glow: #F3BE98; }
+body.fcc-ui-zivi :is(.fl-product-stage, .fl-product-image).fl-topic-weight { --fl-glow: #C8E08E; }
+
+body.fcc-ui-zivi .fl-product-stage {
+  isolation: isolate; border-radius: 28px !important; border: 1px solid rgba(255,255,255,.95) !important;
+  background:
+    radial-gradient(46% 40% at 50% 46%, #fff 0, rgba(255,255,255,.92) 45%, rgba(255,255,255,0) 100%),
+    radial-gradient(120% 95% at 50% 40%, color-mix(in srgb, var(--fl-glow) 22%, #fff) 0, color-mix(in srgb, var(--fl-glow) 42%, #EEF7F2) 100%) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 18px 44px color-mix(in srgb, var(--fl-glow) 30%, rgba(18,90,70,.12)) !important;
+  transition: background .6s ease, box-shadow .6s ease;
+}
+body.fcc-ui-zivi .fl-product-stage::before {
+  border: 0 !important; box-shadow: none !important; width: 78% !important; height: auto !important; aspect-ratio: 1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--fl-glow) 45%, transparent), transparent) !important;
+  filter: blur(24px); opacity: .75; top: 50% !important;
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image { position: relative; isolation: auto; }
+body.fcc-ui-zivi :is(.fl-product-stage .fl-hero-image img, .fl-product-image img, .fl-related-card img) { mix-blend-mode: multiply; filter: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image:not([style*="--zs-floor"])::after { display: none; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image::after {
+  content: ""; position: absolute; left: 24%; right: 24%; top: var(--zs-floor, auto); bottom: auto; height: 22px; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(14,42,34,.26), rgba(14,42,34,0)); filter: blur(5px);
+}
+body.fcc-ui-zivi .fl-stage-label { background: rgba(255,255,255,.78) !important; border: 1px solid #fff !important; color: var(--zs-em2) !important; font-weight: 700; box-shadow: 0 4px 12px rgba(18,90,70,.08); }
+body.fcc-ui-zivi .fl-product-stage .fl-stage-caption { display: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-photo-note { text-align: center; font-size: 12px; color: var(--zs-muted); margin: 0; }
+
+body.fcc-ui-zivi .fl-product-image {
+  isolation: isolate; border-radius: 22px !important;
+  background: radial-gradient(60% 55% at 50% 45%, #fff 0, rgba(255,255,255,.6) 55%, rgba(255,255,255,0) 100%), color-mix(in srgb, var(--fl-glow) 28%, #F3F9F5) !important;
+}
+body.fcc-ui-zivi .fl-related-card { background: var(--zs-glass) !important; border: 1px solid var(--zs-edge) !important; border-radius: 22px !important; box-shadow: var(--zs-shadow) !important; }
+body.fcc-ui-zivi .fl-related-card img { background: color-mix(in srgb, var(--fl-glow, #A8E0C2) 22%, #fff); border-radius: 16px; }
+@media (prefers-reduced-motion: reduce) { body.fcc-ui-zivi .fl-product-stage { transition: none; } }
