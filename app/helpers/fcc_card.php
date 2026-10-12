@@ -421,11 +421,11 @@ function fcc_card_country_line(?string $country_code, string $change_url, bool $
     return '<div class="col-12 text-center mb-2"><small' . $style . '>' . htmlspecialchars(fcc_forever_copy('automatic'), ENT_QUOTES, 'UTF-8') . ' <a href="' . $href . '"' . $style . '><u>' . $change . '</u></a></small></div>';
 }
 
-/** Footer in the visitor's language. The new card adds the independence notice. */
+/** Footer in the card language: the member's role and the Forever Card Club link. */
 function fcc_card_footer_html(bool $v2): string {
     $club = '<a href="' . htmlspecialchars(url(), ENT_QUOTES, 'UTF-8') . '">Forever Card Club</a>';
     if($v2) {
-        return '<div class="fcc-card-legal"><p>' . htmlspecialchars(fcc_t('Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.'), ENT_QUOTES, 'UTF-8') . '</p><p>' . $club . '</p></div>';
+        return '<div class="fcc-card-legal"><p>' . htmlspecialchars(fcc_t('Neovisni Forever Business Partner'), ENT_QUOTES, 'UTF-8') . '</p><p>' . $club . '</p></div>';
     }
     return htmlspecialchars(fcc_t('Kartica neovisnog Forever Business Partnera'), ENT_QUOTES, 'UTF-8') . ' · ' . str_replace('<a ', '<a style="color:inherit;text-decoration:underline" ', $club);
 }

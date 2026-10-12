@@ -93,7 +93,7 @@ $_GET = ['preview' => md5('7'), 'fcc_card' => 'v2', 'fcc_theme' => 'zlato', 'fcc
 $assert(fcc_card_preview_choice((object) ['link_id' => 990002, 'user_id' => 7, 'settings' => '{}']) === ['version' => 'v2', 'theme' => 'zlato', 'style' => ['buttons' => 'square']], 'owner preview shows unsaved choices');
 $_GET = [];
 $assert(str_contains($source('themes/altum/views/l/biolink_wrapper.php'), "=== 'large' ? '18px' : '16px'"), 'larger text sets the page font size, which the card page otherwise fixes at 16px');
-$assert(str_contains($helper_source = $source('app/helpers/fcc_card.php'), "fcc_t('Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.')") && str_contains($helper_source, "fcc_t('Kartica neovisnog Forever Business Partnera')") && !str_contains($helper_source, 'Business Owner'), 'footer says Business Partner');
+$assert(str_contains($helper_source = $source('app/helpers/fcc_card.php'), "fcc-card-legal\"><p>' . htmlspecialchars(fcc_t('Neovisni Forever Business Partner')") && str_contains($helper_source, "fcc_t('Kartica neovisnog Forever Business Partnera')") && !str_contains($helper_source, 'Business Owner') && !str_contains($helper_source, 'Ovo nije službena stranica'), 'footer says Business Partner without the official page notice');
 foreach(['buttons-pill', 'buttons-square', 'button-look-outline', 'button-look-soft', 'font-classic', 'font-simple', 'text-large', 'avatar-rounded', 'glow-off', 'glow-strong'] as $class) $assert(str_contains($css, 'fcc-' . $class), 'CSS for ' . $class);
 foreach(['filled', 'surface', 'outline', 'soft'] as $look) $assert(str_contains($css, '[data-fcc-look="' . $look . '"]'), 'CSS for block look ' . $look);
 
@@ -108,7 +108,7 @@ foreach($catalog as $type => $item) {
 $texts = [];
 foreach($catalog as $item) array_push($texts, $item['title'], $item['what'], $item['how']);
 foreach(fcc_card_block_groups() as $group) array_push($texts, $group['title'], $group['text']);
-array_push($texts, 'Neovisni Forever Business Partner. Ovo nije službena stranica Forever Living Products.', 'Kartica neovisnog Forever Business Partnera', 'Ponuda za: {country}', 'Pitaj savjetnika', 'Izgled kartice', 'Nova kartica', 'Stara kartica', 'Neovisni Forever Business Partner', 'Za više informacija o Forever proizvodima ili poslovnoj suradnji slobodno me kontaktirajte.');
+array_push($texts, 'Kartica neovisnog Forever Business Partnera', 'Ponuda za: {country}', 'Pitaj savjetnika', 'Izgled kartice', 'Nova kartica', 'Stara kartica', 'Neovisni Forever Business Partner', 'Za više informacija o Forever proizvodima ili poslovnoj suradnji slobodno me kontaktirajte.');
 foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'] as $locale) {
     $catalogue = require APP_PATH . 'config/locales/' . $locale . '.php';
     if(is_file(APP_PATH . 'config/locales/' . $locale . '-curated.php')) $catalogue = (require APP_PATH . 'config/locales/' . $locale . '-curated.php') + $catalogue;
