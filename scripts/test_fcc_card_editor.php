@@ -16,6 +16,10 @@ defined('THEME_PATH') || define('THEME_PATH', dirname(__DIR__) . '/themes/altum/
 eval('namespace Altum; class Language { public static $code = "hr"; }');
 
 require APP_PATH . 'helpers/strings.php';
+if(!function_exists('get_contact_phone_dial_codes_array')) {
+    function get_contact_phone_dial_codes_array() { static $codes; return $codes ??= require APP_PATH . 'includes/contact_phone_dial_codes.php'; }
+}
+require APP_PATH . 'helpers/links.php';
 require APP_PATH . 'helpers/fcc_i18n.php';
 require APP_PATH . 'helpers/fcc_forever_routing.php';
 require APP_PATH . 'helpers/fcc_card.php';
@@ -57,6 +61,23 @@ $assert($threw, 'invalid email rejected');
 $threw = false;
 try { fcc_card_editor_social_value('instagram', 'ime s razmakom'); } catch(InvalidArgumentException $e) { $threw = true; }
 $assert($threw, 'profile with spaces rejected');
+
+/* WhatsApp: the registration number in the form WhatsApp needs, never a guess into another country. */
+foreach([
+    ['091 123 4567', ['HR'], '385911234567'], ['+385 91 123 4567', [], '385911234567'], ['00385911234567', [], '385911234567'],
+    ['385 091 123 4567', [], '385911234567'], ['91 123 4567', ['HR'], '385911234567'], ['031 123 456', ['SI', 'HR'], '38631123456'],
+    ['031 123 456', ['HR'], ''], ['064 123 4567', ['RS', 'HR'], '381641234567'], ['0151 1234 5678', ['DE', 'HR'], '4915112345678'],
+    ['+49 0151 12345678', [], '4915112345678'], ['06 30 123 4567', ['HU', 'HR'], '36301234567'], ['07700 900123', ['GB', 'HR'], '447700900123'],
+    ['01 234 5678', ['HR'], ''], ['12', ['HR'], ''], ['+1 202 555 0123', [], '12025550123'], ['416 555 0123', ['CA', 'HR'], '14165550123'],
+    ['385 00 1234567', [], ''], ['', ['HR'], ''],
+] as [$typed, $countries, $expected]) {
+    $assert(fc_normalize_whatsapp_phone($typed, $countries) === $expected, 'whatsapp number "' . $typed . '"');
+}
+$assert(fc_format_whatsapp_phone('385911234567') === '+385 91 123 4567' && fc_format_whatsapp_phone('447700900123') === '+44 7700 900123', 'readable number');
+$assert(fc_country_from_text('Hrvatska') === 'HR' && fc_country_from_text('Njemačka') === 'DE' && fc_country_from_text('Bosna i Hercegovina') === 'BA' && fc_country_from_text('Österreich') === 'AT' && fc_country_from_text('xyz') === '', 'country from the address');
+$member = (object) ['country' => 'SI', 'preferences' => json_encode(['meta' => ['phone' => '041 123 456', 'country' => 'Slovenija']])];
+$assert(fc_get_user_default_whatsapp_phone($member) === '38641123456', 'registration number with the member country');
+$assert(fcc_card_editor_whatsapp_display('', $member) === '+386 41 123 456', 'the form shows the registration number');
 
 /* Block library: small, Forever first, every type has a form, retired lead forms are not offered. */
 $assert(count(FCC_CARD_EDITOR_LIBRARY) <= 15 && array_slice(FCC_CARD_EDITOR_LIBRARY, 0, 2) === ['link_forever_webshop_reg', 'link_forever_shop'], 'small library, Forever first');

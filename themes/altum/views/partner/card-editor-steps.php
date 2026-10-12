@@ -53,7 +53,7 @@ $groups = fcc_card_block_groups();
                     <?php if($part['retired'] && $state['is_v2']): ?><em class="fe-badge"><?= $t('Ne prikazuje se na novoj kartici') ?></em>
                     <?php elseif($part['locked']): ?><em class="fe-badge fe-badge-pro"><?= $t('Vidljivo uz PRO paket') ?></em>
                     <?php elseif(!$part['enabled']): ?><em class="fe-badge"><?= $t('Skriveno') ?></em><?php endif ?>
-                    <?php if(!$part['editable']): ?><em class="fe-badge"><?= $t('Napredni uređivač') ?></em><?php endif ?>
+                    <?php if(!$part['editable']): ?><em class="fe-badge"><?= $t('Klasični uređivač') ?></em><?php endif ?>
                 </button>
                 <span class="fe-part-tools">
                     <button type="button" class="fe-icon-button" data-fe-move="up" data-fe-id="<?= (int) $part['id'] ?>" aria-label="<?= $t('Pomakni gore') ?>" <?= $index === 0 ? 'disabled' : '' ?>><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
@@ -87,7 +87,7 @@ $groups = fcc_card_block_groups();
                 <?php endforeach ?>
             </div>
         <?php endforeach ?>
-        <p class="fe-library-more"><?= $t('Trebaš nešto drugo, primjerice obrazac, kartu ili glazbu?') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=blocks') ?>"><?= $t('Svi blokovi su u naprednom uređivaču.') ?></a></p>
+        <p class="fe-library-more"><?= $t('Trebaš nešto drugo, primjerice obrazac, kartu ili glazbu?') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=blocks') ?>"><?= $t('Svi blokovi su u klasičnom uređivaču.') ?></a></p>
     </div>
 </section>
 
@@ -115,9 +115,49 @@ $groups = fcc_card_block_groups();
             </div>
             <?php if(!$state['is_pro']): ?><small><?= $t('Aloe je dostupan svima. Ostali stilovi otvaraju se uz PRO paket.') ?></small><?php endif ?>
         </fieldset>
+        <?php
+        $style = $state['style'];
+        $swatch = FCC_CARD_THEMES[$state['theme']]['swatch'] ?? FCC_CARD_THEMES['aloe']['swatch'];
+        $choices = [
+            'buttons' => ['Oblik gumba', ['rounded' => 'Zaobljeni', 'pill' => 'Okrugli', 'square' => 'Ravni']],
+            'button_look' => ['Ostali gumbi', ['surface' => 'Puni', 'outline' => 'Obrub', 'soft' => 'Mekani']],
+            'font' => ['Font', ['modern' => 'Moderni', 'classic' => 'Klasični', 'simple' => 'Jednostavni']],
+            'text' => ['Veličina teksta', ['normal' => 'Normalna', 'large' => 'Veća']],
+            'avatar' => ['Fotografija', ['circle' => 'Krug', 'rounded' => 'Zaobljeni kvadrat']],
+            'glow' => ['Sjaj pozadine', ['on' => 'Uključen', 'off' => 'Isključen']],
+        ];
+        ?>
+        <details class="fe-advanced" data-fe-style-panel <?= $style ? 'open' : '' ?>>
+            <summary><span><strong><?= $t('Napredno: boje i detalji') ?></strong><small><?= $t('Prilagodi odabrani stil. Svaku promjenu odmah vidiš u pregledu.') ?></small></span></summary>
+            <div class="fe-advanced-body">
+                <input type="hidden" name="style_present" value="1">
+                <div class="fe-colors">
+                    <?php foreach(['accent' => ['Glavna boja', 'Gumb za trgovinu, ikone i poveznice.', $swatch[1]], 'background' => ['Pozadina', 'Boja iza kartice. Tekst se sam prilagodi da ostane čitljiv.', $swatch[0]]] as $key => [$label, $hint, $fallback]): ?>
+                        <div class="fe-color<?= $state['is_pro'] ? '' : ' is-locked' ?>">
+                            <label class="fe-check"><input type="checkbox" name="<?= $key ?>_on" value="1" <?= !empty($style[$key]) ? 'checked' : '' ?> <?= $state['is_pro'] ? '' : 'disabled' ?>> <strong><?= $t($label) ?></strong><?php if(!$state['is_pro']): ?> <em class="fe-badge fe-badge-pro">PRO</em><?php endif ?></label>
+                            <input type="color" name="<?= $key ?>" value="<?= $h($style[$key] ?? $fallback) ?>" aria-label="<?= $t($label) ?>" <?= $state['is_pro'] ? '' : 'disabled' ?>>
+                            <small><?= $t($hint) ?></small>
+                        </div>
+                    <?php endforeach ?>
+                </div>
+                <?php foreach($choices as $key => [$label, $options]): ?>
+                    <fieldset class="fe-choice">
+                        <legend><?= $t($label) ?></legend>
+                        <div class="fe-chips">
+                            <?php foreach($options as $value => $option_label): ?>
+                                <label class="fe-chip"><input type="radio" name="style_<?= $key ?>" value="<?= $h($value) ?>" <?= ($style[$key] ?? array_key_first($options)) === $value ? 'checked' : '' ?>><span><?= $t($option_label) ?></span></label>
+                            <?php endforeach ?>
+                        </div>
+                    </fieldset>
+                <?php endforeach ?>
+                <button type="button" class="fe-button fe-button-soft" data-fe-style-reset><?= $t('Vrati izgled stila') ?></button>
+            </div>
+        </details>
+        <p class="fe-preview-note" data-fe-design-note hidden><span><?= $t('Pregled prikazuje odabrani izgled. Spremi ga da ga vide i posjetitelji.') ?></span> <button type="button" class="fe-link-button" data-fe-design-revert><?= $t('Vrati spremljeno') ?></button></p>
         <div class="fe-form-actions"><button type="submit" class="fe-button"><?= $t('Spremi izgled') ?></button></div>
         <p class="fe-form-error" role="alert" data-fe-error hidden></p>
     </form>
-    <?php if(!$state['is_v2']): ?><p class="fe-note"><?= $t('Teme, boje i fontove stare kartice uređuješ u naprednom uređivaču.') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=settings&editor=design') ?>"><?= $t('Otvori napredni uređivač') ?></a></p><?php endif ?>
+    <?php if(!$state['is_v2']): ?><p class="fe-note"><?= $t('Teme, boje i fontove stare kartice uređuješ u klasičnom uređivaču.') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=settings&editor=design') ?>"><?= $t('Otvori klasični uređivač') ?></a></p><?php endif ?>
+    <p class="fe-more"><?= $t('Adresu kartice, naslov za tražilice i ostale postavke nalaziš u klasičnom uređivaču.') ?> <a href="<?= url('link/' . (int) $link->link_id . '?tab=settings&editor=settings') ?>"><?= $t('Postavke kartice') ?></a></p>
 </section>
 <?php /* /Custom code: FC-2026-10-12 */ ?>

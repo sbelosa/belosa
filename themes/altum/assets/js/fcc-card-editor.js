@@ -42,7 +42,9 @@
 
   /* Steps and the phone panel */
   const showStep = (step, { open = true } = {}) => {
+    if (activeStep === 'design' && step !== 'design' && designDirty) revertDesign();
     activeStep = step;
+    panel.classList.toggle('is-compact', step === 'design');
     root.dataset.feStepActive = step;
     root.querySelectorAll('[data-fe-nav]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.feNav === step)));
     steps.querySelectorAll('[data-fe-step]').forEach((section) => { section.hidden = section.dataset.feStep !== step; });
@@ -51,8 +53,15 @@
     url.searchParams.set('step', step);
     history.replaceState(history.state, '', url);
   };
-  const openPanel = () => { panel.classList.add('is-open'); document.documentElement.classList.add('fe-lock'); };
-  const closePanel = () => { panel.classList.remove('is-open'); document.documentElement.classList.remove('fe-lock'); };
+  // On phones the style step leaves the card visible above a shorter panel, so choices can be seen at once.
+  const peek = () => activeStep === 'design' && phone.matches;
+  const openPanel = () => {
+    panel.classList.add('is-open');
+    root.classList.toggle('fe-peek', peek());
+    document.documentElement.classList.toggle('fe-lock', !peek());
+    if (peek()) window.scrollTo({ top: Math.max(0, frame.getBoundingClientRect().top + window.scrollY - 8), behavior: 'smooth' });
+  };
+  const closePanel = () => { panel.classList.remove('is-open'); root.classList.remove('fe-peek'); document.documentElement.classList.remove('fe-lock'); };
 
   root.querySelectorAll('[data-fe-nav]').forEach((button) => button.addEventListener('click', () => {
     if (phone.matches && panel.classList.contains('is-open') && activeStep === button.dataset.feNav) { closePanel(); return; }
@@ -121,16 +130,53 @@
       showStep(activeStep, { open: false });
     }
     if (result.blocks) blocks = result.blocks;
+    if (result.is_v2 !== undefined) root.dataset.feV2 = result.is_v2 ? '1' : '0';
     if (result.profile_ids) profileIds = result.profile_ids.map(Number);
     reloadPreview();
   };
 
   /* Live preview */
   let scrollMemory = 0;
+  let designDirty = false;
+  const baseSrc = () => new URL(frame.dataset.feSrc, location.origin);
   const reloadPreview = () => {
     try { scrollMemory = frame.contentWindow.scrollY || 0; } catch (error) { scrollMemory = 0; }
     frameLoading.hidden = false;
-    try { frame.contentWindow.location.reload(); } catch (error) { frame.src = new URL(frame.dataset.feSrc, location.origin).href; }
+    let showsChoice = false;
+    try { showsChoice = new URL(frame.contentWindow.location.href).searchParams.has('fcc_card'); } catch (error) { showsChoice = true; }
+    if (showsChoice) { frame.src = baseSrc().href; return; }
+    try { frame.contentWindow.location.reload(); } catch (error) { frame.src = baseSrc().href; }
+  };
+
+  /* Style choices show in the preview at once; "Spremi izgled" makes them visible to visitors. */
+  let designTimer = 0;
+  const designForm = () => steps.querySelector('[data-fe-design]');
+  const previewDesign = () => {
+    const form = designForm();
+    if (!form) return;
+    const value = (name) => { const input = form.querySelector(`[name="${name}"]:checked`) || form.querySelector(`[name="${name}"]:not([type=radio]):not([type=checkbox])`); return input ? input.value : ''; };
+    const style = {};
+    ['buttons', 'button_look', 'font', 'text', 'avatar', 'glow'].forEach((key) => { const choice = value(`style_${key}`); if (choice) style[key] = choice; });
+    ['accent', 'background'].forEach((key) => { const toggle = form.querySelector(`[name="${key}_on"]`); if (toggle && toggle.checked && !toggle.disabled) style[key] = value(key); });
+    const url = baseSrc();
+    url.searchParams.set('fcc_card', value('card_version') || 'v2');
+    if (value('card_theme')) url.searchParams.set('fcc_theme', value('card_theme'));
+    url.searchParams.set('fcc_style', JSON.stringify(style));
+    try { scrollMemory = frame.contentWindow.scrollY || 0; } catch (error) { scrollMemory = 0; }
+    frameLoading.hidden = false;
+    frame.src = url.href;
+    designDirty = true;
+    const note = form.parentElement.querySelector('[data-fe-design-note]');
+    if (note) note.hidden = false;
+  };
+  const revertDesign = () => {
+    const form = designForm();
+    if (form) form.reset();
+    designDirty = false;
+    const note = steps.querySelector('[data-fe-design-note]');
+    if (note) note.hidden = true;
+    frameLoading.hidden = false;
+    frame.src = baseSrc().href;
   };
   const frameStyle = `
     [data-biolink-block-id]{cursor:pointer;transition:outline-color .15s ease;outline:2px solid transparent;outline-offset:4px;border-radius:18px}
@@ -147,6 +193,7 @@
     style.textContent = frameStyle;
     doc.head.appendChild(style);
     if (scrollMemory) frame.contentWindow.scrollTo(0, scrollMemory);
+    else if (designDirty && peek()) { const first = doc.querySelector('.link-btn'); if (first) frame.contentWindow.scrollTo(0, Math.max(0, first.getBoundingClientRect().top - 120)); }
     doc.addEventListener('click', (event) => {
       const target = event.target.closest('[data-biolink-block-id]');
       event.preventDefault();
@@ -173,6 +220,8 @@
       if (social) value = (fields.socials || {})[social[1]];
       else if (faq) value = ((fields.items || [])[Number(faq[2])] || {})[faq[1]];
       else value = fields[input.name];
+      if (input.type === 'radio') { input.checked = value !== undefined && value !== null ? input.value === String(value) : input.defaultChecked; return; }
+      if (input.type === 'checkbox') { input.checked = !!value; return; }
       if (value !== undefined && value !== null) input.value = value;
     });
     const items = (fields.items || []).length;
@@ -204,6 +253,7 @@
     sheetDelete.hidden = !id;
     confirmBox.hidden = true;
     formError(sheetForm, '');
+    sheetBody.querySelectorAll('.fe-chips').forEach((group) => { const first = group.querySelector('input[type=radio]'); if (first) first.defaultChecked = true; });
     if (id && blocks[id]) fill(sheetForm, blocks[id].fields || {});
     else fill(sheetForm, (data.defaults || {})[type] || {});
     closePanel();
@@ -322,7 +372,28 @@
     }
     if (event.target.closest('[data-fe-action="recommended"]')) await action('recommended');
   });
+  steps.addEventListener('input', (event) => {
+    if (!event.target.closest('[data-fe-design]')) return;
+    if (event.target.matches('[type=color]')) { const toggle = event.target.closest('.fe-color').querySelector('[type=checkbox]'); if (toggle && !toggle.disabled) toggle.checked = true; }
+    clearTimeout(designTimer);
+    designTimer = setTimeout(previewDesign, event.target.type === 'color' ? 300 : 0);
+  });
+  steps.addEventListener('click', (event) => {
+    if (event.target.closest('[data-fe-design-revert]')) { revertDesign(); return; }
+    if (event.target.closest('[data-fe-style-reset]')) {
+      const form = designForm();
+      form.querySelectorAll('.fe-chips').forEach((group) => { const first = group.querySelector('input[type=radio]'); if (first) first.checked = true; });
+      form.querySelectorAll('[name$="_on"]').forEach((toggle) => { toggle.checked = false; });
+      previewDesign();
+    }
+  });
   steps.addEventListener('change', async (event) => {
+    if (event.target.closest('[data-fe-design]')) {
+      if (event.target.matches('[type=color]')) { const toggle = event.target.closest('.fe-color').querySelector('[type=checkbox]'); if (toggle && !toggle.disabled) toggle.checked = true; }
+      clearTimeout(designTimer);
+      previewDesign();
+      return;
+    }
     const toggle = event.target.closest('[data-fe-toggle]');
     if (!toggle) return;
     const result = await action('toggle', { block_id: toggle.dataset.feToggle, enabled: toggle.checked ? '1' : '0' });
@@ -336,6 +407,7 @@
       if (result && phone.matches) closePanel();
     } else if (form.matches('[data-fe-design]')) {
       const result = await action('design', {}, form);
+      if (result) designDirty = false;
       if (result && phone.matches) closePanel();
     }
   });

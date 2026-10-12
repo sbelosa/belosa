@@ -309,9 +309,9 @@ class Partner extends Controller {
   $link=fcc_card_editor_link($uid,$link_id);
   $state=fcc_card_editor_state($this->user,$link);
   $blocks=[];
-  foreach(fcc_card_editor_blocks($link) as $block) $blocks[(int)$block->biolink_block_id]=['type'=>$block->type,'enabled'=>(int)$block->is_enabled===1,'fields'=>fcc_card_editor_fields($block)];
+  foreach(fcc_card_editor_blocks($link) as $block) $blocks[(int)$block->biolink_block_id]=['type'=>$block->type,'enabled'=>(int)$block->is_enabled===1,'fields'=>fcc_card_editor_fields($block,$this->user)];
   $view=new \Altum\View('partner/card-editor-steps',(array)$this);
-  return ['steps'=>$view->run(['link'=>$link,'state'=>$state]),'blocks'=>(object)$blocks,'profile_ids'=>array_values(array_filter([$state['profile']['avatar_id'],$state['profile']['heading_id'],$state['profile']['paragraph_id']]))];
+  return ['steps'=>$view->run(['link'=>$link,'state'=>$state]),'is_v2'=>$state['is_v2'],'blocks'=>(object)$blocks,'profile_ids'=>array_values(array_filter([$state['profile']['avatar_id'],$state['profile']['heading_id'],$state['profile']['paragraph_id']]))];
  }
  /* /Custom code: FC-2026-10-12 */
 

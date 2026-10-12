@@ -94,12 +94,14 @@ body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql
 }
 body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql-content p:first-child:has(> strong:only-child) { margin-bottom: 10px; }
 
-/* Buttons: every button is calm and readable; the shop button is the main action. */
+/* Buttons: every button is calm and readable; the shop button is the main action.
+ * Colours come from variables, so the card look, each block's own look and every style combine cleanly. */
+body.fcc-card { --fc-btn-bg: var(--fc-surface); --fc-btn-ink: var(--fc-ink); --fc-btn-border: var(--fc-line); --fc-btn-icon: var(--fc-accent); --fc-btn-shadow: var(--fc-shadow); --fc-radius: 16px; }
 body.fcc-card .link-btn {
   display: flex !important; align-items: center; justify-content: center; gap: 10px;
-  min-height: 56px; padding: 14px 18px !important; border-radius: 16px !important;
-  background: var(--fc-surface) !important; color: var(--fc-ink) !important;
-  border: 1px solid var(--fc-line) !important; box-shadow: var(--fc-shadow) !important;
+  min-height: 56px; padding: 14px 18px !important; border-radius: var(--fc-radius) !important;
+  background: var(--fc-btn-bg) !important; color: var(--fc-btn-ink) !important;
+  border: 1.5px solid var(--fc-btn-border) !important; box-shadow: var(--fc-btn-shadow) !important;
   font-family: inherit !important; font-size: 1rem !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;
   text-align: center !important; white-space: normal; line-height: 1.3;
   transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
@@ -107,26 +109,41 @@ body.fcc-card .link-btn {
 }
 body.fcc-card .link-btn:hover, body.fcc-card .link-btn:focus { transform: translateY(-1px); text-decoration: none; }
 body.fcc-card .link-btn:focus-visible { outline: 3px solid var(--fc-accent); outline-offset: 2px; }
-body.fcc-card .link-btn [data-icon] { color: var(--fc-accent); display: inline-flex; }
+body.fcc-card .link-btn [data-icon] { color: var(--fc-btn-icon); display: inline-flex; }
 body.fcc-card .link-btn [data-icon] :is(i, svg), body.fcc-card .link-btn > :is(i, svg) { color: inherit; font-size: 1.15em; margin: 0 !important; }
 body.fcc-card .link-btn [data-icon]:empty { display: none; }
-body.fcc-card .link-btn :is(small, .text-muted) { color: var(--fc-muted) !important; opacity: 1 !important; }
-body.fcc-card :is([data-fcc-type="link_forever_webshop_reg"], [data-fcc-type="link_discount"]) .link-btn :is(small, .text-muted) { color: var(--fc-accent-ink) !important; opacity: .85 !important; }
+body.fcc-card .link-btn :is(small, .text-muted) { color: var(--fc-btn-ink) !important; opacity: .78 !important; }
 body.fcc-card .link-btn .link-btn-image-wrapper { position: static; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px !important; overflow: hidden; margin: 0; }
 body.fcc-card .link-btn .link-btn-image { width: 100%; height: 100%; object-fit: cover; }
 
-body.fcc-card [data-fcc-type="link_forever_webshop_reg"] .link-btn,
-body.fcc-card [data-fcc-type="link_discount"] .link-btn {
-  background: var(--fc-accent) !important; color: var(--fc-accent-ink) !important; border-color: var(--fc-accent) !important;
-  min-height: 60px; font-size: 1.0625rem !important; font-weight: 700 !important;
+body.fcc-card [data-fcc-type="link_forever_webshop_reg"], body.fcc-card [data-fcc-type="link_discount"] {
+  --fc-btn-bg: var(--fc-accent); --fc-btn-ink: var(--fc-accent-ink); --fc-btn-border: var(--fc-accent); --fc-btn-icon: var(--fc-accent-ink);
 }
-body.fcc-card [data-fcc-type="link_forever_webshop_reg"] .link-btn [data-icon],
-body.fcc-card [data-fcc-type="link_discount"] .link-btn [data-icon] { color: var(--fc-accent-ink); }
+body.fcc-card :is([data-fcc-type="link_forever_webshop_reg"], [data-fcc-type="link_discount"]) .link-btn { min-height: 60px; font-size: 1.0625rem !important; font-weight: 700 !important; }
 
 /* Partnership: a soft invitation, not a second shop button. */
-body.fcc-card [data-fcc-type="link_forever_shop"] .link-btn {
-  background: var(--fc-accent-soft) !important; border: 1px dashed var(--fc-accent) !important; box-shadow: none !important; color: var(--fc-ink) !important;
-}
+body.fcc-card [data-fcc-type="link_forever_shop"] { --fc-btn-bg: var(--fc-accent-soft); --fc-btn-border: var(--fc-accent); --fc-btn-shadow: none; }
+body.fcc-card [data-fcc-type="link_forever_shop"]:not([data-fcc-look]) .link-btn { border-style: dashed !important; }
+body.fcc-card [data-fcc-type="custom_html_whatsapp"] { --fc-btn-icon: #1FA855; }
+
+/* Card details chosen in the advanced editor */
+body.fcc-card.fcc-buttons-pill { --fc-radius: 999px; }
+body.fcc-card.fcc-buttons-square { --fc-radius: 6px; }
+body.fcc-card.fcc-button-look-outline { --fc-btn-bg: transparent; --fc-btn-border: var(--fc-accent); --fc-btn-shadow: none; }
+body.fcc-card.fcc-button-look-soft { --fc-btn-bg: var(--fc-accent-soft); --fc-btn-border: transparent; --fc-btn-shadow: none; }
+body.fcc-card.fcc-font-classic, body.fcc-card.fcc-font-classic :is(h1, h2, h3, h4, h5, h6, p, a, span, div, button) { font-family: Georgia, 'Times New Roman', serif !important; }
+body.fcc-card.fcc-font-simple, body.fcc-card.fcc-font-simple :is(h1, h2, h3, h4, h5, h6, p, a, span, div, button) { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important; }
+html:has(body.fcc-card.fcc-text-large) { font-size: 17.5px; }
+body.fcc-card.fcc-text-large { font-size: 17.5px; }
+body.fcc-card.fcc-avatar-rounded [data-fcc-type="avatar"] .link-image { border-radius: 28px !important; }
+body.fcc-card.fcc-glow-off { background: var(--fc-bg) !important; }
+
+/* Each block's own look (wins over the card look because it sits closer to the button) */
+body.fcc-card [data-fcc-type][data-fcc-look="filled"] { --fc-btn-bg: var(--fc-accent); --fc-btn-ink: var(--fc-accent-ink); --fc-btn-border: var(--fc-accent); --fc-btn-icon: var(--fc-accent-ink); --fc-btn-shadow: var(--fc-shadow); }
+body.fcc-card [data-fcc-type][data-fcc-look="surface"] { --fc-btn-bg: var(--fc-surface); --fc-btn-ink: var(--fc-ink); --fc-btn-border: var(--fc-line); --fc-btn-icon: var(--fc-accent); --fc-btn-shadow: var(--fc-shadow); }
+body.fcc-card [data-fcc-type][data-fcc-look="outline"] { --fc-btn-bg: transparent; --fc-btn-ink: var(--fc-ink); --fc-btn-border: var(--fc-accent); --fc-btn-icon: var(--fc-accent); --fc-btn-shadow: none; }
+body.fcc-card [data-fcc-type][data-fcc-look="soft"] { --fc-btn-bg: var(--fc-accent-soft); --fc-btn-ink: var(--fc-ink); --fc-btn-border: transparent; --fc-btn-icon: var(--fc-accent); --fc-btn-shadow: none; }
+body.fcc-card [data-fcc-type="custom_html_whatsapp"]:is([data-fcc-look="surface"], [data-fcc-look="outline"], [data-fcc-look="soft"]) { --fc-btn-icon: #1FA855; }
 
 /* WhatsApp and Save contact side by side when they follow each other. */
 body.fcc-card [data-fcc-type="custom_html_whatsapp"] .link-btn [data-icon] { color: #1FA855; }
@@ -198,6 +215,23 @@ body.fcc-card [data-fcc-type="alert"] .alert { background: var(--fc-accent-soft)
 body.fcc-card [data-fcc-type="alert"] .alert [data-icon] { color: var(--fc-accent) !important; }
 body.fcc-card [data-fcc-type="faq"] .card { box-shadow: none !important; }
 body.fcc-card [data-fcc-type="faq"] .btn-link { text-decoration: none !important; font-weight: 600; }
+
+/* Block options for text, pictures and icons */
+body.fcc-card #links [data-fcc-align="left"] :is(h1, h2, h3, h4, h5, h6, .ql-content, .ql-content *, .card > div) { text-align: left !important; }
+body.fcc-card #links [data-fcc-type="heading"][data-fcc-size="s"] :is(h1, h2, h3, h4, h5, h6) { font-size: 1.15rem !important; }
+body.fcc-card #links [data-fcc-type="heading"][data-fcc-size="l"] :is(h1, h2, h3, h4, h5, h6) { font-size: 2rem !important; }
+body.fcc-card #links [data-fcc-type="paragraph"][data-fcc-frame="panel"] .card { background: var(--fc-surface) !important; border: 1px solid var(--fc-line) !important; border-radius: 20px !important; box-shadow: var(--fc-shadow) !important; }
+body.fcc-card #links [data-fcc-type="paragraph"][data-fcc-frame="panel"] .card > div { padding: 16px 18px !important; }
+body.fcc-card #links [data-fcc-type="paragraph"][data-fcc-frame="panel"] :is(.ql-content, .ql-content *) { color: var(--fc-ink) !important; }
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"][data-fcc-frame="plain"] .card { background: transparent !important; border: 0 !important; }
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"][data-fcc-frame="plain"] .card > div { padding: 0 8px !important; }
+body.fcc-card #links [data-fcc-corners="straight"] :is(img, .embed-responsive, iframe, .card) { border-radius: 4px !important; }
+body.fcc-card [data-fcc-type="socials"][data-fcc-icons="outline"] .link-socials-button-wrapper { background: transparent !important; border: 1.5px solid var(--fc-accent) !important; box-shadow: none !important; }
+body.fcc-card [data-fcc-type="socials"][data-fcc-icons="plain"] .link-socials-button-wrapper { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+body.fcc-card [data-fcc-type="socials"][data-fcc-icons="plain"] .link-socials-button-wrapper :is(i, svg) { font-size: 1.45rem !important; }
+body.fcc-card :is(.fcc-forever-product-card, .fcc-card-advisor) { border-radius: max(var(--fc-radius), 12px) !important; }
+body.fcc-card.fcc-buttons-square :is(.fcc-forever-product-card, .fcc-card-advisor) { border-radius: 8px !important; }
+body.fcc-card.fcc-buttons-pill .fcc-card-advisor { border-radius: 24px !important; }
 
 /* Plain text blocks keep the style's colours */
 body.fcc-card [data-fcc-type="text"], body.fcc-card [data-fcc-type="text"] * { color: var(--fc-ink) !important; }

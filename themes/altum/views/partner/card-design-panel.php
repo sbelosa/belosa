@@ -12,7 +12,7 @@ if(!isset(FCC_CARD_THEMES[$fcd_theme]) || (FCC_CARD_THEMES[$fcd_theme]['pro'] &&
 $fcd_missing = $fcd_is_v2 ? fcc_card_missing_recommended($fcd_owner, (int) $fcd_link->link_id) : [];
 $fcd_catalog = fcc_card_block_catalog();
 $fcd_h = static fn(string $text, array $replace = []): string => htmlspecialchars(fcc_t($text, $replace), ENT_QUOTES, 'UTF-8');
-$fcd_has_phone = fc_get_user_default_whatsapp_phone(db()->where('user_id', $fcd_owner)->getOne('users', ['preferences'])) !== '';
+$fcd_has_phone = fc_get_user_default_whatsapp_phone(db()->where('user_id', $fcd_owner)->getOne('users', ['preferences', 'country'])) !== '';
 ?>
 <section class="fcc-card-design" data-card-version="<?= $fcd_is_v2 ? 'v2' : 'v1' ?>" aria-labelledby="fcc-card-design-title">
     <h2 id="fcc-card-design-title"><?= $fcd_h('Izgled kartice') ?></h2>
@@ -74,6 +74,23 @@ $fcd_has_phone = fc_get_user_default_whatsapp_phone(db()->where('user_id', $fcd_
         </div>
     <?php endif ?>
 </section>
+<script>
+    /* The side preview shows a chosen style at once; "Spremi izgled" makes it visible to visitors. */
+    (() => {
+        const form = document.querySelector('.fcc-card-design-form');
+        if(!form) return;
+        form.addEventListener('change', () => {
+            const frame = document.getElementById('biolink_preview_iframe');
+            if(!frame) return;
+            const url = new URL(frame.getAttribute('src'), location.href);
+            const version = form.querySelector('[name=card_version]:checked');
+            const theme = form.querySelector('[name=card_theme]:checked');
+            url.searchParams.set('fcc_card', version ? version.value : 'v2');
+            if(theme) url.searchParams.set('fcc_theme', theme.value);
+            frame.setAttribute('src', url.href);
+        });
+    })();
+</script>
 <style>
     .fp-editor:not([data-editor-mode=design]) .fcc-card-design { display: none; }
     .fp-editor[data-editor-mode=design]:has(.fcc-card-design[data-card-version=v2]) :is(.fp-editor-main, [data-editor-description]) { display: none !important; }

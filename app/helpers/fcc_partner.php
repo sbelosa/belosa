@@ -130,7 +130,7 @@ function fcc_partner_cards(int $uid): array {
  $cards=fcc_partner_rows("SELECT l.link_id,l.url,l.settings,l.is_enabled,l.clicks,d.scheme,d.host,d.link_id domain_link_id FROM links l LEFT JOIN domains d ON d.domain_id=l.domain_id AND (d.user_id=l.user_id OR d.user_id IS NULL) WHERE l.user_id=? AND l.type='biolink' ORDER BY l.link_id",[$uid]);
  $main=fc_get_user_main_biolink_id($uid);
  if($main) usort($cards,static fn($a,$b)=>((int)$b['link_id']===$main)<=>((int)$a['link_id']===$main));
- foreach($cards as &$card) { $card['is_nfc']=(int)$card['link_id']===$main; $settings=json_decode($card['settings']??'{}',true)?:[]; $card['title']=($settings['seo']['title']??'')?:$card['url']; $card['public_url']=!empty($card['host'])?$card['scheme'].$card['host'].'/'.((int)$card['domain_link_id']===(int)$card['link_id']?'':$card['url']):SITE_URL.$card['url']; unset($card['settings']); }
+ foreach($cards as &$card) { $card['is_nfc']=(int)$card['link_id']===$main; $settings=json_decode($card['settings']??'{}',true)?:[]; $card['title']=($settings['seo']['title']??'')?:$card['url']; $card['fcc_v2']=($settings['fcc_card']??'')==='v2'; /* FC-2026-10-12 */ $card['public_url']=!empty($card['host'])?$card['scheme'].$card['host'].'/'.((int)$card['domain_link_id']===(int)$card['link_id']?'':$card['url']):SITE_URL.$card['url']; unset($card['settings']); }
  return $cards;
 }
 

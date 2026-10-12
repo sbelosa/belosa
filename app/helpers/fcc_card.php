@@ -50,6 +50,144 @@ function fcc_card_core_block(string $type): bool {
     return in_array($type, FCC_CARD_CORE_BLOCKS, true);
 }
 
+/* Advanced look inside the chosen style. Every choice is optional; empty means "as the style defines it". */
+const FCC_CARD_STYLE_OPTIONS = [
+    'buttons' => ['rounded', 'pill', 'square'],
+    'button_look' => ['surface', 'outline', 'soft'],
+    'font' => ['modern', 'classic', 'simple'],
+    'text' => ['normal', 'large'],
+    'avatar' => ['circle', 'rounded'],
+    'glow' => ['on', 'off'],
+];
+/* Look of a single block on the new card. */
+const FCC_CARD_BLOCK_STYLE_OPTIONS = [
+    'look' => ['auto', 'filled', 'surface', 'outline', 'soft'],
+    'align' => ['center', 'left'],
+    'size' => ['m', 's', 'l'],
+    'frame' => ['auto', 'plain', 'panel'],
+    'corners' => ['rounded', 'straight'],
+    'icons' => ['circle', 'outline', 'plain'],
+];
+/* Icons offered for buttons: Font Awesome solid and brand icons that the card loads. */
+const FCC_CARD_BUTTON_ICONS = ['' => 'Bez ikone', 'fas fa-shopping-bag' => 'Vrećica', 'fas fa-gift' => 'Poklon', 'fas fa-leaf' => 'List', 'fas fa-heart' => 'Srce', 'fas fa-star' => 'Zvjezdica', 'fas fa-handshake' => 'Suradnja', 'fas fa-phone' => 'Telefon', 'fas fa-envelope' => 'Poruka', 'fas fa-calendar-alt' => 'Kalendar', 'fas fa-play-circle' => 'Video', 'fas fa-info-circle' => 'Informacije', 'fas fa-address-book' => 'Kontakt', 'fab fa-whatsapp' => 'WhatsApp', 'fas fa-link' => 'Poveznica'];
+
+function fcc_card_hex(?string $value): string {
+    $value = trim((string) $value);
+    if(preg_match('/^#?([0-9a-f]{3})$/i', $value, $m)) $value = '#' . $m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2];
+    return preg_match('/^#?([0-9a-f]{6})$/i', $value, $m) ? '#' . mb_strtoupper($m[1]) : '';
+}
+
+/** Clean card style from a form or stored settings. */
+function fcc_card_style_clean($input): array {
+    $input = is_object($input) ? (array) $input : (is_array($input) ? $input : []);
+    $style = [];
+    foreach(['accent', 'background'] as $color) {
+        $hex = fcc_card_hex(is_scalar($input[$color] ?? null) ? (string) $input[$color] : '');
+        if($hex !== '') $style[$color] = $hex;
+    }
+    foreach(FCC_CARD_STYLE_OPTIONS as $key => $allowed) {
+        $value = is_scalar($input[$key] ?? null) ? (string) $input[$key] : '';
+        if($value !== '' && $value !== $allowed[0] && in_array($value, $allowed, true)) $style[$key] = $value;
+    }
+    return $style;
+}
+
+/** Clean look of one block. Only options that differ from the default are kept. */
+function fcc_card_block_style_clean($input): array {
+    $input = is_object($input) ? (array) $input : (is_array($input) ? $input : []);
+    $style = [];
+    foreach(FCC_CARD_BLOCK_STYLE_OPTIONS as $key => $allowed) {
+        $value = is_scalar($input[$key] ?? null) ? (string) $input[$key] : '';
+        if($value !== '' && $value !== $allowed[0] && in_array($value, $allowed, true)) $style[$key] = $value;
+    }
+    return $style;
+}
+
+/**
+ * Owner preview: the editor shows a style before it is saved. It needs the card's preview key, the same one
+ * that opens the preview itself, so visitors never see unsaved choices.
+ */
+function fcc_card_preview_choice(object $link): array {
+    static $cache = [];
+    $id = (int) ($link->link_id ?? 0);
+    if(isset($cache[$id])) return $cache[$id];
+    $key = md5((string) ($link->user_id ?? ''));
+    if(!isset($_GET['preview']) || !is_string($_GET['preview']) || !hash_equals($key, $_GET['preview'])) return $cache[$id] = [];
+    $choice = [];
+    if(in_array($_GET['fcc_card'] ?? null, ['v1', 'v2'], true)) $choice['version'] = $_GET['fcc_card'];
+    if(is_string($_GET['fcc_theme'] ?? null) && isset(FCC_CARD_THEMES[$_GET['fcc_theme']])) $choice['theme'] = $_GET['fcc_theme'];
+    if(is_string($_GET['fcc_style'] ?? null) && strlen($_GET['fcc_style']) < 2000) {
+        $decoded = json_decode($_GET['fcc_style'], true);
+        if(is_array($decoded)) $choice['style'] = fcc_card_style_clean($decoded);
+    }
+    return $cache[$id] = $choice;
+}
+
+/** Version, style and look used to draw the card now: saved values, or the owner's unsaved preview. */
+function fcc_card_render_is_v2(object $link): bool {
+    $choice = fcc_card_preview_choice($link);
+    return isset($choice['version']) ? $choice['version'] === 'v2' : fcc_card_is_v2($link);
+}
+
+function fcc_card_render_theme(object $link, ?int $owner_id = null): string {
+    $choice = fcc_card_preview_choice($link);
+    if(!isset($choice['theme'])) return fcc_card_theme($link, $owner_id);
+    $copy = clone $link;
+    $settings = clone fcc_card_settings($link->settings ?? null);
+    $settings->fcc_card_theme = $choice['theme'];
+    $copy->settings = $settings;
+    return fcc_card_theme($copy, $owner_id);
+}
+
+function fcc_card_render_style(object $link, ?int $owner_id = null): array {
+    $choice = fcc_card_preview_choice($link);
+    $style = $choice['style'] ?? fcc_card_style_clean(fcc_card_settings($link->settings ?? null)->fcc_card_style ?? []);
+    // Own colours are part of PRO, like the extra styles. Shapes, font and sizes are open to everyone.
+    $owner_id = $owner_id ?? (int) ($link->user_id ?? 0);
+    if(!fcc_card_user_is_pro($owner_id)) unset($style['accent'], $style['background']);
+    return $style;
+}
+
+function fcc_card_luminance(string $hex): float {
+    $hex = ltrim($hex, '#');
+    $channel = static function(string $part): float { $c = hexdec($part) / 255; return $c <= 0.03928 ? $c / 12.92 : (($c + 0.055) / 1.055) ** 2.4; };
+    return 0.2126 * $channel(substr($hex, 0, 2)) + 0.7152 * $channel(substr($hex, 2, 2)) + 0.0722 * $channel(substr($hex, 4, 2));
+}
+
+function fcc_card_contrast(string $a, string $b): float {
+    $la = fcc_card_luminance($a); $lb = fcc_card_luminance($b);
+    return (max($la, $lb) + 0.05) / (min($la, $lb) + 0.05);
+}
+
+/** CSS variables and body classes for the chosen colours and details. Text stays readable on any colour. */
+function fcc_card_style_css(array $style): array {
+    $vars = [];
+    $classes = [];
+    if(!empty($style['background'])) {
+        $bg = $style['background'];
+        $dark = fcc_card_luminance($bg) < 0.22;
+        $vars['--fc-bg'] = $bg;
+        $vars['--fc-glow'] = 'color-mix(in srgb, ' . $bg . ' 82%, ' . ($dark ? '#FFFFFF' : '#FFFFFF') . ')';
+        $vars['--fc-surface'] = $dark ? 'color-mix(in srgb, ' . $bg . ' 88%, #FFFFFF)' : '#FFFFFF';
+        $vars['--fc-ink'] = $dark ? '#F4F7F5' : '#15201C';
+        $vars['--fc-muted'] = $dark ? 'color-mix(in srgb, #F4F7F5 72%, ' . $bg . ')' : 'color-mix(in srgb, #15201C 68%, ' . $bg . ')';
+        $vars['--fc-line'] = $dark ? 'color-mix(in srgb, ' . $bg . ' 76%, #FFFFFF)' : 'color-mix(in srgb, ' . $bg . ' 80%, #15201C)';
+        $classes[] = $dark ? 'fcc-card-dark' : 'fcc-card-light';
+    }
+    if(!empty($style['accent'])) {
+        $accent = $style['accent'];
+        $vars['--fc-accent'] = $accent;
+        $vars['--fc-accent-ink'] = fcc_card_contrast($accent, '#FFFFFF') >= fcc_card_contrast($accent, '#14201B') ? '#FFFFFF' : '#14201B';
+        $vars['--fc-accent-soft'] = 'color-mix(in srgb, ' . $accent . ' 16%, var(--fc-surface))';
+    }
+    foreach(['buttons', 'button_look', 'font', 'text', 'avatar', 'glow'] as $key) {
+        if(!empty($style[$key])) $classes[] = 'fcc-' . str_replace('_', '-', $key) . '-' . $style[$key];
+    }
+    $css = '';
+    foreach($vars as $name => $value) $css .= $name . ':' . $value . ';';
+    return ['css' => $css, 'classes' => implode(' ', $classes)];
+}
+
 /** Main card of a member or another biolink they own. */
 function fcc_card_owned_link(int $user_id, int $link_id): ?object {
     $link = db()->where('link_id', $link_id)->where('user_id', $user_id)->where('type', 'biolink')->getOne('links', ['link_id', 'user_id', 'url', 'settings', 'domain_id']);
@@ -117,11 +255,16 @@ function fcc_card_tidy_label(object $row): void {
     if(is_string($row->settings->icon ?? null) && str_starts_with($row->settings->icon, 'far ')) $row->settings->icon = 'fas ' . substr($row->settings->icon, 4);
 }
 
-/** On the new card an empty WhatsApp number falls back to the phone in the member's profile. */
-function fcc_card_whatsapp_phone(object $row, $owner): void {
+/**
+ * WhatsApp needs the number with the country code and without the leading zero. A number typed in another
+ * form is shown in that form; on the new card an empty number falls back to the phone in the member's profile.
+ */
+function fcc_card_whatsapp_phone(object $row, $owner, bool $profile_fallback = true): void {
     if($row->type !== 'custom_html_whatsapp' || !is_object($row->settings ?? null)) return;
-    if(preg_replace('/\D+/', '', (string) ($row->settings->phone ?? '')) !== '') return;
-    $row->settings->phone = fc_get_user_default_whatsapp_phone($owner);
+    $typed = trim((string) ($row->settings->phone ?? ''));
+    $phone = $typed !== '' ? fc_normalize_whatsapp_phone($typed, fc_user_phone_countries($owner)) : '';
+    if($phone === '' && $profile_fallback) $phone = fc_get_user_default_whatsapp_phone($owner);
+    if($phone !== '') $row->settings->phone = $phone;
 }
 
 function fcc_card_block_insert(int $user_id, int $link_id, string $type, array $settings, ?string $location_url, int $order, int $is_enabled = 1): int {
@@ -146,7 +289,7 @@ function fcc_card_own_vcard_url(int $user_id): ?string {
 /** Blocks the new card recommends and which of them this card is missing. */
 function fcc_card_missing_recommended(int $user_id, int $link_id): array {
     $types = array_map(static fn($row) => $row->type, db()->where('link_id', $link_id)->where('user_id', $user_id)->get('biolinks_blocks', null, ['type']) ?: []);
-    $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences']);
+    $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences', 'country']);
     $missing = [];
     foreach(['avatar', 'heading', 'paragraph', 'link_forever_webshop_reg', 'custom_html_whatsapp', 'link_save_contact', 'link_forever_shop'] as $type) {
         if(in_array($type, $types, true)) continue;
@@ -161,7 +304,7 @@ function fcc_card_missing_recommended(int $user_id, int $link_id): array {
 function fcc_card_add_recommended(int $user_id, int $link_id): int {
     $link = fcc_card_owned_link($user_id, $link_id);
     if(!$link) throw new InvalidArgumentException(fcc_t('Kartica nije pronađena.'));
-    $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'language', 'preferences']);
+    $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'language', 'preferences', 'country']);
     $language = function_exists('fcc_locale') ? fcc_locale((string) ($user->language ?? 'hr')) : 'hr';
     $added = 0;
     $order = static fn(int $position) => $position;
@@ -212,6 +355,17 @@ function fcc_card_prepare_new(int $user_id, int $link_id): void {
     if(!$link) return;
     // The new card leaves out the shared team video, the install hint and the retired lead forms.
     db()->where('link_id', $link_id)->where('user_id', $user_id)->where('type', ['vimeo', 'link_homescreen_android', 'link_homescreen_ios', 'phone_collector', 'email_collector'], 'IN')->delete('biolinks_blocks');
+    // The WhatsApp button gets the member's registration number in the form WhatsApp needs.
+    $owner = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'preferences', 'country']);
+    $profile_phone = $owner ? fc_get_user_default_whatsapp_phone($owner) : '';
+    foreach(db()->where('link_id', $link_id)->where('user_id', $user_id)->where('type', 'custom_html_whatsapp')->get('biolinks_blocks', null, ['biolink_block_id', 'settings', 'is_enabled']) ?: [] as $block) {
+        $settings = fcc_card_settings($block->settings);
+        $phone = fc_normalize_whatsapp_phone((string) ($settings->phone ?? ''), $owner ? fc_user_phone_countries($owner) : ['HR']) ?: $profile_phone;
+        if($phone === '') continue;
+        $settings->phone = $phone;
+        $settings->plan_auto_disabled = false;
+        db()->where('biolink_block_id', (int) $block->biolink_block_id)->update('biolinks_blocks', ['settings' => json_encode($settings), 'is_enabled' => 1]);
+    }
     fcc_card_restore_core_blocks($user_id, $link_id);
     fcc_card_add_recommended($user_id, $link_id);
     fcc_card_reorder($user_id, $link_id);
@@ -276,10 +430,12 @@ function fcc_card_footer_html(bool $v2): string {
     return htmlspecialchars(fcc_t('Kartica neovisnog Forever Business Ownera'), ENT_QUOTES, 'UTF-8') . ' · ' . str_replace('<a ', '<a style="color:inherit;text-decoration:underline" ', $club);
 }
 
-/** Marks a rendered block with its type, so the new card can style every block consistently. */
-function fcc_card_mark_block(string $html, string $type): string {
+/** Marks a rendered block with its type and look, so the new card can style every block consistently. */
+function fcc_card_mark_block(string $html, string $type, array $style = []): string {
     if($html === '') return $html;
-    return (string) preg_replace('/<div\b/', '<div data-fcc-type="' . htmlspecialchars($type, ENT_QUOTES, 'UTF-8') . '"', $html, 1);
+    $attributes = ' data-fcc-type="' . htmlspecialchars($type, ENT_QUOTES, 'UTF-8') . '"';
+    foreach(fcc_card_block_style_clean($style) as $key => $value) $attributes .= ' data-fcc-' . $key . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
+    return (string) preg_replace('/<div\b/', '<div' . $attributes, $html, 1);
 }
 
 /**
@@ -294,7 +450,7 @@ function fcc_card_block_catalog(): array {
         'link_forever_product' => ['group' => 'forever', 'title' => 'Preporučeni proizvod', 'what' => 'Kartica jednog proizvoda s fotografijom. Vodi na stranicu proizvoda u Akademiji, s tvojom preporukom i narudžbom.', 'how' => 'Odaberi proizvod koji najčešće preporučuješ. Možeš dodati dva ili tri različita.'],
         'custom_html_chatbot' => ['group' => 'forever', 'title' => 'AI savjetnik', 'what' => 'Posjetitelj napiše što treba, a savjetnik predloži Forever proizvode i vodi na narudžbu uz tvoju preporuku.', 'how' => 'Dovoljno ga je dodati. Na novoj kartici prikazuje se kao gumb „Pitaj savjetnika“.'],
         'link' => ['group' => 'forever', 'title' => 'Gumb s poveznicom', 'what' => 'Gumb koji vodi na bilo koju stranicu, primjerice tvoj blog ili događaj.', 'how' => 'Upiši naslov i poveznicu. Ako upišeš Forever poveznicu, sustav joj sam doda tvoju preporuku.'],
-        'custom_html_whatsapp' => ['group' => 'contact', 'title' => 'WhatsApp', 'what' => 'Posjetitelj ti jednim dodirom piše na WhatsApp, s već upisanom prvom porukom.', 'how' => 'Broj se uzima iz tvojeg profila. Provjeri da je upisan s pozivnim brojem zemlje, primjerice 385 91 123 4567.'],
+        'custom_html_whatsapp' => ['group' => 'contact', 'title' => 'WhatsApp', 'what' => 'Posjetitelj ti jednim dodirom piše na WhatsApp, s već upisanom prvom porukom.', 'how' => 'Broj iz registracije upisuje se sam, u obliku koji WhatsApp traži. Možeš ga promijeniti u obrascu bloka.'],
         'link_save_contact' => ['group' => 'contact', 'title' => 'Spremi kontakt', 'what' => 'Posjetitelj sprema tvoje ime, broj i e-mail u imenik mobitela.', 'how' => 'Ne treba ništa upisivati. Podaci dolaze iz tvojeg profila.'],
         'socials' => ['group' => 'contact', 'title' => 'Društvene mreže', 'what' => 'Male ikone tvojih profila, primjerice Instagrama i Facebooka.', 'how' => 'Upiši samo profile koje stvarno koristiš. Prazna polja se ne prikazuju.'],
         'avatar' => ['group' => 'about', 'title' => 'Fotografija', 'what' => 'Tvoja fotografija na vrhu kartice. Ljudi lakše vjeruju kada vide lice.', 'how' => 'Učitaj jasnu fotografiju lica. Najbolje izgleda kvadratna fotografija.'],

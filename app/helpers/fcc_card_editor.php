@@ -211,6 +211,7 @@ function fcc_card_editor_state(object $user, object $link): array {
         'is_v2' => $is_v2,
         'is_pro' => fcc_card_user_is_pro((int) $user->user_id),
         'theme' => fcc_card_theme($link, (int) $user->user_id),
+        'style' => fcc_card_style_clean($link->settings->fcc_card_style ?? []),
         'profile' => [
             'avatar_id' => $profile_ids['avatar'],
             'heading_id' => $profile_ids['heading'],
@@ -229,14 +230,27 @@ function fcc_card_editor_state(object $user, object $link): array {
     ];
 }
 
+/** Look options the advanced part of a block form offers, by block type. */
+function fcc_card_editor_style_fields(string $type): array {
+    return match($type) {
+        'link', 'link_forever_webshop_reg', 'link_forever_shop', 'link_discount', 'link_save_contact', 'custom_html_whatsapp' => ['look', 'icon'],
+        'heading' => ['size', 'align'],
+        'paragraph' => ['frame', 'align'],
+        'image', 'youtube', 'vimeo' => ['corners'],
+        'socials' => ['icons'],
+        'divider' => ['icon'],
+        default => [],
+    };
+}
+
 /** Field values for one block's form, already decoded for the inputs. */
-function fcc_card_editor_fields(object $block): array {
+function fcc_card_editor_fields(object $block, ?object $owner = null): array {
     $s = $block->settings;
     $fields = match($block->type) {
         'heading' => ['text' => fcc_card_editor_plain((string) ($s->text ?? ''))],
         'paragraph' => ['text' => fcc_card_editor_html_to_text((string) ($s->text ?? '')), 'rich_text' => fcc_card_editor_has_rich_text((string) ($s->text ?? ''))],
         'link_forever_webshop_reg', 'link_forever_shop', 'link_discount', 'link_save_contact' => ['name' => fcc_card_editor_plain((string) ($s->name ?? ''))],
-        'custom_html_whatsapp' => ['title' => fcc_card_editor_plain((string) ($s->title ?? '')), 'message' => fcc_card_editor_plain((string) ($s->message ?? '')), 'phone' => (string) ($s->phone ?? '')],
+        'custom_html_whatsapp' => ['title' => fcc_card_editor_plain((string) ($s->title ?? '')), 'message' => fcc_card_editor_plain((string) ($s->message ?? '')), 'phone' => fcc_card_editor_whatsapp_display((string) ($s->phone ?? ''), $owner)],
         'link' => ['name' => fcc_card_editor_plain((string) ($s->name ?? '')), 'url' => (string) $block->location_url],
         'youtube', 'vimeo' => ['url' => (string) $block->location_url, 'title' => fcc_card_editor_plain((string) ($s->title ?? ''))],
         'image' => ['url' => (string) $block->location_url, 'photo' => !empty($s->image) ? \Altum\Uploads::get_full_url('block_images') . $s->image : '', 'alt' => fcc_card_editor_plain((string) ($s->image_alt ?? ''))],
@@ -247,7 +261,20 @@ function fcc_card_editor_fields(object $block): array {
         'avatar' => ['photo' => !empty($s->image) ? get_biolink_avatar_url($s) : ''],
         default => [],
     };
+    $look = fcc_card_block_style_clean($s->fcc_style ?? []);
+    foreach(fcc_card_editor_style_fields($block->type) as $key) {
+        $fields['style_' . $key] = $key === 'icon' ? (string) ($s->icon ?? '') : ($look[$key] ?? FCC_CARD_BLOCK_STYLE_OPTIONS[$key][0]);
+    }
     return $fields;
+}
+
+/** The WhatsApp number for the form: the block's number, otherwise the registration number, as +385 91 123 4567. */
+function fcc_card_editor_whatsapp_display(string $phone, ?object $owner): string {
+    $countries = $owner ? fc_user_phone_countries($owner) : ['HR'];
+    $normalized = trim($phone) !== '' ? fc_normalize_whatsapp_phone($phone, $countries) : '';
+    if($normalized === '' && trim($phone) !== '') return $phone;
+    if($normalized === '' && $owner) $normalized = fc_get_user_default_whatsapp_phone($owner);
+    return fc_format_whatsapp_phone($normalized);
 }
 
 /** Settings for a new block, close to what the classic editor creates. */
@@ -427,10 +454,11 @@ function fcc_card_editor_apply_fields(object $user, object $link, object $block,
         case 'custom_html_whatsapp':
             $settings['title'] = fcc_card_editor_line($input['title'] ?? '', 64) ?: 'WhatsApp';
             $settings['message'] = mb_substr(trim(strip_tags((string) ($input['message'] ?? ''))), 0, 300);
-            $phone = preg_replace('/\D+/', '', (string) ($input['phone'] ?? ''));
-            if(str_starts_with($phone, '00')) $phone = substr($phone, 2);
-            if($phone !== '' && !preg_match('/^[1-9][0-9]{7,14}$/', $phone)) throw new InvalidArgumentException(fcc_t('Broj nije ispravan. Upiši ga s pozivnim brojem zemlje, primjerice 385 91 123 4567.'));
-            if($phone === '' && fc_get_user_default_whatsapp_phone(db()->where('user_id', (int) $user->user_id)->getOne('users', ['preferences'])) === '') throw new InvalidArgumentException(fcc_t('Upiši broj za WhatsApp ili ga dodaj u svoj profil.'));
+            // Stored in the form WhatsApp needs: country code and number, digits only.
+            $typed = trim((string) ($input['phone'] ?? ''));
+            $phone = $typed !== '' ? fc_normalize_whatsapp_phone($typed, fc_user_phone_countries($user)) : fc_get_user_default_whatsapp_phone($user);
+            if($typed !== '' && $phone === '') throw new InvalidArgumentException(fcc_t('Broj nije ispravan. Upiši ga s pozivnim brojem zemlje, primjerice 385 91 123 4567.'));
+            if($phone === '') throw new InvalidArgumentException(fcc_t('Upiši broj za WhatsApp ili ga dodaj u svoj profil.'));
             $settings['phone'] = $phone;
             break;
         case 'link':
@@ -512,6 +540,22 @@ function fcc_card_editor_apply_fields(object $user, object $link, object $block,
             throw new InvalidArgumentException(fcc_t('Ovaj blok uređuješ u naprednom uređivaču.'));
     }
 
+    // The block's own look on the new card. Only options this block type offers are read.
+    $look_keys = fcc_card_editor_style_fields($type);
+    if($look_keys && array_intersect_key($input, array_flip(array_map(static fn($key) => 'style_' . $key, $look_keys)))) {
+        $look = [];
+        foreach($look_keys as $key) {
+            if($key === 'icon') {
+                $icon = (string) ($input['style_icon'] ?? '');
+                if(array_key_exists($icon, FCC_CARD_BUTTON_ICONS)) $settings['icon'] = $icon;
+                continue;
+            }
+            $look[$key] = (string) ($input['style_' . $key] ?? '');
+        }
+        $look = fcc_card_block_style_clean($look);
+        if($look) $settings['fcc_style'] = $look; else unset($settings['fcc_style']);
+    }
+
     if(!$block->biolink_block_id) {
         fcc_card_editor_check_limit($user, $link);
         $order = fcc_card_editor_insert_position($link);
@@ -588,6 +632,24 @@ function fcc_card_editor_save_profile(object $user, object $link, array $input):
     }
 
     if($created) fcc_card_editor_normalize_order($link);
+}
+
+/** Colours and details inside the chosen style. Own colours need PRO, like the extra styles. */
+function fcc_card_editor_style_input(array $input, bool $is_pro): array {
+    $style = [];
+    foreach(['accent', 'background'] as $color) {
+        if($is_pro && !empty($input[$color . '_on'])) $style[$color] = (string) ($input[$color] ?? '');
+    }
+    foreach(array_keys(FCC_CARD_STYLE_OPTIONS) as $key) $style[$key] = (string) ($input['style_' . $key] ?? '');
+    return fcc_card_style_clean($style);
+}
+
+function fcc_card_editor_save_style(object $user, int $link_id, array $input): void {
+    $link = fcc_card_editor_link((int) $user->user_id, $link_id);
+    $settings = $link->settings;
+    $style = fcc_card_editor_style_input($input, fcc_card_user_is_pro((int) $user->user_id));
+    if($style) $settings->fcc_card_style = $style; else unset($settings->fcc_card_style);
+    db()->where('link_id', $link_id)->where('user_id', (int) $user->user_id)->update('links', ['settings' => json_encode($settings)]);
 }
 
 /** Gives the blocks consecutive positions in their current order. */
@@ -699,6 +761,7 @@ function fcc_card_editor_mutate(object $user, int $link_id, array $input): array
         case 'design':
             fcc_card_editor_guard('update.links');
             fcc_card_set_design($uid, $link_id, (string) ($input['card_version'] ?? ''), (string) ($input['card_theme'] ?? ''));
+            if(isset($input['style_present'])) fcc_card_editor_save_style($user, $link_id, $input);
             $result['message'] = fcc_t('Izgled kartice je spremljen. Blokovi su ostali isti.');
             break;
 

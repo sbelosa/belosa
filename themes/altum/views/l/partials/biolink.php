@@ -40,12 +40,13 @@
 <!-- /Custom code -->
 
 <?php /* Custom code: FC-2026-10-12: the new FCC card */
-$fcc_card_v2 = function_exists('fcc_card_is_v2') && fcc_card_is_v2($data->link);
-$fcc_card_theme_key = $fcc_card_v2 ? fcc_card_theme($data->link, (int) $data->user->user_id) : '';
+$fcc_card_v2 = function_exists('fcc_card_render_is_v2') && fcc_card_render_is_v2($data->link);
+$fcc_card_theme_key = $fcc_card_v2 ? fcc_card_render_theme($data->link, (int) $data->user->user_id) : '';
+$fcc_card_style = $fcc_card_v2 ? fcc_card_style_css(fcc_card_render_style($data->link, (int) $data->user->user_id)) : ['css' => '', 'classes' => ''];
 $fcc_card_country_shown = false;
 /* /Custom code: FC-2026-10-12 */ ?>
 <?php if($fcc_card_v2): ?>
-<body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> link-body fcc-card fcc-card--<?= $fcc_card_theme_key ?>">
+<body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> link-body fcc-card fcc-card--<?= $fcc_card_theme_key ?> <?= htmlspecialchars($fcc_card_style['classes'], ENT_QUOTES, 'UTF-8') ?>"<?= $fcc_card_style['css'] !== '' ? ' style="' . htmlspecialchars($fcc_card_style['css'], ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
 <?php else: ?>
 <body class="<?= l('direction') == 'rtl' ? 'rtl' : null ?> link-body <?= $data->link->design->background_class ?>" style="<?= $data->link->design->background_style ?>">
 <?php endif ?>
@@ -149,7 +150,8 @@ $fcc_card_country_shown = false;
                             /* Custom code: FC-2026-10-12: factory labels in the visitor's language; the new card retires the phone and e-mail forms */
                             if(function_exists('fcc_card_localize_factory_label')) fcc_card_localize_factory_label($row);
                             if($fcc_card_v2 && in_array($row->type, FCC_CARD_RETIRED_BLOCKS, true)) continue;
-                            if($fcc_card_v2) { fcc_card_whatsapp_phone($row, $data->user); fcc_card_tidy_label($row); }
+                            fcc_card_whatsapp_phone($row, $data->user, $fcc_card_v2);
+                            if($fcc_card_v2) fcc_card_tidy_label($row);
                             /* /Custom code: FC-2026-10-12 */
 
                             /* Resolve localized product copy and always retain the card owner. */
@@ -296,7 +298,7 @@ $fcc_card_country_shown = false;
 
                             <?php /* Custom code: FC-2026-10-12: new card markup hooks, readable country line shown once */
                             $fcc_block_html = (string) (\Altum\Link::get_biolink_link($row, $data->user, $this->biolink_theme ?? null, $data->link) ?? '');
-                            echo $fcc_card_v2 ? fcc_card_mark_block($fcc_block_html, $row->type) : $fcc_block_html;
+                            echo $fcc_card_v2 ? fcc_card_mark_block($fcc_block_html, $row->type, (array) ($row->settings->fcc_style ?? [])) : $fcc_block_html;
                             if($fcc_card_v2 && $row->type === 'custom_html_chatbot' && function_exists('fcc_ai_user_has_public_ai_access') && fcc_ai_user_has_public_ai_access((int) $data->user->user_id)): ?>
                                 <div class="col-12" data-fcc-type="advisor" data-biolink-block-id="<?= (int) $row->biolink_block_id ?>"><button type="button" class="fcc-card-advisor" onclick="var t=document.getElementById('<?= 'fcc-chatbot-' . (int) $row->biolink_block_id . '-toggle' ?>');if(t)t.click();"><span class="fcc-card-advisor-icon" aria-hidden="true"><i class="fas fa-wand-magic-sparkles"></i></span><span><strong><?= htmlspecialchars(fcc_t('Pitaj savjetnika'), ENT_QUOTES, 'UTF-8') ?></strong><small><?= htmlspecialchars(fcc_t('Opiši što trebaš, a savjetnik predloži proizvod.'), ENT_QUOTES, 'UTF-8') ?></small></span></button></div>
                             <?php endif;

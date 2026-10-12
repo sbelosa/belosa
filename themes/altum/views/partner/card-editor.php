@@ -26,7 +26,7 @@ $forms = [
     'button' => '<label class="fe-field"><span>' . $t('Natpis gumba') . '</span><input type="text" name="name" maxlength="64" required></label>',
     'custom_html_whatsapp' => '<label class="fe-field"><span>' . $t('Natpis gumba') . '</span><input type="text" name="title" maxlength="64" placeholder="WhatsApp"></label>'
         . '<label class="fe-field"><span>' . $t('Prva poruka') . '</span><textarea name="message" rows="3" maxlength="300"></textarea><small>' . $t('Ova poruka je već upisana kada ti posjetitelj otvori WhatsApp. Može je promijeniti prije slanja.') . '</small></label>'
-        . '<label class="fe-field"><span>' . $t('Broj za WhatsApp') . '</span><input type="tel" name="phone" inputmode="tel" maxlength="20" placeholder="' . $h($profile_phone) . '"><small>' . ($profile_phone !== '' ? $t('Ako ostaviš prazno, koristi se broj iz tvojeg profila.') : $t('Upiši broj s pozivnim brojem zemlje, primjerice 385 91 123 4567.')) . '</small></label>',
+        . '<label class="fe-field"><span>' . $t('Broj za WhatsApp') . '</span><input type="tel" name="phone" inputmode="tel" maxlength="24" autocomplete="tel" placeholder="+385 91 123 4567"><small>' . ($profile_phone !== '' ? $t('Broj iz registracije upisan je automatski u obliku koji WhatsApp traži. Možeš ga promijeniti.') : $t('Upiši broj s pozivnim brojem zemlje, primjerice +385 91 123 4567.')) . '</small></label>',
     'link' => '<label class="fe-field"><span>' . $t('Natpis gumba') . '</span><input type="text" name="name" maxlength="64" required></label>'
         . '<label class="fe-field"><span>' . $t('Poveznica') . '</span><input type="url" name="url" inputmode="url" maxlength="2048" required placeholder="https://"><small>' . $t('Forever poveznicama sustav sam dodaje tvoju preporuku.') . '</small></label>',
     'video' => '<label class="fe-field"><span>' . $t('Poveznica videa') . '</span><input type="url" name="url" inputmode="url" maxlength="2048" required placeholder="https://"></label>'
@@ -45,6 +45,33 @@ $forms = [
         . '<div class="fe-products" data-fe-products role="listbox" aria-label="' . $t('Proizvodi') . '"></div>',
     'info' => '',
 ];
+// The block's own look on the new card: two short choices, folded away until needed.
+$look_options = [
+    'look' => ['Izgled gumba', ['auto' => 'Kao na kartici', 'filled' => 'Istaknuti', 'surface' => 'Puni', 'outline' => 'Obrub', 'soft' => 'Mekani']],
+    'size' => ['Veličina', ['m' => 'Srednja', 's' => 'Mala', 'l' => 'Velika']],
+    'align' => ['Poravnanje', ['center' => 'Sredina', 'left' => 'Lijevo']],
+    'frame' => ['Okvir', ['auto' => 'Kao na kartici', 'plain' => 'Bez okvira', 'panel' => 'U okviru']],
+    'corners' => ['Rubovi', ['rounded' => 'Zaobljeni', 'straight' => 'Ravni']],
+    'icons' => ['Ikone', ['circle' => 'U krugu', 'outline' => 'S obrubom', 'plain' => 'Samo ikone']],
+];
+$look_html = static function(string $type) use ($look_options, $t, $h): string {
+    $keys = fcc_card_editor_style_fields($type);
+    if(!$keys) return '';
+    $html = '<details class="fe-advanced" data-fe-look><summary><span><strong>' . $t('Izgled bloka') . '</strong><small>' . $t('Kako ovaj blok izgleda na novoj kartici.') . '</small></span></summary><div class="fe-advanced-body">';
+    foreach($keys as $key) {
+        if($key === 'icon') {
+            $html .= '<label class="fe-field"><span>' . $t('Ikona') . '</span><select name="style_icon">';
+            foreach(FCC_CARD_BUTTON_ICONS as $value => $label) $html .= '<option value="' . $h($value) . '">' . $t($label) . '</option>';
+            $html .= '</select></label>';
+            continue;
+        }
+        [$label, $options] = $look_options[$key];
+        $html .= '<fieldset class="fe-choice"><legend>' . $t($label) . '</legend><div class="fe-chips">';
+        foreach($options as $value => $option_label) $html .= '<label class="fe-chip"><input type="radio" name="style_' . $key . '" value="' . $h($value) . '"><span>' . $t($option_label) . '</span></label>';
+        $html .= '</div></fieldset>';
+    }
+    return $html . '</div></details>';
+};
 $form_for = static fn(string $type): string => match($type) {
     'link_forever_webshop_reg', 'link_forever_shop', 'link_discount', 'link_save_contact' => 'button',
     'youtube', 'vimeo' => 'video',
@@ -66,7 +93,7 @@ $copy = [
     'labels' => array_map(static fn($type) => fcc_card_editor_label($type), array_combine(FCC_CARD_EDITOR_TYPES, FCC_CARD_EDITOR_TYPES)),
 ];
 ?>
-<div class="fe" data-fe data-fe-endpoint="<?= $h($endpoint) ?>" data-fe-token="<?= $h(\Altum\Csrf::get()) ?>" data-fe-step-active="<?= $h($data->step) ?>">
+<div class="fe" data-fe data-fe-v2="<?= fcc_card_is_v2($link) ? '1' : '0' ?>" data-fe-endpoint="<?= $h($endpoint) ?>" data-fe-token="<?= $h(\Altum\Csrf::get()) ?>" data-fe-step-active="<?= $h($data->step) ?>">
     <header class="fe-head">
         <div class="fe-head-title">
             <h1><?= $t('Uredi karticu') ?></h1>
@@ -74,7 +101,6 @@ $copy = [
         </div>
         <div class="fe-head-actions">
             <button type="button" class="fe-button fe-button-soft" data-share-url="<?= $h($public_url) ?>" data-share-title="<?= $t('Moja FCC kartica') ?>"><i class="fas fa-share-alt" aria-hidden="true"></i> <span><?= $t('Podijeli') ?></span></button>
-            <a class="fe-link" href="<?= url('link/' . (int) $link->link_id) ?>"><?= $t('Napredni uređivač') ?></a>
         </div>
     </header>
 
@@ -118,14 +144,14 @@ $copy = [
     </dialog>
 
     <?php foreach(FCC_CARD_EDITOR_TYPES as $type): ?>
-        <template data-fe-form="<?= $h($type) ?>"><?= $guide($type) ?><?= $forms[$form_for($type)] ?? '' ?></template>
+        <template data-fe-form="<?= $h($type) ?>"><?= $guide($type) ?><?= $forms[$form_for($type)] ?? '' ?><?= $look_html($type) ?></template>
     <?php endforeach ?>
-    <template data-fe-form="advanced"><p class="fe-guide"><?= $t('Ovaj blok uređuješ u naprednom uređivaču. Ovdje ga možeš sakriti, premjestiti ili ukloniti.') ?></p><p><a class="fe-button fe-button-soft" href="<?= url('link/' . (int) $link->link_id . '?tab=blocks') ?>" data-fe-advanced-link><?= $t('Otvori napredni uređivač') ?></a></p></template>
+    <template data-fe-form="advanced"><p class="fe-guide"><?= $t('Sadržaj ovog bloka uređuješ u klasičnom uređivaču. Ovdje ga možeš sakriti, premjestiti ili ukloniti.') ?></p><p><a class="fe-button fe-button-soft" href="<?= url('link/' . (int) $link->link_id . '?tab=blocks') ?>" data-fe-advanced-link><?= $t('Otvori klasični uređivač') ?></a></p></template>
 
     <?php
     $fe_language = fcc_card_editor_language($link, $this->user);
     $fe_defaults = [];
-    foreach(FCC_CARD_EDITOR_LIBRARY as $fe_type) $fe_defaults[$fe_type] = fcc_card_editor_fields((object) ['type' => $fe_type, 'location_url' => '', 'settings' => (object) fcc_card_editor_defaults($fe_type, $this->user, $fe_language)]);
+    foreach(FCC_CARD_EDITOR_LIBRARY as $fe_type) $fe_defaults[$fe_type] = fcc_card_editor_fields((object) ['type' => $fe_type, 'location_url' => '', 'settings' => (object) fcc_card_editor_defaults($fe_type, $this->user, $fe_language)], $this->user);
     ?>
     <script type="application/json" data-fe-data><?= json_encode(['blocks' => $payload['blocks'], 'profile_ids' => $payload['profile_ids'], 'copy' => $copy, 'editable' => FCC_CARD_EDITOR_TYPES, 'defaults' => $fe_defaults], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 </div>

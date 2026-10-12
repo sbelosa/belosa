@@ -15,7 +15,7 @@
         $fcc_theme_safe_layout_active = $fcc_theme_custom_css !== '' || !empty($this->link->biolink_theme_id) || ($this->is_preview && !empty($this->biolink_theme));
 
         /* Custom code: FC-2026-10-12: the new FCC card brings its own design, so old themes, fonts and custom CSS stay off. */
-        $fcc_card_v2 = function_exists('fcc_card_is_v2') && fcc_card_is_v2($this->link);
+        $fcc_card_v2 = function_exists('fcc_card_render_is_v2') && fcc_card_render_is_v2($this->link);
         if($fcc_card_v2) {
             $fcc_theme_custom_css = '';
             $fcc_theme_safe_layout_active = false;
@@ -180,7 +180,7 @@
         <?php /* Custom code: FC-2026-10-12 */ if($fcc_card_v2): ?>
             <link rel="preload" href="<?= ASSETS_FULL_URL ?>fonts/dm-sans/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
             <link href="<?= ASSETS_FULL_URL ?>css/fcc-card.css?v=<?= filemtime(ASSETS_PATH . 'css/fcc-card.css') ?>" rel="stylesheet">
-            <meta name="theme-color" content="<?= htmlspecialchars(FCC_CARD_THEMES[fcc_card_theme($this->link, (int) $this->user->user_id)]['swatch'][0], ENT_QUOTES, 'UTF-8') ?>">
+            <meta name="theme-color" content="<?= htmlspecialchars((fcc_card_render_style($this->link, (int) $this->user->user_id)['background'] ?? FCC_CARD_THEMES[fcc_card_render_theme($this->link, (int) $this->user->user_id)]['swatch'][0]), ENT_QUOTES, 'UTF-8') ?>">
         <?php endif /* /Custom code: FC-2026-10-12 */ ?>
     </head>
 

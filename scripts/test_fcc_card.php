@@ -79,6 +79,22 @@ $assert(fcc_card_intro_text('hr') === '<p><strong>Neovisni Forever Business Part
 $assert(str_contains(fcc_card_intro_text('en'), 'Independent Forever Business Partner'), 'intro text translated');
 $assert(str_contains($css, 'p:first-child > strong:only-child'), 'role badge style');
 
+/* Colours and details inside a style; each block's own look. */
+$assert(fcc_card_style_clean(['accent' => '#e0a526', 'background' => 'red', 'buttons' => 'pill', 'font' => 'modern', 'text' => 'huge']) === ['accent' => '#E0A526', 'buttons' => 'pill'], 'card style keeps only valid, non default choices');
+$dark = fcc_card_style_css(['background' => '#1E1B2E', 'accent' => '#E0A526', 'buttons' => 'pill']);
+$assert(str_contains($dark['css'], '--fc-ink:#F4F7F5') && str_contains($dark['css'], '--fc-accent-ink:#14201B') && str_contains($dark['classes'], 'fcc-buttons-pill'), 'dark background gets light text, yellow accent gets dark text');
+$light = fcc_card_style_css(['background' => '#FFF4E0', 'accent' => '#12775B']);
+$assert(str_contains($light['css'], '--fc-ink:#15201C') && str_contains($light['css'], '--fc-accent-ink:#FFFFFF'), 'light background gets dark text, dark accent gets white text');
+$assert(fcc_card_block_style_clean(['look' => 'outline', 'align' => 'center', 'size' => 'xl', 'frame' => 'panel']) === ['look' => 'outline', 'frame' => 'panel'], 'block look keeps only valid, non default choices');
+$assert(str_contains(fcc_card_mark_block('<div id="b">x</div>', 'link', ['look' => 'soft', 'evil' => '"><script>']), 'data-fcc-look="soft"') && !str_contains(fcc_card_mark_block('<div id="b">x</div>', 'link', ['evil' => 'x']), 'evil'), 'block look attributes are whitelisted');
+$_GET = ['preview' => 'wrong', 'fcc_card' => 'v1'];
+$assert(fcc_card_preview_choice((object) ['link_id' => 990001, 'user_id' => 7, 'settings' => '{}']) === [], 'unsaved preview needs the preview key');
+$_GET = ['preview' => md5('7'), 'fcc_card' => 'v2', 'fcc_theme' => 'zlato', 'fcc_style' => json_encode(['buttons' => 'square', 'font' => 'nope'])];
+$assert(fcc_card_preview_choice((object) ['link_id' => 990002, 'user_id' => 7, 'settings' => '{}']) === ['version' => 'v2', 'theme' => 'zlato', 'style' => ['buttons' => 'square']], 'owner preview shows unsaved choices');
+$_GET = [];
+foreach(['buttons-pill', 'buttons-square', 'button-look-outline', 'button-look-soft', 'font-classic', 'font-simple', 'text-large', 'avatar-rounded', 'glow-off'] as $class) $assert(str_contains($css, 'fcc-' . $class), 'CSS for ' . $class);
+foreach(['filled', 'surface', 'outline', 'soft'] as $look) $assert(str_contains($css, '[data-fcc-look="' . $look . '"]'), 'CSS for block look ' . $look);
+
 /* Block guide: three groups, Forever blocks first, every text translated in all locales. */
 $catalog = fcc_card_block_catalog();
 $assert(array_keys(fcc_card_block_groups()) === ['forever', 'contact', 'about'], 'three guide groups');

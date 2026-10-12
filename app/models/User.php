@@ -1204,7 +1204,7 @@ class User extends Model {
     /* Custom code */
     /* vendor tecnickcom/tcpdf */
     public function hydrate_biolink_from_user_data($user_id, $biolink_link_id, $vcard_url = null) {
-        $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'email', 'preferences']);
+        $user = db()->where('user_id', $user_id)->getOne('users', ['user_id', 'name', 'email', 'preferences', 'country']); /* FC-2026-10-12: country helps write the WhatsApp number correctly */
 
         if(!$user) {
             return;

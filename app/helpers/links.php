@@ -32,17 +32,152 @@ function fc_normalize_site_url($url): string {
 
 /** The default recipient always belongs to the card owner, never the inviter. */
 function fc_get_user_default_whatsapp_phone($user): string {
-    $preferences = $user->preferences ?? null;
-    if(is_string($preferences)) $preferences = json_decode($preferences, true);
-    if(is_object($preferences)) $preferences = (array) $preferences;
-    $meta = is_array($preferences) ? ($preferences['meta'] ?? []) : [];
-    if(is_object($meta)) $meta = (array) $meta;
-    $value = is_array($meta) ? ($meta['phone'] ?? '') : '';
+    $meta = fc_user_meta($user);
+    $value = $meta['phone'] ?? '';
     if(!is_scalar($value)) return '';
-    $phone = preg_replace('/\D+/', '', (string) $value);
-    if(str_starts_with($phone, '00')) $phone = substr($phone, 2);
-    return preg_match('/^[1-9][0-9]{7,14}$/', $phone) ? $phone : '';
+    return fc_normalize_whatsapp_phone((string) $value, fc_user_phone_countries($user, $meta));
 }
+
+/* Custom code: FC-2026-10-12: WhatsApp numbers in the international form.
+ * Members typed their number in many ways at registration (091 123 4567, +385 91..., 00385..., 385 091...).
+ * WhatsApp needs the country code followed by the number without the leading zero, digits only. */
+const FC_WHATSAPP_COUNTRIES = [
+    // ISO => [dial code, national trunk prefix, mobile number after the trunk prefix]
+    'HR' => ['385', '0', '9[1-9]\d{6,7}'],
+    'SI' => ['386', '0', '(?:3[01]|4[01]|5[01]|6[4-9]|7[01])\d{6}'],
+    'BA' => ['387', '0', '6\d{7,8}'],
+    'RS' => ['381', '0', '6\d{7,8}'],
+    'ME' => ['382', '0', '6\d{7}'],
+    'MK' => ['389', '0', '7\d{7}'],
+    'XK' => ['383', '0', '4[3-9]\d{6}'],
+    'AL' => ['355', '0', '6[6-9]\d{7}'],
+    'DE' => ['49', '0', '1[5-7]\d{8,9}'],
+    'AT' => ['43', '0', '6[5-9]\d{6,10}'],
+    'CH' => ['41', '0', '7[5-9]\d{7}'],
+    'GB' => ['44', '0', '7\d{9}'],
+    'IE' => ['353', '0', '8[3-9]\d{7}'],
+    'FR' => ['33', '0', '[67]\d{8}'],
+    'NL' => ['31', '0', '6\d{8}'],
+    'BE' => ['32', '0', '4\d{8}'],
+    'SE' => ['46', '0', '7[02369]\d{7}'],
+    'RO' => ['40', '0', '7\d{8}'],
+    'HU' => ['36', '06', '(?:20|30|31|50|70)\d{7}'],
+    'IT' => ['39', '', '3\d{8,9}'],
+    'ES' => ['34', '', '[67]\d{8}'],
+    'PL' => ['48', '', '[4-8]\d{8}'],
+    'US' => ['1', '', '[2-9]\d{9}'],
+    'CA' => ['1', '', '[2-9]\d{9}'],
+];
+
+function fc_user_meta($user): array {
+    $preferences = is_object($user) ? ($user->preferences ?? null) : (is_array($user) ? ($user['preferences'] ?? null) : null);
+    if(is_string($preferences)) $preferences = json_decode($preferences, true);
+    if(is_object($preferences)) $preferences = json_decode(json_encode($preferences), true);
+    $meta = is_array($preferences) ? ($preferences['meta'] ?? []) : [];
+    return is_array($meta) ? $meta : [];
+}
+
+/** The member's country written as text in the address ("Hrvatska", "Slovenija", "Njemačka") as an ISO code. */
+function fc_country_from_text(string $text): string {
+    $text = trim($text);
+    if(preg_match('/^[A-Za-z]{2}$/', $text)) return mb_strtoupper($text);
+    $key = preg_replace('/[^a-z]/', '', strtr(mb_strtolower($text), ['č' => 'c', 'ć' => 'c', 'ž' => 'z', 'š' => 's', 'đ' => 'd', 'ö' => 'o', 'ü' => 'u', 'ä' => 'a', 'ë' => 'e', 'ç' => 'c', 'é' => 'e', 'ñ' => 'n']));
+    if($key === '') return '';
+    $prefixes = ['hrv' => 'HR', 'croat' => 'HR', 'republikahrv' => 'HR', 'sloven' => 'SI', 'srb' => 'RS', 'serb' => 'RS', 'bosn' => 'BA', 'bih' => 'BA', 'crnagor' => 'ME', 'monteneg' => 'ME', 'kosov' => 'XK', 'sjevernamaked' => 'MK', 'makedon' => 'MK', 'macedon' => 'MK', 'northmaced' => 'MK', 'alban' => 'AL', 'njemack' => 'DE', 'german' => 'DE', 'deutsch' => 'DE', 'austri' => 'AT', 'osterreich' => 'AT', 'svicar' => 'CH', 'switzer' => 'CH', 'schweiz' => 'CH', 'unitedkingdom' => 'GB', 'velikabritan' => 'GB', 'englesk' => 'GB', 'england' => 'GB', 'irsk' => 'IE', 'ireland' => 'IE', 'francus' => 'FR', 'france' => 'FR', 'nizozem' => 'NL', 'netherland' => 'NL', 'holland' => 'NL', 'belgij' => 'BE', 'belgi' => 'BE', 'svedsk' => 'SE', 'sweden' => 'SE', 'rumunj' => 'RO', 'romania' => 'RO', 'madar' => 'HU', 'hungar' => 'HU', 'italij' => 'IT', 'italy' => 'IT', 'italia' => 'IT', 'spanjol' => 'ES', 'spain' => 'ES', 'espana' => 'ES', 'poljsk' => 'PL', 'poland' => 'PL', 'polska' => 'PL'];
+    if(in_array($key, ['rh', 'hr'], true)) return 'HR';
+    if(in_array($key, ['uk', 'gb'], true)) return 'GB';
+    foreach($prefixes as $prefix => $iso) if(str_starts_with($key, $prefix)) return $iso;
+    return '';
+}
+
+/** Countries to try for a number written without the country code: registration choice, address, sign up country. */
+function fc_user_phone_countries($user, ?array $meta = null): array {
+    $meta = $meta ?? fc_user_meta($user);
+    $countries = [];
+    $phone_country = is_scalar($meta['phone_country_code'] ?? null) ? mb_strtoupper(trim((string) $meta['phone_country_code'])) : '';
+    if($phone_country !== '') $countries[] = $phone_country;
+    if(is_scalar($meta['country'] ?? null) && ($iso = fc_country_from_text((string) $meta['country'])) !== '') $countries[] = $iso;
+    $signup = is_object($user) ? ($user->country ?? '') : (is_array($user) ? ($user['country'] ?? '') : '');
+    if(is_scalar($signup) && preg_match('/^[A-Za-z]{2}$/', (string) $signup)) $countries[] = mb_strtoupper((string) $signup);
+    // Most members are in Croatia; a Croatian mobile number (09x) is recognised even without other hints.
+    $countries[] = 'HR';
+    return array_values(array_unique($countries));
+}
+
+/**
+ * Returns the number in the form WhatsApp needs (for example 385911234567) or '' when it cannot be determined
+ * safely. Numbers without a country code are accepted only when they look like a mobile number of one of the
+ * given countries, so a message never goes to a stranger in another country.
+ */
+function fc_normalize_whatsapp_phone(string $raw, array $countries = []): string {
+    $raw = trim($raw);
+    if($raw === '') return '';
+    $international = str_starts_with($raw, '+');
+    $digits = preg_replace('/\D+/', '', $raw);
+    if(str_starts_with($digits, '00')) { $digits = substr($digits, 2); $international = true; }
+    if($digits === '') return '';
+    $valid = static fn(string $number): string => preg_match('/^[1-9][0-9]{7,14}$/', $number) ? $number : '';
+
+    // With a country code: drop a national trunk prefix written after it (385 091... becomes 385 91...).
+    if($international || !str_starts_with($digits, '0')) {
+        $rules = FC_WHATSAPP_COUNTRIES;
+        uasort($rules, static fn($a, $b) => strlen($b[0]) <=> strlen($a[0]));
+        foreach($rules as [$dial, $trunk, $mobile]) {
+            if(!str_starts_with($digits, $dial)) continue;
+            $national = substr($digits, strlen($dial));
+            $had_trunk = $trunk !== '' && str_starts_with($national, $trunk);
+            if($had_trunk) $national = substr($national, strlen($trunk));
+            if($trunk !== '' && str_starts_with($national, '0')) return '';
+            // Without the plus sign the number must still clearly start with this country code.
+            if($international || preg_match('/^' . $mobile . '$/', $national) || $had_trunk || (strlen($dial) >= 3 && strlen($national) >= 8)) return $valid($dial . $national);
+        }
+        if($international) return $valid($digits);
+    }
+
+    // Without a country code: a mobile number of one of the member's countries.
+    foreach($countries as $iso) {
+        if(!isset(FC_WHATSAPP_COUNTRIES[$iso])) continue;
+        [$dial, $trunk, $mobile] = FC_WHATSAPP_COUNTRIES[$iso];
+        $national = $digits;
+        if($trunk !== '' && str_starts_with($national, $trunk)) $national = substr($national, strlen($trunk));
+        elseif($trunk !== '' && str_starts_with($digits, '0')) continue;
+        if(preg_match('/^' . $mobile . '$/', $national)) return $valid($dial . $national);
+    }
+
+    // Written with a country code we do not know a mobile pattern for, without the plus sign.
+    if(!str_starts_with($digits, '0') && strlen($digits) >= 10) {
+        foreach(get_contact_phone_dial_codes_array() as $dial) {
+            if(!isset(array_column(FC_WHATSAPP_COUNTRIES, 0, 0)[$dial]) && str_starts_with($digits, (string) $dial)) return $valid($digits);
+        }
+    }
+    return '';
+}
+
+/** A readable form for forms: +385 91 123 4567. */
+function fc_format_whatsapp_phone(string $number): string {
+    if($number === '') return '';
+    $dial = '';
+    foreach(array_unique(array_merge(array_column(FC_WHATSAPP_COUNTRIES, 0), array_values(get_contact_phone_dial_codes_array()))) as $code) {
+        if(str_starts_with($number, (string) $code) && strlen((string) $code) > strlen($dial)) $dial = (string) $code;
+    }
+    if($dial === '') return '+' . $number;
+    $rest = substr($number, strlen($dial));
+    $groups = match(true) {
+        $dial === '44' && strlen($rest) === 10 => [4, 6],
+        $dial === '1' && strlen($rest) === 10 => [3, 3, 4],
+        $dial === '49' && strlen($rest) >= 10 => [3, strlen($rest) - 3],
+        strlen($rest) === 8 => [2, 3, 3],
+        strlen($rest) === 9 => [2, 3, 4],
+        strlen($rest) === 10 => [3, 3, 4],
+        strlen($rest) === 11 => [3, 4, 4],
+        default => [strlen($rest)],
+    };
+    $parts = [];
+    foreach($groups as $size) { $parts[] = substr($rest, 0, $size); $rest = substr($rest, $size); }
+    if($rest !== '') $parts[] = $rest;
+    return '+' . $dial . ' ' . implode(' ', array_filter($parts, 'strlen'));
+}
+/* /Custom code: FC-2026-10-12 */
 
 function fc_site_url_points_to_localhost($url): bool {
     $normalized_url = fc_normalize_site_url($url);
