@@ -5,7 +5,7 @@ defined('ALTUMCODE') || die();
 class Partner extends Controller {
  public function index() {
   $section=(string)($this->params[0]??'today');
-  $allowed=['today','contacts','share','cards','more','plan','education','team','notifications','settings','install','admin','preview','curriculum','webinars','points','top','help'];
+  $allowed=['today','contacts','share','cards','card','more','plan','education','team','notifications','settings','install','admin','preview','curriculum','webinars','points','top','help'];
   if(!in_array($section,$allowed,true)) throw_404();
   // Desktop device viewer is local tooling, never a production route.
   if($section==='preview') {
@@ -99,6 +99,9 @@ class Partner extends Controller {
    catch(\Throwable $e){error_log('Partner device connection failed: '.get_class($e));http_response_code(500);echo json_encode(['ok'=>false,'message'=>fcc_t('Povezivanje nije uspjelo. Pokušaj ponovno.')]);}
    return;
   }
+  /* Custom code: FC-2026-10-12: the simple card editor at partner/card/{id} */
+  if($section==='card'){$this->card_editor($uid);return;}
+  /* /Custom code: FC-2026-10-12 */
   fcc_team_refresh_notifications($uid);
   if($section==='webinars'){fcc_event_member_page($this,array_slice($this->params,1));return;}
   $contact_export_error=null;
@@ -277,6 +280,40 @@ class Partner extends Controller {
   $view=new \Altum\View('partner/index',(array)$this);
   $this->add_view_content('content',$view->run($data));
  }
+
+ /* Custom code: FC-2026-10-12: the simple card editor. POST changes one thing and answers with fresh steps. */
+ private function card_editor(int $uid): void {
+  $link_id=(int)($this->params[1]??0);
+  $json=static function(int $code,array $body):void{http_response_code($code);header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: no-store, private');echo json_encode($body,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);};
+  if($_SERVER['REQUEST_METHOD']==='POST') {
+   \Altum\Router::$controller_settings['has_view']=false;
+   try {
+    if(!isset($_POST['token'])||!is_string($_POST['token'])||!hash_equals(\Altum\Csrf::get(),$_POST['token'])) throw new \InvalidArgumentException(fcc_t('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.'));
+    $result=fcc_card_editor_mutate($this->user,$link_id,$_POST);
+    $json(200,['ok'=>true]+$result+$this->card_editor_payload($uid,$link_id));
+   } catch(\InvalidArgumentException $e) { $json(422,['ok'=>false,'message'=>$e->getMessage()]); }
+   catch(\Throwable $e) { error_log('Card editor: '.get_class($e).': '.$e->getMessage()); $json(500,['ok'=>false,'message'=>fcc_t('Spremanje nije uspjelo. Pokušaj ponovno.')]); }
+   return;
+  }
+  if($_SERVER['REQUEST_METHOD']!=='GET') { \Altum\Router::$controller_settings['has_view']=false; http_response_code(405); header('Allow: GET, POST'); return; }
+  try { $link=fcc_card_editor_link($uid,$link_id); } catch(\InvalidArgumentException $e) { throw_404(); }
+  if(isset($_GET['products'])) { \Altum\Router::$controller_settings['has_view']=false; $json(200,['ok'=>true,'products'=>fcc_card_editor_products($link,(string)($_GET['q']??''))]); return; }
+  if(isset($_GET['fragment'])) { \Altum\Router::$controller_settings['has_view']=false; $json(200,['ok'=>true]+$this->card_editor_payload($uid,$link_id)); return; }
+  $payload=$this->card_editor_payload($uid,$link_id);
+  \Altum\Title::set(fcc_t('Uredi karticu'));
+  $view=new \Altum\View('partner/card-editor',(array)$this);
+  $this->add_view_content('content',$view->run(['link'=>$link,'payload'=>$payload,'step'=>in_array($_GET['step']??'',['profile','content','design'],true)?$_GET['step']:'profile']));
+ }
+
+ private function card_editor_payload(int $uid,int $link_id): array {
+  $link=fcc_card_editor_link($uid,$link_id);
+  $state=fcc_card_editor_state($this->user,$link);
+  $blocks=[];
+  foreach(fcc_card_editor_blocks($link) as $block) $blocks[(int)$block->biolink_block_id]=['type'=>$block->type,'enabled'=>(int)$block->is_enabled===1,'fields'=>fcc_card_editor_fields($block)];
+  $view=new \Altum\View('partner/card-editor-steps',(array)$this);
+  return ['steps'=>$view->run(['link'=>$link,'state'=>$state]),'blocks'=>(object)$blocks,'profile_ids'=>array_values(array_filter([$state['profile']['avatar_id'],$state['profile']['heading_id'],$state['profile']['paragraph_id']]))];
+ }
+ /* /Custom code: FC-2026-10-12 */
 
  public function state() {
   \Altum\Authentication::guard();

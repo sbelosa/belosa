@@ -203,6 +203,7 @@ require_once APP_PATH . 'helpers/fcc_i18n.php';
 require_once APP_PATH . 'helpers/fcc_partner.php';
 require_once APP_PATH . 'helpers/fcc_ui_theme.php';
 require_once APP_PATH . 'helpers/fcc_card.php';
+require_once APP_PATH . 'helpers/fcc_card_editor.php';
 require_once APP_PATH . 'helpers/fcc_fast_images.php';
 require_once APP_PATH . 'helpers/fcc_pro.php';
 require_once APP_PATH . 'helpers/fcc_forever_routing.php';

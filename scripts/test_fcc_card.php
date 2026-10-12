@@ -74,6 +74,11 @@ $row = (object) ['type' => 'link_forever_shop', 'settings' => (object) ['name' =
 fcc_card_localize_factory_label($row);
 $assert($row->settings->name === 'Postani dio mog tima', 'own label stays');
 
+/* The intro under the name: a role line shown as a badge and a short invitation. */
+$assert(fcc_card_intro_text('hr') === '<p><strong>Neovisni Forever Business Partner</strong></p><p>Za više informacija o Forever proizvodima ili poslovnoj suradnji slobodno me kontaktirajte.</p>', 'intro text');
+$assert(str_contains(fcc_card_intro_text('en'), 'Independent Forever Business Partner'), 'intro text translated');
+$assert(str_contains($css, 'p:first-child > strong:only-child'), 'role badge style');
+
 /* Block guide: three groups, Forever blocks first, every text translated in all locales. */
 $catalog = fcc_card_block_catalog();
 $assert(array_keys(fcc_card_block_groups()) === ['forever', 'contact', 'about'], 'three guide groups');
@@ -85,7 +90,7 @@ foreach($catalog as $type => $item) {
 $texts = [];
 foreach($catalog as $item) array_push($texts, $item['title'], $item['what'], $item['how']);
 foreach(fcc_card_block_groups() as $group) array_push($texts, $group['title'], $group['text']);
-array_push($texts, 'Neovisni Forever Business Owner. Ovo nije službena stranica Forever Living Products.', 'Ponuda za: {country}', 'Pitaj savjetnika', 'Izgled kartice', 'Nova kartica', 'Stara kartica');
+array_push($texts, 'Neovisni Forever Business Owner. Ovo nije službena stranica Forever Living Products.', 'Ponuda za: {country}', 'Pitaj savjetnika', 'Izgled kartice', 'Nova kartica', 'Stara kartica', 'Neovisni Forever Business Partner', 'Za više informacija o Forever proizvodima ili poslovnoj suradnji slobodno me kontaktirajte.');
 foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'] as $locale) {
     $catalogue = require APP_PATH . 'config/locales/' . $locale . '.php';
     if(is_file(APP_PATH . 'config/locales/' . $locale . '-curated.php')) $catalogue = (require APP_PATH . 'config/locales/' . $locale . '-curated.php') + $catalogue;

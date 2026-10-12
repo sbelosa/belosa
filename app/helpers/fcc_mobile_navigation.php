@@ -53,6 +53,7 @@ function fcc_mobile_nav_parent(string $controller, array $params, array $query, 
         }
         if($section === 'contacts') return $detail('id') || $detail('new') ? $parent('partner/contacts', 'contacts') : $home;
         if($section === 'cards') return $detail('remove') ? $parent('partner/cards', 'cards') : $home;
+        if($section === 'card') return $parent('partner/cards', 'cards'); /* FC-2026-10-12: simple card editor */
         if($section === 'share') {
             $type = $value('type');
             if($type === 'events' && $detail('session_id')) return $parent('partner/share?type=events', 'webinars');

@@ -132,8 +132,10 @@ function fcc_card_block_insert(int $user_id, int $link_id, string $type, array $
     ]);
 }
 
+/** Intro under the name. A bold first line is shown as a role badge on the new card. */
 function fcc_card_intro_text(?string $language = null): string {
-    return '<p>' . htmlspecialchars(fcc_t('Neovisni sam Forever Business Owner. Javi mi se i pomoći ću ti odabrati proizvode koji ti odgovaraju.', [], $language), ENT_QUOTES, 'UTF-8') . '</p>';
+    return '<p><strong>' . htmlspecialchars(fcc_t('Neovisni Forever Business Partner', [], $language), ENT_QUOTES, 'UTF-8') . '</strong></p>'
+        . '<p>' . htmlspecialchars(fcc_t('Za više informacija o Forever proizvodima ili poslovnoj suradnji slobodno me kontaktirajte.', [], $language), ENT_QUOTES, 'UTF-8') . '</p>';
 }
 
 function fcc_card_own_vcard_url(int $user_id): ?string {

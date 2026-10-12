@@ -61,6 +61,7 @@
 !scripts/test_invite_content_migration.php
 !scripts/test_journey_tracks.php
 !scripts/test_fcc_card.php
+!scripts/test_fcc_card_editor.php
 !docs/ANALIZA_POSLOVNA_PREZENTACIJA_2026-10-12.md
 !docs/ANALIZA_MOJ_PUT_2026-10-12.md
 !docs/DIZAJN_ZIVI_SLOJ_2026-10-12.md

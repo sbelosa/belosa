@@ -94,6 +94,7 @@ jobs:
           php scripts/test_journey_tracks.php
           # New FCC card: styles, PRO gating, core blocks and block guide
           php scripts/test_fcc_card.php
+          php scripts/test_fcc_card_editor.php
           # /Custom code: FC-2026-10-12
 
       - name: Verify immutable Forever click qualification

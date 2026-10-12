@@ -2,6 +2,7 @@
 $path=\Altum\Router::$controller_key; $section=$path==='partner'?(\Altum\Router::$params[0]??'today'):$path;
 if(in_array($path,['link','links'],true)) $section=(($path==='links'&&($_GET['type']??'')==='link')||($path==='link'&&($this->link->type??'')==='link'))?'more':'cards';
 if(in_array($path,['partner-webinar','partner-marketing'],true)) $section='share';
+if($section==='card') $section='cards'; /* FC-2026-10-12: simple card editor */
 if(!in_array($section,['today','contacts','share','cards','team'],true)) $section='more';
 $navigation=[['today','Danas','home','partner'],['contacts','Kontakti','people','partner/contacts'],['share','Podijeli','share','partner/share'],['cards',fcc_t('Moja kartica'),'card','partner/cards'],['more',fcc_t('Više'),'more','partner/more']];
 $desktopNavigation=$navigation; array_splice($desktopNavigation,4,0,[['team','Moj tim','people','partner/team']]);

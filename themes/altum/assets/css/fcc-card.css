@@ -76,6 +76,24 @@ body.fcc-card [data-fcc-type="paragraph"] .ql-content, body.fcc-card [data-fcc-t
 body.fcc-card [data-fcc-type="paragraph"] .ql-content p { margin: 0 0 .5rem; }
 body.fcc-card [data-fcc-type="paragraph"] .ql-content p:last-child { margin-bottom: 0; }
 
+/* Intro right under the name: a soft panel, a bold first line becomes the role badge. */
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .card {
+  background: linear-gradient(160deg, var(--fc-accent-soft) 0%, color-mix(in srgb, var(--fc-accent-soft) 40%, var(--fc-surface)) 100%) !important;
+  border: 1px solid color-mix(in srgb, var(--fc-accent) 22%, var(--fc-line)) !important; border-radius: 20px !important; box-shadow: none !important;
+}
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .card > div { padding: 16px 18px !important; }
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql-content,
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql-content * { color: var(--fc-ink) !important; font-size: 1.03rem; font-weight: 500; line-height: 1.55; }
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql-content p:first-child > strong:only-child {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px;
+  background: var(--fc-surface); border: 1px solid var(--fc-line); color: var(--fc-accent) !important;
+  font-size: .8125rem !important; font-weight: 700; line-height: 1.3; letter-spacing: .01em;
+}
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql-content p:first-child > strong:only-child::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--fc-accent); flex: 0 0 7px;
+}
+body.fcc-card #links [data-fcc-type="heading"] + [data-fcc-type="paragraph"] .ql-content p:first-child:has(> strong:only-child) { margin-bottom: 10px; }
+
 /* Buttons: every button is calm and readable; the shop button is the main action. */
 body.fcc-card .link-btn {
   display: flex !important; align-items: center; justify-content: center; gap: 10px;
@@ -175,7 +193,7 @@ body.fcc-card .fcc-card-legal a { color: var(--fc-muted); font-weight: 600; text
 
 /* Blocks from the classic editor keep their content but take the style's colours, so text stays readable. */
 body.fcc-card #links [data-fcc-type]:not([data-fcc-type="advisor"]):not([data-fcc-type="paragraph"]):not([data-fcc-type="heading"]) :is(h1, h2, h3, h4, h5, h6, p, li, span, div, small, strong, em, b, td, th, label, dt, dd, a, button.btn-link):not(.link-btn):not(.link-btn *):not(.btn:not(.btn-link)):not(.btn:not(.btn-link) *) { color: var(--fc-ink) !important; }
-body.fcc-card #links [data-fcc-type] :is(div, section, li, h2)[style*="background"]:not([style*="url("]):not(.link-btn):not(.btn):not(.embed-responsive) { background: var(--fc-surface) !important; }
+body.fcc-card #links [data-fcc-type] :where(div, section, li, h2)[style*="background"]:where(:not([style*="url("]):not(.link-btn):not(.btn):not(.embed-responsive)) { background: var(--fc-surface) !important; }
 body.fcc-card [data-fcc-type="alert"] .alert { background: var(--fc-accent-soft) !important; border: 1px solid var(--fc-line) !important; border-radius: 16px !important; box-shadow: none !important; }
 body.fcc-card [data-fcc-type="alert"] .alert [data-icon] { color: var(--fc-accent) !important; }
 body.fcc-card [data-fcc-type="faq"] .card { box-shadow: none !important; }
