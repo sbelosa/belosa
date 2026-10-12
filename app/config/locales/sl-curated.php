@@ -375,4 +375,19 @@ return [
     'Potvrdi što je stvarno napravljeno.' => 'Potrdi, kaj je bilo zares narejeno.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Tvoj program že obstaja. Nadaljuj pri svojem zadnjem koraku.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Najprej si oglej kratek uvod',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Pred prvim korakom Moje poti si oglej uvodni video. Ko si ga ogledaš, se tvoj prvi korak odpre sam.',
+    'Pogledaj uvod →' => 'Oglej si uvod →',
+    'Moj put se uskoro otvara' => 'Moja pot se kmalu odpre',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'Program za tvoj račun še ni zagnan. Ko se odpre, te tukaj čaka tvoj prvi korak, ves dosedanji napredek pa ostane shranjen.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Tvoj Forever ID uporablja še en račun',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'Isti Forever ID je vpisan v več računov FCC, zato ne vemo, kateremu pripada tvoj program. Obrni se na podporo in povezali ga bomo s pravim računom.',
+    'Javi se podršci →' => 'Obrni se na podporo →',
+    'Upiši svoj Forever ID' => 'Vpiši svoj Forever ID',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Moja pot se odpre, ko je na tvoji kartici FCC vpisan tvoj Forever ID. Vpiši ga v Moja kartica in tvoj korak se bo odprl sam. Če je številka že vpisana, se obrni na podporo.',
+    'Otvori Moju karticu →' => 'Odpri Moja kartica →',
+    'Moj put još nije uključen za tvoj račun' => 'Moja pot za tvoj račun še ni vključena',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Tvoj napredek je shranjen. Obrni se na podporo in preverili bomo, zakaj se tvoj korak ne odpre.',
+    /* /Custom code: FC-2026-10-12 */
 ];

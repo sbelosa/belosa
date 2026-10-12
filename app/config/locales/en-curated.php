@@ -295,4 +295,19 @@ return [
     'Potvrdi što je stvarno napravljeno.' => 'Confirm what you actually did.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Your programme already exists. Pick up where you left off.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'First watch the short introduction',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Before your first My journey step, watch the introduction video. Once you have watched it, your first step opens by itself.',
+    'Pogledaj uvod →' => 'Watch the introduction →',
+    'Moj put se uskoro otvara' => 'My journey opens soon',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'The program has not started for your account yet. When it opens, your first step will be waiting here, and all your progress so far stays saved.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Another account uses your Forever ID',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'The same Forever ID is entered on more than one FCC account, so we cannot tell which one your program belongs to. Contact support and we will link it to the right account.',
+    'Javi se podršci →' => 'Contact support →',
+    'Upiši svoj Forever ID' => 'Enter your Forever ID',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'My journey opens once your Forever ID is entered on your FCC card. Enter it under My card and your step will open by itself. If the number is already there, contact support.',
+    'Otvori Moju karticu →' => 'Open My card →',
+    'Moj put još nije uključen za tvoj račun' => 'My journey is not enabled for your account yet',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Your progress is saved. Contact support and we will check why your step does not open.',
+    /* /Custom code: FC-2026-10-12 */
 ];

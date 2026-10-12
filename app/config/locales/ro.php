@@ -65406,4 +65406,19 @@ Ai nevoie de ajutor pentru conectare?',
     'Potvrdi što je stvarno napravljeno.' => 'Confirmă ce ai făcut de fapt.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Programul tău există deja. Continuă de la ultimul tău pas.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Mai întâi urmărește scurta introducere',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Înainte de primul pas din Călătoria mea, urmărește videoclipul de introducere. După ce îl vezi, primul tău pas se deschide singur.',
+    'Pogledaj uvod →' => 'Urmărește introducerea →',
+    'Moj put se uskoro otvara' => 'Călătoria mea se deschide în curând',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'Programul nu a pornit încă pentru contul tău. Când se deschide, aici te așteaptă primul pas, iar tot progresul de până acum rămâne salvat.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Forever ID-ul tău este folosit și de alt cont',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'Același Forever ID este introdus în mai multe conturi FCC, așa că nu știm cărui cont îi aparține programul tău. Contactează asistența și îl vom lega de contul corect.',
+    'Javi se podršci →' => 'Contactează asistența →',
+    'Upiši svoj Forever ID' => 'Introdu Forever ID-ul tău',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Călătoria mea se deschide când Forever ID-ul tău este introdus pe cardul FCC. Introdu-l în Cardul meu, iar pasul tău se va deschide singur. Dacă numărul este deja acolo, contactează asistența.',
+    'Otvori Moju karticu →' => 'Deschide Cardul meu →',
+    'Moj put još nije uključen za tvoj račun' => 'Călătoria mea nu este încă activată pentru contul tău',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Progresul tău este salvat. Contactează asistența și vom verifica de ce nu se deschide pasul tău.',
+    /* /Custom code: FC-2026-10-12 */
 ];

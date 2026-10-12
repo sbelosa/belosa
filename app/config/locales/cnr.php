@@ -58126,4 +58126,19 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'Potvrdi što je stvarno napravljeno.' => 'Potvrdi šta je zaista urađeno.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Tvoj program već postoji. Nastavi od svog posljednjeg koraka.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Najprije pogledaj kratak uvod',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Prije prvog koraka Mog putovanja pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak se otvara sam.',
+    'Pogledaj uvod →' => 'Pogledaj uvod →',
+    'Moj put se uskoro otvara' => 'Moje putovanje se uskoro otvara',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'Program još nije pokrenut za tvoj nalog. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Tvoj Forever ID koristi još jedan nalog',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'Isti Forever ID upisan je na više FCC naloga, pa ne znamo kojem pripada tvoj program. Obrati se podršci i povezaćemo ga sa pravim nalogom.',
+    'Javi se podršci →' => 'Obrati se podršci →',
+    'Upiši svoj Forever ID' => 'Upiši svoj Forever ID',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Moje putovanje se otvara kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga u Moja kartica i tvoj korak će se otvoriti sam. Ako je broj već upisan, obrati se podršci.',
+    'Otvori Moju karticu →' => 'Otvori Moja kartica →',
+    'Moj put još nije uključen za tvoj račun' => 'Moje putovanje još nije uključeno za tvoj nalog',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Tvoj napredak je sačuvan. Obrati se podršci i provjerićemo zašto se tvoj korak ne otvara.',
+    /* /Custom code: FC-2026-10-12 */
 ];

@@ -65349,4 +65349,19 @@ Behöver du hjälp med att ansluta?',
     'Potvrdi što je stvarno napravljeno.' => 'Bekräfta vad du faktiskt gjorde.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Ditt program finns redan. Fortsätt från ditt senaste steg.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Titta först på den korta introduktionen',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Titta på introduktionsvideon före ditt första steg i Min resa. När du har sett den öppnas ditt första steg av sig självt.',
+    'Pogledaj uvod →' => 'Titta på introduktionen →',
+    'Moj put se uskoro otvara' => 'Min resa öppnar snart',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'Programmet har inte startat för ditt konto ännu. När det öppnar väntar ditt första steg här, och alla dina framsteg hittills sparas.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Ett annat konto använder ditt Forever ID',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'Samma Forever ID finns på flera FCC konton, så vi vet inte vilket konto ditt program hör till. Kontakta supporten så kopplar vi det till rätt konto.',
+    'Javi se podršci →' => 'Kontakta supporten →',
+    'Upiši svoj Forever ID' => 'Ange ditt Forever ID',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Min resa öppnas när ditt Forever ID finns på ditt FCC kort. Ange det under Mitt kort så öppnas ditt steg av sig självt. Om numret redan finns där, kontakta supporten.',
+    'Otvori Moju karticu →' => 'Öppna Mitt kort →',
+    'Moj put još nije uključen za tvoj račun' => 'Min resa är inte aktiverad för ditt konto ännu',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Dina framsteg är sparade. Kontakta supporten så kontrollerar vi varför ditt steg inte öppnas.',
+    /* /Custom code: FC-2026-10-12 */
 ];

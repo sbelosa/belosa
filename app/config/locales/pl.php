@@ -65377,4 +65377,19 @@ Potrzebujesz pomocy z połączeniem?',
     'Potvrdi što je stvarno napravljeno.' => 'Potwierdź, co faktycznie udało ci się zrobić.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Twój program już istnieje. Kontynuuj od swojego ostatniego kroku.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Najpierw obejrzyj krótkie wprowadzenie',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Przed pierwszym krokiem programu Moja droga obejrzyj film wprowadzający. Gdy go obejrzysz, twój pierwszy krok otworzy się sam.',
+    'Pogledaj uvod →' => 'Obejrzyj wprowadzenie →',
+    'Moj put se uskoro otvara' => 'Moja droga wkrótce się otworzy',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'Program nie został jeszcze uruchomiony dla twojego konta. Gdy się otworzy, tutaj będzie czekał twój pierwszy krok, a wszystkie dotychczasowe postępy zostają zachowane.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Twojego Forever ID używa jeszcze jedno konto',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'Ten sam Forever ID jest wpisany na kilku kontach FCC, więc nie wiemy, do którego należy twój program. Skontaktuj się ze wsparciem, a połączymy go z właściwym kontem.',
+    'Javi se podršci →' => 'Skontaktuj się ze wsparciem →',
+    'Upiši svoj Forever ID' => 'Wpisz swój Forever ID',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Moja droga otwiera się, gdy na twojej karcie FCC jest wpisany twój Forever ID. Wpisz go w Moja karta, a twój krok otworzy się sam. Jeśli numer jest już wpisany, skontaktuj się ze wsparciem.',
+    'Otvori Moju karticu →' => 'Otwórz Moja karta →',
+    'Moj put još nije uključen za tvoj račun' => 'Moja droga nie jest jeszcze włączona dla twojego konta',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Twoje postępy są zapisane. Skontaktuj się ze wsparciem, a sprawdzimy, dlaczego twój krok się nie otwiera.',
+    /* /Custom code: FC-2026-10-12 */
 ];

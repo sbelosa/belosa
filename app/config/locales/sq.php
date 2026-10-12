@@ -58097,4 +58097,19 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'Potvrdi što je stvarno napravljeno.' => 'Konfirmo çfarë bëre vërtet.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Programi yt ekziston tashmë. Vazhdo nga hapi yt i fundit.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Fillimisht shiko hyrjen e shkurtër',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Para hapit tënd të parë të programit Udhëtimi im, shiko videon hyrëse. Pasi ta shikosh, hapi yt i parë hapet vetë.',
+    'Pogledaj uvod →' => 'Shiko hyrjen →',
+    'Moj put se uskoro otvara' => 'Udhëtimi im hapet së shpejti',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'Programi ende nuk ka nisur për llogarinë tënde. Kur të hapet, këtu të pret hapi yt i parë dhe i gjithë përparimi deri tani mbetet i ruajtur.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Forever ID-në tënde e përdor edhe një llogari tjetër',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'E njëjta Forever ID është futur në disa llogari FCC, prandaj nuk e dimë se cilës i përket programi yt. Kontakto mbështetjen dhe do ta lidhim me llogarinë e duhur.',
+    'Javi se podršci →' => 'Kontakto mbështetjen →',
+    'Upiši svoj Forever ID' => 'Shkruaj Forever ID-në tënde',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Udhëtimi im hapet kur Forever ID-ja jote është shkruar në kartën tënde FCC. Shkruaje te Karta ime dhe hapi yt do të hapet vetë. Nëse numri është tashmë aty, kontakto mbështetjen.',
+    'Otvori Moju karticu →' => 'Hap Karta ime →',
+    'Moj put još nije uključen za tvoj račun' => 'Udhëtimi im ende nuk është aktivizuar për llogarinë tënde',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Përparimi yt është ruajtur. Kontakto mbështetjen dhe do të kontrollojmë pse hapi yt nuk hapet.',
+    /* /Custom code: FC-2026-10-12 */
 ];

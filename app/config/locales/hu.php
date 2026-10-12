@@ -65173,4 +65173,19 @@ Segíthetek a csatlakozásban?',
     'Potvrdi što je stvarno napravljeno.' => 'Erősítsd meg, hogy valójában mit tettél.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'A programod már létezik. Folytasd az utolsó lépésednél.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Először nézd meg a rövid bevezetőt',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Az utam program első lépése előtt nézd meg a bevezető videót. Utána az első lépésed magától megnyílik.',
+    'Pogledaj uvod →' => 'Bevezető megnézése →',
+    'Moj put se uskoro otvara' => 'Az utam program hamarosan megnyílik',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'A program még nem indult el a fiókodban. Amikor megnyílik, itt vár az első lépésed, és az eddigi fejlődésed megmarad.',
+    'Tvoj Forever ID koristi još jedan račun' => 'A Forever azonosítódat egy másik fiók is használja',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'Ugyanaz a Forever azonosító több FCC fiókban szerepel, ezért nem tudjuk, melyikhez tartozik a programod. Fordulj az ügyfélszolgálathoz, és a megfelelő fiókhoz kapcsoljuk.',
+    'Javi se podršci →' => 'Ügyfélszolgálat →',
+    'Upiši svoj Forever ID' => 'Add meg a Forever azonosítódat',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Az utam program akkor nyílik meg, amikor a Forever azonosítód szerepel az FCC kártyádon. Add meg A kártyám részben, és a lépésed magától megnyílik. Ha a szám már szerepel, fordulj az ügyfélszolgálathoz.',
+    'Otvori Moju karticu →' => 'A kártyám megnyitása →',
+    'Moj put još nije uključen za tvoj račun' => 'Az utam program még nincs bekapcsolva a fiókodban',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'A fejlődésed mentve van. Fordulj az ügyfélszolgálathoz, és megnézzük, miért nem nyílik meg a lépésed.',
+    /* /Custom code: FC-2026-10-12 */
 ];

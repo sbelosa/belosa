@@ -266,4 +266,19 @@ return [
     'Potvrdi što je stvarno napravljeno.' => 'Confirma lo que realmente hiciste.',
     'Tvoj program već postoji. Nastavi od svojeg zadnjeg koraka.' => 'Tu programa ya existe. Continúa desde tu último paso.',
     /* /Custom code: FC-2026-10-12 */
+    /* Custom code: FC-2026-10-12: Moj put access notice */
+    'Najprije pogledaj kratki uvod' => 'Primero mira la breve introducción',
+    'Prije prvog koraka Mojeg puta pogledaj uvodni video. Kada ga pogledaš, tvoj prvi korak otvara se sam.' => 'Antes de tu primer paso de Mi recorrido, mira el vídeo de introducción. Cuando lo hayas visto, tu primer paso se abrirá solo.',
+    'Pogledaj uvod →' => 'Ver la introducción →',
+    'Moj put se uskoro otvara' => 'Mi recorrido se abre pronto',
+    'Program još nije pokrenut za tvoj račun. Kada se otvori, ovdje te čeka tvoj prvi korak, a sav dosadašnji napredak ostaje sačuvan.' => 'El programa todavía no ha empezado para tu cuenta. Cuando se abra, aquí te esperará tu primer paso, y todo tu progreso se conserva.',
+    'Tvoj Forever ID koristi još jedan račun' => 'Otra cuenta usa tu Forever ID',
+    'Isti Forever ID upisan je na više FCC računa, pa ne znamo kojem pripada tvoj program. Javi se podršci i povezat ćemo ga s pravim računom.' => 'El mismo Forever ID está introducido en varias cuentas de FCC, así que no sabemos a cuál pertenece tu programa. Contacta con soporte y lo vincularemos a la cuenta correcta.',
+    'Javi se podršci →' => 'Contactar con soporte →',
+    'Upiši svoj Forever ID' => 'Introduce tu Forever ID',
+    'Moj put otvara se kada je na tvojoj FCC kartici upisan tvoj Forever ID. Upiši ga na Mojoj kartici, a tvoj korak otvorit će se sam. Ako je broj već upisan, javi se podršci.' => 'Mi recorrido se abre cuando tu Forever ID está introducido en tu tarjeta FCC. Introdúcelo en Mi tarjeta y tu paso se abrirá solo. Si el número ya está, contacta con soporte.',
+    'Otvori Moju karticu →' => 'Abrir Mi tarjeta →',
+    'Moj put još nije uključen za tvoj račun' => 'Mi recorrido aún no está activado para tu cuenta',
+    'Tvoj napredak je sačuvan. Javi se podršci i provjerit ćemo zašto se tvoj korak ne otvara.' => 'Tu progreso está guardado. Contacta con soporte y comprobaremos por qué no se abre tu paso.',
+    /* /Custom code: FC-2026-10-12 */
 ];
