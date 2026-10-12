@@ -45,7 +45,11 @@
     var colour = glowOf(img);
     host.dataset.zsGlow = colour ? '1' : '0';
     if (colour) host.style.setProperty('--fl-glow', colour);
-    if (host.classList.contains('fl-product-stage')) placeFloor(img, host);
+    if (host.classList.contains('fl-product-stage')) {
+      placeFloor(img, host);
+      var page = document.getElementById('fl-library');
+      if (page && colour) page.style.setProperty('--fl-glow', colour);
+    }
   }
   function scan() {
     document.querySelectorAll(SELECTOR).forEach(function (img) {

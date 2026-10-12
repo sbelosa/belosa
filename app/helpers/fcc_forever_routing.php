@@ -47,6 +47,8 @@ function fcc_forever_country_context(): array {
     }
     $native=fcc_forever_country_code($_SERVER['GEOIP_COUNTRY_CODE']??null);
     if($native)return $detected=['country'=>$native,'source'=>'server'];
+    // Local development only: a private address has no location, so a test country stands in for geolocation.
+    if(getenv('FCC_LOCAL')==='1' && ($local_country=fcc_forever_country_code(getenv('FCC_LOCAL_COUNTRY')?:null)) && array_key_exists($local_country,fcc_forever_markets()))return $detected=['country'=>$local_country,'source'=>'local_test'];
     if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE))return $detected=['country'=>null,'source'=>'unknown'];
     try {
         $reader=get_maxmind_reader_city();
