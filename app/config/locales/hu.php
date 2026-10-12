@@ -65527,5 +65527,6 @@ Segíthetek a csatlakozásban?',
     'Sve netaknute kartice već koriste novu karticu.' => 'Minden módosítatlan kártya már az új kártyát használja.',
     'kartice' => 'kártya',
     'izmjene blokova' => 'blokkmódosítás',
+    'Prikaži još %d' => 'Még %d megjelenítése',
     /* /Custom code: FC-2026-10-12 */
 ];

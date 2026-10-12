@@ -65760,5 +65760,6 @@ Ai nevoie de ajutor pentru conectare?',
     'Sve netaknute kartice već koriste novu karticu.' => 'Toate cardurile nemodificate folosesc deja cardul nou.',
     'kartice' => 'carduri',
     'izmjene blokova' => 'modificări de blocuri',
+    'Prikaži još %d' => 'Afișează încă %d',
     /* /Custom code: FC-2026-10-12 */
 ];

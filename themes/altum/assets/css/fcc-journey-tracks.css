@@ -35,9 +35,17 @@
 .mp-member-main progress{width:100%;max-width:280px;height:6px;accent-color:#155845}
 .mp-member-actions{display:flex;flex-wrap:wrap;gap:8px}
 .mp-team-privacy{margin-top:12px;font-size:12px}
+.mp-team-more{margin-top:10px}
+.mp-team-more>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid var(--fp-line,#d5e4dc);border-radius:12px;background:#f8fbf9;color:var(--fp-green,#177968);font-weight:650;font-size:14px}
+.mp-team-more>summary::-webkit-details-marker{display:none}
+.mp-team-more>summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.mp-team-more[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+.mp-team-more>summary:focus-visible{outline:2px solid var(--fp-green,#177968);outline-offset:2px}
+.mp-team-more .mp-team-more-close,.mp-team-more[open] .mp-team-more-open{display:none}
+.mp-team-more[open] .mp-team-more-close{display:inline}
 .mp-stuck{margin-top:14px;padding-top:14px;border-top:1px solid var(--fp-line,#d5e4dc)}
 .mp-rhythm-list{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-wrap:wrap;gap:10px}
 .mp-rhythm-list form{margin:0}
 .mp-rhythm-done{display:inline-block;padding:10px 16px;border-radius:12px;background:#e7f2ec;color:#155845;font-weight:600}
-@media (max-width:640px){.mp-member-actions{width:100%}.mp-member-actions .fp-button{flex:1 1 auto;text-align:center}.mp-team-summary .fp-button{width:100%;text-align:center}}
+@media (max-width:640px){.mp-member-actions{width:100%}.mp-member-actions .fp-button{flex:1 1 auto;text-align:center}.mp-team-summary .fp-button{width:100%;text-align:center}.mp-team-more>summary{width:100%;justify-content:center}}
 /* /Custom code: FC-2026-10-12 */

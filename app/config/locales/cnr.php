@@ -58489,5 +58489,6 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'Sve netaknute kartice već koriste novu karticu.' => 'Sve netaknute kartice već koriste novu karticu.',
     'kartice' => 'kartice',
     'izmjene blokova' => 'izmjene blokova',
+    'Prikaži još %d' => 'Prikaži još %d',
     /* /Custom code: FC-2026-10-12 */
 ];

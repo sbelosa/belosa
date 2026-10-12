@@ -57822,5 +57822,6 @@ Guidance ne ocenjuje sopstveni odgovor, na primer „Ova poruka se drži bezbedn
     'Sve netaknute kartice već koriste novu karticu.' => 'Sve netaknute kartice već koriste novu karticu.',
     'kartice' => 'kartice',
     'izmjene blokova' => 'izmene blokova',
+    'Prikaži još %d' => 'Prikaži još %d',
     /* /Custom code: FC-2026-10-12 */
 ];

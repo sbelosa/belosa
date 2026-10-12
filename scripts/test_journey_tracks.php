@@ -79,4 +79,11 @@ foreach(['en', 'de', 'es', 'fr', 'sl', 'sr', 'cnr', 'sq', 'hu', 'ro', 'pl', 'sv'
     foreach($sources as $source) $assert(fcc_t($source, [], $locale) !== $source, $locale . ' translation: ' . mb_substr($source, 0, 40));
 }
 
+/* Sponsor view: each group shows its first ten members, the rest opens on request. */
+$team = (string) file_get_contents(dirname(__DIR__) . '/themes/altum/views/partner/journey-team.php');
+$assert(str_contains($team, '$mpVisible = 10;') && str_contains($team, "[array_slice(\$mpOverview['groups'][\$mpKey], 0, \$mpVisible), array_slice(\$mpOverview['groups'][\$mpKey], \$mpVisible)]"), 'team groups split after ten members');
+$assert(str_contains($team, "<details class=\"mp-team-more\"><summary><span class=\"mp-team-more-open\"><?= sprintf(\$mpText('Prikaži još %d'), count(\$mpMembers)) ?>") && substr_count($team, '<details') === substr_count($team, '</details>'), 'the rest of a group sits behind Prikaži još');
+$assert(str_contains($team, "<span class=\"fp-count\"><?= count(\$mpOverview['groups'][\$mpKey]) ?></span>"), 'group count still shows the whole group');
+foreach(['en', 'de', 'es', 'fr', 'sl', 'sq', 'hu', 'ro', 'pl', 'sv'] as $locale) $assert(fcc_t('Prikaži još %d', [], $locale) !== 'Prikaži još %d' && str_contains(fcc_t('Prikaži još %d', [], $locale), '%d'), $locale . ' translation: Prikaži još %d');
+
 echo 'journey tracks: ok' . PHP_EOL;

@@ -65704,5 +65704,6 @@ Behöver du hjälp med att ansluta?',
     'Sve netaknute kartice već koriste novu karticu.' => 'Alla oförändrade kort använder redan det nya kortet.',
     'kartice' => 'kort',
     'izmjene blokova' => 'blockändringar',
+    'Prikaži još %d' => 'Visa %d till',
     /* /Custom code: FC-2026-10-12 */
 ];

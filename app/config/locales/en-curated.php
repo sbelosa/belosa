@@ -653,5 +653,6 @@ return [
     'Sve netaknute kartice već koriste novu karticu.' => 'All untouched cards already use the new card.',
     'kartice' => 'cards',
     'izmjene blokova' => 'block changes',
+    'Prikaži još %d' => 'Show %d more',
     /* /Custom code: FC-2026-10-12 */
 ];

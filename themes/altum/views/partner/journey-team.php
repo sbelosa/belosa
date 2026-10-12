@@ -10,6 +10,7 @@ $mpGroups = [
  'not_entered' => ['Još nisu otvorili FCC', 'Pošalji im poveznicu na prvi korak.'],
  'progress' => ['Napreduju', 'Pohvali konkretan trud. To ljudima puno znači.'],
 ];
+$mpVisible = 10;
 $mpIdle = static function(?int $days): string {
  if($days === null) return fcc_t('Još nema spremljenog koraka');
  if($days === 0) return fcc_t('Zadnji korak: danas');
@@ -36,8 +37,11 @@ $mpIdle = static function(?int $days): string {
    <section class="fp-panel mp-team-group mp-team-<?= $h($mpKey) ?>">
     <div class="fp-section-title"><h2><?= $mpText($mpTitle) ?></h2><span class="fp-count"><?= count($mpOverview['groups'][$mpKey]) ?></span></div>
     <p class="fp-muted"><?= $mpText($mpHint) ?></p>
+    <?php /* The first ten stay visible, the rest opens on request, so long groups do not flood the page. */ ?>
+    <?php foreach([array_slice($mpOverview['groups'][$mpKey], 0, $mpVisible), array_slice($mpOverview['groups'][$mpKey], $mpVisible)] as $mpPart => $mpMembers): if(!$mpMembers) continue; ?>
+    <?php if($mpPart === 1): ?><details class="mp-team-more"><summary><span class="mp-team-more-open"><?= sprintf($mpText('Prikaži još %d'), count($mpMembers)) ?></span><span class="mp-team-more-close"><?= $mpText('Prikaži manje') ?></span></summary><?php endif ?>
     <ul class="mp-member-list">
-     <?php foreach($mpOverview['groups'][$mpKey] as $mpMember): $mpMessage = fcc_mp_member_message($mpKey, $mpMember); $mpPhone = $mpMember['phone'] !== '' ? ltrim(fcc_partner_contact_phone($mpMember['phone'], true), '+') : ''; ?>
+     <?php foreach($mpMembers as $mpMember): $mpMessage = fcc_mp_member_message($mpKey, $mpMember); $mpPhone = $mpMember['phone'] !== '' ? ltrim(fcc_partner_contact_phone($mpMember['phone'], true), '+') : ''; ?>
       <li class="mp-member">
        <div class="mp-member-main">
         <strong><?= $h($mpMember['name']) ?></strong>
@@ -52,6 +56,8 @@ $mpIdle = static function(?int $days): string {
       </li>
      <?php endforeach ?>
     </ul>
+    <?php if($mpPart === 1): ?></details><?php endif ?>
+    <?php endforeach ?>
    </section>
   <?php endforeach ?>
   <p class="fp-muted mp-team-privacy"><?= $mpText('Vidiš samo izravne suradnike s potvrđenom vezom u FCC-u. Ne prikazujemo sadržaj njihovih poruka ni bilježaka.') ?></p>

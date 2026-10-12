@@ -58460,5 +58460,6 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'Sve netaknute kartice već koriste novu karticu.' => 'Të gjitha kartat e pandryshuara përdorin tashmë kartën e re.',
     'kartice' => 'karta',
     'izmjene blokova' => 'ndryshime blloqesh',
+    'Prikaži još %d' => 'Shfaq edhe %d',
     /* /Custom code: FC-2026-10-12 */
 ];

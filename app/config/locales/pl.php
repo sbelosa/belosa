@@ -65733,5 +65733,6 @@ Potrzebujesz pomocy z połączeniem?',
     'Sve netaknute kartice već koriste novu karticu.' => 'Wszystkie niezmienione karty korzystają już z nowej karty.',
     'kartice' => 'karty',
     'izmjene blokova' => 'zmiany bloków',
+    'Prikaži još %d' => 'Pokaż jeszcze %d',
     /* /Custom code: FC-2026-10-12 */
 ];

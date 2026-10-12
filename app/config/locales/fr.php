@@ -58407,5 +58407,6 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'Sve netaknute kartice već koriste novu karticu.' => 'Toutes les cartes non modifiées utilisent déjà la nouvelle carte.',
     'kartice' => 'cartes',
     'izmjene blokova' => 'modifications de blocs',
+    'Prikaži još %d' => 'Afficher %d de plus',
     /* /Custom code: FC-2026-10-12 */
 ];
