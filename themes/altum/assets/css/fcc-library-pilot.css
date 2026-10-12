@@ -197,6 +197,9 @@ body.fl-dialog-open {overflow:hidden}
 #fl-library .fl-country-controls button{min-width:44px;min-height:44px;font-size:13px}
 #fl-library .fl-contact-identity{display:flex;gap:12px;align-items:center}
 #fl-library .fl-person-mark{width:44px;height:44px;display:grid;place-items:center;flex-shrink:0;border-radius:50%;background:#e5eee9;color:#205c4e;font-size:20px;font-weight:650;border:1px solid #cfdfd4}
+/* Custom code: FC-2026-10-12: the card photo fills the circle; the initial stays underneath as the fallback. */
+#fl-library .fl-person-mark{position:relative;overflow:hidden}#fl-library .fl-person-mark.has-photo{color:transparent}#fl-library .fl-person-mark img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+/* /Custom code: FC-2026-10-12 */
 #fl-library .fl-contact-identity a{font-size:13px;min-height:32px;display:inline-flex;align-items:center;gap:5px;text-decoration:underline;text-underline-offset:3px}
 #fl-library .fl-distributor{padding:17px;background:#fff;border-radius:16px;gap:10px}
 #fl-library .fl-contact-whatsapp{font-size:14px}

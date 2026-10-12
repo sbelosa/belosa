@@ -76,6 +76,27 @@ function fcc_market_category_destination(object $post, string $market, string $r
     $discount=\Altum\Link::get_main_biolink_discount_query_params((int)$owner->user_id,$market);
     return \Altum\Link::build_forever_destination_url($category['url'],(string)$forever_id,$market,$discount) ?: null;
 }
+/* Custom code: FC-2026-10-12: the contact person shows the photo that is already public on the card the visitor came from. */
+function fcc_market_card_avatar(int $link_id, int $user_id): ?string {
+    if($link_id<1) return null;
+    $blocks=db()->where('link_id',$link_id)->where('user_id',$user_id)->where('is_enabled',1)->where('type',['header','avatar'],'IN')->orderBy('`order`','ASC')->orderBy('biolink_block_id','ASC')->get('biolinks_blocks',null,['type','settings']);
+    foreach($blocks as $block) {
+        $settings=json_decode($block->settings??'{}',true)?:[];
+        $file=(string)($block->type==='header'?($settings['avatar']??''):($settings['image']??''));
+        if(is_upload_file_available('avatars',$file)) return \Altum\Uploads::get_full_url('avatars').rawurlencode($file);
+    }
+    return null;
+}
+function fcc_market_contact_avatar(string $ref, object $owner): ?string {
+    $link=db()->where('url',$ref)->where('type','biolink')->where('is_enabled',1)->getOne('links',['link_id']);
+    $avatar=$link?fcc_market_card_avatar((int)$link->link_id,(int)$owner->user_id):null;
+    if(!$avatar && function_exists('fc_get_user_main_biolink_id')) {
+        $main=(int)fc_get_user_main_biolink_id((int)$owner->user_id);
+        if($main && (!$link || $main!==(int)$link->link_id)) $avatar=fcc_market_card_avatar($main,(int)$owner->user_id);
+    }
+    return $avatar;
+}
+/* /Custom code: FC-2026-10-12 */
 function fcc_market_contact(object $post, string $ref, ?string $market=null): ?array {
     $owner=fcc_market_referral_owner($ref);
     if(!$owner) return null;
@@ -96,7 +117,7 @@ function fcc_market_contact(object $post, string $ref, ?string $market=null): ?a
     if(fcc_new_locale($locale)) $message=fcc_t('Pozdrav! Zanima me {product}. Možete li mi reći više o proizvodu i kako ga mogu naručiti? Javite mi se kad budete u mogućnosti. Hvala!',['{product}'=>$title],$locale);
     if($market && fcc_new_locale($locale)) $message.=' '.fcc_t('Moja zemlja: {country}.',['{country}'=>fcc_library_pilot_country_name($market)],$locale);
     elseif($market) $message.=match($locale) {'hr'=>' Moja zemlja: ','sl'=>' Moja država: ','sr'=>' Moja zemlja: ','de'=>' Mein Land: ',default=>' My country: '}.fcc_library_pilot_country_name($market).'.';
-    return ['name'=>$owner->name,'profile'=>url($ref),'phone'=>$phone,
+    return ['name'=>$owner->name,'profile'=>url($ref),'phone'=>$phone,'avatar'=>fcc_market_contact_avatar($ref,$owner),
         'whatsapp'=>$phone?'https://wa.me/'.$phone.'?text='.rawurlencode($message):null,
         'tel'=>$phone?'tel:+'.$phone:null];
 }
