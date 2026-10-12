@@ -78,6 +78,7 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { toast.hidden = true; }, isError ? 6000 : 3200);
   };
+  say(root.dataset.feNotice);
   const formError = (form, message) => {
     const box = form && form.querySelector('[data-fe-error]');
     if (!box) { say(message, true); return; }

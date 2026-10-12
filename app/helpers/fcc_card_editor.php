@@ -52,6 +52,32 @@ function fcc_card_editor_link(int $user_id, int $link_id): object {
     return $link;
 }
 
+/** Where a page load of link/{id} goes: a new card opens this editor. The classic editor stays for classic
+ * cards and for every deliberate classic address: classic=1, a tab, an editor view (the preview too) or a block
+ * in the query, and the settings, statistics and download paths. Posts are never routed. */
+function fcc_card_editor_route(object $link, array $params, array $query, string $request_method, bool $partner_enabled): ?string {
+    if(!$partner_enabled || !in_array($request_method, ['GET', 'HEAD'], true)) return null;
+    if(($link->type ?? '') !== 'biolink' || !fcc_card_is_v2($link)) return null;
+    if(isset($params[1]) || array_intersect_key($query, array_flip(['classic', 'tab', 'editor', 'biolink_block_id'])) !== []) return null;
+    return 'partner/card/' . (int) $link->link_id;
+}
+
+/** A message queued by the page that led here, such as a saved look, is shown once in this editor's toast. */
+function fcc_card_editor_take_notice(): string {
+    $messages = [];
+    foreach(['success', 'info'] as $type) {
+        foreach((array) session_get($type, []) as $group) foreach((array) $group as $message) $messages[] = trim(strip_tags((string) $message));
+        session_unset_key($type);
+    }
+    return implode(' ', array_filter($messages));
+}
+
+/** After a look change in the classic editor a new card continues in this editor, a classic card stays. */
+function fcc_card_design_return_path(int $link_id, bool $is_v2, string $action): string {
+    if(!$is_v2) return 'link/' . $link_id . '?tab=settings&editor=design';
+    return 'partner/card/' . $link_id . '?step=' . ($action === 'card_recommended' ? 'content' : 'design');
+}
+
 function fcc_card_editor_language(object $link, ?object $user = null): string {
     $code = (string) ($link->settings->language_code ?? ($user->language ?? 'hr'));
     return function_exists('fcc_locale') ? fcc_locale($code) : 'hr';

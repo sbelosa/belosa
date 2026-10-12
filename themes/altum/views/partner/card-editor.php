@@ -133,7 +133,7 @@ $copy = [
     'labels' => array_map(static fn($type) => fcc_card_editor_label($type), array_combine(FCC_CARD_EDITOR_TYPES, FCC_CARD_EDITOR_TYPES)),
 ];
 ?>
-<div class="fe" data-fe data-fe-v2="<?= fcc_card_is_v2($link) ? '1' : '0' ?>" data-fe-endpoint="<?= $h($endpoint) ?>" data-fe-token="<?= $h(\Altum\Csrf::get()) ?>" data-fe-step-active="<?= $h($data->step) ?>">
+<div class="fe" data-fe data-fe-v2="<?= fcc_card_is_v2($link) ? '1' : '0' ?>" data-fe-endpoint="<?= $h($endpoint) ?>" data-fe-token="<?= $h(\Altum\Csrf::get()) ?>" data-fe-step-active="<?= $h($data->step) ?>" data-fe-notice="<?= $h(fcc_card_editor_take_notice()) ?>">
     <header class="fe-head">
         <div class="fe-head-title">
             <h1><?= $t('Uredi karticu') ?></h1>

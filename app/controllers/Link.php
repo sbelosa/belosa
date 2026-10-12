@@ -3518,6 +3518,12 @@ class Link extends Controller {
         }
         /* /Custom code: FC-2026-03-19 */
 
+        /* Custom code: FC-2026-10-12: a new card opens the new editor; deliberate classic addresses stay here */
+        if($fcc_card_editor_route = fcc_card_editor_route($this->link, $this->params, $_GET, (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'), fcc_partner_enabled())) {
+            redirect($fcc_card_editor_route);
+        }
+        /* /Custom code: FC-2026-10-12 */
+
         /* Get the current domain if needed */
         $this->link->domain = $this->link->domain_id ? (new Domain())->get_domain_by_domain_id($this->link->domain_id) : null;
 

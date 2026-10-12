@@ -169,4 +169,36 @@ foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'
     foreach(['FCC uvijek pri ruci', 'Dodaj FCC na početni zaslon', 'Tvoja kartica ima novi izgled', 'Nova kartica Aloe za netaknute kartice', 'Ažuriranje sadržaja: napomena o službenoj stranici'] as $text) $assert(isset($catalogue[$text]), $locale . ' translates: ' . $text);
 }
 
+/* FC-2026-10-12: a new card opens the new editor, the classic editor stays reachable on purpose. */
+$card = static fn(string $type, $settings): object => (object) ['link_id' => 7, 'type' => $type, 'settings' => $settings];
+$v2 = $card('biolink', (object) ['fcc_card' => 'v2', 'fcc_card_theme' => 'aloe']);
+$assert(fcc_card_editor_route($v2, ['7'], [], 'GET', true) === 'partner/card/7', 'link/{id} of a new card opens the new editor');
+$assert(fcc_card_editor_route($v2, ['7'], [], 'HEAD', true) === 'partner/card/7', 'HEAD is routed like GET');
+$assert(fcc_card_editor_route($card('biolink', '{"fcc_card":"v2"}'), ['7'], ['auto_copy_link' => 'true'], 'GET', true) === 'partner/card/7', 'stored settings and other query keys still route');
+$assert(fcc_card_editor_route($v2, ['7'], [], 'POST', true) === null, 'posts are never routed');
+$assert(fcc_card_editor_route($v2, ['7'], [], 'GET', false) === null, 'without the partner area the classic editor stays');
+foreach([(object) [], (object) ['fcc_card' => 'v1'], null, '{"fcc_card":"v1"}'] as $settings) $assert(fcc_card_editor_route($card('biolink', $settings), ['7'], [], 'GET', true) === null, 'a classic card stays in the classic editor');
+foreach(['vcard', 'link', 'file'] as $type) $assert(fcc_card_editor_route($card($type, (object) ['fcc_card' => 'v2']), ['7'], [], 'GET', true) === null, 'only cards are routed: ' . $type);
+foreach(['settings', 'statistics', 'download'] as $method) $assert(fcc_card_editor_route($v2, ['7', $method], [], 'GET', true) === null, 'link/{id}/' . $method . ' stays');
+foreach([['classic' => '1'], ['tab' => 'blocks'], ['tab' => 'settings', 'editor' => 'design'], ['tab' => 'settings', 'editor' => 'settings'], ['editor' => 'preview'], ['tab' => 'blocks', 'biolink_block_id' => '5'], ['biolink_block_id' => '5']] as $query) {
+    $assert(fcc_card_editor_route($v2, ['7'], $query, 'GET', true) === null, 'deliberate classic address stays: ' . http_build_query($query));
+}
+$assert(fcc_card_design_return_path(7, true, 'card_design') === 'partner/card/7?step=design', 'switching to the new card continues in the new editor');
+$assert(fcc_card_design_return_path(7, true, 'card_recommended') === 'partner/card/7?step=content', 'recommended blocks continue in the content step');
+$assert(fcc_card_design_return_path(7, false, 'card_design') === 'link/7?tab=settings&editor=design', 'switching to the classic card stays in the classic editor');
+$linkController = $source('app/controllers/Link.php');
+$routeAt = strpos($linkController, 'fcc_card_editor_route($this->link, $this->params, $_GET');
+$assert($routeAt !== false && $routeAt > strpos($linkController, "->where('user_id', \$this->user->user_id)->getOne('links')") && $routeAt > strpos($linkController, "redirect('links?type=' . \$this->link->type)") && $routeAt < strpos($linkController, 'switch($method)'), 'Link::index routes after the owner and plan checks, before the editor is built');
+$assert(str_contains($source('app/controllers/Partner.php'), 'return fcc_card_design_return_path($link_id,fcc_card_is_v2(fcc_card_owned_link($uid,$link_id)),$action);'), 'look changes return through the routing helper');
+// Deliberate links from the new editor into the classic one carry a tab, so they are never routed back.
+foreach(['themes/altum/views/partner/card-editor.php', 'themes/altum/views/partner/card-editor-steps.php'] as $view) {
+    $assert(preg_match_all("~url\('link/'~", $source($view)) === preg_match_all('~url\(\'link/\'\s*\.\s*\(int\)\s*\$link->link_id(?:\s*\.\s*\'([^\']*)\')?\s*\)~', $source($view), $classicLinks), 'every classic link is read in ' . $view);
+    $assert($classicLinks[1] !== [], 'classic links found in ' . $view);
+    foreach($classicLinks[1] as $suffix) $assert(str_starts_with($suffix, '?tab='), 'classic link keeps its tab in ' . $view . ': ' . ($suffix ?: '(none)'));
+}
+// The saved look message arrives with the page and is shown once, not left waiting for a later page.
+$assert(str_contains($source('themes/altum/views/partner/card-editor.php'), 'data-fe-notice="<?= $h(fcc_card_editor_take_notice()) ?>"') && str_contains($source('themes/altum/assets/js/fcc-card-editor.js'), 'say(root.dataset.feNotice);'), 'the new editor shows the message that led to it');
+$cardList = $source('themes/altum/views/partner/index.php');
+$assert(str_contains($cardList, "url('link/'.(int)\$card['link_id'].'?editor=preview')") && str_contains($cardList, "<?php if(empty(\$card['fcc_v2'])): ?><a class=\"fp-link fp-card-advanced\" href=\"<?= url('link/'.(int)\$card['link_id']) ?>\""), 'card list: preview keeps the classic view, Klasični uređivač only for classic cards');
+
 echo "fcc card editor checks passed\n";

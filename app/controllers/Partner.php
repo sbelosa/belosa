@@ -380,7 +380,7 @@ class Partner extends Controller {
    $link_id=(int)($input['link_id']??0);
    if($action==='card_design') fcc_card_set_design($uid,$link_id,(string)($input['card_version']??''),(string)($input['card_theme']??''));
    else fcc_card_add_recommended($uid,$link_id);
-   return 'link/'.$link_id.'?tab=settings&editor=design';
+   return fcc_card_design_return_path($link_id,fcc_card_is_v2(fcc_card_owned_link($uid,$link_id)),$action);
   }
   /* /Custom code: FC-2026-10-12 */
   if($action==='coach_feedback_resolve') {
