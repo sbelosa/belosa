@@ -32,10 +32,30 @@
   }
   function placeFloor(img, host) {
     var frame = img.closest('.fl-hero-image'), frac = floorOf(img);
-    if (!frame || frac === null) return;
+    if (!frame) return;
+    if (frac === null) frac = 0.9;
     var set = function () {
       var top = img.offsetTop + img.offsetHeight * frac;
       if (img.offsetHeight) frame.style.setProperty('--zs-floor', Math.round(top - 11) + 'px');
+      // The white light behind the product reaches the photo's corners, so its white background never shows as a square.
+      var side = Math.min(img.offsetWidth, img.offsetHeight), stage = frame.closest('.fl-product-stage');
+      if (side && stage) {
+        var a = img.getBoundingClientRect(), b = stage.getBoundingClientRect();
+        stage.style.setProperty('--zs-core', Math.round(side * 0.72) + 'px');
+        stage.style.setProperty('--zs-cx', Math.round(a.left - b.left + a.width / 2) + 'px');
+        stage.style.setProperty('--zs-cy', Math.round(a.top - b.top + a.height / 2) + 'px');
+      }
+    };
+    set(); window.addEventListener('resize', set, { passive: true });
+  }
+  /* Centre a white light on the photo inside its card, large enough to reach the photo's corners. */
+  function lightCard(img, host) {
+    var set = function () {
+      var side = Math.min(img.offsetWidth, img.offsetHeight); if (!side) return;
+      var a = img.getBoundingClientRect(), b = host.getBoundingClientRect();
+      host.style.setProperty('--zs-core', Math.round(side * 0.72) + 'px');
+      host.style.setProperty('--zs-cx', Math.round(a.left - b.left + a.width / 2) + 'px');
+      host.style.setProperty('--zs-cy', Math.round(a.top - b.top + a.height / 2) + 'px');
     };
     set(); window.addEventListener('resize', set, { passive: true });
   }
@@ -45,46 +65,12 @@
     var colour = glowOf(img);
     host.dataset.zsGlow = colour ? '1' : '0';
     if (colour) host.style.setProperty('--fl-glow', colour);
-    cutout(img);
+    if (host.classList.contains('fl-product-image')) lightCard(img, host);
     if (host.classList.contains('fl-product-stage')) {
       placeFloor(img, host);
       var page = document.getElementById('fl-library');
       if (page && colour) page.style.setProperty('--fl-glow', colour);
     }
-  }
-  /* Remove the photo's white studio background: flood fill from the border through near-white pixels only,
-     so white parts of the pack itself stay. Works in every browser; multiply blending stays as a fallback. */
-  function cutout(img) {
-    if (img.dataset.zsCut || !img.naturalWidth) return;
-    img.dataset.zsCut = 'pending';
-    try {
-      var W = Math.min(img.naturalWidth, 640), H = Math.round(img.naturalHeight * W / img.naturalWidth);
-      var c = document.createElement('canvas'); c.width = W; c.height = H;
-      var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, W, H);
-      var data = x.getImageData(0, 0, W, H), d = data.data, seen = new Uint8Array(W * H), stack = [];
-      var white = function (p) { var i = p * 4, mn = Math.min(d[i], d[i + 1], d[i + 2]), mx = Math.max(d[i], d[i + 1], d[i + 2]); return d[i + 3] > 0 && mn >= 232 && mx - mn <= 16; };
-      for (var px = 0; px < W; px++) { stack.push(px, (H - 1) * W + px); }
-      for (var py = 0; py < H; py++) { stack.push(py * W, py * W + W - 1); }
-      var cleared = 0;
-      while (stack.length) {
-        var p = stack.pop(); if (seen[p] || !white(p)) continue;
-        seen[p] = 1; cleared++;
-        var i = p * 4, mn = Math.min(d[i], d[i + 1], d[i + 2]);
-        d[i + 3] = mn >= 246 ? 0 : Math.round(255 * (246 - mn) / 14);
-        var col = p % W;
-        if (col > 0) stack.push(p - 1); if (col < W - 1) stack.push(p + 1);
-        if (p >= W) stack.push(p - W); if (p < W * (H - 1)) stack.push(p + W);
-      }
-      if (cleared < W * H * 0.08) { img.dataset.zsCut = 'skip'; return; }
-      x.putImageData(data, 0, 0);
-      c.toBlob(function (blob) {
-        if (!blob) { img.dataset.zsCut = 'skip'; return; }
-        img.dataset.zsOriginal = img.currentSrc || img.src;
-        img.removeAttribute('srcset');
-        img.src = URL.createObjectURL(blob);
-        img.dataset.zsCut = '1';
-      }, 'image/png');
-    } catch (e) { img.dataset.zsCut = 'skip'; }
   }
   function scan() {
     document.querySelectorAll(SELECTOR).forEach(function (img) {

@@ -566,3 +566,42 @@ body.fcc-ui-zivi #fl-composer .fl-selected img { background: linear-gradient(160
 body.fcc-ui-zivi #fl-composer .fl-selected { isolation: isolate; }
 body.fcc-ui-zivi #fl-library .fl-discover { padding-bottom: 0 !important; margin-bottom: 0 !important; }
 body.fcc-ui-zivi #fl-library .fl-routine { margin-top: 48px !important; }
+
+/* ---------- Product photos, final approach ----------
+   The photo stays untouched. A white light sits right behind the product and the square edges of the
+   photo fade softly into it, so white packs keep their full shape in every browser. No blending, no cutouts. */
+body.fcc-ui-zivi :is(.fl-product-stage .fl-hero-image img, .fl-product-image img, .fl-related-card img, #fl-composer .fl-selected img) {
+  mix-blend-mode: normal !important;
+  -webkit-mask-image: radial-gradient(closest-side, #000 74%, rgba(0,0,0,0) 100%);
+          mask-image: radial-gradient(closest-side, #000 74%, rgba(0,0,0,0) 100%);
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image {
+  background: radial-gradient(closest-side, #fff 0, #fff 58%, rgba(255,255,255,.75) 74%, rgba(255,255,255,0) 100%) !important;
+}
+body.fcc-ui-zivi .fl-product-stage {
+  background: radial-gradient(120% 95% at 50% 45%, color-mix(in srgb, var(--fl-glow) 20%, #fff) 0, color-mix(in srgb, var(--fl-glow) 40%, #EEF7F2) 100%) !important;
+}
+body.fcc-ui-zivi .fl-product-stage::before { opacity: .55; }
+body.fcc-ui-zivi .fl-product-image {
+  background: radial-gradient(closest-side, #fff 0, #fff 55%, rgba(255,255,255,0) 100%), color-mix(in srgb, var(--fl-glow) 26%, #F3F9F5) !important;
+}
+body.fcc-ui-zivi .fl-related-card img { background: #fff !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image img {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent), linear-gradient(180deg, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent), linear-gradient(180deg, transparent, #000 4%, #000 96%, transparent); mask-composite: intersect;
+}
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image { background: none !important; }
+body.fcc-ui-zivi .fl-product-stage .fl-hero-image img { max-width: 86% !important; margin-inline: auto; }
+body.fcc-ui-zivi .fl-product-stage[style*="--zs-core"] {
+  background:
+    radial-gradient(circle calc(var(--zs-core) * 1.38) at var(--zs-cx) var(--zs-cy), #fff 0, #fff 72%, rgba(255,255,255,.6) 84%, rgba(255,255,255,0) 100%),
+    radial-gradient(120% 95% at 50% 45%, color-mix(in srgb, var(--fl-glow) 24%, #fff) 0, color-mix(in srgb, var(--fl-glow) 46%, #EEF7F2) 100%) !important;
+}
+body.fcc-ui-zivi .fl-product-stage[style*="--zs-core"]::before { display: none; }
+body.fcc-ui-zivi .fl-product-image[style*="--zs-core"] {
+  background:
+    radial-gradient(circle calc(var(--zs-core) * 1.38) at var(--zs-cx) var(--zs-cy), #fff 0, #fff 72%, rgba(255,255,255,.6) 84%, rgba(255,255,255,0) 100%),
+    color-mix(in srgb, var(--fl-glow) 30%, #F3F9F5) !important;
+}
+body.fcc-ui-zivi .fl-product-image img { -webkit-mask-image: none; mask-image: none; }
+body.fcc-ui-zivi .fl-related-card img { -webkit-mask-image: none !important; mask-image: none !important; background: #fff !important; }
