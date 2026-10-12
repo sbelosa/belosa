@@ -178,6 +178,12 @@ jobs:
             mkdir -p "$(dirname "${target}")"
             cp "${dependency}" "${target}"
           done < release-prerequisites/new-dependencies.txt
+          # Custom code: FC-2026-10-12: compatible mobile assets must arrive before updated views.
+          mkdir -p release-prerequisites/themes/altum/assets/css release-prerequisites/themes/altum/assets/js
+          for stylesheet in fcc-journey-pilot.css fcc-partner-premium.css fcc-zivi-sloj.css fcc-card-editor.css; do
+            cp "themes/altum/assets/css/${stylesheet}" release-prerequisites/themes/altum/assets/css/
+          done
+          cp themes/altum/assets/js/fcc-card-editor.js release-prerequisites/themes/altum/assets/js/
           while read -r helper; do
             case "${helper}" in
               *.php) if [ -f "${helper}" ]; then cp "${helper}" release-prerequisites/helpers/; fi ;;
