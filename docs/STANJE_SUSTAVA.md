@@ -99,7 +99,7 @@ Korisnik je 12. listopada 2026. odobrio sve prijedloge iz `docs/ANALIZA_MOJ_PUT_
 2. Živi sloj je zadani izgled (`app/helpers/fcc_ui_theme.php`). Ako zatreba povratak, `FCC_UI_THEME` = `classic` u `fcc-partner-runtime.php` na poslužitelju vraća prijašnji izgled bez nove objave koda.
 3. Javne kartice suradnika ne učitavaju novi izgled. Njihova nadogradnja ostaje dobrovoljna, prema planu u FCC-Design `docs/DIZAJN_ZIVI_SLOJ_2026-10-12.md`.
 4. Provjereno na 8099: PHP lint za 1.878 datoteka, 15 testova, 22 javne, partnerske i administratorske stranice u novom izgledu bez greške, dvije kartice suradnika u starom izgledu, nove stranice Mojeg puta na računalu i mobitelu.
-5. Prije objave preostaje spremiti font DM Sans na vlastiti poslužitelj umjesto učitavanja s Google Fonts.
+5. Font DM Sans spremljen je na vlastiti poslužitelj (`themes/altum/assets/fonts/dm-sans`, latinica i proširena latinica, 94 KB, licenca SIL OFL u `OFL.txt`). Preglednici posjetitelja više ne kontaktiraju Google Fonts. Provjereno u pregledniku: oba dijela fonta učitavaju se lokalno, s hrvatskim slovima, bez ijednog zahtjeva prema Googleu.
 
 ## 5b. Već provedeno na produkciji prije ove dorade
 
