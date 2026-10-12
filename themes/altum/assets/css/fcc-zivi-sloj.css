@@ -497,3 +497,17 @@ body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-actions a.fl-contact-whatsap
 body.fcc-ui-zivi .fcc-blog-post-content .fl-contact-actions svg { width: 18px; height: 18px; }
 body.fcc-ui-zivi .fcc-blog-post-content :is(h2, h3) { border: 0 !important; padding-bottom: 0 !important; background-image: none !important; }
 body.fcc-ui-zivi .fcc-blog-post-content :is(h2, h3)::after { display: none !important; }
+
+/* Collapsible sections written inside guide articles */
+body.fcc-ui-zivi .fcc-blog-post-content details { border: 1px solid #e6eee9; border-radius: 20px; background: #fff; padding: 0 20px; margin: 0 0 10px; box-shadow: 0 1px 2px rgba(14,42,34,.04); max-width: 74ch; }
+body.fcc-ui-zivi .fcc-blog-post-content details[open] { border-color: #BFE3D2; box-shadow: 0 14px 34px rgba(18,90,70,.08); }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 62px; cursor: pointer; font-size: 16.5px; font-weight: 700; color: var(--zs-ink); }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary::-webkit-details-marker { display: none; }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary::marker { content: ""; }
+body.fcc-ui-zivi .fcc-blog-post-content details > summary::after {
+  content: ""; flex: none; width: 32px; height: 32px; border-radius: 50%; background-color: #E3F4EC;
+  background-image: linear-gradient(var(--zs-em2), var(--zs-em2)), linear-gradient(var(--zs-em2), var(--zs-em2));
+  background-size: 12px 2px, 2px 12px; background-position: center; background-repeat: no-repeat; transition: transform .25s ease;
+}
+body.fcc-ui-zivi .fcc-blog-post-content details[open] > summary::after { transform: rotate(45deg); }
+body.fcc-ui-zivi .fcc-blog-post-content details > :not(summary) { padding-bottom: 16px; }

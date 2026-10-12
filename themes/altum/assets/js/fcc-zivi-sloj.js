@@ -1,19 +1,19 @@
 /* FCC Živi sloj: tint each product stage with the packaging's own colour.
-   Reads a 24×24 sample of the already loaded photo; on any failure the topic colour from CSS stays. */
+   Reads a 48×48 sample of the already loaded photo; on any failure the topic colour from CSS stays. */
 (function () {
   var SELECTOR = '.fl-product-stage img, .fl-product-image img, .fl-related-card img';
   function glowOf(img) {
     try {
-      var c = document.createElement('canvas'); c.width = c.height = 24;
-      var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, 24, 24);
-      var d = x.getImageData(0, 0, 24, 24).data, r = 0, g = 0, b = 0, w = 0;
+      var n = 48, c = document.createElement('canvas'); c.width = c.height = n;
+      var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, n, n);
+      var d = x.getImageData(0, 0, n, n).data, r = 0, g = 0, b = 0, w = 0;
       for (var i = 0; i < d.length; i += 4) {
         var R = d[i], G = d[i + 1], B = d[i + 2], max = Math.max(R, G, B), min = Math.min(R, G, B);
         var sat = max ? (max - min) / max : 0;
         if (d[i + 3] < 128 || max > 248 && sat < .08 || sat < .18) continue;
         var weight = sat * sat; r += R * weight; g += G * weight; b += B * weight; w += weight;
       }
-      if (w < 1) return null;
+      if (w < .6) return null;
       return 'rgb(' + Math.round(r / w) + ',' + Math.round(g / w) + ',' + Math.round(b / w) + ')';
     } catch (e) { return null; }
   }
