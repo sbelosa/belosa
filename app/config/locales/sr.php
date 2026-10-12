@@ -57266,4 +57266,6 @@ Guidance ne ocenjuje sopstveni odgovor, na primer „Ova poruka se drži bezbedn
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Sa potvrđenom 4CC aktivnošću pridruži se grupi saradnika sa 4CC na WhatsAppu.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Sa 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mesecu dobijaš poziv u 4CC WhatsApp grupu. Uz aktivan PRO dobijaš i javnu stranicu sponzora i mesto među Preporučenim sponzorima.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Zdravo! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korišćenja, a ako imaš pitanja, tu je i kontakt osobe koja ti može pomoći.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Link zadržava preporuku osobe od koje je stigao.',
 ];

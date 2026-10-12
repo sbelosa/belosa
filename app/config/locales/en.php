@@ -54215,4 +54215,6 @@ Olive oil, approximately 5 g.',
     'Upoznaj način rada, podršku i prve korake uz svoju osobu za kontakt.' => 'Explore how the business works, the support available and your first steps with your personal contact.',
     'Tvoj dnevni korak' => 'Your daily step',
     'Poruka za slanje' => 'Message to send',
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Hi! Take a look at this product, I think it might interest you: %s. The page explains what it is and how to use it, and if you have questions, it also shows who can help you.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'The link keeps the recommendation of the person it came from.',
 ];

@@ -65159,4 +65159,6 @@ Behöver du hjälp med att ansluta?',
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Med bekräftad 4CC-aktivitet går du med i WhatsApp-gruppen för medarbetare med 4CC.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Med 4CC-aktivitet bekräftad i FLP360 denna eller förra månaden får du en inbjudan till 4CC-gruppen på WhatsApp. Med aktiv PRO får du också en offentlig sponsorsida och en plats bland Rekommenderade sponsorer.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Hej! Titta på den här produkten, jag tror att den kan intressera dig: %s. På sidan finns beskrivning och användning, och om du har frågor även kontakt till en person som kan hjälpa dig.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Länken behåller rekommendationen från personen den kom från.',
 ];

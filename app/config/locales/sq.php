@@ -57907,4 +57907,6 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Me aktivitet 4CC të konfirmuar, bashkohu me grupin e bashkëpunëtorëve me 4CC në WhatsApp.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Me aktivitet 4CC të konfirmuar në FLP360 këtë muaj ose muajin e kaluar merr ftesë në grupin 4CC në WhatsApp. Me PRO aktiv merr edhe një faqe publike sponsori dhe një vend te Sponsorët e rekomanduar.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Përshëndetje! Shiko këtë produkt, mendoj se mund të të interesojë: %s. Në faqe gjen përshkrimin dhe mënyrën e përdorimit, dhe nëse ke pyetje, edhe kontaktin e personit që mund të të ndihmojë.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Lidhja ruan rekomandimin e personit nga i cili erdhi.',
 ];

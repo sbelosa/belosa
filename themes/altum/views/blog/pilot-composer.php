@@ -6,7 +6,7 @@
  <h2 id="fl-composer-title"><?= e(fcc_lp_t('composer')) ?></h2>
  <div class="fl-selected"><img data-fl-image alt="" width="120" height="86"><strong data-fl-title></strong></div>
  <label for="fl-message"><?= e(fcc_lp_t('your_message')) ?></label><textarea id="fl-message" rows="6" maxlength="6000"></textarea>
- <p class="fl-muted fl-small"><?= e(fcc_lp_t(!empty($lp_personal_share)?'own_ref':'visitor_ref')) ?></p>
+ <p class="fl-muted fl-small"><?= e(fcc_lp_t(!empty($lp_personal_share)?'own_ref':(fcc_ui_theme_is_zivi()?'visitor_ref_neutral':'visitor_ref'))) ?></p>
  <div class="fl-actions"><a class="fl-primary" data-fl-whatsapp href="https://wa.me/" target="_blank" rel="noopener noreferrer"><?= e(fcc_lp_t('whatsapp')) ?> <?= fcc_partner_icon('arrow') ?></a><button class="fl-secondary" data-fl-copy type="button"><?= e(fcc_lp_t('copy')) ?></button></div>
  <?php if(fcc_ui_theme_is_zivi() && is_logged_in() && !empty($lp_personal_share)): $fl_hr=fcc_library_pilot_locale()==='hr'; $fl_t=static fn(string $hr,string $en)=>$fl_hr?fcc_t($hr):fcc_t($en); ?>
  <?php /* Živi sloj: more places to share, only for signed-in collaborators sharing their own referral link. */ ?>

@@ -64983,4 +64983,6 @@ Segíthetek a csatlakozásban?',
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Megerősített 4CC aktivitással csatlakozz a 4CC-s munkatársak WhatsApp-csoportjához.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Az FLP360-ban ebben vagy az előző hónapban megerősített 4CC aktivitással meghívót kapsz a 4CC WhatsApp-csoportba. Aktív PRO mellett nyilvános szponzori oldalt és helyet is kapsz az Ajánlott szponzorok között.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Szia! Nézd meg ezt a terméket, szerintem érdekelhet: %s. Az oldalon megtalálod a leírást és a használat módját, kérdés esetén pedig annak a személynek az elérhetőségét is, aki segíthet.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'A hivatkozás megőrzi annak a személynek az ajánlását, akitől érkezett.',
 ];

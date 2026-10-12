@@ -57854,4 +57854,6 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Avec une activité 4CC confirmée, rejoins le groupe WhatsApp des collaborateurs 4CC.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Avec une activité 4CC confirmée dans FLP360 ce mois-ci ou le mois précédent, tu reçois une invitation au groupe WhatsApp 4CC. Avec PRO actif, tu obtiens aussi une page publique de sponsor et une place parmi les Sponsors recommandés.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Bonjour ! Regarde ce produit, je pense qu’il pourrait t’intéresser : %s. La page présente sa description et son utilisation et, si tu as des questions, le contact d’une personne qui peut t’aider.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Le lien conserve la recommandation de la personne qui l’a partagé.',
 ];

@@ -12,6 +12,8 @@ parse_str((string)(parse_url($share_url,PHP_URL_QUERY)??''),$share_params);
 $lp_personal_share=is_logged_in() && !empty($share_params['ref']);
 $lp_can_share=!is_logged_in() || $lp_personal_share;
 $message=fcc_library_pilot_message($item['title'],$share_url);
+// Živi sloj: a visitor shares as a friend, not as the collaborator who can answer questions.
+if(fcc_ui_theme_is_zivi() && !is_logged_in()) $message=sprintf(fcc_lp_t('visitor_message'),$item['title'])."\n\n".$share_url;
 $content=(new \Altum\Shortcodes)->display_shortcodes($post->content,$data->referral??null);
 if(function_exists('fc_forever_ordering_copy_text')) $content=fc_forever_ordering_copy_text($content);
 $content=fcc_market_article_content($content,$post,$market,(string)($data->referral??''));

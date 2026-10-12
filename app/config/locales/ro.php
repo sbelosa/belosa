@@ -65216,4 +65216,6 @@ Ai nevoie de ajutor pentru conectare?',
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Cu activitate 4CC confirmată, alătură-te grupului WhatsApp al colaboratorilor cu 4CC.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Cu activitate 4CC confirmată în FLP360 luna aceasta sau luna trecută primești o invitație în grupul WhatsApp 4CC. Cu PRO activ primești și o pagină publică de sponsor și un loc printre Sponsorii recomandați.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Salut! Uită-te la acest produs, cred că te-ar putea interesa: %s. Pe pagină găsești descrierea și modul de utilizare, iar dacă ai întrebări, și contactul unei persoane care te poate ajuta.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Linkul păstrează recomandarea persoanei de la care a venit.',
 ];

@@ -65187,4 +65187,6 @@ Potrzebujesz pomocy z połączeniem?',
     'S potvrđenom 4CC aktivnošću pridruži se grupi suradnika s 4CC na WhatsAppu.' => 'Z potwierdzoną aktywnością 4CC dołącz do grupy współpracowników z 4CC na WhatsAppie.',
     'S 4CC aktivnošću potvrđenom u FLP360 u ovom ili prošlom mjesecu dobivaš poziv u 4CC WhatsApp grupu. Uz aktivni PRO dobivaš i javnu stranicu sponzora i mjesto među Preporučenim sponzorima.' => 'Z aktywnością 4CC potwierdzoną w FLP360 w tym lub poprzednim miesiącu otrzymujesz zaproszenie do grupy 4CC na WhatsAppie. Z aktywnym PRO dostajesz też publiczną stronę sponsora i miejsce wśród Polecanych sponsorów.',
     /* /Custom code: FC-2026-10-11 */
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Cześć! Zobacz ten produkt, myślę, że może cię zainteresować: %s. Na stronie jest opis i sposób użycia, a jeśli masz pytania, także kontakt do osoby, która może pomóc.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Link zachowuje polecenie osoby, od której pochodzi.',
 ];

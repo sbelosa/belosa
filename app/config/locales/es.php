@@ -65129,4 +65129,6 @@ Trebaš li pomoć sa spajanjem?' => '¡Hola, {name}! Tu seminario web es el {dat
     'Naruči Vital5 u svojoj zemlji' => 'Pide Vital5 en tu país',
     'Gumb za naručivanje vodi na službenu Forever ponudu za odabrano tržište kada je dostupna. Ondje provjeri konačan sastav, cijenu, dostupnost i dostavu prije potvrde narudžbe. Ako nema lokalne ponude paketa, otvori vodiče sastavnih proizvoda i provjeri njihove mogućnosti naručivanja.' => 'El botón de pedido abre la oferta oficial de Forever del mercado elegido cuando está disponible. Comprueba allí el contenido final, el precio, la disponibilidad y la entrega antes de confirmar. Si no hay una oferta local del pack, abre las guías de los productos individuales y revisa sus opciones de pedido.',
     'Česta pitanja o Vital5 paketu' => 'Preguntas frecuentes sobre el pack Vital5',
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => '¡Hola! Mira este producto, creo que te puede interesar: %s. En la página encontrarás la descripción y el modo de uso y, si tienes dudas, el contacto de una persona que puede ayudarte.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'El enlace conserva la recomendación de la persona que lo compartió.',
 ];

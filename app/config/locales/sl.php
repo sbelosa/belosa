@@ -54296,4 +54296,6 @@ oljčno olje, približno 5 g',
     'Želiš da poruka više zvuči kao ti?' => 'Želiš, da sporočilo bolj zveni kot ti?',
     'Što te očekuje' => 'Kaj te čaka',
     'Kome je webinar namijenjen i zašto doći.' => 'Komu je spletni seminar namenjen in zakaj se ga udeležiti.',
+    'Bok! Pogledaj ovaj proizvod, mislim da bi te mogao zanimati: %s. Na stranici su opis i način korištenja, a ako imaš pitanja, tamo je i kontakt osobe koja ti može pomoći.' => 'Živjo! Poglej ta izdelek, mislim, da bi te lahko zanimal: %s. Na strani sta opis in način uporabe, če imaš vprašanja, pa tudi kontakt osebe, ki ti lahko pomaga.',
+    'Poveznica zadržava preporuku osobe od koje je stigla.' => 'Povezava ohrani priporočilo osebe, od katere je prišla.',
 ];
