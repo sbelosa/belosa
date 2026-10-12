@@ -106,39 +106,51 @@
     },
     "card": {
       "title": "Redigera och kontrollera ditt kort",
-      "summary": "Koppla kontakt, innehåll och en personlig rekommendation på kortet du delar.",
+      "summary": "Redigera kortets profil, innehåll och utseende med förhandsvisning och kontrollera det innan du delar.",
       "keywords": [
         "kort",
         "block",
         "redigera",
-        "sociala medier"
+        "utseende",
+        "stil",
+        "WhatsApp",
+        "sociala nätverk"
       ],
       "sections": [
         {
           "id": "start",
           "title": "Kortet som besökaren ser",
           "paragraphs": [
-            "Mitt kort öppnar dina kort och redigeringsläget. Varje block redigeras separat, medan Utseende ändrar den övergripande vyn. Antalet kort och tillgängliga block beror på ditt paket."
+            "Mitt kort öppnar dina kort. Redigera kort öppnar redigeraren med tre steg: Profil, Innehåll och Utseende. Förhandsvisningen av kortet finns alltid bredvid redigeraren, och på mobilen öppnar ett tryck på en del av kortet dess fält.",
+            "Det nya kortet i stilen Aloe finns för alla, och PRO lägger till stilarna Smaragd, Zlato, Pijesak och Ponoć och egna färger. Du kan behålla det klassiska kortet och gå tillbaka till det när du vill. Block, adress, QR-kod och rekommendation förblir desamma."
           ]
         },
         {
           "id": "steps",
-          "title": "Redigera en del och kontrollera sedan",
+          "title": "Redigera en del och kontrollera",
           "steps": [
-            "Öppna Mitt kort, välj ditt kort och sedan Redigera.",
-            "Öppna Redigera i Innehåll eller välj pennan bredvid blocket du vill ändra.",
-            "Kontrollera namn, beskrivning, telefon och kanaler. Om fältet redan visar en domän skriver du bara den efterfrågade delen av adressen.",
-            "Om du vill lägga till nytt innehåll väljer du Lägg till block och läser noga beskrivningen av dess syfte.",
-            "Spara ändringen, öppna den offentliga förhandsvisningen och testa länken innan du delar den."
+            "Öppna Mitt kort, välj ditt kort och Redigera kort.",
+            "I steget Profil redigerar du foto, namn, kort beskrivning under ditt namn och texten Om mig, och väljer sedan Spara profil.",
+            "I steget Innehåll trycker du på en del av kortet eller på Redigera bredvid. Lägg till block visar block med en förklaring av vad de är till för, och med pilarna ändrar du ordningen.",
+            "I steget Utseende väljer du det nya eller det klassiska kortet och en stil. Ändringen syns direkt i förhandsvisningen, och Spara utseende bekräftar den för besökare. Avancerat: färger och detaljer anpassar den valda stilen.",
+            "Öppna Visa och prova knapparna innan du delar."
           ]
         },
         {
           "id": "faq",
-          "title": "Praktisk fråga",
+          "title": "Praktiska frågor",
           "questions": [
             {
-              "question": "Hur lägger jag till en kortare beskrivning under namnet?",
-              "answer": "Lägg till ett separat textblock och flytta det under rubrikblocket. Storleken på hela rubriken och beskrivningen är inte samma inställning."
+              "question": "Hur lägger jag till en kort beskrivning under mitt namn?",
+              "answer": "I steget Profil fyller du i Kort beskrivning under ditt namn. På det nya kortet visas den som en etikett under namnet."
+            },
+            {
+              "question": "Var kommer WhatsApp-numret på mitt kort ifrån?",
+              "answer": "WhatsApp-blocket hämtar mobilnumret från din registrering i det format som WhatsApp kräver. För ett annat nummer skriver du det i blocket; det omvandlas till rätt format när du sparar."
+            },
+            {
+              "question": "Var finns den gamla redigeraren och färgerna för det klassiska kortet?",
+              "answer": "Om du behåller det klassiska kortet ändrar du färger, kant och skugga på knapparna i blockets formulär under Färger och form. Teman för det klassiska kortet och ovanliga block finns kvar i Klassisk redigerare."
             }
           ]
         }

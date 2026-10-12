@@ -106,39 +106,51 @@
     },
     "card": {
       "title": "Edytuj i sprawdź swoją kartę",
-      "summary": "Połącz dane kontaktowe, treści i osobiste rekomendacje na udostępnianej karcie.",
+      "summary": "Edytuj profil, treść i wygląd karty z podglądem i sprawdź ją przed udostępnieniem.",
       "keywords": [
         "karta",
         "blok",
         "edytuj",
+        "wygląd",
+        "styl",
+        "WhatsApp",
         "media społecznościowe"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Karta widoczna dla odwiedzających",
+          "title": "Karta, którą widzi odwiedzający",
           "paragraphs": [
-            "Moja karta zawiera Twoje karty i opcje ich edycji. Każdy blok edytuje się osobno, a Wygląd zmienia ogólny widok. Liczba kart i dostępne bloki zależą od pakietu."
+            "Moja karta otwiera twoje karty. Edytuj kartę otwiera edytor z trzema krokami: Profil, Treść i Wygląd. Podgląd karty jest zawsze obok edytora, a na telefonie dotknięcie części karty otwiera jej pola.",
+            "Nowa karta w stylu Aloe jest dostępna dla wszystkich, a PRO dodaje style Smaragd, Zlato, Pijesak i Ponoć oraz własne kolory. Możesz zachować dotychczasową kartę i wrócić do niej, kiedy chcesz. Bloki, adres, kod QR i polecenie pozostają takie same."
           ]
         },
         {
           "id": "steps",
-          "title": "Edytuj jedną część, a potem ją sprawdź",
+          "title": "Edytuj jedną część i sprawdź",
           "steps": [
-            "Otwórz Moja karta, wybierz swoją kartę i kliknij Edytuj.",
-            "W sekcji Treść kliknij Edytuj lub ikonę ołówka przy bloku, który chcesz zmienić.",
-            "Sprawdź imię i nazwisko, opis, telefon oraz kanały. Jeśli pole już wyświetla domenę, wpisz tylko wymaganą część adresu.",
-            "Aby dodać nową treść, wybierz Dodaj blok i uważnie przeczytaj opis jego przeznaczenia.",
-            "Zapisz zmiany, otwórz publiczny Podgląd i przetestuj link przed udostępnieniem."
+            "Otwórz Moja karta, wybierz swoją kartę i Edytuj kartę.",
+            "W kroku Profil edytuj zdjęcie, imię, krótki opis pod imieniem i tekst O mnie, a następnie Zapisz profil.",
+            "W kroku Treść dotknij części karty lub Edytuj obok niej. Dodaj blok pokazuje bloki z wyjaśnieniem, do czego służą, a strzałkami zmieniasz kolejność.",
+            "W kroku Wygląd wybierz nową lub dotychczasową kartę i styl. Zmianę widzisz od razu w podglądzie, a Zapisz wygląd potwierdza ją dla odwiedzających. Zaawansowane: kolory i szczegóły dopasowuje wybrany styl.",
+            "Otwórz Wyświetl i wypróbuj przyciski przed udostępnieniem."
           ]
         },
         {
           "id": "faq",
-          "title": "Praktyczne pytanie",
+          "title": "Praktyczne pytania",
           "questions": [
             {
-              "question": "Jak dodać krótki opis pod imieniem i nazwiskiem?",
-              "answer": "Dodaj osobny blok tekstowy i przenieś go pod blok nagłówka. Rozmiar całego nagłówka i opis to różne ustawienia."
+              "question": "Jak dodać krótki opis pod imieniem?",
+              "answer": "W kroku Profil wpisz Krótki opis pod imieniem. Na nowej karcie wyświetla się jako etykieta pod imieniem."
+            },
+            {
+              "question": "Skąd pochodzi numer WhatsApp na mojej karcie?",
+              "answer": "Blok WhatsApp sam pobiera numer telefonu komórkowego z rejestracji w formacie wymaganym przez WhatsApp. Inny numer wpisz w bloku; przy zapisie zostanie zamieniony na poprawny format."
+            },
+            {
+              "question": "Gdzie są stary edytor i kolory dotychczasowej karty?",
+              "answer": "Jeśli zachowasz dotychczasową kartę, kolory, obramowanie i cień przycisków zmieniasz w formularzu bloku w części Kolory i kształt. Motywy dotychczasowej karty i rzadkie bloki pozostają w Klasycznym edytorze."
             }
           ]
         }

@@ -106,39 +106,51 @@
     },
     "card": {
       "title": "Editează și verifică-ți cardul",
-      "summary": "Asociază datele de contact, conținutul și recomandarea personală pe cardul pe care îl distribui.",
+      "summary": "Editează profilul, conținutul și aspectul cardului cu previzualizare și verifică-l înainte să-l distribui.",
       "keywords": [
         "card",
         "bloc",
         "editează",
+        "aspect",
+        "stil",
+        "WhatsApp",
         "rețele sociale"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Cardul văzut de vizitator",
+          "title": "Cardul pe care îl vede vizitatorul",
           "paragraphs": [
-            "Moja kartica îți deschide cardurile și opțiunile de editare. Fiecare bloc se editează separat, iar Izgled schimbă aspectul general. Numărul de carduri și blocurile disponibile depind de pachet."
+            "Cardul meu îți deschide cardurile. Editează cardul deschide editorul în trei pași: Profil, Conținut și Aspect. Previzualizarea cardului stă mereu lângă editor, iar pe telefon o atingere pe o parte a cardului îi deschide câmpurile.",
+            "Cardul nou în stilul Aloe este disponibil tuturor, iar PRO adaugă stilurile Smaragd, Zlato, Pijesak și Ponoć și culori proprii. Poți păstra cardul clasic și te poți întoarce la el oricând. Blocurile, adresa, codul QR și recomandarea rămân aceleași."
           ]
         },
         {
           "id": "steps",
-          "title": "Editează o parte, apoi verifică",
+          "title": "Editează o parte, apoi verific-o",
           "steps": [
-            "Deschide Moja kartica, selectează-ți cardul și apasă Uredi.",
-            "În Sadržaj, deschide Uredi sau apasă pictograma creion de lângă blocul pe care vrei să-l schimbi.",
-            "Verifică numele, descrierea, numărul de telefon și canalele de comunicare. Dacă un câmp afișează deja domeniul, introdu doar partea solicitată din adresă.",
-            "Pentru conținut nou, selectează Dodaj blok și citește cu atenție descrierea scopului său.",
-            "Salvează modificarea, deschide Pregled public și testează linkul înainte de a-l distribui."
+            "Deschide Cardul meu, alege cardul și Editează cardul.",
+            "La pasul Profil editează fotografia, numele, scurta descriere sub nume și textul Despre mine, apoi Salvează profilul.",
+            "La pasul Conținut atinge o parte a cardului sau Editează de lângă ea. Adaugă bloc oferă blocuri cu o explicație despre rolul lor, iar cu săgețile schimbi ordinea.",
+            "La pasul Aspect alege cardul nou sau cel clasic și un stil. Vezi schimbarea imediat în previzualizare, iar Salvează aspectul o confirmă pentru vizitatori. Avansat: culori și detalii ajustează stilul ales.",
+            "Deschide Vezi și încearcă butoanele înainte de a distribui."
           ]
         },
         {
           "id": "faq",
-          "title": "Întrebare practică",
+          "title": "Întrebări practice",
           "questions": [
             {
-              "question": "Cum adaug o descriere mai scurtă sub nume?",
-              "answer": "Adaugă un bloc de text separat și mută-l sub blocul de titlu. Dimensiunea întregului titlu și descrierea sunt setări diferite."
+              "question": "Cum adaug o scurtă descriere sub nume?",
+              "answer": "La pasul Profil completează Scurtă descriere sub nume. Pe cardul nou apare ca etichetă sub nume."
+            },
+            {
+              "question": "De unde vine numărul de WhatsApp de pe card?",
+              "answer": "Blocul WhatsApp preia numărul de mobil din înregistrare în formatul cerut de WhatsApp. Pentru alt număr, scrie-l în bloc; la salvare este transformat în formatul corect."
+            },
+            {
+              "question": "Unde sunt editorul vechi și culorile cardului clasic?",
+              "answer": "Dacă păstrezi cardul clasic, schimbi culorile, marginea și umbra butoanelor în formularul blocului, la Culori și formă. Temele cardului clasic și blocurile rare rămân în Editorul clasic."
             }
           ]
         }

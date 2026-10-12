@@ -58,4 +58,27 @@ $rows = fcc_invite_starter_review_rows(strtotime('2026-10-20T00:00:00Z'));
 $croatia = array_values(array_filter($rows, static fn($row) => $row['country'] === 'hr'))[0] ?? null;
 $assert($croatia !== null && $croatia['days_left'] === 7, 'Croatian Start pack review window');
 
+/* FC-2026-10-12: the official website notice goes, independence and the official shop stay. */
+$notice = json_decode((string) file_get_contents(APP_PATH . 'config/fcc_content_notice_2026_10_12.json'), true);
+$assert(is_array($notice) && count($notice['questions']) === 13 && count($notice['replace']) >= 50 && count($notice['remove']) >= 80, 'notice definition for 13 languages');
+$sample = "<h2>Važna napomena</h2>\n<p>Ovu stranicu vodi nezavisni Forever poslovni partner. Stranica nije službena web\n stranica kompanije Forever Living Products. Kupnjom putem ove stranice bit ćete preusmjereni.</p>"
+    . '<h3>Je li FCC službeni Forever alat?</h3> <p>Ne. FCC je neovisni digitalni sustav za Forever partnere i nije službena stranica ni službeni alat kompanije Forever Living Products.</p> <h2>Zaključak</h2>'
+    . '<p>FCC ne zamjenjuje službeni Forever shop niti predstavlja službenu FLP stranicu. On je neovisni digitalni sustav.</p>'
+    . '<p> Forever Card Club is not an official website or an official tool of Forever Living Products. It is an independent digital system used by partners.</p>'
+    . '<p>FCC ne prodaje proizvode i ne zamjenjuje službeni Forever shop.</p><p>This is not an official Forever Living Products website.</p>';
+$clean = fcc_cm_notice_clean($sample, $notice);
+$assert(!preg_match('~nije službena|službeni Forever alat|not an official|službenu FLP stranicu~u', $clean), 'every notice form is removed');
+$assert(str_contains($clean, 'partner. Kupnjom putem') && str_contains($clean, '<h2>Zaključak</h2>'), 'surrounding sentences and headings stay');
+$assert(str_contains($clean, 'FCC ne zamjenjuje službeni Forever shop. On je') && str_contains($clean, 'FCC ne prodaje proizvode i ne zamjenjuje službeni Forever shop.'), 'facts about the official shop stay');
+$assert(str_contains($clean, 'Forever Card Club is an independent digital system used by partners.'), 'the about page keeps a full sentence');
+$assert(!str_contains($clean, '<p></p>') && fcc_cm_notice_clean($clean, $notice) === $clean, 'no empty paragraph and a second run changes nothing');
+
+/* FC-2026-10-12: the Aloe switch only touches cards and blocks and leaves user blocks out. */
+$assert(array_key_exists('aloe', fcc_cm_migrations()) && fcc_cm_definition('aloe')['key'] === 'card-aloe-2026-10-12', 'aloe migration is registered');
+$assert(isset(fcc_cm_primary_keys()['links'], fcc_cm_primary_keys()['biolinks_blocks']), 'card tables have primary keys');
+$migration = (string) file_get_contents(APP_PATH . 'helpers/fcc_content_migration.php');
+$assert(str_contains($migration, "l.last_datetime IS NULL AND u.status=1 AND u.type=0") && str_contains($migration, "\$block['last_datetime'] !== null"), 'only cards nobody has edited');
+$assert(str_contains($migration, "fcc_cm_aloe_after('revert'") && str_contains($migration, 'expires_at=LEAST(expires_at,UTC_TIMESTAMP())'), 'a revert withdraws the owner notice');
+$assert(fcc_cm_touched_links([['table_name'=>'links', 'row_id'=>12, 'id'=>99]]) === [12], 'reverted log rows point to their card');
+
 echo 'Invite and content migration checks passed.' . PHP_EOL;

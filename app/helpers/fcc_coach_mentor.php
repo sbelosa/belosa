@@ -1,7 +1,7 @@
 <?php
 defined('ALTUMCODE') || die();
 
-const FCC_COACH_MENTOR_VERSION = 'mentor-2026-10-05.help1';
+const FCC_COACH_MENTOR_VERSION = 'mentor-2026-10-12.card2';
 
 require_once __DIR__.'/fcc_coach_continuity.php';
 
@@ -14,7 +14,8 @@ require_once __DIR__.'/fcc_vital5.php';
 function fcc_coach_features(object $user): array {
     $pro = fcc_journey_pro($user);
     $features = [
-        ['journey', 'Moj put', 'partner', 'Jedan program od 90 koraka po 4 Core: Regrutacija, Zadržavanje, Produktivnost i Razvoj. Zadatak, primjer, pomoć i edukacija su na istom mjestu. Pristup i završetak ovise o stanju programa.'],
+        ['journey', 'Moj put', 'partner', 'Jedan program od 90 koraka po 4 Core: Regrutacija, Zadržavanje, Produktivnost i Razvoj. Zadatak, primjer, pomoć i edukacija su na istom mjestu. Prvih 15 koraka isti su za sve, zatim suradnik bira stazu Koristim i preporučujem, Gradim dodatni prihod ili Gradim tim i može je promijeniti u Pregledu 90 koraka. Koraci s kupcem, novim članom, gostom ili susretom otvaraju se kada to stvarno postoji. Ovo već znam i radim preskače poznati zajednički korak, a Zapeo/la sam, javi mojem sponzoru šalje poziv za pomoć. Pristup i završetak ovise o stanju programa.'],
+        ['team_progress', 'Napredak mojih suradnika', 'partner?view=team-progress', 'Svaki sponzor vidi napredak izravnih suradnika u programu Moj put, složen po tome tko treba pomoć, tko stoji ili još nije krenuo, s gumbom za WhatsApp i gotovom porukom. Sadržaj tuđih poruka i bilješki se ne prikazuje.'],
         ['materials', 'Video edukacija i pravila', 'partner?view=materials', 'Šest videa o Foreveru, zaradi, aktivnosti, Auto programu, Eagle Manageru i Chairman’s Bonusu. Objašnjenja, pravilnici i kontakt sponzora ili prvog managera za konkretan plan.'],
         ['progress', 'Moj napredak', 'partner?view=progress', 'Vlastiti koraci i napredak. Vježba i stvarna aktivnost nisu isti ishod.'],
         ['pace', 'Moj tempo', 'partner?view=goal', 'Osobni cilj, kanal rada, raspoloživo vrijeme i podsjetnik.'],
@@ -26,7 +27,7 @@ function fcc_coach_features(object $user): array {
         ['webinar', 'Podijeli poziv za webinar', 'partner/share?type=webinar', 'Zaseban prikaz pozivnice, datum, poruka za uređivanje i osobna poveznica. Ne šalji korisnika na dugi popis proizvoda za pozivnicu.'],
         ['personal_webinar', 'Moji webinari', 'partner-webinar?view=events', 'PRO omogućuje svoj naziv, temu, termin i pristupnu poveznicu te osobnu pozivnicu. Zoom ili drugu sobu suradnik kreira u tom servisu. Može dodati vlastiti video ili pozivnicu bez videa. Postojeći budući susret može urediti ili ukloniti.'],
         ['webinar_guests', 'Moje prijave na webinare', 'partner-webinar?view=activity', 'Vlastite prijave na standardne, video i individualne pozivnice. Prijava ne dokazuje dolazak. Dopuštenje javljanja provjeri prije poruke.'],
-        ['cards', 'Moja kartica', 'partner/cards', 'Uredi svoju FCC karticu, blokove, poveznice i kontakt. Glavna aktivna kartica daje osobni referal.'],
+        ['cards', 'Moja kartica', 'partner/cards', 'Moje kartice, zatim Uredi karticu otvara uređivač s tri koraka: Profil (fotografija, ime, kratki opis ispod imena, O meni), Sadržaj (dodir na dio kartice ili Uredi, Dodaj blok s objašnjenjem, strelice za redoslijed) i Izgled (nova ili stara kartica, stil, Spremi izgled). Pregled je uvijek uz uređivač. Nova kartica u stilu Aloe je za sve, a PRO dodaje stilove Smaragd, Zlato, Pijesak i Ponoć te vlastite boje u dijelu Napredno: boje i detalji. Svaki blok ima Izgled bloka, a razdjelnik izbor crte, razmaka i znaka. WhatsApp blok sam uzima broj iz registracije u ispravnom međunarodnom obliku. Staru karticu suradnik može zadržati i vratiti; njezine boje, rub i sjenu gumba mijenja pod Boje i oblik, a teme u Klasičnom uređivaču. Glavna aktivna kartica daje osobni referal.'],
         ['results', 'FCC Rezultati', 'fcc-results', 'Osobna statistika odlazaka s kartice i podijeljenih članaka prema Forever trgovini. Klikovi više nisu uvjet ni za što: Istaknute aplikacije traže PRO i 1 osobni CC, a Preporučeni sponzori PRO i 4CC, u ovom ili prošlom mjesecu. 4CC WhatsApp grupa otvorena je svima s 4CC aktivnošću, neovisno o paketu.'], /* Custom code: FC-2026-10-11 */
         ['cc', 'Moji Forever bodovi', 'forever-business', 'Vlastiti CC i stanje pristupa. CC je uvezeni zbir za period, nije dokaz tko je kupio koji proizvod.'],
         ['team', 'Moj tim', 'partner/team', 'Prikazuje samo dio tima koji račun smije vidjeti. Coach koristi samo članove iz team_activity, bez tuđih privatnih razgovora i CRM bilješki.'],
@@ -35,7 +36,7 @@ function fcc_coach_features(object $user): array {
         ['support', 'Pomoć i moji zahtjevi', 'feedback-tickets', 'Pošalji tehničko pitanje, prijedlog ili temu za webinar i prati odgovor administratora. Coach ne otvara zahtjev umjesto tebe.'],
         ['billing', 'Free i PRO paket', 'account-plan', 'Provjeri pogodnosti i stanje svojeg paketa ili otkaži pretplatu. Coach ne aktivira paket i ne mijenja naplatu.'],
         ['payments', 'Moje uplate i računi', 'account-payments', 'Vlastite uplate i računi. Ne zaključuj da je naplata provedena iz roka trajanja paketa.'],
-        ['install', 'Instalacija aplikacije', 'partner/install', 'Upute za instalaciju na iPhone i Android. Koristi postojeći FCC račun.'],
+        ['install', 'Instalacija aplikacije', 'partner/install', 'FCC se dodaje na početni zaslon bez trgovine aplikacija i s istim FCC računom. Na Androidu u Chromeu gumb Instaliraj aplikaciju radi jednim dodirom, na iPhoneu u Safariju Dijeli pa Dodaj na početni zaslon, a na računalu stranica prikazuje QR kod za mobitel. Unutar WhatsAppa ili Instagrama treba otvoriti stranicu u pregledniku. Na iPhoneu push obavijesti rade samo iz instalirane aplikacije (iOS 16.4 ili noviji).'],
         ['advisors', 'FCC AI savjetnici i upiti', 'fcc-ai', 'Postavke dostupnih javnih AI savjetnika i njihovi upiti. Dostupnost savjetnika ovisi o paketu i postavkama kartice.'],
         ['advanced', 'Biblioteka i napredni alati', 'partner/more', 'Na FCC webu su i QR kodovi, poveznice, statistika, projekti, domene te Funnel studio. Nisu potrebni za početak; svaki alat provjerava prava paketa.'],
     ];

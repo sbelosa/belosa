@@ -106,11 +106,14 @@
     },
     "card": {
       "title": "Edita y revisa tu tarjeta",
-      "summary": "Conecta el contacto, el contenido y la recomendación personal en la tarjeta que compartes.",
+      "summary": "Edita el perfil, el contenido y la apariencia de tu tarjeta con vista previa y revísala antes de compartirla.",
       "keywords": [
         "tarjeta",
         "bloque",
         "editar",
+        "apariencia",
+        "estilo",
+        "WhatsApp",
         "redes sociales"
       ],
       "sections": [
@@ -118,27 +121,36 @@
           "id": "start",
           "title": "La tarjeta que ve el visitante",
           "paragraphs": [
-            "Mi tarjeta te permite acceder a tus tarjetas y editarlas. Cada bloque se edita por separado, mientras que Diseño cambia la apariencia general. La cantidad de tarjetas y los bloques disponibles dependen del paquete."
+            "Mi tarjeta abre tus tarjetas. Editar tarjeta abre el editor con tres pasos: Perfil, Contenido y Apariencia. La vista previa de la tarjeta está siempre junto al editor y, en el móvil, al tocar una parte de la tarjeta se abren sus campos.",
+            "La nueva tarjeta con el estilo Aloe está disponible para todos, y PRO añade los estilos Smaragd, Zlato, Pijesak y Ponoć y colores propios. Puedes conservar la tarjeta clásica y volver a ella cuando quieras. Los bloques, la dirección, el código QR y la recomendación no cambian."
           ]
         },
         {
           "id": "steps",
-          "title": "Edita una sección y revísala",
+          "title": "Edita una parte y compruébala",
           "steps": [
-            "Abre Mi tarjeta, selecciona tu tarjeta y pulsa Editar.",
-            "En Contenido, abre Editar o pulsa el lápiz junto al bloque que quieras cambiar.",
-            "Revisa el nombre, la descripción, el teléfono y los canales. Si el campo ya muestra un dominio, escribe solo la parte de la dirección que se solicita.",
-            "Para añadir contenido, selecciona Añadir bloque y lee atentamente la descripción de su finalidad.",
-            "Guarda los cambios, abre la vista previa pública y prueba el enlace antes de compartirlo."
+            "Abre Mi tarjeta, elige tu tarjeta y Editar tarjeta.",
+            "En el paso Perfil edita la foto, el nombre, la descripción breve bajo tu nombre y el texto Sobre mí, y luego Guardar perfil.",
+            "En el paso Contenido toca una parte de la tarjeta o Editar junto a ella. Añadir bloque ofrece bloques con una explicación de para qué sirven, y con las flechas cambias el orden.",
+            "En el paso Apariencia elige la tarjeta nueva o la clásica y un estilo. Verás el cambio al instante en la vista previa, y Guardar diseño lo confirma para los visitantes. Avanzado: colores y detalles ajusta el estilo elegido.",
+            "Abre Ver y prueba los botones antes de compartir."
           ]
         },
         {
           "id": "faq",
-          "title": "Pregunta práctica",
+          "title": "Preguntas prácticas",
           "questions": [
             {
-              "question": "¿Cómo añado una descripción breve debajo del nombre?",
-              "answer": "Añade un bloque de texto independiente y muévelo debajo del bloque del encabezado. El tamaño del encabezado completo y la descripción son ajustes distintos."
+              "question": "¿Cómo añado una descripción breve bajo mi nombre?",
+              "answer": "En el paso Perfil escribe la Descripción breve bajo tu nombre. En la nueva tarjeta aparece como etiqueta bajo tu nombre."
+            },
+            {
+              "question": "¿De dónde sale el número de WhatsApp de mi tarjeta?",
+              "answer": "El bloque de WhatsApp toma el número de móvil de tu registro en el formato que necesita WhatsApp. Para otro número, escríbelo en el bloque; al guardar se convierte al formato correcto."
+            },
+            {
+              "question": "¿Dónde están el editor antiguo y los colores de la tarjeta clásica?",
+              "answer": "Si conservas la tarjeta clásica, cambias los colores, el borde y la sombra de los botones en el formulario del bloque, en Colores y forma. Los temas de la tarjeta clásica y los bloques poco habituales siguen en el Editor clásico."
             }
           ]
         }

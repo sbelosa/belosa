@@ -163,6 +163,8 @@
 .fe[data-fe-v2="1"] [data-fe-classic] { display: none; }
 .fe-color > strong { font-size: .88rem; }
 .fe-color > .fe-check { grid-column: 1 / -1; }
+.fe-icon-chips .fe-chip span { gap: 6px; }
+.fe-icon-chips .fe-chip :is(i, svg) { color: var(--fe-accent); }
 
 /* Preview */
 .fe-preview { position: sticky; top: 16px; display: grid; justify-items: center; gap: 10px; }

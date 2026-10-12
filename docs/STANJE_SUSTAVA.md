@@ -2,7 +2,7 @@
 
 Ovo je jedini živi dokument o tome što je stvarno na produkciji i kako se objavljuje. Ažurira se pri svakoj objavi. Datirani izvještaji u `docs/partner` služe kao povijest.
 
-Zadnja provjera: 11. listopada 2026., Claude, grana `claude/live-baseline-2026-10-11`.
+Zadnja provjera: 12. listopada 2026., Claude, grana `claude/live-baseline-2026-10-11`.
 
 ## 1. Izvor istine
 
@@ -143,6 +143,22 @@ Korisnik je 12. listopada 2026. odobrio sve prijedloge iz `docs/ANALIZA_MOJ_PUT_
 10. **Ispravci veličine teksta i sjaja.** Stranica kartice postavlja osnovnu veličinu fonta s prioritetom (`biolink_wrapper.php`), pa je Veća sada postavljena upravo tamo (18 px umjesto 16 px). Sjaj pozadine ima tri jasne razine: blagi (zadano, malo izraženiji nego prije), izraženi i bez sjaja.
 11. **Stara kartica u novom uređivaču.** Za staru karticu obrazac svakog bloka ima dio Boje i oblik, s opcijama iz klasičnog uređivača: boja teksta, boja pozadine (ili bez pozadine), oblik, debljina i boja ruba te sjena i njezina boja za gumbe; boja teksta, pozadina i poravnanje za tekst; boja ikona i pozadine za društvene mreže. Boja koja nije promijenjena zadržava spremljeni oblik, primjerice prozirnost. Na novoj kartici taj dio se ne prikazuje, nego Izgled bloka. Tako suradnici koji zadrže staru karticu nastavljaju je uređivati u novom uređivaču, a stari uređivač se može postupno ugasiti.
 
+## 5j. Napomena, instalacija, Coach, prijelaz na Aloe i push (lokalno, čeka objavu)
+
+1. **Napomena o službenoj stranici.** Korisnik je 12. listopada 2026. zatražio da se rečenica da FCC ili kartica nije službena stranica Forever Living Products ukloni svugdje. U kodu je uklonjena s kartice, naslovnice, stranica O nama, `llms.txt` iz aplikacije, javne Pozivnice u tim, pravnih stranica (podnožje) i iz `fcc_public_design.php`. Rečenica da je FCC neovisan sustav i podaci o kupnji u službenom web shopu ostaju.
+2. **Napomena u sadržaju baze.** Gumb Ažuriranje sadržaja: napomena o službenoj stranici u `partner/admin#content-migration-notice` uklanja je iz 1.196 članaka i 65 stranica na 13 jezika (`app/config/fcc_content_notice_2026_10_12.json`). Pitanje Je li FCC službeni Forever alat? na stranicama osnivača uklanja se cijelo, a dulje rečenice zadržavaju dio o neovisnosti. Na kopiji baze: 1.261 izmjena za 3 s, povrat za 1,5 s vraća identičan sadržaj (kontrolni zbroj), nakon primjene nijedna rečenica napomene ne ostaje.
+3. **Nije mijenjano:** pravni tekst `app/config/legal/2026-09-26.1.hr.php` (odjeljak `neovisnost` s izjavom o žigovima) je verzionirani dokument; promjena traži novu verziju uvjeta. Statična `llms.txt` u korijenu poslužitelja nije dio automatske objave; ispravljena inačica je u korijenu repozitorija (`llms.txt`) za ručni prijenos.
+4. **Razdjelnik.** Ikone su zamijenjene znakovima povezanima s Foreverom i radom (aloe list, klica, kapljica, wellness, srce, briga, sunce, zvjezdica, dijamant, točka, tri točke), uz izbor crte (puna, isprekidana, točkasta) i razmaka. Spremanje sada jasno javlja zauzetost, sporu vezu i isteklu sesiju (`fcc-card-editor.js`).
+5. **Savjetnik na kartici.** Predloženi upiti na vrhu sada se upisuju u polje pitanja (delegirani klik prije ostale inicijalizacije u `fcc_chat_extreme_popup.php`).
+6. **Stranica za instalaciju** `partner/install` dobila je izgled Živi sloj: jedna jasna radnja prema uređaju (Android jednim dodirom, koraci za Safari s ikonama, upozorenje unutar WhatsAppa ili Instagrama, QR kod na računalu), četiri koristi, korake nakon instalacije i česta pitanja. Service worker se registrira s ishodišta stranice, a neuspjeh se više ne prikazuje kao greška.
+7. **Poticaj za instalaciju.** Na stranici Danas suradnik koji FCC koristi u pregledniku mobitela vidi karticu Dodaj FCC na početni zaslon (`fcc-partner-install-nudge.js`). Na Androidu instalira jednim dodirom, inače otvara upute. Kasnije je skriva 14 dana, a na iPhoneu se ne prikazuje uz postojeći poziv za obavijesti.
+8. **Coach.** Popis mogućnosti i upute za sučelje opisuju novi uređivač, stilove, Napredno, Izgled bloka, razdjelnik, WhatsApp broj, staru karticu, instalaciju, staze Mojeg puta i Napredak mojih suradnika (`fcc_coach_mentor.php`, `fcc_coach_continuity.php`, verzija `mentor-2026-10-12.card2`). Članak pomoći Uredi i provjeri svoju karticu prepisan je za novi uređivač na 13 jezika.
+9. **Prijelaz netaknutih kartica na Aloe.** Gumb Nova kartica Aloe za netaknute kartice u `partner/admin#content-migration-aloe` prebacuje na novu karticu one kartice aktivnih suradnika koje nitko nije uređivao (kartica i svi blokovi bez datuma izmjene) i koje imaju samo osnovne ili tvorničke blokove. Blokovi, redoslijed, adresa, QR kod i preporuka ostaju; osnovni blokovi koje je paket isključio ponovno se uključuju. Vlasnik dobiva obavijest kako se vratiti na staru karticu. Na kopiji baze to je 496 kartica (445 Beginner, 51 PRO) i 6 blokova. Povrat vraća samo kartice koje vlasnik nakon toga nije mijenjao i povlači nepročitane obavijesti. Provjereno kroz sučelje i iz naredbenog retka: primjena, povrat s identičnim kontrolnim zbrojem i kartica koju je vlasnik u međuvremenu promijenio ostaje. Lokalno je prijelaz vraćen i čeka gumb.
+10. **Stanje migracija** u administraciji sprema se na sat vremena (prvo učitavanje nakon objave traje oko 10 s), a primjena uvijek računa svjež plan.
+11. **Push obavijesti.** Na zaključanom zaslonu push ne nosi osobne podatke nego vrstu događaja. Za događaje ovog izdanja (suradnik traži pomoć, tjedni pregled tima, prekretnica, početak Mojeg puta, registracija i narudžba preko Pozivnice u tim, nova kartica) poslužitelj sada šalje i oznaku `detail` (`fcc_push_detail` u `fcc_push_delivery.php`). Sadašnji service worker je zanemaruje i radi kao prije. Nadograđeni `fcc-partner-sw.js` (verzija `fcc-partner-shell-v11`, u korijenu repozitorija) prikazuje točan tekst na 13 jezika; produkcijska datoteka bila je identična lokalnoj (SHA-256 provjeren 12. listopada), a datoteka nije dio automatske objave.
+12. **Testovi.** `scripts/test_invite_content_migration.php` provjerava uklanjanje napomene na primjerima i pravila prijelaza na Aloe, a `scripts/test_fcc_card_editor.php` stranicu za instalaciju, poticaj, znanje Coacha, push oznake, nadograđeni service worker i prijevode. Svih 17 testova prolazi, lint 34 PHP datoteke bez greške, 39 stranica za posjetitelja, Beginner, PRO i administratora bez PHP greške i upozorenja.
+13. Koraci objave i povrata su u `docs/OBJAVA_2026-10-12.md`.
+
 ## 5b. Već provedeno na produkciji prije ove dorade
 
 1. Svi aktivni suradnici dobivaju sadržaj programa v8. Ciklusi označeni s v6 ili v7 otvaraju sljedeći korak iz v8 kataloga, pa migracija podataka nije potrebna.
@@ -172,6 +188,8 @@ Korisnik je 12. listopada 2026. odobrio sve prijedloge iz `docs/ANALIZA_MOJ_PUT_
 5. Provjereno 12. listopada za Moj put: PHP lint za sve izmijenjene datoteke i 15 testova prije objave bez greške. Na svih 115 stvarnih ciklusa novi raspored daje 0 grešaka i nijedan ponovljeni korak. Sintetički Beginner prošao je zajednički dio, korake označene kao poznate, odabir staze, Zapeo/la sam i povratnu informaciju. Sponzorski pregled, obavijesti na hrvatskom, slovenskom, srpskom i engleskom, administratorski pregled i članak pomoći provjereni su preko HTTP-a, a stranice staze i sponzora i na širini mobitela.
 
 ## 7. Put objave
+
+Za izdanje od 12. listopada 2026. redoslijed koraka, ručne datoteke i povrat opisani su u `docs/OBJAVA_2026-10-12.md`.
 
 1. Jedini put objave je merge u `main`. Workflow tada pokreće lint i testove te objavljuje `app/` i `themes/`.
 2. Prije objave treba uzeti deploy lock `forevercard.club` preko SharedAI koordinatora. Zatim treba provjeriti da produkcija nije mijenjana nakon zadnjeg snimka i pripremiti povrat.

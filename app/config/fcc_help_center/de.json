@@ -106,39 +106,51 @@
     },
     "card": {
       "title": "Deine Karte bearbeiten und prüfen",
-      "summary": "Verbinde Kontakt, Inhalte und persönliche Empfehlungen auf deiner geteilten Karte.",
+      "summary": "Bearbeite Profil, Inhalt und Erscheinungsbild deiner Karte mit Vorschau und prüfe sie vor dem Teilen.",
       "keywords": [
         "Karte",
         "Block",
-        "Bearbeiten",
+        "bearbeiten",
+        "Erscheinungsbild",
+        "Stil",
+        "WhatsApp",
         "soziale Netzwerke"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Vor dem Start",
+          "title": "Die Karte, die Besucher sehen",
           "paragraphs": [
-            "Meine Karte öffnet deine Karten und deren Bearbeitung. Jeder Block wird separat bearbeitet; Erscheinungsbild steuert die Gesamtdarstellung. Kartenanzahl und verfügbare Blöcke hängen vom Paket ab."
+            "Meine Karte öffnet deine Karten. Karte bearbeiten öffnet den Editor mit drei Schritten: Profil, Inhalt und Erscheinungsbild. Die Vorschau der Karte bleibt neben dem Editor, und auf dem Handy öffnet ein Tippen auf einen Teil der Karte dessen Felder.",
+            "Die neue Karte im Stil Aloe steht allen zur Verfügung, PRO bietet zusätzlich die Stile Smaragd, Zlato, Pijesak und Ponoć sowie eigene Farben. Du kannst die klassische Karte behalten und jederzeit zu ihr zurückkehren. Blöcke, Adresse, QR-Code und Empfehlung bleiben gleich."
           ]
         },
         {
           "id": "steps",
-          "title": "Schritt für Schritt",
+          "title": "Einen Teil bearbeiten und prüfen",
           "steps": [
-            "Öffne Meine Karte, wähle die Karte und Bearbeiten.",
-            "Wähle in Inhalt Bearbeiten oder den Stift beim gewünschten Block.",
-            "Prüfe Name, Beschreibung, Telefon und Kanäle. Wenn die Domain schon angezeigt wird, trage nur den geforderten Teil ein.",
-            "Wähle Block hinzufügen und lies den Zweck des neuen Blocks.",
-            "Speichere, öffne die öffentliche Übersicht und teste den Link vor dem Teilen."
+            "Öffne Meine Karte, wähle deine Karte und Karte bearbeiten.",
+            "Bearbeite im Schritt Profil Foto, Namen, die kurze Beschreibung unter deinem Namen und den Text Über mich und wähle dann Profil speichern.",
+            "Tippe im Schritt Inhalt auf einen Teil der Karte oder auf Bearbeiten daneben. Block hinzufügen zeigt Blöcke mit einer Erklärung, wofür sie da sind, und mit den Pfeilen änderst du die Reihenfolge.",
+            "Wähle im Schritt Erscheinungsbild die neue oder klassische Karte und einen Stil. Die Änderung siehst du sofort in der Vorschau, und Design speichern bestätigt sie für Besucher. Erweitert: Farben und Details passt den gewählten Stil an.",
+            "Öffne Ansehen und probiere die Schaltflächen vor dem Teilen aus."
           ]
         },
         {
           "id": "faq",
-          "title": "Häufige Fragen",
+          "title": "Praktische Fragen",
           "questions": [
             {
-              "question": "Wie ergänze ich eine kurze Beschreibung unter meinem Namen?",
-              "answer": "Füge einen eigenen Textblock hinzu und verschiebe ihn unter den Titelblock. Titelgröße und Beschreibung sind unterschiedliche Einstellungen."
+              "question": "Wie füge ich eine kurze Beschreibung unter meinem Namen hinzu?",
+              "answer": "Trage im Schritt Profil die Kurze Beschreibung unter deinem Namen ein. Auf der neuen Karte erscheint sie als Hinweis unter deinem Namen."
+            },
+            {
+              "question": "Woher kommt die WhatsApp-Nummer auf meiner Karte?",
+              "answer": "Der WhatsApp-Block übernimmt die Handynummer aus deiner Registrierung im Format, das WhatsApp braucht. Für eine andere Nummer trägst du sie im Block ein; beim Speichern wird sie in das richtige Format umgewandelt."
+            },
+            {
+              "question": "Wo sind der alte Editor und die Farben der klassischen Karte?",
+              "answer": "Wenn du die klassische Karte behältst, änderst du Farben, Rand und Schatten der Schaltflächen im Formular des Blocks unter Farben und Form. Themen der klassischen Karte und seltene Blöcke bleiben im Klassischen Editor."
             }
           ]
         }

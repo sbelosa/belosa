@@ -105,40 +105,52 @@
       ]
     },
     "card": {
-      "title": "Szerkeszd és ellenőrizd a kártyádat",
-      "summary": "Kapcsold össze az elérhetőségeidet, a tartalmaidat és a személyes ajánlásodat azon a kártyán, amelyet megosztasz.",
+      "title": "A kártyád szerkesztése és ellenőrzése",
+      "summary": "Szerkeszd a kártyád profilját, tartalmát és megjelenését előnézettel, és ellenőrizd megosztás előtt.",
       "keywords": [
         "kártya",
         "blokk",
         "szerkesztés",
-        "közösségi média"
+        "megjelenés",
+        "stílus",
+        "WhatsApp",
+        "közösségi hálózatok"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "A látogatók által megtekintett kártya",
+          "title": "A kártya, amit a látogató lát",
           "paragraphs": [
-            "A Kártyám oldalon megnyithatod a kártyáidat és szerkesztheted őket. Minden blokk külön szerkeszthető, a Megjelenés pedig az általános nézetet módosítja. A kártyák száma és az elérhető blokkok a csomagodtól függnek."
+            "A kártyám megnyitja a kártyáidat. A Kártya szerkesztése három lépéses szerkesztőt nyit: Profil, Tartalom és Megjelenés. A kártya előnézete mindig a szerkesztő mellett van, telefonon pedig a kártya egy részére koppintva megnyílnak a mezői.",
+            "Az Aloe stílusú új kártya mindenkinek elérhető, a PRO pedig hozzáadja a Smaragd, Zlato, Pijesak és Ponoć stílust és a saját színeket. A régi kártyát megtarthatod, és bármikor visszatérhetsz hozzá. A blokkok, a cím, a QR-kód és az ajánlás ugyanaz marad."
           ]
         },
         {
           "id": "steps",
           "title": "Szerkessz egy részt, majd ellenőrizd",
           "steps": [
-            "Nyisd meg a Kártyám oldalt, válaszd ki a kártyádat, majd koppints a Szerkesztésre.",
-            "A Tartalom résznél nyisd meg a Szerkesztés lehetőséget, vagy koppints a módosítani kívánt blokk melletti ceruzára.",
-            "Ellenőrizd a nevet, a leírást, a telefonszámot és a csatornákat. Ha a mező már megjelenít egy domaint, csak a cím kért részét írd be.",
-            "Új tartalom hozzáadásához válaszd a Blokk hozzáadása lehetőséget, és figyelmesen olvasd el a blokk rendeltetésének leírását.",
-            "Mentsd a módosítást, nyisd meg a kártya nyilvános előnézetét, és megosztás előtt próbáld ki a hivatkozást."
+            "Nyisd meg A kártyám menüt, válaszd ki a kártyádat és a Kártya szerkesztése lehetőséget.",
+            "A Profil lépésben szerkeszd a fotót, a nevet, a rövid leírást a neved alatt és a Rólam szöveget, majd válaszd a Profil mentése gombot.",
+            "A Tartalom lépésben koppints a kártya egy részére vagy a mellette lévő Szerkesztés gombra. A Blokk hozzáadása magyarázattal kínálja a blokkokat, a nyilakkal pedig a sorrendet módosítod.",
+            "A Megjelenés lépésben válaszd az új vagy a régi kártyát és egy stílust. A változást azonnal látod az előnézetben, a Megjelenés mentése pedig megerősíti a látogatóknak. A Haladó: színek és részletek a választott stílust igazítja.",
+            "Nyisd meg a Megtekintés oldalt, és próbáld ki a gombokat megosztás előtt."
           ]
         },
         {
           "id": "faq",
-          "title": "Gyakorlati kérdés",
+          "title": "Gyakorlati kérdések",
           "questions": [
             {
-              "question": "Hogyan adhatok hozzá egy rövid leírást a nevem alá?",
-              "answer": "Adj hozzá külön szöveges blokkot, és helyezd a címblokk alá. A teljes cím mérete és a leírás két külön beállítás."
+              "question": "Hogyan adjak rövid leírást a nevem alá?",
+              "answer": "A Profil lépésben töltsd ki a Rövid leírás a neved alatt mezőt. Az új kártyán címkeként jelenik meg a neved alatt."
+            },
+            {
+              "question": "Honnan jön a WhatsApp-szám a kártyámon?",
+              "answer": "A WhatsApp blokk a regisztrációkor megadott mobilszámot veszi át a WhatsApp által kért formában. Másik számhoz írd be a blokkba; mentéskor a megfelelő formára alakul."
+            },
+            {
+              "question": "Hol van a régi szerkesztő és a régi kártya színei?",
+              "answer": "Ha megtartod a régi kártyát, a színeket, a keretet és a gombok árnyékát a blokk űrlapján, a Színek és forma részben módosítod. A régi kártya témái és a ritka blokkok a Klasszikus szerkesztőben maradnak."
             }
           ]
         }

@@ -1745,6 +1745,23 @@ foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','
             return;
         }
 
+        /* Custom code: FC-2026-10-12: a starter suggestion writes its text into the question field.
+           It was bound only in the fallback start, so in normal use the suggestions did nothing. */
+        if(root.dataset.fccStartersBound !== '1') {
+            root.dataset.fccStartersBound = '1';
+            root.addEventListener('click', event => {
+                const starter = event.target.closest('[data-advisor-start]');
+                if(!starter || !root.contains(starter)) return;
+                const input = root.querySelector('[data-chat-extreme-form] [name="message"]');
+                if(!input) return;
+                input.value = starter.dataset.advisorStart || starter.textContent.trim();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.focus();
+                if(typeof input.setSelectionRange === 'function') input.setSelectionRange(input.value.length, input.value.length);
+            });
+        }
+        /* /Custom code: FC-2026-10-12 */
+
         const resizeComposerInput = input => {
             if(!input || input.tagName !== 'TEXTAREA' || !input.getClientRects().length) {
                 return;
@@ -2428,10 +2445,7 @@ foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','
                 return `fcc${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}`;
             };
 
-            root.querySelectorAll('[data-advisor-start]').forEach(button => button.addEventListener('click', () => {
-            const input=root.querySelector('[data-chat-extreme-form] [name="message"]');
-            if(input){input.value=button.dataset.advisorStart;input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();}
-        }));
+            /* FC-2026-10-12: starter suggestions are bound once at the start of the chat script. */
         const currentPagePayload = () => {
                 const searchParams = new URLSearchParams(window.location.search);
                 const hashValue = window.location.hash ? window.location.hash.replace(/^#/, '') : '';

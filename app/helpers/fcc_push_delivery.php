@@ -14,6 +14,16 @@ function fcc_push_kind(array $notice): string {
     return in_array($notice['category']??'',['team','daily','service','admin','followup','tasks','education','webinar','cc'],true)?$notice['category']:'service';
 }
 
+/* Custom code: FC-2026-10-12: a public detail code for events of this release. The kind stays the
+   same, so workers that do not know the detail keep showing the category text; updated workers
+   show the exact event (help request, weekly overview, invitation, new card) without personal data. */
+function fcc_push_detail(array $notice): ?string {
+    $key=(string)($notice['event_key']??'');
+    foreach(['mp:help:'=>'team_help','mp:stuck:'=>'team_help','mp:weekly:'=>'team_weekly','mp:milestone:'=>'team_milestone','mp:start:'=>'team_start','invite:registration:'=>'invite_registration','invite:order:'=>'invite_order','card-aloe:'=>'card_update'] as $prefix=>$detail)if(str_starts_with($key,$prefix))return $detail;
+    return null;
+}
+/* /Custom code: FC-2026-10-12 */
+
 /** A two minute device cooldown combines bursts without moving work to tomorrow. */
 function fcc_push_batch_due(array $batch,DateTimeImmutable $now): DateTimeImmutable {
     foreach($batch as $item)if(in_array(fcc_push_kind($item),['test','daily','cc','followup','webinar','webinar_reminder','webinar_changed','webinar_cancelled','webinar_postponed'],true))return $now;
@@ -30,6 +40,7 @@ function fcc_push_payload(array $batch): array {
     foreach($batch as $item){$kind=fcc_push_kind($item);$counts[$kind]=($counts[$kind]??0)+1;}
     $path=count($batch)>1?'partner/notifications':(($first['category']??'')==='daily'?'partner':fcc_partner_notification_path($first['path']));
     $payload=['schema'=>2,'kind'=>count($batch)>1?'summary':fcc_push_kind($first),'counts'=>$counts,'locale'=>fcc_locale($first['language']??'en'),'sound'=>!empty($first['sound']),'tag'=>'fcc-'.min(array_column($batch,'notification_id')),'url'=>url($path)];
+    if(count($batch)===1&&($detail=fcc_push_detail($first)))$payload['detail']=$detail; /* Custom code: FC-2026-10-12 */
     if(count($batch)===1&&fcc_push_kind($first)==='product_education') {
         // Existing workers recognize education; updated workers also recognize this public launch code.
         $payload['kind']='education';$payload['announcement']='product_education';

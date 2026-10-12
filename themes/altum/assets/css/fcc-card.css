@@ -172,8 +172,17 @@ body.fcc-card [data-fcc-type="youtube"] .embed-responsive, body.fcc-card [data-f
 body.fcc-card [data-fcc-type="youtube"] .h5, body.fcc-card [data-fcc-type="vimeo"] .h5,
 body.fcc-card [data-fcc-type="youtube"] [style*="font-size"], body.fcc-card [data-fcc-type="vimeo"] [style*="font-size"] { color: var(--fc-ink) !important; font-family: inherit; font-weight: 700 !important; font-size: 1.0625rem !important; }
 body.fcc-card [data-fcc-type="image"] img { border-radius: 18px !important; box-shadow: var(--fc-shadow); }
-body.fcc-card [data-fcc-type="divider"] hr, body.fcc-card [data-fcc-type="divider"] > div { border-color: var(--fc-line) !important; background: transparent !important; opacity: 1; }
-body.fcc-card [data-fcc-type="divider"] :is(i, svg) { color: var(--fc-muted) !important; }
+/* Divider: a calm line with an optional sign in the middle, three line styles and three spacings. */
+body.fcc-card #links > .row > [data-fcc-type="divider"] { margin-top: 14px !important; margin-bottom: 14px !important; }
+body.fcc-card #links > .row > [data-fcc-type="divider"][data-fcc-space="s"] { margin-top: 2px !important; margin-bottom: 2px !important; }
+body.fcc-card #links > .row > [data-fcc-type="divider"][data-fcc-space="l"] { margin-top: 30px !important; margin-bottom: 30px !important; }
+body.fcc-card [data-fcc-type="divider"] > div { background: transparent !important; }
+body.fcc-card [data-fcc-type="divider"] hr { margin: 0; border: 0 !important; border-top: 1.5px solid var(--fc-line) !important; opacity: 1; }
+body.fcc-card [data-fcc-type="divider"][data-fcc-line="dashed"] hr { border-top-style: dashed !important; }
+body.fcc-card [data-fcc-type="divider"][data-fcc-line="dotted"] hr { border-top: 3px dotted var(--fc-line) !important; }
+body.fcc-card [data-fcc-type="divider"] .mx-4 { margin: 0 14px !important; display: inline-flex; }
+body.fcc-card [data-fcc-type="divider"] .mx-4:not(:has(svg, i[class*="fa-"][class*="fas"], i[class*="fab"])) { display: none; }
+body.fcc-card [data-fcc-type="divider"] :is(i, svg) { color: var(--fc-accent) !important; font-size: 1.05rem; }
 body.fcc-card #links .card:not(.fcc-forever-product-card) { background: var(--fc-surface) !important; border: 1px solid var(--fc-line) !important; border-radius: 18px !important; color: var(--fc-ink) !important; box-shadow: var(--fc-shadow) !important; }
 body.fcc-card #links [data-fcc-type="paragraph"] .card { background: transparent !important; border: 0 !important; box-shadow: none !important; }
 body.fcc-card #links .card .card-body, body.fcc-card #links .card .card-body * { color: inherit; }

@@ -16,3 +16,12 @@ $deviceHome=trim(parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH),'/')==='par
  </aside>
 </div>
 <script src="<?= ASSETS_FULL_URL ?>js/fcc-partner-push.js?v=<?= filemtime(THEME_PATH.'assets/js/fcc-partner-push.js') ?>" defer></script>
+<?php if($deviceHome&&!$deviceDelegated): /* Custom code: FC-2026-10-12: a quiet invitation to add FCC to the home screen, only in a phone browser. */ ?>
+<aside class="fp-device-prompt fp-install-nudge" data-install-nudge data-user="<?= $deviceUid ?>" data-install-url="<?= url('partner/install') ?>" hidden aria-label="<?= htmlspecialchars(fcc_t('Dodaj FCC na početni zaslon'), ENT_QUOTES, 'UTF-8') ?>">
+ <img class="fp-install-nudge-icon" src="<?= SITE_URL ?>partner-assets/fcc-app-192.png" width="44" height="44" alt="">
+ <div><strong><?= htmlspecialchars(fcc_t('Dodaj FCC na početni zaslon'), ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars(fcc_t('Jedan dodir do kartice, kontakata i današnjeg koraka.'), ENT_QUOTES, 'UTF-8') ?></span></div>
+ <a class="fp-button" data-install-nudge-go href="<?= url('partner/install') ?>"><?= htmlspecialchars(fcc_t('Instaliraj'), ENT_QUOTES, 'UTF-8') ?></a>
+ <button type="button" class="fp-text-button" data-install-nudge-later><?= htmlspecialchars(fcc_t('Kasnije'), ENT_QUOTES, 'UTF-8') ?></button>
+</aside>
+<script src="<?= ASSETS_FULL_URL ?>js/fcc-partner-install-nudge.js?v=<?= filemtime(THEME_PATH.'assets/js/fcc-partner-install-nudge.js') ?>" defer></script>
+<?php endif /* /Custom code: FC-2026-10-12 */ ?>

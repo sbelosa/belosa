@@ -174,7 +174,6 @@ class Pages extends Controller {
                     'heading' => l('fcc.page.semantics_heading'),
                     'summary' => l('fcc.page.semantics_summary'),
                     'facts' => [
-                        l('fcc.page.semantics_fact_1'),
                         l('fcc.page.semantics_fact_2'),
                         l('fcc.page.semantics_fact_3'),
                         l('fcc.page.semantics_fact_4'),

@@ -105,40 +105,52 @@
       ]
     },
     "card": {
-      "title": "Redakto dhe kontrollo kartën tënde",
-      "summary": "Lidh kontaktin, përmbajtjen dhe rekomandimin personal në kartën që ndan.",
+      "title": "Ndrysho dhe kontrollo kartën tënde",
+      "summary": "Ndrysho profilin, përmbajtjen dhe pamjen e kartës me parapamje dhe kontrolloje para se ta ndash.",
       "keywords": [
         "karta",
         "blloku",
-        "redaktimi",
+        "ndrysho",
+        "pamja",
+        "stili",
+        "WhatsApp",
         "rrjetet sociale"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Para se të fillosh",
+          "title": "Karta që sheh vizitori",
           "paragraphs": [
-            "Karta jote hap kartat dhe redaktimin e tyre. Çdo bllok redaktohet veçmas, ndërsa pamja përcakton dizajnin e përgjithshëm. Numri i kartave dhe blloqet varen nga paketa."
+            "Karta ime hap kartat e tua. Ndrysho kartën hap redaktorin me tre hapa: Profili, Përmbajtja dhe Pamja. Parapamja e kartës qëndron gjithmonë pranë redaktorit, dhe në telefon prekja e një pjese të kartës hap fushat e saj.",
+            "Karta e re me stilin Aloe është në dispozicion për të gjithë, ndërsa PRO shton stilet Smaragd, Zlato, Pijesak dhe Ponoć si dhe ngjyrat e tua. Mund ta mbash kartën e vjetër dhe të kthehesh te ajo kur të duash. Blloqet, adresa, kodi QR dhe rekomandimi mbeten të njëjta."
           ]
         },
         {
           "id": "steps",
-          "title": "Hapat e veprimit",
+          "title": "Ndrysho një pjesë dhe kontrolloje",
           "steps": [
-            "Hap kartën tënde, zgjidh kartën dhe Redakto.",
-            "Te Përmbajtja, hap Redakto ose lapsin pranë bllokut.",
-            "Kontrollo emrin, përshkrimin, telefonin dhe kanalet. Nëse fusha tregon domenin, shkruaj vetëm pjesën e kërkuar.",
-            "Për përmbajtje të re zgjidh Shto bllok dhe lexo qëllimin e tij.",
-            "Ruaj ndryshimin, hap pamjen publike dhe provo lidhjen para ndarjes."
+            "Hap Karta ime, zgjidh kartën tënde dhe Ndrysho kartën.",
+            "Në hapin Profili ndrysho foton, emrin, përshkrimin e shkurtër nën emër dhe tekstin Rreth meje, pastaj Ruaj profilin.",
+            "Në hapin Përmbajtja prek një pjesë të kartës ose Redakto pranë saj. Shto bllok ofron blloqe me shpjegim se për çfarë shërbejnë, ndërsa me shigjetat ndryshon renditjen.",
+            "Në hapin Pamja zgjidh kartën e re ose të vjetër dhe një stil. Ndryshimin e sheh menjëherë në parapamje, ndërsa Ruaj pamjen e konfirmon për vizitorët. E avancuar: ngjyra dhe detaje përshtat stilin e zgjedhur.",
+            "Hap Shiko dhe provo butonat para se ta ndash."
           ]
         },
         {
           "id": "faq",
-          "title": "Pyetje të shpeshta",
+          "title": "Pyetje praktike",
           "questions": [
             {
-              "question": "Si shtoj përshkrim poshtë emrit?",
-              "answer": "Shto një bllok teksti të veçantë dhe vendose poshtë titullit. Madhësia e titullit dhe përshkrimi janë cilësime të ndryshme."
+              "question": "Si të shtoj një përshkrim të shkurtër nën emër?",
+              "answer": "Në hapin Profili plotëso Përshkrim i shkurtër nën emër. Në kartën e re shfaqet si etiketë nën emër."
+            },
+            {
+              "question": "Nga vjen numri i WhatsApp në kartë?",
+              "answer": "Blloku i WhatsApp merr vetë numrin e celularit nga regjistrimi në formatin që kërkon WhatsApp. Për një numër tjetër, shkruaje në bllok; gjatë ruajtjes kthehet në formatin e duhur."
+            },
+            {
+              "question": "Ku janë redaktori i vjetër dhe ngjyrat e kartës së vjetër?",
+              "answer": "Nëse e mban kartën e vjetër, ngjyrat, kornizën dhe hijen e butonave i ndryshon në formularin e bllokut te Ngjyrat dhe forma. Temat e kartës së vjetër dhe blloqet e rralla mbeten në Redaktorin klasik."
             }
           ]
         }

@@ -590,8 +590,7 @@ class Page extends Controller {
                     'facts' => [
                         'Namijenjen je neovisnim Forever partnerima koji žele graditi poslovanje na internetu i uživo.',
                         'Uključuje osobnu aplikaciju, pametne preporučne linkove, AI asistente za proizvode, sustav za prikupljanje kontakata, edukaciju i analitiku.',
-                        'Kupnja proizvoda odvija se preko službenog Forever web shopa u državi kupca.',
-                        'Forever Card Club nije službena stranica kompanije Forever Living Products.'
+                        'Kupnja proizvoda odvija se preko službenog Forever web shopa u državi kupca.'
                     ],
                     'solves_heading' => 'Što FCC rješava?',
                     'solves' => [
@@ -810,8 +809,7 @@ class Page extends Controller {
                     'facts' => [
                         'It is designed for independent Forever partners who want to build online and offline business.',
                         'It includes a personal app, smart referral links, AI product assistants, lead funnel logic, education, and analytics.',
-                        'Product purchases happen through the official Forever webshop in the customer\'s country.',
-                        'Forever Card Club is not an official Forever Living Products website.'
+                        'Product purchases happen through the official Forever webshop in the customer\'s country.'
                     ],
                     'solves_heading' => 'What does FCC solve?',
                     'solves' => [

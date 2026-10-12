@@ -67,7 +67,11 @@ const FCC_CARD_BLOCK_STYLE_OPTIONS = [
     'frame' => ['auto', 'plain', 'panel'],
     'corners' => ['rounded', 'straight'],
     'icons' => ['circle', 'outline', 'plain'],
+    'line' => ['solid', 'dashed', 'dotted'],
+    'space' => ['m', 's', 'l'],
 ];
+/* Icons in the middle of a divider: calm signs that fit Forever and the Aloe look. */
+const FCC_CARD_DIVIDER_ICONS = ['' => 'Samo crta', 'fas fa-leaf' => 'Aloe list', 'fas fa-seedling' => 'Klica', 'fas fa-droplet' => 'Kapljica', 'fas fa-spa' => 'Wellness', 'fas fa-heart' => 'Srce', 'fas fa-hand-holding-heart' => 'Briga', 'fas fa-sun' => 'Sunce', 'fas fa-star' => 'Zvjezdica', 'fas fa-gem' => 'Dijamant', 'fas fa-circle-dot' => 'Točka', 'fas fa-ellipsis' => 'Tri točke'];
 /* Icons offered for buttons: Font Awesome solid and brand icons that the card loads. */
 const FCC_CARD_BUTTON_ICONS = ['' => 'Bez ikone', 'fas fa-shopping-bag' => 'Vrećica', 'fas fa-gift' => 'Poklon', 'fas fa-leaf' => 'List', 'fas fa-heart' => 'Srce', 'fas fa-star' => 'Zvjezdica', 'fas fa-handshake' => 'Suradnja', 'fas fa-phone' => 'Telefon', 'fas fa-envelope' => 'Poruka', 'fas fa-calendar-alt' => 'Kalendar', 'fas fa-play-circle' => 'Video', 'fas fa-info-circle' => 'Informacije', 'fas fa-address-book' => 'Kontakt', 'fab fa-whatsapp' => 'WhatsApp', 'fas fa-link' => 'Poveznica'];
 

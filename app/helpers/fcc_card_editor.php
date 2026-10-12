@@ -238,7 +238,7 @@ function fcc_card_editor_style_fields(string $type): array {
         'paragraph' => ['frame', 'align'],
         'image', 'youtube', 'vimeo' => ['corners'],
         'socials' => ['icons'],
-        'divider' => ['icon'],
+        'divider' => ['line', 'space'],
         default => [],
     };
 }
@@ -286,6 +286,7 @@ function fcc_card_editor_fields(object $block, ?object $owner = null): array {
         'socials' => ['socials' => array_map(static fn($value) => fcc_card_editor_plain((string) $value), (array) ($s->socials ?? []))],
         'link_forever_product' => ['product_id' => (int) ($s->product_blog_post_id ?? 0), 'product_name' => fcc_card_editor_plain((string) ($s->name ?? ''))],
         'avatar' => ['photo' => !empty($s->image) ? get_biolink_avatar_url($s) : ''],
+        'divider' => ['icon' => (string) ($s->icon ?? '')],
         default => [],
     };
     foreach(fcc_card_editor_classic_fields($block->type) as $key) {
@@ -572,8 +573,14 @@ function fcc_card_editor_apply_fields(object $user, object $link, object $block,
             $location = $normalized['location_url'];
             $set_location = true;
             break;
-        case 'custom_html_chatbot':
         case 'divider':
+            // The sign in the middle of the line, for the new and the classic card alike.
+            if(array_key_exists('icon', $input)) {
+                $icon = (string) $input['icon'];
+                if(array_key_exists($icon, FCC_CARD_DIVIDER_ICONS) || $icon === (string) ($settings['icon'] ?? '')) $settings['icon'] = $icon;
+            }
+            break;
+        case 'custom_html_chatbot':
             break;
         default:
             throw new InvalidArgumentException(fcc_t('Ovaj blok uređuješ u naprednom uređivaču.'));

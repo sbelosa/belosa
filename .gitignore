@@ -66,3 +66,7 @@
 !docs/ANALIZA_MOJ_PUT_2026-10-12.md
 !docs/DIZAJN_ZIVI_SLOJ_2026-10-12.md
 !docs/ANALIZA_FCC_KARTICE_2026-10-12.md
+!docs/OBJAVA_2026-10-12.md
+# Root files that the deploy workflow does not upload; transferred by hand (docs/OBJAVA_2026-10-12.md)
+!fcc-partner-sw.js
+!llms.txt

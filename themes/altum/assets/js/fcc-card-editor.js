@@ -86,19 +86,24 @@
   };
 
   /* Server */
+  // Every save answers with a clear message: saved, a reason it was not saved, an expired session or a slow connection.
   const post = async (body, form) => {
-    if (busy) return null;
+    if (busy) { say(t('busy'), true); return null; }
     busy = true;
-    root.classList.add('is-busy');
     const submit = form && form.querySelector('[type=submit]');
     const label = submit && submit.textContent;
-    if (submit) { submit.disabled = true; submit.textContent = t('saving'); }
-    formError(form, '');
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), 25000) : 0;
     try {
+      root.classList.add('is-busy');
+      if (submit) { submit.disabled = true; submit.textContent = t('saving'); }
+      formError(form, '');
       body.append('token', token);
-      const response = await fetch(endpoint, { method: 'POST', body, credentials: 'same-origin', headers: { Accept: 'application/json' } });
+      const response = await fetch(endpoint, { method: 'POST', body, credentials: 'same-origin', headers: { Accept: 'application/json' }, signal: controller ? controller.signal : undefined });
+      const isJson = (response.headers.get('content-type') || '').includes('application/json');
       let result = null;
-      try { result = await response.json(); } catch (error) { result = null; }
+      if (isJson) { try { result = await response.json(); } catch (error) { result = null; } }
+      if (!isJson || response.redirected) { formError(form, t('session')); return null; }
       if (!response.ok || !result || !result.ok) {
         formError(form, (result && result.message) || t('error'));
         return null;
@@ -107,9 +112,10 @@
       say(result.message);
       return result;
     } catch (error) {
-      formError(form, t('error'));
+      formError(form, error && error.name === 'AbortError' ? t('slow') : t('error'));
       return null;
     } finally {
+      clearTimeout(timer);
       busy = false;
       root.classList.remove('is-busy');
       if (submit) { submit.disabled = false; submit.textContent = label; }
@@ -222,6 +228,13 @@
       else value = fields[input.name];
       if (input.type === 'radio') { input.checked = value !== undefined && value !== null ? input.value === String(value) : input.defaultChecked; return; }
       if (input.type === 'checkbox') { input.checked = !!value; return; }
+      // A choice made earlier in the classic editor stays selectable even when it is not in the short list.
+      if (input.tagName === 'SELECT' && value && !Array.from(input.options).some((option) => option.value === String(value))) {
+        const option = document.createElement('option');
+        option.value = String(value);
+        option.textContent = t('current_icon');
+        input.appendChild(option);
+      }
       if (value !== undefined && value !== null) input.value = value;
     });
     const items = (fields.items || []).length;

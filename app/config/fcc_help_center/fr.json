@@ -105,40 +105,52 @@
       ]
     },
     "card": {
-      "title": "Modifier et vérifier ta carte",
-      "summary": "Relie contact, contenu et recommandation personnelle sur la carte partagée.",
+      "title": "Modifie et vérifie ta carte",
+      "summary": "Modifie le profil, le contenu et l’apparence de ta carte avec un aperçu et vérifie-la avant de la partager.",
       "keywords": [
         "carte",
         "bloc",
         "modifier",
+        "apparence",
+        "style",
+        "WhatsApp",
         "réseaux sociaux"
       ],
       "sections": [
         {
           "id": "start",
-          "title": "Avant de commencer",
+          "title": "La carte que voit le visiteur",
           "paragraphs": [
-            "Ma carte ouvre tes cartes et leur édition. Chaque bloc se modifie séparément ; Apparence gère le design global. Le nombre de cartes et les blocs dépendent de l’offre."
+            "Ma carte ouvre tes cartes. Modifier la carte ouvre l’éditeur en trois étapes : Profil, Contenu et Apparence. L’aperçu de la carte reste à côté de l’éditeur et, sur le téléphone, toucher une partie de la carte ouvre ses champs.",
+            "La nouvelle carte au style Aloe est disponible pour tous, et PRO ajoute les styles Smaragd, Zlato, Pijesak et Ponoć ainsi que tes propres couleurs. Tu peux garder la carte classique et y revenir quand tu veux. Les blocs, l’adresse, le code QR et la recommandation restent les mêmes."
           ]
         },
         {
           "id": "steps",
-          "title": "Les étapes",
+          "title": "Modifie une partie, puis vérifie",
           "steps": [
-            "Ouvre Ma carte, choisis ta carte et Modifier.",
-            "Dans Contenu, utilise Modifier ou le crayon près du bloc concerné.",
-            "Vérifie nom, description, téléphone et canaux. Si le domaine est déjà affiché, saisis uniquement la partie demandée.",
-            "Choisis Ajouter un bloc pour un nouveau contenu et lis sa fonction.",
-            "Enregistre, ouvre la Vue d’ensemble publique et teste le lien avant de partager."
+            "Ouvre Ma carte, choisis ta carte et Modifier la carte.",
+            "À l’étape Profil, modifie la photo, le nom, la courte description sous ton nom et le texte À propos de moi, puis Enregistrer le profil.",
+            "À l’étape Contenu, touche une partie de la carte ou Modifier à côté. Ajouter un bloc propose des blocs avec une explication de leur utilité, et les flèches changent l’ordre.",
+            "À l’étape Apparence, choisis la nouvelle carte ou la carte classique et un style. Tu vois le changement tout de suite dans l’aperçu, et Enregistrer l’apparence le confirme pour les visiteurs. Avancé : couleurs et détails adapte le style choisi.",
+            "Ouvre Afficher et essaie les boutons avant de partager."
           ]
         },
         {
           "id": "faq",
-          "title": "Questions fréquentes",
+          "title": "Questions pratiques",
           "questions": [
             {
               "question": "Comment ajouter une courte description sous mon nom ?",
-              "answer": "Ajoute un bloc de texte séparé et déplace ce bloc sous le titre. Taille du titre et description sont des réglages distincts."
+              "answer": "À l’étape Profil, remplis la Courte description sous ton nom. Sur la nouvelle carte, elle apparaît comme une étiquette sous ton nom."
+            },
+            {
+              "question": "D’où vient le numéro WhatsApp de ma carte ?",
+              "answer": "Le bloc WhatsApp reprend le numéro de mobile de ton inscription au format demandé par WhatsApp. Pour un autre numéro, saisis-le dans le bloc ; il est converti au bon format à l’enregistrement."
+            },
+            {
+              "question": "Où sont l’ancien éditeur et les couleurs de la carte classique ?",
+              "answer": "Si tu gardes la carte classique, tu modifies les couleurs, la bordure et l’ombre des boutons dans le formulaire du bloc, sous Couleurs et forme. Les thèmes de la carte classique et les blocs rares restent dans l’Éditeur classique."
             }
           ]
         }

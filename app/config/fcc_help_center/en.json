@@ -106,11 +106,14 @@
     },
     "card": {
       "title": "Edit and check your card",
-      "summary": "Connect contact details, content and personal recommendations on the card you share.",
+      "summary": "Edit your card’s profile, content and appearance with a live preview and check it before sharing.",
       "keywords": [
         "card",
         "block",
         "edit",
+        "appearance",
+        "style",
+        "WhatsApp",
         "social networks"
       ],
       "sections": [
@@ -118,27 +121,36 @@
           "id": "start",
           "title": "The card your visitor sees",
           "paragraphs": [
-            "My card opens your cards and their editor. Edit each block separately; Appearance controls the overall design. Card limits and available blocks depend on your plan."
+            "My card opens your cards. Edit card opens the editor with three steps: Profile, Content and Appearance. The card preview stays next to the editor, and on a phone tapping a part of the card opens its fields.",
+            "The new card in the Aloe style is available to everyone, and PRO adds the Smaragd, Zlato, Pijesak and Ponoć styles and your own colours. You can keep the classic card and switch back whenever you like. Blocks, address, QR code and recommendation stay the same."
           ]
         },
         {
           "id": "steps",
           "title": "Edit one part, then check it",
           "steps": [
-            "Open My card, choose your card and select Edit.",
-            "In Content, use Edit or the pencil beside the block you want to change.",
-            "Check your name, description, phone and channels. If a field already shows the domain, enter only the requested part.",
-            "Select Add block for new content and read the block's purpose carefully.",
-            "Save, open the public Overview and test the link before sharing."
+            "Open My card, choose your card and select Edit card.",
+            "In the Profile step edit your photo, name, short description under your name and About me text, then select Save profile.",
+            "In the Content step tap a part of the card or Edit next to it. Add block offers blocks with a note on what each one is for, and the arrows change the order.",
+            "In the Appearance step choose the new or classic card and a style. You see the change in the preview at once, and Save design confirms it for visitors. Advanced: colours and details adjusts the chosen style.",
+            "Open View and try the buttons before sharing."
           ]
         },
         {
           "id": "faq",
-          "title": "A practical question",
+          "title": "Practical questions",
           "questions": [
             {
-              "question": "How do I add a short description below my name?",
-              "answer": "Add a separate text block and move it below the heading block. The heading size and description are different settings."
+              "question": "How do I add a short description under my name?",
+              "answer": "In the Profile step fill in Short description under your name. On the new card it appears as a label under your name."
+            },
+            {
+              "question": "Where does the WhatsApp number on my card come from?",
+              "answer": "The WhatsApp block takes the mobile number from your registration in the format WhatsApp needs. For a different number, enter it in the block; it is converted to the correct format when you save."
+            },
+            {
+              "question": "Where are the old editor and the classic card colours?",
+              "answer": "If you keep the classic card, change the colours, border and button shadow in the block form under Colours and shape. Classic card themes and rare blocks stay in the Classic editor."
             }
           ]
         }

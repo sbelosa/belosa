@@ -351,9 +351,10 @@ class Partner extends Controller {
   if(in_array($action,['content_migration_apply','content_migration_revert'],true)) {
    if(!\Altum\Authentication::is_admin()||$section!=='admin') throw new \InvalidArgumentException(fcc_t('Ova radnja dostupna je administratoru.'));
    if(empty($input['confirm'])) throw new \InvalidArgumentException(fcc_t('Potvrdi radnju označavanjem polja.'));
-   $result=$action==='content_migration_apply'?fcc_cm_apply($uid):fcc_cm_revert($uid);
-   $_SESSION['fcc_cm_result']=$result+['action'=>$action];
-   return 'partner/admin#content-migration';
+   $migration=in_array($input['migration']??'',['notice','aloe'],true)?(string)$input['migration']:'mojput';
+   $result=$action==='content_migration_apply'?fcc_cm_apply($uid,$migration):fcc_cm_revert($uid,$migration);
+   $_SESSION['fcc_cm_result']=$result+['action'=>$action,'migration'=>$migration];
+   return 'partner/admin#content-migration'.($migration==='mojput'?'':'-'.$migration);
   }
   if($action==='business_release') {
    if(!\Altum\Authentication::is_admin()||$section!=='admin') throw new \InvalidArgumentException(fcc_t('Ova radnja dostupna je administratoru.'));

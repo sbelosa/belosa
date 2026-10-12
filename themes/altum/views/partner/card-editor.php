@@ -43,6 +43,7 @@ $forms = [
     'link_forever_product' => '<input type="hidden" name="product_id" data-fe-product-id><p class="fe-product-current" data-fe-product-current hidden></p>'
         . '<label class="fe-field"><span>' . $t('Pronađi proizvod') . '</span><input type="search" data-fe-product-search placeholder="' . $t('Upiši naziv, primjerice Aloe Vera Gel') . '" autocomplete="off"></label>'
         . '<div class="fe-products" data-fe-products role="listbox" aria-label="' . $t('Proizvodi') . '"></div>',
+    'divider' => '<fieldset class="fe-choice"><legend>' . $t('Znak na sredini crte') . '</legend><div class="fe-chips fe-icon-chips">' . implode('', array_map(static fn($value, $label) => '<label class="fe-chip"><input type="radio" name="icon" value="' . $h($value) . '"><span>' . ($value !== '' ? '<i class="' . $h($value) . ' fa-fw" aria-hidden="true"></i> ' : '') . $t($label) . '</span></label>', array_keys(FCC_CARD_DIVIDER_ICONS), FCC_CARD_DIVIDER_ICONS)) . '</div></fieldset>',
     'info' => '',
 ];
 // The block's own look on the new card: two short choices, folded away until needed.
@@ -53,6 +54,8 @@ $look_options = [
     'frame' => ['Okvir', ['auto' => 'Kao na kartici', 'plain' => 'Bez okvira', 'panel' => 'U okviru']],
     'corners' => ['Rubovi', ['rounded' => 'Zaobljeni', 'straight' => 'Ravni']],
     'icons' => ['Ikone', ['circle' => 'U krugu', 'outline' => 'S obrubom', 'plain' => 'Samo ikone']],
+    'line' => ['Crta', ['solid' => 'Puna', 'dashed' => 'Isprekidana', 'dotted' => 'Točkasta']],
+    'space' => ['Razmak', ['m' => 'Srednji', 's' => 'Mali', 'l' => 'Veliki']],
 ];
 $look_html = static function(string $type) use ($look_options, $t, $h): string {
     $keys = fcc_card_editor_style_fields($type);
@@ -107,7 +110,8 @@ $classic_html = static function(string $type) use ($t, $h): string {
 $form_for = static fn(string $type): string => match($type) {
     'link_forever_webshop_reg', 'link_forever_shop', 'link_discount', 'link_save_contact' => 'button',
     'youtube', 'vimeo' => 'video',
-    'custom_html_chatbot', 'divider' => 'info',
+    'custom_html_chatbot' => 'info',
+    'divider' => 'divider',
     default => $type,
 };
 $copy = [
@@ -122,6 +126,10 @@ $copy = [
     'no_products' => fcc_t('Nema proizvoda za ovu pretragu.'),
     'selected' => fcc_t('Odabrano: {name}'),
     'loading' => fcc_t('Učitavam…'),
+    'busy' => fcc_t('Još spremam prethodnu promjenu. Pričekaj trenutak.'),
+    'slow' => fcc_t('Spremanje traje predugo. Provjeri vezu i pokušaj ponovno.'),
+    'session' => fcc_t('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.'),
+    'current_icon' => fcc_t('Trenutna ikona'),
     'labels' => array_map(static fn($type) => fcc_card_editor_label($type), array_combine(FCC_CARD_EDITOR_TYPES, FCC_CARD_EDITOR_TYPES)),
 ];
 ?>

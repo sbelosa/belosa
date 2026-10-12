@@ -106,11 +106,14 @@
     },
     "card": {
       "title": "Uredi i provjeri svoju karticu",
-      "summary": "Poveži kontakt, sadržaj i ličnu preporuku na kartici koju dijeliš.",
+      "summary": "Uredi profil, sadržaj i izgled kartice uz pregled i provjeri je prije dijeljenja.",
       "keywords": [
         "kartica",
         "blok",
         "uredi",
+        "izgled",
+        "stil",
+        "WhatsApp",
         "društvene mreže"
       ],
       "sections": [
@@ -118,27 +121,36 @@
           "id": "start",
           "title": "Kartica koju vidi posjetilac",
           "paragraphs": [
-            "Moja kartica otvara tvoje kartice i uređivanje. Svaki blok uređuje se posebno, dok Izgled mijenja opšti prikaz. Broj kartica i dostupni blokovi zavise od paketu."
+            "Moja kartica otvara tvoje kartice. Uredi karticu otvara uređivač sa tri koraka: Profil, Sadržaj i Izgled. Pregled kartice stalno je pored uređivača, a na telefonu dodir na dio kartice otvara njegova polja.",
+            "Nova kartica u stilu Aloe dostupna je svima, a PRO dodaje stilove Smaragd, Zlato, Pijesak i Ponoć i sopstvene boje. Staru karticu možeš da zadržiš i da se vratiš na nju kad želiš. Blokovi, adresa, QR kod i preporuka ostaju isti."
           ]
         },
         {
           "id": "steps",
           "title": "Uredi jedan dio pa provjeri",
           "steps": [
-            "Otvori Moja kartica, izaberi svoju karticu i Uredi.",
-            "U Sadržaj otvori Uredi ili olovku uz blok koji želiš promijeniti.",
-            "Provjeri ime, opis, telefon i kanale. Ako polje već prikazuje domenu, upiši samo traženi dio adrese.",
-            "Za novi sadržaj izaberi Dodaj blok i pažljivo pročitaj opis njegove namjene.",
-            "Sačuvaj izmjenu, otvori javni Pregled i isprobaj poveznicu prije dijeljenja."
+            "Otvori Moja kartica, izaberi svoju karticu i Uredi karticu.",
+            "U koraku Profil uredi fotografiju, ime, kratak opis ispod imena i tekst O meni, zatim Sačuvaj profil.",
+            "U koraku Sadržaj dodirni dio kartice ili Uredi pored njega. Dodaj blok nudi blokove sa objašnjenjem čemu služe, a strelicama mijenjaš redosljed.",
+            "U koraku Izgled izaberi novu ili staru karticu i stil. Promjenu odmah vidiš u pregledu, a Sačuvaj izgled je potvrđuje za posjetioce. Napredno: boje i detalji prilagođava izabrani stil.",
+            "Otvori Prikaži i isprobaj dugmad prije dijeljenja."
           ]
         },
         {
           "id": "faq",
-          "title": "Praktično pitanje",
+          "title": "Praktična pitanja",
           "questions": [
             {
-              "question": "Kako dodati kraći opis ispod imena?",
-              "answer": "Dodaj poseban tekstualni blok i premjesti ga ispod naslovnog bloka. Veličina cijelog naslova i opis nisu ista postavka."
+              "question": "Kako da dodam kratak opis ispod imena?",
+              "answer": "U koraku Profil upiši Kratak opis ispod imena. Na novoj kartici prikazuje se kao oznaka ispod imena."
+            },
+            {
+              "question": "Odakle je WhatsApp broj na kartici?",
+              "answer": "WhatsApp blok sam uzima broj mobilnog telefona iz registracije u obliku koji WhatsApp traži. Za drugi broj upiši ga u blok, a pri čuvanju se pretvara u ispravan oblik."
+            },
+            {
+              "question": "Gdje su stari uređivač i boje stare kartice?",
+              "answer": "Ako zadržiš staru karticu, boje, ivicu i sjenku dugmadi mijenjaš u obrascu bloka pod Boje i oblik. Teme stare kartice i rijetki blokovi ostaju u Klasičnom uređivaču."
             }
           ]
         }

@@ -87,6 +87,28 @@ $assert($classic['classic_background_color'] === '#FFC600' && $classic['classic_
 $page_source = $source('themes/altum/views/partner/card-editor.php');
 $assert(str_contains($page_source, 'data-fe-classic') && str_contains($source('themes/altum/assets/css/fcc-card-editor.css'), '.fe[data-fe-v2="1"] [data-fe-classic] { display: none; }'), 'classic options shown only for classic cards');
 
+/* Divider: meaningful signs from the icon set the card loads, line style and spacing. */
+$assert(fcc_card_editor_style_fields('divider') === ['line', 'space'] && isset(FCC_CARD_DIVIDER_ICONS['fas fa-leaf'], FCC_CARD_DIVIDER_ICONS['fas fa-gem'], FCC_CARD_DIVIDER_ICONS['']), 'divider options');
+$assert(fcc_card_block_style_clean(['line' => 'dotted', 'space' => 'l']) === ['line' => 'dotted', 'space' => 'l'], 'divider look kept');
+$assert(fcc_card_editor_fields((object) ['type' => 'divider', 'location_url' => '', 'settings' => (object) ['icon' => 'fas fa-gem']])['icon'] === 'fas fa-gem', 'divider sign shown in the form');
+$icons = (string) file_get_contents(dirname(__DIR__) . '/themes/altum/assets/js/libraries/fontawesome-solid.min.js');
+foreach(array_keys(FCC_CARD_DIVIDER_ICONS) as $icon) {
+    if($icon === '') continue;
+    $name = substr($icon, strlen('fas fa-'));
+    $assert((bool) preg_match('/(?<![\w-])' . preg_quote($name, '/') . '(?=["\']?\s*:)/', $icons), 'divider icon exists in the card icon set: ' . $name);
+}
+$assert(str_contains($source('themes/altum/assets/js/fcc-card-editor.js'), "t('session')") && str_contains($source('themes/altum/assets/js/fcc-card-editor.js'), "t('busy')"), 'saving always answers with a message');
+
+/* Advisor: starter suggestions write into the question in normal use, not only in the fallback start. */
+$chat = $source('themes/altum/views/l/partials/fcc_chat_extreme_popup.php');
+$assert(strpos($chat, 'fccStartersBound') !== false && strpos($chat, 'fccStartersBound') < strpos($chat, 'const emergencyInit'), 'advisor starters bound at the start');
+
+/* No "not an official Forever Living Products" notice on cards, pages, footers or llms.txt. */
+foreach(['app/helpers/fcc_card.php', 'app/controllers/Index.php', 'app/controllers/Page.php', 'app/controllers/Pages.php', 'app/controllers/LlmsTxt.php', 'themes/altum/views/partner/business-public.php', 'themes/altum/views/partner/business-public-legacy.php', 'themes/altum/views/legal/index.php'] as $file) {
+    $text = $source($file);
+    $assert(!preg_match('/nije službena stranica|ni njezina službena stranica|not an official Forever|or its official website|semantics_fact_1/i', $text), 'no official page notice in ' . $file);
+}
+
 /* Block library: small, Forever first, every type has a form, retired lead forms are not offered. */
 $assert(count(FCC_CARD_EDITOR_LIBRARY) <= 15 && array_slice(FCC_CARD_EDITOR_LIBRARY, 0, 2) === ['link_forever_webshop_reg', 'link_forever_shop'], 'small library, Forever first');
 $assert(!array_intersect(FCC_CARD_EDITOR_LIBRARY, FCC_CARD_RETIRED_BLOCKS), 'no phone or e-mail forms');
@@ -116,6 +138,31 @@ foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'
     $catalogue = require APP_PATH . 'config/locales/' . $locale . '.php';
     if(is_file(APP_PATH . 'config/locales/' . $locale . '-curated.php')) $catalogue = (require APP_PATH . 'config/locales/' . $locale . '-curated.php') + $catalogue;
     foreach(['Dodirni dio kartice koji želiš promijeniti.', 'Kratki opis ispod imena', 'Spremljeno. Promjena je odmah na kartici.', 'Napredni uređivač', 'Jednostavni uređivač'] as $text) $assert(isset($catalogue[$text]), $locale . ' translates: ' . $text);
+}
+
+/* FC-2026-10-12: install page, home screen invitation, Coach knowledge and push details. */
+$install = $source('themes/altum/views/partner/install.php');
+foreach(['data-install-done', 'data-install-inapp', 'data-install-desktop', 'data-install-howto', 'SquareEye::instance()', "fcc_ui_theme_assets('app')"] as $part) $assert(str_contains($install, $part), 'install page has ' . $part);
+$installJs = $source('themes/altum/assets/js/fcc-partner-install.js');
+$assert(str_contains($installJs, 'location.origin + (new URL(') && !str_contains($installJs, 'status.textContent = window.fccT(\'Instalaciju trenutačno'), 'the worker uses the page origin and a failure is not shown as an error');
+$nudge = $source('themes/altum/assets/js/fcc-partner-install-nudge.js');
+$assert(str_contains($nudge, "'fcc-install-later:'") && str_contains($nudge, '14*86400000') && str_contains($nudge, "querySelector('[data-device-prompt]')"), 'invitation waits 14 days and never doubles the iPhone prompt');
+$assert(str_contains($source('themes/altum/views/partner/device-notifications.php'), 'data-install-nudge'), 'invitation is on the home screen');
+$coach = $source('app/helpers/fcc_coach_mentor.php') . $source('app/helpers/fcc_coach_continuity.php');
+foreach(['Uredi karticu otvara uređivač s tri koraka', "['team_progress', 'Napredak mojih suradnika'", "\$help['install']", 'Napredno: boje i detalji', 'Boje i oblik'] as $part) $assert(str_contains($coach, $part), 'Coach knows: ' . $part);
+$help = json_decode($source('app/config/fcc_help_center/hr.json'), true);
+$assert(str_contains(json_encode($help['articles']['card'], JSON_UNESCAPED_UNICODE), 'Spremi izgled'), 'help article describes the new editor');
+$push = $source('app/helpers/fcc_push_delivery.php');
+foreach(["'mp:help:'=>'team_help'", "'invite:order:'=>'invite_order'", "'card-aloe:'=>'card_update'", "\$payload['detail']=\$detail"] as $part) $assert(str_contains($push, $part), 'push detail: ' . $part);
+$worker = $source('fcc-partner-sw.js');
+$assert(str_contains($worker, "const VERSION='fcc-partner-shell-v11'") && str_contains($worker, 'FCC_PUSH_DETAIL_COPY[data.detail]'), 'prepared worker shows the detail copy');
+foreach(['team_help', 'team_weekly', 'team_milestone', 'team_start', 'invite_registration', 'invite_order', 'card_update'] as $detail) {
+    $assert(preg_match('~"' . $detail . '":\{("[a-z]+":\["[^"]+","[^"]+"\],?){13}\}~u', $worker) === 1, 'worker copy in 13 languages: ' . $detail);
+}
+foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'] as $locale) {
+    $catalogue = require APP_PATH . 'config/locales/' . $locale . '.php';
+    if(is_file(APP_PATH . 'config/locales/' . $locale . '-curated.php')) $catalogue = (require APP_PATH . 'config/locales/' . $locale . '-curated.php') + $catalogue;
+    foreach(['FCC uvijek pri ruci', 'Dodaj FCC na početni zaslon', 'Tvoja kartica ima novi izgled', 'Nova kartica Aloe za netaknute kartice', 'Ažuriranje sadržaja: napomena o službenoj stranici'] as $text) $assert(isset($catalogue[$text]), $locale . ' translates: ' . $text);
 }
 
 echo "fcc card editor checks passed\n";

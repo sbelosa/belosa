@@ -1,0 +1,309 @@
+{
+ "key": "official-notice-2026-10-12",
+ "title": "Napomena o službenoj stranici",
+ "questions": [
+  "Je li FCC službeni Forever alat?",
+  "Is FCC an official Forever tool?",
+  "Ali je FCC uradno orodje Forever?",
+  "Ist FCC ein offizielles Tool von Forever?",
+  "Da li je FCC zvaničan Forever alat?",
+  "A është FCC një mjet zyrtar i Forever?",
+  "Da li je FCC zvanični Forever alat?",
+  "FCC est-il un outil officiel de Forever ?",
+  "¿FCC es una herramienta oficial de Forever?",
+  "Är FCC ett officiellt Forever-verktyg?",
+  "A FCC hivatalos Forever-eszköz?",
+  "Czy FCC jest oficjalnym narzędziem Forever?",
+  "Este FCC un instrument oficial Forever?"
+ ],
+ "replace": [
+  {
+   "old": "Forever Card Club nije službena web stranica niti službeni alat kompanije Forever Living Products. Riječ je o neovisnom digitalnom sustavu",
+   "new": "Forever Card Club je neovisni digitalni sustav"
+  },
+  {
+   "old": "Forever Card Club is not an official website or an official tool of Forever Living Products. It is an independent digital system",
+   "new": "Forever Card Club is an independent digital system"
+  },
+  {
+   "old": "Forever Card Club ni uradna spletna stran niti uradno orodje podjetja Forever Living Products. Gre za neodvisen digitalni sistem",
+   "new": "Forever Card Club je neodvisen digitalni sistem"
+  },
+  {
+   "old": "Forever Card Club ist weder eine offizielle Website noch ein offizielles Tool von Forever Living Products. Es ist ein unabhängiges digitales System",
+   "new": "Forever Card Club ist ein unabhängiges digitales System"
+  },
+  {
+   "old": "Forever Card Club nije zvanična veb-stranica niti zvanični alat kompanije Forever Living Products. To je nezavisan digitalni sistem",
+   "new": "Forever Card Club je nezavisan digitalni sistem"
+  },
+  {
+   "old": "Forever Card Club nuk është faqe zyrtare ose mjet zyrtar i Forever Living Products. Është një sistem dixhital i pavarur",
+   "new": "Forever Card Club është një sistem dixhital i pavarur"
+  },
+  {
+   "old": "Forever Card Club n’est ni un site officiel ni un outil officiel de Forever Living Products. C’est un système numérique indépendant",
+   "new": "Forever Card Club est un système numérique indépendant"
+  },
+  {
+   "old": "Forever Card Club no es un sitio web oficial ni una herramienta oficial de Forever Living Products. Es un sistema digital independiente",
+   "new": "Forever Card Club es un sistema digital independiente"
+  },
+  {
+   "old": "Forever Card Club är inte en officiell webbplats eller ett officiellt verktyg från Forever Living Products. Det är ett oberoende digitalt system",
+   "new": "Forever Card Club är ett oberoende digitalt system"
+  },
+  {
+   "old": "A Forever Card Club nem a Forever Living Products hivatalos weboldala vagy hivatalos eszköze. Ez egy független digitális rendszer",
+   "new": "A Forever Card Club egy független digitális rendszer"
+  },
+  {
+   "old": "Forever Card Club nie jest oficjalną stroną internetową ani oficjalnym narzędziem Forever Living Products. To niezależny system cyfrowy",
+   "new": "Forever Card Club to niezależny system cyfrowy"
+  },
+  {
+   "old": "Forever Card Club nu este un site oficial și nici un instrument oficial al Forever Living Products. Este un sistem digital independent",
+   "new": "Forever Card Club este un sistem digital independent"
+  },
+  {
+   "old": "Forever Card Club je neovisni digitalni sustav i nije službena web stranica niti službeni alat kompanije Forever Living Products.",
+   "new": "Forever Card Club je neovisni digitalni sustav."
+  },
+  {
+   "old": "Forever Card Club je neodvisen digitalni sistem in ni uradna spletna stran ali uradno orodje podjetja Forever Living Products.",
+   "new": "Forever Card Club je neodvisen digitalni sistem."
+  },
+  {
+   "old": "Forever Card Club is an independent digital system and is neither an official website nor an official tool of Forever Living Products.",
+   "new": "Forever Card Club is an independent digital system."
+  },
+  {
+   "old": "Forever Card Club ist ein unabhängiges digitales System und weder eine offizielle Website noch ein offizielles Tool von Forever Living Products.",
+   "new": "Forever Card Club ist ein unabhängiges digitales System."
+  },
+  {
+   "old": "Forever Card Club je nezavisan digitalni sistem i nije ni zvanična veb-stranica ni zvanični alat kompanije Forever Living Products.",
+   "new": "Forever Card Club je nezavisan digitalni sistem."
+  },
+  {
+   "old": "Forever Card Club është një sistem dixhital i pavarur dhe nuk është as faqe zyrtare, as mjet zyrtar i Forever Living Products.",
+   "new": "Forever Card Club është një sistem dixhital i pavarur."
+  },
+  {
+   "old": "Forever Card Club je nezavisan digitalni sistem i nije zvanična veb-stranica niti zvanični alat kompanije Forever Living Products.",
+   "new": "Forever Card Club je nezavisan digitalni sistem."
+  },
+  {
+   "old": "Forever Card Club est un système numérique indépendant qui n&apos;est ni un site Web officiel ni un outil officiel de Forever Living Products.",
+   "new": "Forever Card Club est un système numérique indépendant."
+  },
+  {
+   "old": "Forever Card Club es un sistema digital independiente y no es un sitio web oficial ni una herramienta oficial de Forever Living Products.",
+   "new": "Forever Card Club es un sistema digital independiente."
+  },
+  {
+   "old": "Forever Card Club är ett oberoende digitalt system och är varken en officiell webbplats eller ett officiellt verktyg från Forever Living Products.",
+   "new": "Forever Card Club är ett oberoende digitalt system."
+  },
+  {
+   "old": "A Forever Card Club egy független digitális rendszer, amely nem a Forever Living Products hivatalos weboldala, és nem is hivatalos eszköze.",
+   "new": "A Forever Card Club egy független digitális rendszer."
+  },
+  {
+   "old": "Forever Card Club to niezależny system cyfrowy i nie jest ani oficjalną stroną internetową, ani oficjalnym narzędziem firmy Forever Living Products.",
+   "new": "Forever Card Club to niezależny system cyfrowy."
+  },
+  {
+   "old": "Forever Card Club este un sistem digital independent și nu este nici site-ul oficial, nici un instrument oficial al Forever Living Products.",
+   "new": "Forever Card Club este un sistem digital independent."
+  },
+  {
+   "old": "FCC ne zamjenjuje službeni Forever shop niti predstavlja službenu FLP stranicu.",
+   "new": "FCC ne zamjenjuje službeni Forever shop."
+  },
+  {
+   "old": "FCC does not replace the official Forever shop and is not an official FLP website.",
+   "new": "FCC does not replace the official Forever shop."
+  },
+  {
+   "old": "FCC ne nadomešča uradne spletne trgovine Forever in ni uradna stran FLP.",
+   "new": "FCC ne nadomešča uradne spletne trgovine Forever."
+  },
+  {
+   "old": "FCC ersetzt nicht den offiziellen Forever Shop und ist keine offizielle FLP Website.",
+   "new": "FCC ersetzt nicht den offiziellen Forever Shop."
+  },
+  {
+   "old": "FCC ne zamenjuje zvaničnu Forever prodavnicu i nije zvanična FLP veb-stranica.",
+   "new": "FCC ne zamenjuje zvaničnu Forever prodavnicu."
+  },
+  {
+   "old": "FCC nuk e zëvendëson dyqanin zyrtar Forever dhe nuk është faqe zyrtare e FLP-së.",
+   "new": "FCC nuk e zëvendëson dyqanin zyrtar Forever."
+  },
+  {
+   "old": "FCC ne zamjenjuje zvaničnu Forever prodavnicu i nije zvanični FLP veb-sajt.",
+   "new": "FCC ne zamjenjuje zvaničnu Forever prodavnicu."
+  },
+  {
+   "old": "FCC ne remplace pas la boutique officielle Forever et n’est pas un site officiel de FLP.",
+   "new": "FCC ne remplace pas la boutique officielle Forever."
+  },
+  {
+   "old": "FCC no sustituye a la tienda oficial de Forever y no es un sitio web oficial de FLP.",
+   "new": "FCC no sustituye a la tienda oficial de Forever."
+  },
+  {
+   "old": "FCC ersätter inte Forever officiella butik och är inte en officiell FLP-webbplats.",
+   "new": "FCC ersätter inte Forever officiella butik."
+  },
+  {
+   "old": "Az FCC nem helyettesíti a hivatalos Forever üzletet, és nem hivatalos FLP-weboldal.",
+   "new": "Az FCC nem helyettesíti a hivatalos Forever üzletet."
+  },
+  {
+   "old": "FCC nie zastępuje oficjalnego sklepu Forever i nie jest oficjalną stroną internetową FLP.",
+   "new": "FCC nie zastępuje oficjalnego sklepu Forever."
+  },
+  {
+   "old": "FCC nu înlocuiește magazinul oficial Forever și nu este un site oficial FLP.",
+   "new": "FCC nu înlocuiește magazinul oficial Forever."
+  },
+  {
+   "old": "Ova stranica pripada nezavisnom Forever poslovnom partneru i nije službena stranica kompanije.",
+   "new": "Ova stranica pripada nezavisnom Forever poslovnom partneru."
+  },
+  {
+   "old": "This page belongs to an independent Forever business partner and is not an official company page.",
+   "new": "This page belongs to an independent Forever business partner."
+  },
+  {
+   "old": "Ta stran pripada neodvisnemu poslovnemu partnerju Forever in ni uradna stran podjetja.",
+   "new": "Ta stran pripada neodvisnemu poslovnemu partnerju Forever."
+  },
+  {
+   "old": "Diese Seite gehört einem unabhängigen Forever Partner und ist keine offizielle Unternehmensseite.",
+   "new": "Diese Seite gehört einem unabhängigen Forever Partner."
+  },
+  {
+   "old": "Ova stranica pripada nezavisnom Forever poslovnom saradniku i nije zvanična stranica kompanije.",
+   "new": "Ova stranica pripada nezavisnom Forever poslovnom saradniku."
+  },
+  {
+   "old": "Kjo faqe i përket një partneri të pavarur të biznesit Forever dhe nuk është faqe zyrtare e kompanisë.",
+   "new": "Kjo faqe i përket një partneri të pavarur të biznesit Forever."
+  },
+  {
+   "old": "Cette page appartient à un partenaire indépendant Forever et n’est pas une page officielle de l’entreprise.",
+   "new": "Cette page appartient à un partenaire indépendant Forever."
+  },
+  {
+   "old": "Esta página pertenece a un socio comercial independiente de Forever y no es una página oficial de la empresa.",
+   "new": "Esta página pertenece a un socio comercial independiente de Forever."
+  },
+  {
+   "old": "Den här sidan tillhör en oberoende Forever-affärspartner och är inte en officiell företagssida.",
+   "new": "Den här sidan tillhör en oberoende Forever-affärspartner."
+  },
+  {
+   "old": "Ez az oldal egy független Forever üzleti partneré, nem hivatalos vállalati oldal.",
+   "new": "Ez az oldal egy független Forever üzleti partneré."
+  },
+  {
+   "old": "Ta strona należy do niezależnego partnera biznesowego Forever i nie jest oficjalną stroną firmy.",
+   "new": "Ta strona należy do niezależnego partnera biznesowego Forever."
+  },
+  {
+   "old": "Această pagină aparține unui partener de afaceri independent Forever și nu este o pagină oficială a companiei.",
+   "new": "Această pagină aparține unui partener de afaceri independent Forever."
+  }
+ ],
+ "remove": [
+  "Forever Card Club är inte en officiell webbplats eller ett officiellt verktyg från Forever Living Products.",
+  "Forever Card Club ist weder eine offizielle Website noch ein offizielles Tool von Forever Living Products.",
+  "Forever Card Club nie jest oficjalną stroną internetową ani oficjalnym narzędziem Forever Living Products.",
+  "Forever Card Club no es un sitio web oficial ni una herramienta oficial de Forever Living Products.",
+  "Forever Card Club nu este un site oficial și nici un instrument oficial al Forever Living Products.",
+  "Forever Card Club nije službena web stranica niti službeni alat kompanije Forever Living Products.",
+  "Forever Card Club nije zvanična veb-stranica niti zvanični alat kompanije Forever Living Products.",
+  "Forever Card Club ni uradna spletna stran niti uradno orodje podjetja Forever Living Products.",
+  "A Forever Card Club nem a Forever Living Products hivatalos weboldala vagy hivatalos eszköze.",
+  "Forever Card Club is not an official website or an official tool of Forever Living Products.",
+  "Forever Card Club n’est ni un site officiel ni un outil officiel de Forever Living Products.",
+  "Forever Card Club nuk është faqe zyrtare ose mjet zyrtar i Forever Living Products.",
+  "Ova stranica nije zvanična internet stranica kompanije Forever Living Products.",
+  "Ova stranica nije zvanična veb-stranica kompanije Forever Living Products.",
+  "Diese Seite ist nicht die offizielle Website von Forever Living Products.",
+  "Det här är inte den officiella webbplatsen för Forever Living Products.",
+  "Stranica nije službena web stranica kompanije Forever Living Products.",
+  "Ovo nije zvanična internet stranica kompanije Forever Living Products.",
+  "Ova stranica nije zvanični veb-sajt kompanije Forever Living Products.",
+  "Cette page n&apos;est pas un site officiel de Forever Living Products.",
+  "Diese Seite ist keine offizielle Website von Forever Living Products.",
+  "Sidan är inte den officiella webbplatsen för Forever Living Products.",
+  "Det här är inte en officiell webbplats för Forever Living Products.",
+  "Il ne s’agit pas d’un site Web officiel de Forever Living Products.",
+  "Den här sidan är inte Forever Living Products officiella webbplats.",
+  "Dies ist nicht die offizielle Website von Forever Living Products.",
+  "Esta página no es el sitio web oficial de Forever Living Products.",
+  "Această pagină nu este site-ul oficial al Forever Living Products.",
+  "Ova stranica nije zvanični sajt kompanije Forever Living Products.",
+  "Esta página no es un sitio web oficial de Forever Living Products.",
+  "Ovo nije zvanična veb-stranica kompanije Forever Living Products.",
+  "Nie jest to oficjalna strona internetowa Forever Living Products.",
+  "To nie jest oficjalna strona internetowa Forever Living Products.",
+  "Il ne s’agit pas du site web officiel de Forever Living Products.",
+  "Sie ist nicht die offizielle Website von Forever Living Products.",
+  "This page is not the official website of Forever Living Products.",
+  "Cette page n’est pas le site officiel de Forever Living Products.",
+  "Il ne s’agit pas du site Web officiel de Forever Living Products.",
+  "Sidan är inte en officiell webbplats för Forever Living Products.",
+  "Stran ni uradna spletna stran podjetja Forever Living Products.",
+  "Il ne s’agit pas d’un site officiel de Forever Living Products.",
+  "Det är inte en officiell webbplats för Forever Living Products.",
+  "Această pagină nu este un site oficial Forever Living Products.",
+  "Dies ist keine offizielle Website von Forever Living Products.",
+  "Ez az oldal nem a Forever Living Products hivatalos weboldala.",
+  "Det här är inte Forever Living Products officiella webbplats.",
+  "Il ne s’agit pas du site officiel de Forever Living Products.",
+  "Sie ist keine offizielle Website von Forever Living Products.",
+  "Ovo nije zvanični veb-sajt kompanije Forever Living Products.",
+  "Ovo nije zvanična stranica kompanije Forever Living Products.",
+  "Stran ni uradna spletna stran družbe Forever Living Products.",
+  "This page is not an official Forever Living Products website.",
+  "Kjo faqe nuk është uebsajti zyrtar i Forever Living Products.",
+  "This is not the official website of Forever Living Products.",
+  "Este no es el sitio web oficial de Forever Living Products.",
+  "Este no es un sitio web oficial de Forever Living Products.",
+  "This is not an official website of Forever Living Products.",
+  "Kjo faqe nuk është faqja zyrtare e Forever Living Products.",
+  "Sidan är inte Forever Living Products officiella webbplats.",
+  "Acesta nu este site-ul oficial al Forever Living Products.",
+  "It is not the official website of Forever Living Products.",
+  "Kjo faqe nuk është faqe zyrtare e Forever Living Products.",
+  "Acesta nu este un site oficial al Forever Living Products.",
+  "Ovo nije zvanični sajt kompanije Forever Living Products.",
+  "Ce n’est pas le site officiel de Forever Living Products.",
+  "Ce n’est pas un site officiel de Forever Living Products.",
+  "This is not an official Forever Living Products website.",
+  "Aceasta nu este pagina oficială Forever Living Products.",
+  "Acesta nu este un site oficial Forever Living Products.",
+  "Acesta nu este site-ul oficial Forever Living Products.",
+  "Ovo nije zvanična veb-stranica Forever Living Products.",
+  "Kjo nuk është faqja zyrtare e Forever Living Products.",
+  "No es un sitio web oficial de Forever Living Products.",
+  "No es el sitio web oficial de Forever Living Products.",
+  "Nie jest to oficjalna witryna Forever Living Products.",
+  "It is not an official Forever Living Products website.",
+  "Ez nem a Forever Living Products hivatalos weboldala.",
+  "Kjo nuk është faqe zyrtare e Forever Living Products.",
+  "Nie jest to oficjalna strona Forever Living Products.",
+  "To nie jest oficjalna strona Forever Living Products.",
+  "Ovo nije zvanična stranica Forever Living Products.",
+  "Nu este site-ul oficial al Forever Living Products.",
+  "Nem a Forever Living Products hivatalos weboldala.",
+  "Nuk është faqja zyrtare e Forever Living Products.",
+  "Nuk është faqe zyrtare e Forever Living Products.",
+  "Nu este site-ul oficial Forever Living Products."
+ ]
+}

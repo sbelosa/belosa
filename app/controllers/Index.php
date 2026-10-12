@@ -80,7 +80,6 @@ class Index extends Controller {
                 'hero_heading' => 'Što je Forever Card Club (FCC)?',
                 'hero_summary' => 'Forever Card Club (FCC) je cjeloviti digitalni poslovni sustav za Forever Living Products partnere. Forever Card Aplikacija označava osobnu aplikaciju koju dobiva svaki član, a FCC označava cijeli sustav koji povezuje predstavljanje na internetu, preporučne linkove, prikupljanje kontakata, AI podršku i analitiku.',
                 'facts' => [
-                    'FCC je neovisni sustav za Forever partnere i nije službena stranica kompanije Forever Living Products.',
                     'Forever Card Aplikacija je osobna aplikacija člana unutar FCC sustava.',
                     'Pametni preporučni linkovi vode posjetitelja prema službenom Forever web shopu u njegovoj državi.',
                     'AI alati, sustav za prikupljanje kontakata i analitika pomažu partneru graditi jasan poslovni proces na internetu i uživo.'
@@ -131,7 +130,6 @@ class Index extends Controller {
                 'hero_heading' => 'What Is Forever Card Club (FCC)?',
                 'hero_summary' => 'Forever Card Club (FCC) is an all-in-one digital business system for Forever Living Products partners. The Forever Card App is the personal app each member receives, while FCC refers to the wider system that connects online sharing, referral routing, lead capture, AI guidance, and analytics.',
                 'facts' => [
-                    'FCC is an independent system for Forever partners and not an official Forever Living Products website.',
                     'The Forever Card App is the member\'s personal app inside the FCC system.',
                     'Smart referral links route visitors toward the official Forever webshop in their country.',
                     'AI tools, lead funnel logic, and analytics help partners build a more structured online and offline business process.'
