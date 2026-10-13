@@ -88,6 +88,14 @@ $extraCases = [
     ['usage_question_caps_without_label', $shortDoseNone, 'Arctic Sea: 2 caps.', true],
     ['usage_question_softgels_without_label', $shortDoseNone, 'Arctic Sea: 2 softgels.', true],
     ['usage_question_pills_without_label', $shortDoseNone, 'Arctic Sea: 2 pills.', true],
+    ['usage_question_quantity_is_without_label', $shortDoseNone, 'Količina je 2 kapsule.', true],
+    ['usage_question_package_fact_with_semicolon', $shortDoseNone, 'Pakiranje sadrži 120 kapsula; dnevnu količinu provjeri na deklaraciji.', false],
+    ['usage_question_bottle_has_package_fact', $shortDoseNone, 'Bočica ima 120 kapsula, a dnevnu količinu provjeri na deklaraciji.', false],
+    ['usage_question_in_box_package_fact', $shortDoseNone, 'U kutiji je 120 kapsula. Dnevnu količinu provjeri na deklaraciji.', false],
+    ['usage_question_capsule_has_ingredient_fact', $shortDoseNone, 'Jedna kapsula ima 1000 mg ulja. Dnevnu količinu provjeri na deklaraciji.', false],
+    ['usage_question_package_and_imperative', $shortDoseNone, 'Bočica ima 120 kapsula, uzmi 3 kapsule dnevno.', true],
+    ['usage_question_english_capsule_has_fact', $shortDoseNone, 'One capsule has 1000 mg of oil.', false],
+    ['usage_question_per_capsule_fact', $shortDoseNone, '1000 mg po kapsuli.', false],
 ];
 $failed = []; $checks = 0; $passed = 0;
 $check = static function(string $case, bool $expected, bool $actual, array $details = []) use(&$failed, &$checks, &$passed): void {

@@ -531,7 +531,7 @@ function fcc_coach_dose_issues(array $reply,array $context): array {
         $fieldProducts=$mentions($text);
         foreach(preg_split('/(?<![0-9])[.!?\n;]|\.(?![0-9])/u',$text) as $clause) {
             $hasUsageCue=preg_match('/uzmi|uzima|uzimat|\bpij\p{L}*|popij|dnevno|doza|doze|jemlj|jemati|take|taking|daily|dosage|per day|einnehm|nehmen|taglich|dosierung|pro tag|uz obrok|prije obroka|(?:nakon|poslije|posle) obroka|po obroku|pred obrokom|with (?:a |the )?meals?|(?:before|after) (?:a |the )?meals?|(?:vor|nach|zum|mit) (?:dem )?essen|ujutro|navecer|na prazan|odrasli|djeca|puta|times/u',$clause);
-            $factOnly=preg_match('/sadrz|sastoj|pakir|pakov|contains?|ingredients?|package|packaging|enthalt|inhaltsstoff|packung/u',$clause);
+            $factOnly=preg_match('/sadrz|sastoj|pakir|pakov|contains?|ingredients?|package|packaging|enthalt|inhaltsstoff|packung|kutij|bocic|staklenk|\bima(?:ju)?\b|po (?:kapsuli|tableti)|u (?:jednoj|svakoj) (?:kapsuli|tableti)|bottle|\bbox\b|\bjar\b|\bhas\b|per (?:capsule|tablet)/u',$clause);
             if(!$hasUsageCue && (!$usageQuestion || $factOnly)) continue;
             if(!preg_match_all($pattern,$clause,$matches)) continue;
             $named=$mentions($clause);
