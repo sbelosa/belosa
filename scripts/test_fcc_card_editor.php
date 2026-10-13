@@ -149,9 +149,17 @@ $assert($copyTags[1] !== [] && array_unique(array_map('strtolower', $copyTags[1]
 $assert(str_contains($source('themes/altum/assets/js/fcc-partner-install.js'), 'dataset.installCopy') && !str_contains($source('themes/altum/assets/js/fcc-partner-install.js'), 'dataset.copy'), 'install script reads its texts from data-install-copy');
 $installJs = $source('themes/altum/assets/js/fcc-partner-install.js');
 $assert(str_contains($installJs, 'location.origin + (new URL(') && !str_contains($installJs, 'status.textContent = window.fccT(\'Instalaciju trenutačno'), 'the worker uses the page origin and a failure is not shown as an error');
-$nudge = $source('themes/altum/assets/js/fcc-partner-install-nudge.js');
-$assert(str_contains($nudge, "'fcc-install-later:'") && str_contains($nudge, '14*86400000') && str_contains($nudge, "querySelector('[data-device-prompt]')"), 'invitation waits 14 days and never doubles the iPhone prompt');
-$assert(str_contains($source('themes/altum/views/partner/device-notifications.php'), 'data-install-nudge'), 'invitation is on the home screen');
+/* FC-2026-10-13: Postavi FCC. Team group, notifications and home screen are steps behind the bell; Danas keeps one quiet line. */
+$setup = $source('themes/altum/views/partner/setup-steps.php');
+foreach(['id="fcc-setup"', 'data-setup-step="team"', 'id="team-group"', 'name="action" value="team_group_joined"', 'name="confirmed" value="1"', '\Altum\Csrf::get()', 'data-setup-step="push" data-partner-push', 'data-push-enable', 'data-setup-step="install"', "url('partner/install')", 'js/fcc-partner-setup.js'] as $part) $assert(str_contains($setup, $part), 'bell setup has ' . $part);
+$notifications = $source('themes/altum/views/partner/notifications.php');
+$assert(strpos($notifications, "views/partner/setup-steps.php") !== false && strpos($notifications, "views/partner/setup-steps.php") < strpos($notifications, "fcc_t('Tvoje obavijesti')"), 'setup steps open the bell page, above the inbox');
+$device = $source('themes/altum/views/partner/device-notifications.php');
+$assert(str_contains($device, 'data-prompt="0"') && str_contains($device, 'data-fcc-setup-strip') && str_contains($device, "url('partner/notifications#fcc-setup')") && !str_contains($device, 'data-install-nudge'), 'Danas shows one setup line instead of separate cards');
+$teamInclude = $source('themes/altum/views/partner/journey-team-group.php');
+$assert(str_contains($teamInclude, 'fcc_journey_team_welcome($groupUid)') && !str_contains($teamInclude, '<aside') && !is_file(dirname(__DIR__) . '/themes/altum/assets/js/fcc-partner-install-nudge.js'), 'the team card and the old home screen card are gone, the welcome notice stays');
+$setupJs = $source('themes/altum/assets/js/fcc-partner-setup.js');
+$assert(str_contains($setupJs, "'fcc-setup-later:'") && str_contains($setupJs, '7*86400000') && str_contains($setupJs, "value==='open'||value==='after_install'") && !str_contains($setupJs, 'fetch('), 'the setup script counts open steps, hides the line for a week and sends nothing');
 $coach = $source('app/helpers/fcc_coach_mentor.php') . $source('app/helpers/fcc_coach_continuity.php');
 foreach(['Uredi karticu otvara uređivač s tri koraka', "['team_progress', 'Napredak mojih suradnika'", "\$help['install']", 'Napredno: boje i detalji', 'Boje i oblik'] as $part) $assert(str_contains($coach, $part), 'Coach knows: ' . $part);
 $help = json_decode($source('app/config/fcc_help_center/hr.json'), true);
@@ -166,7 +174,8 @@ foreach(['team_help', 'team_weekly', 'team_milestone', 'team_start', 'invite_reg
 foreach(['en', 'de', 'es', 'fr', 'hu', 'pl', 'ro', 'sl', 'sq', 'sr', 'sv', 'cnr'] as $locale) {
     $catalogue = require APP_PATH . 'config/locales/' . $locale . '.php';
     if(is_file(APP_PATH . 'config/locales/' . $locale . '-curated.php')) $catalogue = (require APP_PATH . 'config/locales/' . $locale . '-curated.php') + $catalogue;
-    foreach(['FCC uvijek pri ruci', 'Dodaj FCC na početni zaslon', 'Tvoja kartica ima novi izgled', 'Nova kartica Aloe za netaknute kartice', 'Ažuriranje sadržaja: napomena o službenoj stranici'] as $text) $assert(isset($catalogue[$text]), $locale . ' translates: ' . $text);
+    foreach(['FCC uvijek pri ruci', 'Dodaj FCC na početni zaslon', 'Tvoja kartica ima novi izgled', 'Nova kartica Aloe za netaknute kartice', 'Ažuriranje sadržaja: napomena o službenoj stranici', 'Postavi FCC', '{done} od {total} gotovo', 'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.', 'Još {n} od {total} koraka', 'Sakrij na tjedan dana'] as $text) $assert(isset($catalogue[$text]), $locale . ' translates: ' . $text);
+    foreach(['{done} od {total} gotovo' => ['{done}', '{total}'], 'Još {n} od {total} koraka' => ['{n}', '{total}']] as $text => $marks) foreach($marks as $mark) $assert(str_contains($catalogue[$text], $mark), $locale . ' keeps ' . $mark . ' in: ' . $text);
 }
 
 /* FC-2026-10-12: a new card opens the new editor, the classic editor stays reachable on purpose. */

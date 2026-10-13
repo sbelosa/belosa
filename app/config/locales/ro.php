@@ -65761,5 +65761,10 @@ Ai nevoie de ajutor pentru conectare?',
     'kartice' => 'carduri',
     'izmjene blokova' => 'modificări de blocuri',
     'Prikaži još %d' => 'Afișează încă %d',
+    'Postavi FCC' => 'Configurează FCC',
+    '{done} od {total} gotovo' => '{done} din {total} gata',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Trei pași scurți ca să nu ratezi nimic. Pe fiecare îl faci o singură dată.',
+    'Još {n} od {total} koraka' => 'Mai sunt {n} din {total} pași',
+    'Sakrij na tjedan dana' => 'Ascunde pentru o săptămână',
     /* /Custom code: FC-2026-10-12 */
 ];

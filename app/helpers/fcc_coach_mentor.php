@@ -1,7 +1,7 @@
 <?php
 defined('ALTUMCODE') || die();
 
-const FCC_COACH_MENTOR_VERSION = 'mentor-2026-10-12.card2';
+const FCC_COACH_MENTOR_VERSION = 'mentor-2026-10-13.setup';
 
 require_once __DIR__.'/fcc_coach_continuity.php';
 
@@ -31,7 +31,7 @@ function fcc_coach_features(object $user): array {
         ['results', 'FCC Rezultati', 'fcc-results', 'Osobna statistika odlazaka s kartice i podijeljenih članaka prema Forever trgovini. Klikovi više nisu uvjet ni za što: Istaknute aplikacije traže PRO i 1 osobni CC, a Preporučeni sponzori PRO i 4CC, u ovom ili prošlom mjesecu. 4CC WhatsApp grupa otvorena je svima s 4CC aktivnošću, neovisno o paketu.'], /* Custom code: FC-2026-10-11 */
         ['cc', 'Moji Forever bodovi', 'forever-business', 'Vlastiti CC i stanje pristupa. CC je uvezeni zbir za period, nije dokaz tko je kupio koji proizvod.'],
         ['team', 'Moj tim', 'partner/team', 'Prikazuje samo dio tima koji račun smije vidjeti. Coach koristi samo članove iz team_activity, bez tuđih privatnih razgovora i CRM bilješki.'],
-        ['notifications', 'Obavijesti i podsjetnici', 'partner/notifications', 'Vlastite obavijesti i odabir podsjetnika. Za push je potrebna dozvola uređaja.'],
+        ['notifications', 'Obavijesti i podsjetnici', 'partner/notifications', 'Vlastite obavijesti i odabir podsjetnika, otvaraju se zvonom gore desno. Za push je potrebna dozvola uređaja. Na vrhu je Postavi FCC s tri koraka za novog člana: timska WhatsApp grupa (Pridruži se grupi, zatim Već sam član), obavijesti na uređaju i FCC na početnom zaslonu. Gotov korak dobiva kvačicu, a popis nestaje kad je sve gotovo. Na Danas je dok neki korak nije gotov samo jedan redak Postavi FCC, koji se može sakriti na tjedan dana.'],
         ['settings', 'Moj račun', 'partner/settings', 'Profil, sigurnost, postavke i pristup ostalim alatima.'],
         ['support', 'Pomoć i moji zahtjevi', 'feedback-tickets', 'Pošalji tehničko pitanje, prijedlog ili temu za webinar i prati odgovor administratora. Coach ne otvara zahtjev umjesto tebe.'],
         ['billing', 'Free i PRO paket', 'account-plan', 'Provjeri pogodnosti i stanje svojeg paketa ili otkaži pretplatu. Coach ne aktivira paket i ne mijenja naplatu.'],

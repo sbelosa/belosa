@@ -57823,5 +57823,10 @@ Guidance ne ocenjuje sopstveni odgovor, na primer „Ova poruka se drži bezbedn
     'kartice' => 'kartice',
     'izmjene blokova' => 'izmene blokova',
     'Prikaži još %d' => 'Prikaži još %d',
+    'Postavi FCC' => 'Podesi FCC',
+    '{done} od {total} gotovo' => '{done} od {total} gotovo',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Tri kratka koraka da ništa ne propustiš. Svaki uradiš samo jednom.',
+    'Još {n} od {total} koraka' => 'Još {n} od {total} koraka',
+    'Sakrij na tjedan dana' => 'Sakrij na nedelju dana',
     /* /Custom code: FC-2026-10-12 */
 ];

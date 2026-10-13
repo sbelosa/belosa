@@ -171,7 +171,7 @@ body.fcc-ui-zivi.fcc-public-mode :is(h1, .h1) { font-weight: 800; letter-spacing
 }
 
 /* ---------- Journey, team notices and segmented tabs ---------- */
-body.fcc-ui-zivi :is(.jf-team, .fp-cc-summary, .fp-cc4-group) {
+body.fcc-ui-zivi :is(.jf-team, .fp-cc-summary, .fp-cc4-group, .fp-setup-strip) {
   background: var(--zs-glass) !important; -webkit-backdrop-filter: var(--zs-blur); backdrop-filter: var(--zs-blur);
   border: 1px solid var(--zs-edge) !important; box-shadow: var(--zs-shadow) !important; border-radius: 24px !important;
 }

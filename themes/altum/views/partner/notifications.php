@@ -1,5 +1,6 @@
 <?php defined('ALTUMCODE') || die(); $np=$data->notification_preferences; $push_mode=fcc_partner_push_mode(); $push_ready=in_array($push_mode,['enabled','phone_pilot'],true); ?>
 <p class="fp-lead"><?= htmlspecialchars(fcc_t('Poruke sustava i tvoji podsjetnici na jednom mjestu. Otvori obavijest za sljedeći korak.'), ENT_QUOTES, 'UTF-8') ?></p>
+<?php require THEME_PATH.'views/partner/setup-steps.php'; /* Custom code: FC-2026-10-13 */ ?>
 <section class="fp-panel">
  <div class="fp-section-title fp-wrap-heading"><h2><?= htmlspecialchars(fcc_t('Tvoje obavijesti'), ENT_QUOTES, 'UTF-8') ?></h2><form method="post"><?= $token ?><input type="hidden" name="action" value="notifications_read"><button class="fp-text-button"><?= htmlspecialchars(fcc_t('Označi sve pročitanim'), ENT_QUOTES, 'UTF-8') ?></button></form></div>
  <?php if(!$data->inbox): ?><p><?= htmlspecialchars(fcc_t('Još nema poruka. Nove obavijesti pojavit će se automatski.'), ENT_QUOTES, 'UTF-8') ?></p><?php endif ?>

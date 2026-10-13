@@ -58490,5 +58490,10 @@ Guidance ne ocjenjuje sopstveni odgovor, na primjer „Ova poruka sadrži samo b
     'kartice' => 'kartice',
     'izmjene blokova' => 'izmjene blokova',
     'Prikaži još %d' => 'Prikaži još %d',
+    'Postavi FCC' => 'Podesi FCC',
+    '{done} od {total} gotovo' => '{done} od {total} gotovo',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Tri kratka koraka da ništa ne propustiš. Svaki uradiš samo jednom.',
+    'Još {n} od {total} koraka' => 'Još {n} od {total} koraka',
+    'Sakrij na tjedan dana' => 'Sakrij na sedam dana',
     /* /Custom code: FC-2026-10-12 */
 ];

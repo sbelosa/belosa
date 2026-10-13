@@ -58461,5 +58461,10 @@ Guidance nuk e vlerëson përgjigjen e vet, për shembull „Ky mesazh përmban 
     'kartice' => 'karta',
     'izmjene blokova' => 'ndryshime blloqesh',
     'Prikaži još %d' => 'Shfaq edhe %d',
+    'Postavi FCC' => 'Konfiguro FCC',
+    '{done} od {total} gotovo' => '{done} nga {total} gati',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Tre hapa të shkurtër që të mos humbasësh asgjë. Secilin e bën vetëm një herë.',
+    'Još {n} od {total} koraka' => 'Edhe {n} nga {total} hapa',
+    'Sakrij na tjedan dana' => 'Fshihe për një javë',
     /* /Custom code: FC-2026-10-12 */
 ];

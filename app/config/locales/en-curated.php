@@ -654,5 +654,10 @@ return [
     'kartice' => 'cards',
     'izmjene blokova' => 'block changes',
     'Prikaži još %d' => 'Show %d more',
+    'Postavi FCC' => 'Set up FCC',
+    '{done} od {total} gotovo' => '{done} of {total} done',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Three short steps so you never miss a thing. You only do each one once.',
+    'Još {n} od {total} koraka' => '{n} of {total} steps left',
+    'Sakrij na tjedan dana' => 'Hide for a week',
     /* /Custom code: FC-2026-10-12 */
 ];

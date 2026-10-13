@@ -58408,5 +58408,10 @@ Dans guidance, ne porte pas de jugement sur ta propre réponse, par exemple « C
     'kartice' => 'cartes',
     'izmjene blokova' => 'modifications de blocs',
     'Prikaži još %d' => 'Afficher %d de plus',
+    'Postavi FCC' => 'Configurer FCC',
+    '{done} od {total} gotovo' => '{done} sur {total} faites',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Trois étapes rapides pour ne rien manquer. Chacune se fait une seule fois.',
+    'Još {n} od {total} koraka' => 'Encore {n} étapes sur {total}',
+    'Sakrij na tjedan dana' => 'Masquer une semaine',
     /* /Custom code: FC-2026-10-12 */
 ];

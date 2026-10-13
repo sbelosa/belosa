@@ -65734,5 +65734,10 @@ Potrzebujesz pomocy z połączeniem?',
     'kartice' => 'karty',
     'izmjene blokova' => 'zmiany bloków',
     'Prikaži još %d' => 'Pokaż jeszcze %d',
+    'Postavi FCC' => 'Skonfiguruj FCC',
+    '{done} od {total} gotovo' => '{done} z {total} gotowe',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Trzy krótkie kroki, żeby nic ci nie umknęło. Każdy robisz tylko raz.',
+    'Još {n} od {total} koraka' => 'Zostało {n} z {total} kroków',
+    'Sakrij na tjedan dana' => 'Ukryj na tydzień',
     /* /Custom code: FC-2026-10-12 */
 ];

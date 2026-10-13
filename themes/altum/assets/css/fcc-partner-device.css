@@ -1,5 +1,35 @@
 .fp-device-prompt{display:flex;gap:16px;align-items:center;padding:14px 18px;margin:0 0 20px;border:1px solid #c8dcd2;border-radius:16px;background:#f5f9f6}.fp-device-prompt[hidden],.fp-device-prompt [hidden]{display:none!important}.fp-device-prompt>div{flex:1;display:grid;gap:3px}.fp-device-prompt strong{font-size:.95rem;color:#234e40}.fp-device-prompt span:not(.fp-device-icon){font-size:.85rem;color:#5b776c}.fp-device-icon{color:#28725b}.fp-device-icon svg{width:24px;height:24px}.fp-device-prompt .fp-button{min-height:40px;padding:8px 14px;font-size:.85rem;white-space:nowrap}.fp-device-prompt .fp-text-button{font-size:.85rem;min-height:40px;color:#61766c}.fp-device-prompt [role=status]:empty{display:none}@media(max-width:700px){.fp-device-prompt{flex-wrap:wrap;gap:10px 14px;padding:14px}.fp-device-prompt>div{flex-basis:calc(100% - 50px)}.fp-device-prompt .fp-button{margin-left:38px}.fp-device-icon{align-self:flex-start;margin-top:3px}}
 
-/* FC-2026-10-12: home screen invitation */
-.fp-install-nudge{background:linear-gradient(135deg,rgba(59,185,164,.16),rgba(255,255,255,.75))}.fp-install-nudge-icon{flex:0 0 44px;width:44px;height:44px;border-radius:12px;box-shadow:0 4px 12px rgba(18,90,70,.18)}.fp-install-nudge>div span{color:var(--zs-muted,#4C665C);font-size:14px;line-height:1.45}
-@media(max-width:520px){.fp-install-nudge{flex-wrap:wrap}.fp-install-nudge>div{flex:1 1 calc(100% - 64px)}.fp-install-nudge .fp-button{flex:1 1 auto;justify-content:center}}
+/* FC-2026-10-13: Postavi FCC. One quiet line on Danas and the three steps behind the bell. */
+.fp-setup-strip{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:8px 8px 8px 12px;border:1px solid #c8dcd2;border-radius:16px;background:#f5f9f6}
+.fp-setup-strip[hidden],.fp-setup[hidden],.fp-setup [hidden]{display:none!important}
+.fp-setup-strip-icon{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#e3f1ea;color:#1f6b55}
+.fp-setup-strip-icon svg,.fp-setup-done svg{width:18px;height:18px}
+.fp-setup-strip-link{flex:1;min-width:0;min-height:40px;display:flex;align-items:center;gap:8px;color:inherit!important;text-decoration:none!important}
+.fp-setup-strip-text{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
+.fp-setup-strip-text strong{font-size:.95rem;color:#234e40}
+.fp-setup-strip-text span{font-size:.85rem;color:#4c665c}
+.fp-setup-strip-link::after{content:"›";flex:0 0 auto;padding:0 4px;font-size:1.35rem;line-height:1;color:#1f6b55}
+.fp-setup-strip-later{flex:0 0 40px;width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:#4c665c;font-size:1.25rem;line-height:1;cursor:pointer}
+.fp-setup-strip-later:hover,.fp-setup-strip-later:focus-visible{background:#e3f1ea}
+.fp-setup{scroll-margin-top:96px}
+@media(max-width:800px){.fp-setup{scroll-margin-top:48px}}
+.fp-setup-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.fp-setup-head h2{margin-bottom:6px}
+.fp-setup-progress{font-size:.85rem;font-weight:700;color:#1f6b55;white-space:nowrap}
+.fp-setup-list{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.fp-setup-step{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid #d5e4dc;border-radius:14px;background:#fff;scroll-margin-top:96px}
+.fp-setup-icon{flex:0 0 40px;width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:#e3f1ea;color:#1f6b55}
+.fp-setup-icon svg{width:21px;height:21px}
+.fp-setup-copy{flex:1;min-width:0;display:grid;gap:3px}
+.fp-setup-copy strong{font-size:.95rem;color:#234e40}
+.fp-setup-copy span{font-size:.85rem;color:#4c665c;line-height:1.45}
+.fp-setup-status:empty,.fp-setup-step:is([data-state=after_install],[data-state=blocked]) .fp-setup-status{display:none}
+.fp-setup-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fp-setup-actions form{margin:0}
+.fp-setup-done{display:none;align-items:center;gap:6px;font-size:.85rem;font-weight:700;color:#1f6b55;white-space:nowrap}
+.fp-setup-step[data-state=done]{background:#f5f9f6;padding-block:8px}
+.fp-setup-step[data-state=done] :is(.fp-setup-actions,.fp-setup-copy span){display:none}
+.fp-setup-step[data-state=done] .fp-setup-done{display:inline-flex}
+.fp-setup-step:is([data-state=after_install],[data-state=blocked]) .fp-setup-actions{display:none}
+@media(max-width:560px){.fp-setup-step{flex-wrap:wrap}.fp-setup-copy{flex:1 1 calc(100% - 54px)}.fp-setup-actions{flex:1 1 100%}.fp-setup-actions>.fp-button{flex:1 1 auto;justify-content:center;text-align:center}.fp-setup-step[data-state=done]{flex-wrap:nowrap}}

@@ -65705,5 +65705,10 @@ Behöver du hjälp med att ansluta?',
     'kartice' => 'kort',
     'izmjene blokova' => 'blockändringar',
     'Prikaži još %d' => 'Visa %d till',
+    'Postavi FCC' => 'Ställ in FCC',
+    '{done} od {total} gotovo' => '{done} av {total} klara',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Tre korta steg så att du inte missar något. Varje steg gör du bara en gång.',
+    'Još {n} od {total} koraka' => '{n} av {total} steg kvar',
+    'Sakrij na tjedan dana' => 'Dölj i en vecka',
     /* /Custom code: FC-2026-10-12 */
 ];

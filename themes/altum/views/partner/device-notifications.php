@@ -6,7 +6,7 @@ $devicePreferences=fcc_partner_notification_preferences($deviceUid);
 $deviceHome=trim(parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH),'/')==='partner';
 ?>
 <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-partner-device.css?v=<?= filemtime(THEME_PATH.'assets/css/fcc-partner-device.css') ?>">
-<div data-fcc-device data-delegated="<?= $deviceDelegated?'1':'0' ?>" data-user="<?= $deviceUid ?>" data-endpoint="<?= url('partner/notifications') ?>" data-token="<?= fcc_partner_h(\Altum\Csrf::get()) ?>" data-enabled="<?= $devicePreferences['push']?'1':'0' ?>" data-ready="<?= $deviceReady?'1':'0' ?>" data-public-key="<?= fcc_partner_h($deviceReady?fcc_partner_push_public_key():'') ?>" data-prompt="<?= $deviceHome?'1':'0' ?>">
+<div data-fcc-device data-delegated="<?= $deviceDelegated?'1':'0' ?>" data-user="<?= $deviceUid ?>" data-endpoint="<?= url('partner/notifications') ?>" data-token="<?= fcc_partner_h(\Altum\Csrf::get()) ?>" data-enabled="<?= $devicePreferences['push']?'1':'0' ?>" data-ready="<?= $deviceReady?'1':'0' ?>" data-public-key="<?= fcc_partner_h($deviceReady?fcc_partner_push_public_key():'') ?>" data-prompt="0"><?php /* Custom code: FC-2026-10-13: the notifications step lives in Postavi FCC behind the bell; this element only reconnects a device. */ ?>
  <aside class="fp-device-prompt" data-device-prompt hidden aria-label="<?= htmlspecialchars(fcc_t('Obavijesti na uređaju'), ENT_QUOTES, 'UTF-8') ?>">
   <span class="fp-device-icon" aria-hidden="true"><?= fcc_partner_icon('bell') ?></span>
   <div><strong><?= htmlspecialchars(fcc_t('Važne novosti na vrijeme'), ENT_QUOTES, 'UTF-8') ?></strong><span data-device-copy><?= htmlspecialchars(fcc_t('Dobij podsjetnik za webinar i obavijest o novom kontaktu.'), ENT_QUOTES, 'UTF-8') ?></span><span role="status" data-device-status></span></div>
@@ -16,12 +16,11 @@ $deviceHome=trim(parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH),'/')==='par
  </aside>
 </div>
 <script src="<?= ASSETS_FULL_URL ?>js/fcc-partner-push.js?v=<?= filemtime(THEME_PATH.'assets/js/fcc-partner-push.js') ?>" defer></script>
-<?php if($deviceHome&&!$deviceDelegated): /* Custom code: FC-2026-10-12: a quiet invitation to add FCC to the home screen, only in a phone browser. */ ?>
-<aside class="fp-device-prompt fp-install-nudge" data-install-nudge data-user="<?= $deviceUid ?>" data-install-url="<?= url('partner/install') ?>" hidden aria-label="<?= htmlspecialchars(fcc_t('Dodaj FCC na početni zaslon'), ENT_QUOTES, 'UTF-8') ?>">
- <img class="fp-install-nudge-icon" src="<?= SITE_URL ?>partner-assets/fcc-app-192.png" width="44" height="44" alt="">
- <div><strong><?= htmlspecialchars(fcc_t('Dodaj FCC na početni zaslon'), ENT_QUOTES, 'UTF-8') ?></strong><span><?= htmlspecialchars(fcc_t('Jedan dodir do kartice, kontakata i današnjeg koraka.'), ENT_QUOTES, 'UTF-8') ?></span></div>
- <a class="fp-button" data-install-nudge-go href="<?= url('partner/install') ?>"><?= htmlspecialchars(fcc_t('Instaliraj'), ENT_QUOTES, 'UTF-8') ?></a>
- <button type="button" class="fp-text-button" data-install-nudge-later><?= htmlspecialchars(fcc_t('Kasnije'), ENT_QUOTES, 'UTF-8') ?></button>
+<?php if($deviceHome&&!$deviceDelegated): /* Custom code: FC-2026-10-13: one quiet line on Danas while a Postavi FCC step is open; the steps are behind the bell. */ ?>
+<aside class="fp-setup-strip" data-fcc-setup-strip data-user="<?= $deviceUid ?>" data-team-open="<?= function_exists('fcc_journey_team_group_joined')&&fcc_jp_schema()&&!fcc_journey_team_group_joined($deviceUid)?'1':'0' ?>" hidden aria-label="<?= htmlspecialchars(fcc_t('Postavi FCC'), ENT_QUOTES, 'UTF-8') ?>">
+ <span class="fp-setup-strip-icon" aria-hidden="true"><?= fcc_partner_icon('spark') ?></span>
+ <a class="fp-setup-strip-link" href="<?= url('partner/notifications#fcc-setup') ?>"><span class="fp-setup-strip-text"><strong><?= htmlspecialchars(fcc_t('Postavi FCC'), ENT_QUOTES, 'UTF-8') ?></strong><span data-setup-strip-count data-template="<?= htmlspecialchars(fcc_t('Još {n} od {total} koraka'), ENT_QUOTES, 'UTF-8') ?>"></span></span></a>
+ <button type="button" class="fp-setup-strip-later" data-setup-strip-later aria-label="<?= htmlspecialchars(fcc_t('Sakrij na tjedan dana'), ENT_QUOTES, 'UTF-8') ?>" title="<?= htmlspecialchars(fcc_t('Sakrij na tjedan dana'), ENT_QUOTES, 'UTF-8') ?>">×</button>
 </aside>
-<script src="<?= ASSETS_FULL_URL ?>js/fcc-partner-install-nudge.js?v=<?= filemtime(THEME_PATH.'assets/js/fcc-partner-install-nudge.js') ?>" defer></script>
-<?php endif /* /Custom code: FC-2026-10-12 */ ?>
+<script src="<?= ASSETS_FULL_URL ?>js/fcc-partner-setup.js?v=<?= filemtime(THEME_PATH.'assets/js/fcc-partner-setup.js') ?>" defer></script>
+<?php endif /* /Custom code: FC-2026-10-13 */ ?>

@@ -65528,5 +65528,10 @@ Segíthetek a csatlakozásban?',
     'kartice' => 'kártya',
     'izmjene blokova' => 'blokkmódosítás',
     'Prikaži još %d' => 'Még %d megjelenítése',
+    'Postavi FCC' => 'FCC beállítása',
+    '{done} od {total} gotovo' => '{done}/{total} kész',
+    'Tri kratka koraka da ništa ne propustiš. Svaki napraviš jednom.' => 'Három rövid lépés, hogy semmiről ne maradj le. Mindegyiket csak egyszer kell megtenned.',
+    'Još {n} od {total} koraka' => 'Még {n}/{total} lépés van hátra',
+    'Sakrij na tjedan dana' => 'Elrejtés egy hétre',
     /* /Custom code: FC-2026-10-12 */
 ];
