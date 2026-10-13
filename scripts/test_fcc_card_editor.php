@@ -151,6 +151,9 @@ $installJs = $source('themes/altum/assets/js/fcc-partner-install.js');
 $assert(str_contains($installJs, 'location.origin + (new URL(') && !str_contains($installJs, 'status.textContent = window.fccT(\'Instalaciju trenutačno'), 'the worker uses the page origin and a failure is not shown as an error');
 /* FC-2026-10-13: Postavi FCC. Team group, notifications and home screen are steps behind the bell; Danas keeps one quiet line. */
 $setup = $source('themes/altum/views/partner/setup-steps.php');
+/* Custom code: FC-2026-10-13: descriptive text must not activate the shared clipboard hook. */
+preg_match_all('~<([a-z]+)\b[^>]*\sdata-copy=~i', $setup, $setupCopyTags);
+$assert($setupCopyTags[1] === [] && str_contains($setup, 'data-default-copy='), 'setup descriptions do not use the shared copy action');
 foreach(['id="fcc-setup"', 'data-setup-step="team"', 'id="team-group"', 'name="action" value="team_group_joined"', 'name="confirmed" value="1"', '\Altum\Csrf::get()', 'data-setup-step="push" data-partner-push', 'data-push-enable', 'data-setup-step="install"', "url('partner/install')", 'js/fcc-partner-setup.js'] as $part) $assert(str_contains($setup, $part), 'bell setup has ' . $part);
 $notifications = $source('themes/altum/views/partner/notifications.php');
 $assert(strpos($notifications, "views/partner/setup-steps.php") !== false && strpos($notifications, "views/partner/setup-steps.php") < strpos($notifications, "fcc_t('Tvoje obavijesti')"), 'setup steps open the bell page, above the inbox');

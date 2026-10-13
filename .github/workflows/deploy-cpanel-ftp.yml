@@ -180,10 +180,13 @@ jobs:
           done < release-prerequisites/new-dependencies.txt
           # Custom code: FC-2026-10-12: compatible mobile assets must arrive before updated views.
           mkdir -p release-prerequisites/themes/altum/assets/css release-prerequisites/themes/altum/assets/js
-          for stylesheet in fcc-journey-pilot.css fcc-partner-premium.css fcc-zivi-sloj.css fcc-card-editor.css; do
+          # Custom code: FC-2026-10-13: setup step states need their styles before the new views arrive.
+          for stylesheet in fcc-journey-pilot.css fcc-partner-premium.css fcc-zivi-sloj.css fcc-card-editor.css fcc-partner-device.css; do
             cp "themes/altum/assets/css/${stylesheet}" release-prerequisites/themes/altum/assets/css/
           done
           cp themes/altum/assets/js/fcc-card-editor.js release-prerequisites/themes/altum/assets/js/
+          # Custom code: FC-2026-10-13: both setup and its existing push connector share the connection marker.
+          cp themes/altum/assets/js/fcc-partner-push.js themes/altum/assets/js/fcc-partner-setup.js release-prerequisites/themes/altum/assets/js/
           while read -r helper; do
             case "${helper}" in
               *.php) if [ -f "${helper}" ]; then cp "${helper}" release-prerequisites/helpers/; fi ;;

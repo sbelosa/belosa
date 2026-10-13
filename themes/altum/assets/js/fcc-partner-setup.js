@@ -21,7 +21,8 @@
   let push='hidden';
   if(device&&device.dataset.delegated!=='1'&&device.dataset.ready==='1'&&device.dataset.publicKey){
    if(ios&&!standalone())push='after_install';
-   else if(pushSupported)push=Notification.permission==='granted'&&device.dataset.enabled==='1'?'done':Notification.permission==='denied'?'blocked':'open';
+   /* Custom code: FC-2026-10-13: the saved preference is not proof of this device's connection. */
+   else if(pushSupported)push=Notification.permission==='granted'&&device.dataset.connected==='1'?'done':Notification.permission==='denied'?'blocked':'open';
   }
   const install=standalone()||installed?'done':phone?'open':'hidden';
   return {team,push,install};
@@ -35,6 +36,7 @@
   const steps=state();
   const applicable=Object.values(steps).filter(value=>value!=='hidden');
   const total=applicable.length,done=applicable.filter(value=>value==='done').length;
+  /* Custom code: FC-2026-10-13: a blocked step stays in the bell, without recurring Danas reminders. */
   const open=applicable.filter(value=>value==='open'||value==='after_install').length;
   if(panel){
    for(const [name,value] of Object.entries(steps)){
@@ -42,10 +44,10 @@
     row.hidden=value==='hidden';row.dataset.state=value;
    }
    const copy=panel.querySelector('[data-setup-push-copy]');
-   if(copy)copy.textContent=steps.push==='after_install'?copy.dataset.iosCopy:steps.push==='blocked'?copy.dataset.blockedCopy:copy.dataset.copy;
+   if(copy)copy.textContent=steps.push==='after_install'?copy.dataset.iosCopy:steps.push==='blocked'?copy.dataset.blockedCopy:copy.dataset.defaultCopy;
    const progress=panel.querySelector('[data-setup-progress]');
    if(progress)progress.textContent=fill(progress.dataset.template,{done,total});
-   panel.hidden=open===0;
+   panel.hidden=done===total;
   }
   if(strip){
    const count=strip.querySelector('[data-setup-strip-count]');
@@ -73,7 +75,7 @@
  // fcc-partner-push.js connects the device; follow its result without a second request.
  const pushButton=panel?.querySelector('[data-setup-step="push"] [data-push-enable]');
  if(pushButton)new MutationObserver(render).observe(pushButton,{attributes:true,childList:true,characterData:true,subtree:true});
- if(device)new MutationObserver(render).observe(device,{attributes:true,attributeFilter:['data-enabled']});
+ if(device)new MutationObserver(render).observe(device,{attributes:true,attributeFilter:['data-enabled','data-connected']});
  navigator.permissions?.query({name:'notifications'}).then(status=>{status.onchange=render;}).catch(()=>{});
 
  render();

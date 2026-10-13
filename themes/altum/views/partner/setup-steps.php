@@ -23,7 +23,7 @@ $setupT=static fn(string $text):string=>htmlspecialchars(fcc_t($text),ENT_QUOTES
   </li>
   <li class="fp-setup-step" data-setup-step="push" data-partner-push hidden>
    <span class="fp-setup-icon" aria-hidden="true"><?= fcc_partner_icon('bell') ?></span>
-   <div class="fp-setup-copy"><strong><?= $setupT('Obavijesti na uređaju') ?></strong><span data-setup-push-copy data-copy="<?= $setupT('Dobij podsjetnik za webinar i obavijest o novom kontaktu.') ?>" data-ios-copy="<?= $setupT('Za obavijesti na iPhoneu dodaj FCC na početni zaslon i otvori njegovu ikonu.') ?>" data-blocked-copy="<?= $setupT('Dopuštenje za obavijesti je isključeno u pregledniku. Možeš ga promijeniti u postavkama ove stranice.') ?>"><?= $setupT('Dobij podsjetnik za webinar i obavijest o novom kontaktu.') ?></span><span class="fp-setup-status" role="status"></span></div>
+   <div class="fp-setup-copy"><strong><?= $setupT('Obavijesti na uređaju') ?></strong><span data-setup-push-copy data-default-copy="<?= $setupT('Dobij podsjetnik za webinar i obavijest o novom kontaktu.') ?>" data-ios-copy="<?= $setupT('Za obavijesti na iPhoneu dodaj FCC na početni zaslon i otvori njegovu ikonu.') ?>" data-blocked-copy="<?= $setupT('Dopuštenje za obavijesti je isključeno u pregledniku. Možeš ga promijeniti u postavkama ove stranice.') ?>"><?= $setupT('Dobij podsjetnik za webinar i obavijest o novom kontaktu.') ?></span><span class="fp-setup-status" role="status"></span></div>
    <div class="fp-setup-actions"><button type="button" class="fp-button fp-button-outline" data-push-enable><?= $setupT('Uključi obavijesti') ?></button></div>
    <span class="fp-setup-done"><?= fcc_partner_icon('check') ?> <?= $setupT('Gotovo') ?></span>
   </li>

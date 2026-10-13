@@ -59,11 +59,14 @@
    const body=new URLSearchParams({action:'push_connect',user_id:root.dataset.user,token:root.dataset.token,automatic:automatic?'1':'0',subscription:JSON.stringify(subscription.toJSON())});
    const response=await fetch(root.dataset.endpoint,{method:'POST',credentials:'same-origin',headers:{'Accept':'application/json'},body});
    const result=await response.json();if(!response.ok||!result.ok)throw Error(result.message||window.fccT('Povezivanje nije uspjelo. Pokušaj ponovno.'));
-   prompt.hidden=true;root.dataset.enabled='1';report(window.fccT('Obavijesti su uključene na ovom uređaju.'));
+   /* Custom code: FC-2026-10-13: completion means this device actually connected, not just a saved preference. */
+   prompt.hidden=true;root.dataset.enabled='1';root.dataset.connected='1';report(window.fccT('Obavijesti su uključene na ovom uređaju.'));
    controls.forEach(b=>{b.textContent=window.fccT('Obavijesti su uključene');b.disabled=true;});
    document.querySelector('[name=push]')?.setAttribute('checked','checked');
    try{localStorage.removeItem(laterKey);}catch{}
   }catch(error){
+   /* Custom code: FC-2026-10-13: failed connections remain actionable in Postavi FCC. */
+   root.dataset.connected='0';
    report(error instanceof SyntaxError?window.fccT('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.'):error.message||window.fccT('Povezivanje nije uspjelo. Pokušaj ponovno.'));
    controls.forEach(b=>b.disabled=Notification.permission==='denied');
    if(Notification.permission==='denied')prompt.hidden=true;

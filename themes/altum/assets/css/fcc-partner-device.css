@@ -5,12 +5,13 @@
 .fp-setup-strip[hidden],.fp-setup[hidden],.fp-setup [hidden]{display:none!important}
 .fp-setup-strip-icon{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#e3f1ea;color:#1f6b55}
 .fp-setup-strip-icon svg,.fp-setup-done svg{width:18px;height:18px}
-.fp-setup-strip-link{flex:1;min-width:0;min-height:40px;display:flex;align-items:center;gap:8px;color:inherit!important;text-decoration:none!important}
+/* Custom code: FC-2026-10-13: setup controls keep a 44px touch target on a phone. */
+.fp-setup-strip-link{flex:1;min-width:0;min-height:44px;display:flex;align-items:center;gap:8px;color:inherit!important;text-decoration:none!important}
 .fp-setup-strip-text{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 .fp-setup-strip-text strong{font-size:.95rem;color:#234e40}
 .fp-setup-strip-text span{font-size:.85rem;color:#4c665c}
 .fp-setup-strip-link::after{content:"›";flex:0 0 auto;padding:0 4px;font-size:1.35rem;line-height:1;color:#1f6b55}
-.fp-setup-strip-later{flex:0 0 40px;width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:#4c665c;font-size:1.25rem;line-height:1;cursor:pointer}
+.fp-setup-strip-later{flex:0 0 44px;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#4c665c;font-size:1.25rem;line-height:1;cursor:pointer}
 .fp-setup-strip-later:hover,.fp-setup-strip-later:focus-visible{background:#e3f1ea}
 .fp-setup{scroll-margin-top:96px}
 @media(max-width:800px){.fp-setup{scroll-margin-top:48px}}
@@ -27,6 +28,8 @@
 .fp-setup-status:empty,.fp-setup-step:is([data-state=after_install],[data-state=blocked]) .fp-setup-status{display:none}
 .fp-setup-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .fp-setup-actions form{margin:0}
+.fp-setup-actions .fp-text-button{min-height:44px}
+/* /Custom code: FC-2026-10-13 */
 .fp-setup-done{display:none;align-items:center;gap:6px;font-size:.85rem;font-weight:700;color:#1f6b55;white-space:nowrap}
 .fp-setup-step[data-state=done]{background:#f5f9f6;padding-block:8px}
 .fp-setup-step[data-state=done] :is(.fp-setup-actions,.fp-setup-copy span){display:none}
