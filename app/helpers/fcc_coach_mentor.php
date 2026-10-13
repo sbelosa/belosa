@@ -482,7 +482,7 @@ function fcc_coach_asserted_pattern(string $text, string $pattern): bool {
         $words = preg_split('/\s+/u', trim((string) end($parts)), -1, PREG_SPLIT_NO_EMPTY);
         $window = ' ' . implode(' ', array_slice($words, -6)) . ' ';
         // Idioms that look negative but affirm what follows.
-        $window = preg_replace('/\b(?:(?:nikada?\s+)?ne zaboravi\p{L}*|ne samo|nemoj zaboraviti|ne brini|(?:bez|without) (?:sumnje|dvojbe|doubt)|nije cudo|not only|don t forget|no doubt|nicht nur|ohne zweifel)\b/u', ' ', $window);
+        $window = preg_replace('/\b(?:(?:nikada?\s+)?ne zaboravi\p{L}*|ne samo|nemoj zaboraviti|ne brini|(?:bez|without) (?:sumnje|dvojbe|doubt|obzira)|regardless|nije cudo|not only|don t forget|no doubt|nicht nur|ohne zweifel)\b/u', ' ', $window);
         if(!preg_match('/\b(?:ne|nije|nisu|nemoj|nemojte|nikad|nikada|bez|not|never|cannot|without|nicht|kein\p{L}*|niemals)\b/u', $window)) return true;
     }
     return false;
@@ -504,27 +504,35 @@ function fcc_coach_medical_assertion_issues(string $message): array {
 
 /* Custom code: FC-2026-10-13: Quantified usage must match the applicable reviewed label. */
 function fcc_coach_dose_normalize(string $text): string {
-    $text=preg_replace('/(?<=\d)[.,](?=\d)/u','decimalpoint',$text);
-    return str_replace('decimalpoint','.',fcc_coach_normalize($text));
+    $text = preg_replace('/(?<=\d)[.,](?=\d)/u', 'decimalpoint', $text);
+    $text = str_replace('decimalpoint', '.', fcc_coach_normalize($text));
+    $words = ['jedna'=>1,'jednu'=>1,'jedno'=>1,'jedan'=>1,'one'=>1,'eine'=>1,'eins'=>1,'dvije'=>2,'dve'=>2,'dva'=>2,'two'=>2,'zwei'=>2,'tri'=>3,'three'=>3,'drei'=>3,'cetiri'=>4,'four'=>4,'vier'=>4,'pet'=>5,'five'=>5,'funf'=>5,'sest'=>6,'six'=>6,'sechs'=>6,'sedam'=>7,'seven'=>7,'sieben'=>7,'osam'=>8,'eight'=>8,'acht'=>8,'devet'=>9,'nine'=>9,'neun'=>9,'deset'=>10,'ten'=>10,'zehn'=>10];
+    $text = preg_replace_callback('/\b('.implode('|', array_keys($words)).')\b/u', static fn($m) => (string) $words[$m[1]], $text);
+    return preg_replace('/(\d)\s*(?=\p{L})/u', '$1 ', $text);
 }
-
 function fcc_coach_dose_issues(array $reply,array $context): array {
     $products=(array)($context['catalog']['products']??[]);
     $number='(?:[0-9]+(?:\.[0-9]+)?|jedna|jednu|jedno|jedan|dvije|dve|dva|tri|cetiri|pet|sest|sedam|osam|devet|deset|one|two|three|four|five|six|seven|eight|nine|ten|eine|eins|zwei|drei|vier|funf|sechs|sieben|acht|neun|zehn)';
     $unit='(?:ml|mililitr\p{L}*|g|gram\p{L}*|mg|mikrogram\p{L}*|mcg|kapsul\p{L}*|capsules?|table[tt]\p{L}*|zlic\p{L}*|mjeric\p{L}*|scoops?|teaspoons?|tablespoons?|kapseln?|loffel\p{L}*|puta dnevno|times (?:a|per) day|mal (?:taglich|pro tag))';
     $pattern='/\b'.$number.'\s*'.$unit.'\b/u';
-    $usageQuestion=function_exists('fcc_product_education_coach_is_usage_question') && fcc_product_education_coach_is_usage_question((string)($context['intent']['latest_question']??''));
+    $aliases=static function(array $product): array {
+        $name=fcc_coach_normalize((string)($product['title']??$product['name']??''));
+        return array_values(array_filter(array_unique([$name,trim((string)preg_replace('/^forever\s+/u','',$name))]),static fn($value)=>mb_strlen($value)>=4));
+    };
+    $mentions=static function(string $text) use ($products,$aliases): array {
+        $found=[];
+        foreach($products as $product) foreach($aliases($product) as $alias) if(preg_match('/(?<![\p{L}\p{N}])'.preg_quote($alias,'/').'(?![\p{L}\p{N}])/u',$text)) {$found[]=$product;break;}
+        return $found;
+    };
+    $questionProducts=$mentions(fcc_coach_normalize((string)($context['intent']['latest_question']??$context['last_user_message']??'')));
     foreach(['guidance','recipient_message'] as $field) {
         $text=fcc_coach_dose_normalize((string)($reply[$field]??''));
+        $fieldProducts=$mentions($text);
         foreach(preg_split('/(?<![0-9])[.!?\n;]|\.(?![0-9])/u',$text) as $clause) {
-            if(!$usageQuestion && !preg_match('/uzmi|uzima|uzimat|pij\p{L}*|popij|dnevno|doza|doze|jemlj|jemati|take|taking|daily|dosage|per day|einnehm|nehmen|taglich|dosierung|pro tag/u',$clause)) continue;
+            if(!preg_match('/uzmi|uzima|uzimat|\bpij\p{L}*|popij|dnevno|doza|doze|jemlj|jemati|take|taking|daily|dosage|per day|einnehm|nehmen|taglich|dosierung|pro tag|uz obrok|prije obroka|(?:nakon|poslije|posle) obroka|po obroku|pred obrokom|with (?:a |the )?meals?|(?:before|after) (?:a |the )?meals?|(?:vor|nach|zum|mit) (?:dem )?essen|ujutro|navecer|na prazan|odrasli|djeca|puta|times/u',$clause)) continue;
             if(!preg_match_all($pattern,$clause,$matches)) continue;
-            $named=[];
-            foreach($products as $product) {
-                $name=fcc_coach_normalize((string)($product['title']??$product['name']??''));
-                if($name!=='' && str_contains($clause,$name)) $named[]=$product;
-            }
-            $applicable=$named ?: (count($products)===1 ? $products : []);
+            $named=$mentions($clause);
+            $applicable=count($named)===1 ? $named : ($named ? [] : (count($fieldProducts)===1 ? $fieldProducts : (count($questionProducts)===1 ? $questionProducts : (count($products)===1 ? $products : []))));
             $sources=[];
             foreach($applicable as $product) foreach(['label_usage','declared_directions'] as $key) foreach((array)($product[$key]??[]) as $value) {
                 if(is_string($value)) $sources[]=fcc_coach_dose_normalize($value);

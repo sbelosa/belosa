@@ -19,7 +19,7 @@ function fcc_product_education_coach_bridge_reply(string $message, array $contex
     if(preg_match('/dijabet|diabet|bubreg|bubrez|kidney|ledvic|trudn|pregnan|dojenj|terapij|lijekov|lekov|cancer|oncolog|onkolog|dijete|djeca|decu|children|child/iu',$safetyText)) return null;
     /* /Custom code: FC-2026-10-13 */
     if(function_exists('fcc_coach_requested_market')) {
-        $market = fcc_coach_requested_market($message);
+        $market = fcc_coach_requested_market($safetyText);
         if($market !== '' && $market !== 'HR') return null;
     }
     // Retain the existing Coach's response to personal urgent or allergy situations.

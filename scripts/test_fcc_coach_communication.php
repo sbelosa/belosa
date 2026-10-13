@@ -5,6 +5,7 @@ $root=dirname(__DIR__);
 $cases=[
     'coach_intent_reference_test.php'=>[],
     'coach_medical_fields_test.php'=>[],
+    'coach_dose_recheck_test.php'=>[],
     'coach_education_fallback_test.php'=>[],
     'coach_language_preferences_test.php'=>[],
     'coach_feedback_anchor_test.php'=>['--require-audit-fields'],
