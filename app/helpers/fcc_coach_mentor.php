@@ -513,7 +513,7 @@ function fcc_coach_dose_normalize(string $text): string {
 function fcc_coach_dose_issues(array $reply,array $context): array {
     $products=(array)($context['catalog']['products']??[]);
     $number='(?:[0-9]+(?:\.[0-9]+)?|jedna|jednu|jedno|jedan|dvije|dve|dva|tri|cetiri|pet|sest|sedam|osam|devet|deset|one|two|three|four|five|six|seven|eight|nine|ten|eine|eins|zwei|drei|vier|funf|sechs|sieben|acht|neun|zehn)';
-    $unit='(?:ml|mililitr\p{L}*|g|gram\p{L}*|mg|mikrogram\p{L}*|mcg|kapsul\p{L}*|capsules?|table[tt]\p{L}*|zlic\p{L}*|mjeric\p{L}*|scoops?|teaspoons?|tablespoons?|kapseln?|loffel\p{L}*|puta dnevno|times (?:a|per) day|mal (?:taglich|pro tag))';
+    $unit='(?:ml|mililitr\p{L}*|g|gram\p{L}*|mg|mikrogram\p{L}*|mcg|kapsul\p{L}*|capsules?|caps?|pills?|softgels?|drops?|kapi|kapljic\p{L}*|table[tt]\p{L}*|zlic\p{L}*|mjeric\p{L}*|scoops?|teaspoons?|tablespoons?|kapseln?|loffel\p{L}*|puta dnevno|times (?:a|per) day|mal (?:taglich|pro tag))';
     $pattern='/\b'.$number.'\s*'.$unit.'\b/u';
     $aliases=static function(array $product): array {
         $name=fcc_coach_normalize((string)($product['title']??$product['name']??''));
@@ -525,11 +525,14 @@ function fcc_coach_dose_issues(array $reply,array $context): array {
         return $found;
     };
     $questionProducts=$mentions(fcc_coach_normalize((string)($context['intent']['latest_question']??$context['last_user_message']??'')));
+    $usageQuestion=function_exists('fcc_product_education_coach_is_usage_question') && fcc_product_education_coach_is_usage_question((string)($context['intent']['latest_question']??$context['last_user_message']??''));
     foreach(['guidance','recipient_message'] as $field) {
         $text=fcc_coach_dose_normalize((string)($reply[$field]??''));
         $fieldProducts=$mentions($text);
         foreach(preg_split('/(?<![0-9])[.!?\n;]|\.(?![0-9])/u',$text) as $clause) {
-            if(!preg_match('/uzmi|uzima|uzimat|\bpij\p{L}*|popij|dnevno|doza|doze|jemlj|jemati|take|taking|daily|dosage|per day|einnehm|nehmen|taglich|dosierung|pro tag|uz obrok|prije obroka|(?:nakon|poslije|posle) obroka|po obroku|pred obrokom|with (?:a |the )?meals?|(?:before|after) (?:a |the )?meals?|(?:vor|nach|zum|mit) (?:dem )?essen|ujutro|navecer|na prazan|odrasli|djeca|puta|times/u',$clause)) continue;
+            $hasUsageCue=preg_match('/uzmi|uzima|uzimat|\bpij\p{L}*|popij|dnevno|doza|doze|jemlj|jemati|take|taking|daily|dosage|per day|einnehm|nehmen|taglich|dosierung|pro tag|uz obrok|prije obroka|(?:nakon|poslije|posle) obroka|po obroku|pred obrokom|with (?:a |the )?meals?|(?:before|after) (?:a |the )?meals?|(?:vor|nach|zum|mit) (?:dem )?essen|ujutro|navecer|na prazan|odrasli|djeca|puta|times/u',$clause);
+            $factOnly=preg_match('/sadrz|sastoj|pakir|pakov|contains?|ingredients?|package|packaging|enthalt|inhaltsstoff|packung/u',$clause);
+            if(!$hasUsageCue && (!$usageQuestion || $factOnly)) continue;
             if(!preg_match_all($pattern,$clause,$matches)) continue;
             $named=$mentions($clause);
             $applicable=count($named)===1 ? $named : ($named ? [] : (count($fieldProducts)===1 ? $fieldProducts : (count($questionProducts)===1 ? $questionProducts : (count($products)===1 ? $products : []))));

@@ -8,6 +8,12 @@ if(!$source || !is_file($source . '/app/helpers/fcc_coach_mentor.php')) {
 define('ALTUMCODE', 66);
 define('APP_PATH', $source . '/app/');
 define('SITE_URL', 'https://fcc-coach-review.invalid/');
+$sourceFiles = ['fcc_coach_mentor.php', 'fcc_i18n.php', 'fcc_ai.php', 'fcc_product_education_coach.php'];
+$sourceBefore = [];
+foreach($sourceFiles as $file) $sourceBefore[$file] = hash_file('sha256', APP_PATH . 'helpers/' . $file);
+if(isset($argv[2]) && !hash_equals($argv[2], $sourceBefore['fcc_coach_mentor.php'])) {
+    fwrite(STDERR, "Mentor source hash does not match the required candidate.\n"); exit(3);
+}
 function db() { throw new RuntimeException('Database access forbidden in offline test.'); }
 function database() { throw new RuntimeException('Database access forbidden in offline test.'); }
 require APP_PATH . 'helpers/fcc_i18n.php';
@@ -34,6 +40,12 @@ $facts = $one;
 $facts['catalog']['products'][0]['ingredient_facts'] = ['Jedna tableta sadrži 100 mg vitamina C.'];
 $facts['catalog']['products'][0]['package_facts'] = ['Pakiranje sadrži 60 tableta.'];
 $facts['catalog']['products'][0]['facts'] = ['Pakiranje sadrži 60 tableta.'];
+$shortDoseNone = ['intent' => ['latest_question' => 'Koliko kapsula Arctic Sea se uzima dnevno?', 'recipient_forbidden' => false],
+    'catalog' => ['medical_context' => false, 'products' => [
+        ['product_key' => 'forever-arctic-sea', 'title' => 'Forever Arctic Sea', 'label_usage' => [], 'declared_directions' => []],
+    ]]];
+$shortDoseGrounded = $shortDoseNone;
+$shortDoseGrounded['catalog']['products'][0]['label_usage'] = ['Uzimaj 2 kapsule dnevno.'];
 $prototypeCases = [
     ['short_name_two_products', $two, 'ImmuBlend se uzima 2 tablete dnevno uz obrok.', false],
     ['full_name_two_products', $two, 'Forever ImmuBlend se uzima 2 tablete dnevno uz obrok.', false],
@@ -69,6 +81,13 @@ $extraCases = [
     ['english_regardless', $one, 'Regardless of treatment, take 4 tablets daily.', true],
     ['ambiguous_question_separate_product_clauses', $ambiguous, 'ImmuBlend je dodatak. Aloe Vera Gel je napitak. Uzmi 60 ml dnevno.', true],
     ['ambiguous_question_both_products_in_dose_clause', $ambiguous, 'Za ImmuBlend i Aloe Vera Gel uzmi 60 ml dnevno.', true],
+    ['usage_question_short_number_without_label', $shortDoseNone, 'Arctic Sea: 2 kapsule.', true],
+    ['usage_question_short_number_grounded', $shortDoseGrounded, 'Arctic Sea: 2 kapsule.', false],
+    ['usage_question_package_fact_only', $shortDoseNone, 'Pakiranje sadrži 60 kapsula.', false],
+    ['usage_question_ingredient_fact_only', $shortDoseNone, 'Jedna kapsula sadrži 100 mg sintetskog sastojka.', false],
+    ['usage_question_caps_without_label', $shortDoseNone, 'Arctic Sea: 2 caps.', true],
+    ['usage_question_softgels_without_label', $shortDoseNone, 'Arctic Sea: 2 softgels.', true],
+    ['usage_question_pills_without_label', $shortDoseNone, 'Arctic Sea: 2 pills.', true],
 ];
 $failed = []; $checks = 0; $passed = 0;
 $check = static function(string $case, bool $expected, bool $actual, array $details = []) use(&$failed, &$checks, &$passed): void {
@@ -107,10 +126,14 @@ foreach($medicalClauses as [$case, $text, $expectedFlagged]) {
         $check('medical_' . $field . '_' . $case, $expectedFlagged, in_array('unverified_medical_benefit', $issues, true), ['issues' => $issues]);
     }
 }
+$sourceAfter = [];
+foreach($sourceFiles as $file) $sourceAfter[$file] = hash_file('sha256', APP_PATH . 'helpers/' . $file);
+$check('source_snapshot_stable', true, $sourceBefore === $sourceAfter);
 echo json_encode([
     'status' => $failed ? 'FAIL' : 'PASS', 'checks' => $checks, 'passed' => $passed, 'failed' => $failed,
     'claude_prototype_dose_clauses' => count($prototypeCases), 'extra_dose_clauses' => count($extraCases),
     'both_fields' => true, 'database_calls' => 0, 'api_calls' => 0,
+    'source_hashes_before' => $sourceBefore, 'source_hashes_after' => $sourceAfter,
     'mentor_sha256' => hash_file('sha256', APP_PATH . 'helpers/fcc_coach_mentor.php'),
     'i18n_sha256' => hash_file('sha256', APP_PATH . 'helpers/fcc_i18n.php'),
 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
