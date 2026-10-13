@@ -123,7 +123,7 @@ function fcc_product_education_coach_aliases(array $product, array $packaging, s
 }
 
 /** Keep retrieval compact. Ordinary platform and business questions return no product context. */
-function fcc_product_education_coach_search(string $message, ?array $content = null, string $language = 'hr'): array {
+function fcc_product_education_coach_search(string $message, ?array $content = null, string $language = 'hr', bool $referenceOnly = false): array {
     $content = $content ?? fcc_product_education_content();
     $query = fcc_product_education_coach_normalize($message);
     $empty = ['relevant' => false, 'intent' => 'none', 'products' => [], 'recommendations' => [], 'direct_product_keys' => []];
@@ -139,9 +139,9 @@ function fcc_product_education_coach_search(string $message, ?array $content = n
     $business = fcc_product_education_coach_business_request($message);
     $productFacts = fcc_product_education_coach_facts_request($message);
     $knowledge = $productFacts || preg_match('/\b(?:preporuc\w*|recommend\w*|empfiehl\w*|recommand\w*|recomiend\w*|kod|protiv)\b/u', $query) === 1;
-    if($business && !$knowledge && !$exactCase) return $empty;
+    if(!$referenceOnly && $business && !$knowledge && !$exactCase) return $empty;
     $platform = fcc_product_education_coach_platform_request($message);
-    if($platform && !$productFacts && !$exactCase) return $empty;
+    if(!$referenceOnly && $platform && !$productFacts && !$exactCase) return $empty;
     $packaging = fcc_product_education_packaging_data();
     $products = array_column((array) ($content['products'] ?? []), null, 'product_key');
     $direct = [];
@@ -150,7 +150,8 @@ function fcc_product_education_coach_search(string $message, ?array $content = n
     foreach($products as $key => $product) {
         $score = 0;
         foreach(fcc_product_education_coach_aliases($product, $packaging, $language) as $alias) {
-            if(fcc_product_education_coach_phrase($query, $alias)) $score = max($score, 120 + min(40, strlen($alias)));
+            if(fcc_product_education_coach_phrase($query, $alias)
+                || (str_contains($alias, ' ') && strlen($alias) >= 8 && preg_match('/(?<![a-z0-9])'.preg_quote($alias, '/').'(?:u|a|om|em|e)(?![a-z0-9])/u', $query))) $score = max($score, 120 + min(40, strlen($alias)));
         }
         if($articleQuery) foreach((array) ($packaging['products'][$key]['offers'] ?? []) as $offer) {
             if(ltrim((string) ($offer['sku'] ?? ''), '0') === ltrim($articleMatch[1], '0')) $score = max($score, 180);
@@ -180,11 +181,16 @@ function fcc_product_education_coach_search(string $message, ?array $content = n
             fcc_product_education_coach_text($entry['title'] ?? '', $language), str_replace('_', ' ', (string) ($entry['id'] ?? ''))])));
         $body = fcc_product_education_coach_normalize((string) ($entry['practical_application'] ?? ''));
         $score = 0;
-        if(fcc_product_education_coach_phrase($query, fcc_product_education_coach_normalize((string) ($entry['id'] ?? '')))) $score += 200;
+        /* Custom code: FC-2026-10-13: Ordinary words rank an anchored topic, never select one. */
+        $anchoredCase = fcc_product_education_coach_phrase($query, fcc_product_education_coach_normalize((string) ($entry['id'] ?? '')));
+        if($anchoredCase) $score += 200;
         foreach(['display_title', 'education_title', 'title'] as $field) {
             $exactTitle = fcc_product_education_coach_normalize(fcc_product_education_coach_text($entry[$field] ?? '', $language));
-            if(strlen($exactTitle) >= 5 && fcc_product_education_coach_phrase($query, $exactTitle)) $score += 120;
+            if(strlen($exactTitle) >= 5 && fcc_product_education_coach_phrase($query, $exactTitle)) { $score += 120; $anchoredCase = true; }
         }
+        if(!$direct && !$topics && !$anchoredCase) continue;
+        /* /Custom code: FC-2026-10-13 */
+        $matchedTopic = false;
         foreach($topics as $topic => $aliases) {
             $topicTitle = fcc_product_education_coach_phrase($title, $topic);
             $topicBody = false;
@@ -193,12 +199,14 @@ function fcc_product_education_coach_search(string $message, ?array $content = n
                 $topicBody = $topicBody || fcc_product_education_coach_phrase($body, $alias);
             }
             $score += $topicTitle ? 60 : ($topicBody ? 28 : 0);
+            $matchedTopic = $matchedTopic || $topicTitle || $topicBody;
         }
         foreach($tokens as $token) if(fcc_product_education_coach_phrase($title, $token)) $score += 22;
         $references = (array) ($entry['display_products'] ?? $entry['products'] ?? []);
         $referenceKeys = array_values(array_unique(array_column($references, 'product_key')));
         $hasDirect = false;
         foreach($references as $reference) if(isset($direct[$reference['product_key'] ?? ''])) $hasDirect = true;
+        if(!$anchoredCase && !$matchedTopic && !$hasDirect) continue;
         // Named products use published relationships. An exact case lookup keeps its own identity.
         if($direct && !$hasDirect && !$exactCase) continue;
         if($hasDirect) $score += $topics ? 40 : 24;
@@ -286,10 +294,10 @@ function fcc_product_education_coach_excerpt(string $text, int $limit): string {
 }
 
 /** Compact grounded material for the coach. Private navigation is returned separately from customer copy. */
-function fcc_product_education_coach_context(string $message, string $language = 'hr', ?array $content = null): array {
+function fcc_product_education_coach_context(string $message, string $language = 'hr', ?array $content = null, bool $referenceOnly = false): array {
     $content = $content ?? fcc_product_education_content();
     $content = fcc_product_education_localize_content($content, $language);
-    $selection = fcc_product_education_coach_search($message, $content, $language);
+    $selection = fcc_product_education_coach_search($message, $content, $language, $referenceOnly);
     $selection['version'] = (string) ($content['version'] ?? '');
     $selection['language'] = $language;
     $selection['source_language'] = 'hr';

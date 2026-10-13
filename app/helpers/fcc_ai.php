@@ -5575,7 +5575,7 @@ function fcc_ai_get_message_feedback_map(array $message_ids, array $viewer_actor
     return $map;
 }
 
-function fcc_ai_get_conversation_messages(int $conversation_id, int $limit = 40, array $viewer_actor = []): array {
+function fcc_ai_get_conversation_messages(int $conversation_id, int $limit = 40, array $viewer_actor = [], int $anchor_message_id = 0, bool $after_anchor = false): array {
     if($conversation_id <= 0) {
         return [];
     }
@@ -5583,9 +5583,11 @@ function fcc_ai_get_conversation_messages(int $conversation_id, int $limit = 40,
     fcc_ai_ensure_tables();
 
     $limit = max(1, min(80, $limit));
-    $messages = db()
-        ->where('fcc_ai_conversation_id', $conversation_id)
-        ->orderBy('fcc_ai_message_id', 'DESC')
+    /* Custom code: FC-2026-10-13: Feedback windows stay within their rated conversation. */
+    $query = db()->where('fcc_ai_conversation_id', $conversation_id);
+    if($anchor_message_id > 0) $query->where('fcc_ai_message_id', $anchor_message_id, $after_anchor ? '>' : '<=');
+    $messages = $query
+        ->orderBy('fcc_ai_message_id', $after_anchor ? 'ASC' : 'DESC')
         ->get('fcc_ai_messages', $limit, [
             'fcc_ai_message_id',
             'role',
@@ -5599,7 +5601,8 @@ function fcc_ai_get_conversation_messages(int $conversation_id, int $limit = 40,
         return [];
     }
 
-    $messages = array_reverse($messages);
+    if(!$after_anchor) $messages = array_reverse($messages);
+    /* /Custom code: FC-2026-10-13 */
     $feedback_map = fcc_ai_get_message_feedback_map(array_map(static function($message) {
         return (int) ($message->fcc_ai_message_id ?? 0);
     }, $messages), $viewer_actor);
@@ -5631,6 +5634,29 @@ function fcc_ai_get_conversation_messages(int $conversation_id, int $limit = 40,
         ];
     }, $messages)));
 }
+
+/* Custom code: FC-2026-10-13: Show the rated turn and its immediate context, not today's tail. */
+function fcc_ai_get_feedback_thread_preview(int $conversation_id,int $message_id): array {
+    if($conversation_id <= 0 || $message_id <= 0) return [];
+    $before=fcc_ai_get_conversation_messages($conversation_id,6,[],$message_id);
+    if(!in_array($message_id,array_column($before,'message_id'),true)) return [];
+    $after=fcc_ai_get_conversation_messages($conversation_id,2,[],$message_id,true);
+    $rows=array_merge($before,$after);
+    foreach($rows as &$row) $row['is_feedback_anchor']=$row['message_id']===$message_id;
+    unset($row);
+    return $rows;
+}
+
+function fcc_ai_feedback_provenance(array $thread,int $message_id): array {
+    foreach($thread as $row) if(($row['message_id']??0)===$message_id) {
+        $meta=(array)($row['meta']??[]);
+        $provenance=array_intersect_key($meta,array_flip(['coach_prompt_version','model','actual_model','requested_model','provider','reply_mode','fallback_reason','coach_decision','reply_language','quality_repaired']));
+        if(!empty($meta['product_education']['version'])) $provenance['education_version']=(string)$meta['product_education']['version'];
+        return $provenance;
+    }
+    return [];
+}
+/* /Custom code: FC-2026-10-13 */
 
 function fcc_ai_is_low_context_follow_up_message(string $message): bool {
     $message = trim($message);
@@ -25970,9 +25996,12 @@ function fcc_ai_get_team_dashboard_payload(string $period_start_datetime, array 
         $user_id = (int) ($row['user_id'] ?? 0);
         $conversation_id = (int) ($row['fcc_ai_conversation_id'] ?? 0);
         $conversation_meta = json_decode((string) ($row['conversation_meta'] ?? '{}'), true) ?: [];
-        $thread_preview = $conversation_id > 0 ? array_slice(fcc_ai_get_conversation_messages($conversation_id, 12), -8) : [];
+        $message_id = (int)($row['fcc_ai_message_id']??0);
+        $thread_preview = fcc_ai_get_feedback_thread_preview($conversation_id,$message_id);
         $payload['recent_negative_feedback'][] = [
             'feedback_id' => (int) ($row['fcc_ai_message_feedback_id'] ?? 0),
+            'message_id' => $message_id,
+            'provenance' => fcc_ai_feedback_provenance($thread_preview,$message_id),
             'conversation_id' => $conversation_id,
             'conversation_public_id' => (string) ($row['public_id'] ?? ''),
             'owner_name' => (string) ($row['owner_name'] ?? l('global.unknown')),
@@ -26271,6 +26300,7 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
     $recent_negative_feedback_result = database()->query("SELECT
             `f`.`fcc_ai_message_feedback_id`,
             `f`.`fcc_ai_conversation_id`,
+            `f`.`fcc_ai_message_id`,
             `f`.`reason`,
             `f`.`note`,
             `f`.`datetime`,
@@ -26292,6 +26322,8 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
 
     while($recent_negative_feedback_result && $row = $recent_negative_feedback_result->fetch_assoc()) {
         $conversation_id = (int) ($row['fcc_ai_conversation_id'] ?? 0);
+        $message_id = (int)($row['fcc_ai_message_id']??0);
+        $thread_preview = fcc_ai_get_feedback_thread_preview($conversation_id,$message_id);
 
         $payload['recent_negative_feedback'][] = [
             'feedback_id' => (int) ($row['fcc_ai_message_feedback_id'] ?? 0),
@@ -26304,7 +26336,9 @@ function fcc_ai_get_user_dashboard_payload(int $user_id, string $period_start_da
             'note' => trim((string) ($row['note'] ?? '')),
             'message_excerpt' => fcc_ai_excerpt((string) ($row['message_content'] ?? ''), 180),
             'datetime' => (string) ($row['datetime'] ?? ''),
-            'thread_preview' => $conversation_id > 0 ? array_slice(fcc_ai_get_conversation_messages($conversation_id, 10), -6) : [],
+            'message_id' => $message_id,
+            'provenance' => fcc_ai_feedback_provenance($thread_preview,$message_id),
+            'thread_preview' => $thread_preview,
         ];
     }
 
@@ -28146,7 +28180,11 @@ function fcc_ai_try_generate_internal_coach_model_reply(object $conversation, ar
         $history_packet=fcc_coach_history_packet($history_rows,(string)($context['last_user_message']??end($history_rows)['content']??''));
         $recent = db()->where('fcc_ai_conversation_id', (int)$conversation->fcc_ai_conversation_id)->where('role', 'user')->orderBy('fcc_ai_message_id', 'DESC')->get('fcc_ai_messages', 6, 'content');
         $recent_user_text = fcc_coach_retrieval_text(array_reverse($recent));
-        $mentor_context = fcc_coach_mentor_context((int)$conversation->user_id, $recent_user_text, $context);
+        $previous_education_anchor=[];
+        foreach(array_reverse($history_rows) as $turn) if(($turn['role']??'')==='assistant') {
+            $previous_education_anchor=(array)($turn['education_anchor']??[]); break;
+        }
+        $mentor_context = fcc_coach_mentor_context((int)$conversation->user_id, $recent_user_text, array_replace($context,['previous_education_anchor'=>$previous_education_anchor]));
         $mentor_context['conversation_memory']=['coverage'=>$history_packet['coverage'],'earlier_excerpts'=>$history_packet['earlier']];
         if(function_exists('fcc_coach_select_model')) $model = fcc_coach_select_model($configured_coach_model, $route_key, (string)($context['last_user_message'] ?? end($history_rows)['content'] ?? ''), $mentor_context, $history_packet['recent'] ?? []);
         $system_prompt = fcc_coach_prompt_from_context($mentor_context);
@@ -28169,10 +28207,12 @@ function fcc_ai_try_generate_internal_coach_model_reply(object $conversation, ar
         ];
     }
 
+    $requested_model = $model;
     $model = fcc_ai_spend_model((int) ($conversation->user_id ?? 0), 'coach', $model);
     if(isset($mentor_context)) $messages = fcc_ai_cacheable_coach_messages($messages);
-    // Only the selected Luna path adds bounded delivery requirements before locale.
-    $messages[] = ['role'=>'system','content'=>($model === 'gpt-6-luna' && isset($mentor_context) && function_exists('fcc_coach_delivery_instructions') ? fcc_coach_delivery_instructions($mentor_context, $history_packet['recent'] ?? []) . "\n\n" : '') . fcc_ai_locale_instruction((string) ($context['language'] ?? $conversation->language ?? 'en'))];
+    /* Custom code: FC-2026-10-13: Every mentor model receives the same delivery contract. */
+    $messages[] = ['role'=>'system','content'=>(isset($mentor_context) && function_exists('fcc_coach_delivery_instructions') ? fcc_coach_delivery_instructions($mentor_context, $history_packet['recent'] ?? []) . "\n\n" : '') . fcc_ai_locale_instruction((string) ($context['language'] ?? $conversation->language ?? 'en'))];
+    /* /Custom code: FC-2026-10-13 */
 
     $result = fcc_ai_send_openai_chat_messages(
         $model,
@@ -28186,12 +28226,12 @@ function fcc_ai_try_generate_internal_coach_model_reply(object $conversation, ar
         if($issues) {
             // One bounded correction. Never show a failed medical draft as a fallback.
             $messages[]=['role'=>'assistant','content'=>(string)$result['content']];
-            $messages[]=['role'=>'system','content'=>'Popravi prethodni JSON odgovor. invalid_json_or_ungrounded_link znači vrati točno guidance i recipient_message te koristi samo točne URL adrese iz konteksta, bez mijenjanja parametara, fragmenata ili referala. unsolicited_recipient_message znači da osoba pita za sebe, uči ili traži podršku: odgovori potpuno u guidance, a recipient_message ostavi prazno. Provjera je otkrila: '.implode(', ',$issues).'. Za webinar preuzmi date_label i weekday_local iz konteksta točne pozivnice. Pogrešan dan u tjednu ispravi ili izostavi, nemoj ga računati napamet. Zadrži točne tražene nazive, kratke neutralne opise i dopuštene osobne linkove. U zdravstvenoj situaciji ukloni naslov Preporučeni proizvodi, pozive na kupnju, popuste, isprobavanje i tvrdnje o koristi za bolest. Provjeru deklaracije s liječnikom prije uzimanja napiši jednom jasno, ne kao ako želiš ili ako je potrebno. Ukloni ponavljanje, zadrži prirodan ton i razliku između pomoći suradniku i poruke primatelju. Vrati isti JSON oblik.'];
+            $messages[]=['role'=>'system','content'=>'Popravi prethodni JSON odgovor. invalid_json_or_ungrounded_link znači vrati točno guidance i recipient_message te koristi samo točne URL adrese iz konteksta, bez mijenjanja parametara, fragmenata ili referala. unsolicited_recipient_message znači da osoba pita za sebe, uči ili traži podršku: odgovori potpuno u guidance, a recipient_message ostavi prazno. ungrounded_dose znači ukloni neprovjerene količine i učestalost uzimanja iz oba polja; dozu smiješ citirati samo iz točnog label_usage ili declared_directions za taj proizvod, nikad iz interne edukacije. Provjera je otkrila: '.implode(', ',$issues).'. Za webinar preuzmi date_label i weekday_local iz konteksta točne pozivnice. Pogrešan dan u tjednu ispravi ili izostavi, nemoj ga računati napamet. Zadrži točne tražene nazive, kratke neutralne opise i dopuštene osobne linkove. U zdravstvenoj situaciji ukloni naslov Preporučeni proizvodi, pozive na kupnju, popuste, isprobavanje i tvrdnje o koristi za bolest. Provjeru deklaracije s liječnikom prije uzimanja napiši jednom jasno, ne kao ako želiš ili ako je potrebno. Ukloni ponavljanje, zadrži prirodan ton i razliku između pomoći suradniku i poruke primatelju. Vrati isti JSON oblik.'];
             $messages[]=['role'=>'system','content'=>fcc_ai_locale_instruction((string) ($context['language'] ?? $conversation->language ?? 'en'))];
             $repaired=fcc_ai_send_openai_chat_messages($model,$messages,'fcc_ai_internal_user_id:'.(int)$conversation->user_id.'|conversation:'.(string)$conversation->public_id,array_merge(fcc_ai_workload_options('coach', $model), $model === 'gpt-6-luna' ? ['reasoning_effort'=>'none'] : [], ['response_format'=>($model === 'gpt-6-luna' && function_exists('fcc_coach_luna_response_format') ? fcc_coach_luna_response_format() : fcc_coach_response_format()), 'spend_user_id' => (int) $conversation->user_id, 'spend_channel' => 'coach', 'spend_luna_instructions' => function_exists('fcc_coach_delivery_instructions') ? fcc_coach_delivery_instructions($mentor_context, $history_packet['recent'] ?? []) : '']));
             $reviewed=!empty($repaired['success']) ? fcc_coach_decode_reply((string)$repaired['content'],$mentor_context) : null;
             $repaired=fcc_ai_combine_attempt_usage($result,$repaired);
-            if(!$reviewed || fcc_coach_reply_issues($reviewed,$mentor_context)) return array_merge($repaired,['success'=>false,'reason'=>'coach_response_review_failed','learning_meta'=>$learning_meta]);
+            if(!$reviewed || fcc_coach_reply_issues($reviewed,$mentor_context)) return array_merge($repaired,['success'=>false,'reason'=>'coach_response_review_failed','learning_meta'=>$learning_meta,'requested_model'=>$requested_model,'actual_model'=>(string)($repaired['model']??$model),'coach_decision'=>['route'=>'mentor','intent'=>$mentor_context['intent']['mode']??'contextual','education_version'=>$mentor_context['product_education_reference']['version']??null,'education_product_keys'=>array_column($mentor_context['product_education_reference']['products']??[],'product_key'),'education_entry_ids'=>array_column($mentor_context['product_education_reference']['recommendations']??[],'id')]]);
             $result=$repaired;
             $result['quality_repaired']=true;
             $decoded=$reviewed;
@@ -28199,14 +28239,34 @@ function fcc_ai_try_generate_internal_coach_model_reply(object $conversation, ar
         $result=array_merge($result,$decoded);
         $result['learning_meta']=$learning_meta;
     }
+    $result['requested_model']=$requested_model;
+    $result['actual_model']=(string)($result['model']??$model);
+    /* Custom code: FC-2026-10-13: Record the decision without retaining another copy of private text. */
+    if(isset($mentor_context)) $result['coach_decision']=[
+        'route'=>'mentor', 'intent'=>$mentor_context['intent']['mode']??'contextual',
+        'education_version'=>$mentor_context['product_education_reference']['version']??null,
+        'education_product_keys'=>array_column($mentor_context['product_education_reference']['products']??[],'product_key'),
+        'education_entry_ids'=>array_column($mentor_context['product_education_reference']['recommendations']??[],'id'),
+    ];
+    /* /Custom code: FC-2026-10-13 */
     return $result;
 }
+
+/* Custom code: FC-2026-10-13: A failed quality review can never bypass its guard through a local card. */
+function fcc_ai_internal_coach_education_fallback(string $message,array $context,array $attempt): ?array {
+    if(!empty($attempt['success']) || ($attempt['reason']??'')==='coach_response_review_failed') return null;
+    require_once APP_PATH.'helpers/fcc_product_education_coach_bridge.php';
+    return fcc_product_education_coach_bridge_reply($message,array_replace($context,['mentor_enabled'=>false]));
+}
+/* /Custom code: FC-2026-10-13 */
 
 function fcc_ai_generate_internal_coach_reply(string $message, array $context = []): array {
     $language = fcc_ai_resolve_public_reply_language((string) ($context['language'] ?? 'auto'), $message);
     // FCC product education lane. Business and platform requests retain their existing route.
     require_once APP_PATH . 'helpers/fcc_product_education_coach_bridge.php';
-    $education_reply = fcc_product_education_coach_bridge_reply($message, array_replace($context, ['language' => $language]));
+    /* Custom code: FC-2026-10-13: The server-enabled mentor owns the complete request and review. */
+    $education_reply = !empty($context['mentor_enabled']) ? null : fcc_product_education_coach_bridge_reply($message, array_replace($context, ['language' => $language]));
+    /* /Custom code: FC-2026-10-13 */
     if($education_reply !== null) return $education_reply;
 
     $page = is_array($context['page'] ?? null) ? $context['page'] : [];
@@ -29516,7 +29576,11 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         'source_page_title' => (string) ($page['title'] ?? ''),
     ]);
 
+    /* Custom code: FC-2026-10-13: This capability is server-derived, never supplied by the client. */
+    $mentor_enabled = fcc_journey_enabled((int)$user->user_id);
+    /* /Custom code: FC-2026-10-13 */
     $reply = fcc_ai_generate_internal_coach_reply($message, [
+        'mentor_enabled' => $mentor_enabled,
         'conversation_id' => (int) ($conversation->fcc_ai_conversation_id ?? 0),
         'language' => $resolved_language,
         'page' => $page,
@@ -29525,7 +29589,6 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         'user_id' => (int) $user->user_id,
     ]);
 
-    $mentor_enabled = fcc_journey_enabled((int)$user->user_id);
     $is_product_education = ($reply['reply_mode'] ?? '') === 'product_education';
     $force_local_preview = $is_product_education || (!$mentor_enabled && !empty($reply['force_local_preview']));
     $model_attempt = [
@@ -29563,6 +29626,9 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
     }
 
     $reply_meta = array_merge($reply_meta, fcc_ai_usage_metadata($model_attempt));
+    /* Custom code: FC-2026-10-13: Route provenance is available with later feedback. */
+    $reply_meta['coach_decision']=$model_attempt['coach_decision']??['route'=>$mentor_enabled?'mentor':($is_product_education?'legacy_education':'legacy')];
+    /* /Custom code: FC-2026-10-13 */
     $premium_content_context = !empty($reply['premium_content_context'])
         || fcc_ai_contains_keywords($message, ['premium', 'luksuz', 'luskuz', 'elegant']);
 
@@ -29581,7 +29647,20 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         $reply['knowledge_suggestions']=[];
         $reply['next_step']='';
         if(empty($model_attempt['success']) && !$force_local_preview) {
-            $reply['content']=fcc_t('Trenutačno ne mogu pripremiti osobni odgovor. Pokušaj ponovno za nekoliko trenutaka; primjer i pomoć uz tvoj zadatak ostaju dostupni.', [], $resolved_language);
+            /* Custom code: FC-2026-10-13: Reviewed educational data remains available during provider failure. */
+            $education_fallback=fcc_ai_internal_coach_education_fallback($message, [
+                'conversation_id'=>(int)$conversation->fcc_ai_conversation_id,'language'=>$resolved_language,
+                'user_id'=>(int)$user->user_id,'page'=>$page,
+            ],$model_attempt);
+            if($education_fallback !== null) {
+                $reply=array_replace($reply,$education_fallback,['reply_mode'=>'mentor_education_fallback']);
+                $reply_meta['coach_decision']=['route'=>'mentor_fallback_education',
+                    'education_version'=>$education_fallback['product_education']['version']??null,
+                    'education_product_keys'=>$education_fallback['product_education']['product_keys']??[],
+                    'education_entry_ids'=>$education_fallback['product_education']['recommendation_ids']??[]];
+                $reply_meta['provider']='local_preview'; $reply_meta['model']='fcc-local-preview';
+            } else $reply['content']=fcc_t('Trenutačno ne mogu pripremiti osobni odgovor. Pokušaj ponovno za nekoliko trenutaka; primjer i pomoć uz tvoj zadatak ostaju dostupni.', [], $resolved_language);
+            /* /Custom code: FC-2026-10-13 */
         }
     }
     if(!$mentor_enabled && !$is_product_education && in_array($resolved_language,['de','sr','sq','cnr','fr','es','sv','hu','pl','ro'],true) && empty($model_attempt['success'])) {
@@ -29605,6 +29684,9 @@ function fcc_ai_handle_internal_coach_message(object $user, array $payload): arr
         'api_response_time' => (int) ($reply_meta['api_response_time'] ?? 0),
         'fallback_reason' => (string) ($reply_meta['fallback_reason'] ?? ''),
         'usage' => fcc_ai_usage_metadata($model_attempt),
+        'coach_decision' => $reply_meta['coach_decision'],
+        'requested_model' => $model_attempt['requested_model'] ?? null,
+        'actual_model' => $model_attempt['actual_model'] ?? null,
         'quality_repaired' => !empty($model_attempt['quality_repaired']),
         'reply_language' => $resolved_language,
         'knowledge_suggestions' => $reply['knowledge_suggestions'] ?? [],

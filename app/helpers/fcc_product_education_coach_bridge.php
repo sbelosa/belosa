@@ -5,6 +5,19 @@ require_once __DIR__ . '/fcc_product_education_sharing.php';
 
 /** Product education is an independent, data backed lane of the internal Coach. */
 function fcc_product_education_coach_bridge_reply(string $message, array $context = []): ?array {
+    /* Custom code: FC-2026-10-13: Legacy cards serve a narrow educational lookup only. */
+    if(!empty($context['mentor_enabled'])) return null;
+    if(fcc_product_education_coach_business_request($message) || fcc_product_education_coach_platform_request($message)) return null;
+    if(function_exists('fcc_coach_topic_domain') && in_array(fcc_coach_topic_domain($message), ['business','app','support'], true)) return null;
+    $query=fcc_product_education_coach_normalize($message);
+    if(preg_match('/\b(?:napisi|sastavi|pripremi|slozi|posalji|pitanj\w*|suradni\w*|saradni\w*|sodelav\w*|write|draft|message|questions|schreib\w*|nachricht|ecris|mensaje|sporocil\w*)\b/u',$query)) return null;
+    $safetyText=$message;
+    if(!empty($context['conversation_id']) && function_exists('fcc_ai_get_conversation_messages')) {
+        foreach(fcc_ai_get_conversation_messages((int)$context['conversation_id'],8) as $turn) if(($turn['role']??'')==='user') $safetyText.="\n".(string)$turn['content'];
+    }
+    if(function_exists('fcc_coach_product_context_from_catalog') && !empty(fcc_coach_product_context_from_catalog([],[],$safetyText,'')['medical_context'])) return null;
+    if(preg_match('/dijabet|diabet|bubreg|bubrez|kidney|ledvic|trudn|pregnan|dojenj|terapij|lijekov|lekov|cancer|oncolog|onkolog|dijete|djeca|decu|children|child/iu',$safetyText)) return null;
+    /* /Custom code: FC-2026-10-13 */
     if(function_exists('fcc_coach_requested_market')) {
         $market = fcc_coach_requested_market($message);
         if($market !== '' && $market !== 'HR') return null;
@@ -127,13 +140,13 @@ function fcc_product_education_coach_bridge_reply(string $message, array $contex
     return [
         'content' => $guidance,
         'guidance' => $guidance,
-        'recipient_message' => $customerMessage,
+        'recipient_message' => '',
         'language' => $language,
         'reply_mode' => 'product_education',
         'force_local_preview' => true,
         'next_step' => '',
         'knowledge_suggestions' => array_slice($links, 0, 3),
-        'product_education_share' => ['text' => $customerMessage],
+        'product_education_share' => null,
         'product_education' => [
             'version' => (string) ($selection['version'] ?? ''),
             'intent' => (string) ($selection['intent'] ?? ''),

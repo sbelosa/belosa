@@ -11,13 +11,13 @@ function fcc_coach_search_text(string $text): string {
 /** A direct request sets conversation language; quoted recipient text does not. */
 function fcc_coach_requested_language(string $message): string {
     $n=fcc_coach_search_text($message);
-    if(mb_strlen($n)>500 || preg_match('/\b(?:prevedi|translate|oversatt|forditsd|przetlumacz|traduce|ubaci citat|osoba (?:kaze|pise))\b/u',$n))return '';
-    $language='(?:srpsk\p{L}*|srosk\p{L}*|sepsk\p{L}*|hrvatsk\p{L}*|slovens[ck]\p{L}*|slovenack\p{L}*|njemack\p{L}*|nemack\p{L}*|englesk\p{L}*|english|serbian|croatian|german|deutsch|spanjolsk\p{L}*|spansk\p{L}*|francusk\p{L}*|crnogorsk\p{L}*|albansk\p{L}*|svedsk\p{L}*|svenska|swedish|madarsk\p{L}*|magyar|hungarian|poljsk\p{L}*|polski|polish|rumunjsk\p{L}*|rumunsk\p{L}*|romana|romanian|romanes\p{L}*|polsk\p{L}*|espanol|spanish)';
-    if(preg_match('/\b(?:nemoj|ne zelim|not)\b.{0,30}'.$language.'/u',$n))return '';
+    if(mb_strlen($n)>500 || preg_match('/\b(?:prevedi|translate|oversatt|forditsd|przetlumacz|traduce|ubaci citat|osoba (?:kaze|pise)|(?:customer|client|kupac|kupkinja|kunde|kundin)\b.{0,30}\b(?:says|said|writes|kaze|pise|sagt|schreibt))\b/u',$n))return '';
+    $language='(?:srpsk\p{L}*|srosk\p{L}*|sepsk\p{L}*|hrvatsk\p{L}*|slovens[ck]\p{L}*|slovenack\p{L}*|njemack\p{L}*|nemack\p{L}*|englesk\p{L}*|english|serbian|croatian|german|deutsch|spanjolsk\p{L}*|spansk\p{L}*|francusk\p{L}*|french|crnogorsk\p{L}*|albansk\p{L}*|svedsk\p{L}*|svenska|swedish|madarsk\p{L}*|magyar|hungarian|poljsk\p{L}*|polski|polish|rumunjsk\p{L}*|rumunsk\p{L}*|romana|romanian|romanes\p{L}*|polsk\p{L}*|espanol|spanish)';
+    if(preg_match('/\b(?:nemoj|ne zelim|not|nicht)\b.{0,30}'.$language.'/u',$n))return '';
     if(!preg_match('/^(?:(?:molim te|samo|od sada|odsad)\s+)*(?:na\s+)?('.$language.')(?:\s+jezik\p{L}*)?[.! ]*$/u',$n,$m)
-        && !preg_match('/\b(?:pisi|pisati|pricaj|govori|odgovaraj|komuniciraj|write|speak|reply|answer|napisi|sastavi|vratim|vrati|vratiti|svara|skriv|valaszolj|beszelj|irj|pisz|odpowiadaj|scrie|raspunde|vorbeste|responde|habla|escribe)\b.{0,45}?('.$language.')/u',$n,$m))return '';
+        && !preg_match('/\b(?:pisi|pisati|pricaj|govori|odgovaraj|komuniciraj|write|speak|reply|answer|antworte|sprich|schreib|schreibe|napisi|sastavi|vratim|vrati|vratiti|svara|skriv|valaszolj|beszelj|irj|pisz|odpowiadaj|scrie|raspunde|vorbeste|responde|habla|escribe)\b.{0,45}?('.$language.')/u',$n,$m))return '';
     $name=end($m);
-    foreach(['sr'=>['srps','sros','seps','serbian'],'hr'=>['hrvats','croatian'],'sl'=>['sloven'],'de'=>['njemack','nemack','german','deutsch'],'en'=>['engles','english'],'es'=>['spanjol','spansk','espanol','spanish'],'fr'=>['francusk'],'cnr'=>['crnogorsk'],'sq'=>['albansk'],'sv'=>['svedsk','svenska','swedish'],'hu'=>['madarsk','magyar','hungarian'],'pl'=>['poljsk','polski','polsk','polish'],'ro'=>['rumunjsk','rumunsk','romana','romanian','romanes']] as $code=>$terms)foreach($terms as $term)if(str_starts_with($name,$term))return $code;
+    foreach(['sr'=>['srps','sros','seps','serbian'],'hr'=>['hrvats','croatian'],'sl'=>['sloven'],'de'=>['njemack','nemack','german','deutsch'],'en'=>['engles','english'],'es'=>['spanjol','spansk','espanol','spanish'],'fr'=>['francusk','french'],'cnr'=>['crnogorsk'],'sq'=>['albansk'],'sv'=>['svedsk','svenska','swedish'],'hu'=>['madarsk','magyar','hungarian'],'pl'=>['poljsk','polski','polsk','polish'],'ro'=>['rumunjsk','rumunsk','romana','romanian','romanes']] as $code=>$terms)foreach($terms as $term)if(str_starts_with($name,$term))return $code;
     return '';
 }
 
@@ -38,7 +38,16 @@ function fcc_coach_reply_language_state(string $message,string $uiLanguage,array
 function fcc_coach_history_rows(object $conversation): array {
     $uid=(int)($conversation->user_id??0);$id=(int)($conversation->fcc_ai_conversation_id??0);
     if(!$uid || !$id || !fcc_ai_internal_coach_workspace_matches($conversation,$uid))return [];
-    return fcc_partner_rows("SELECT m.fcc_ai_message_id,m.role,m.content,m.datetime FROM fcc_ai_messages m JOIN fcc_ai_conversations c ON c.fcc_ai_conversation_id=m.fcc_ai_conversation_id WHERE c.fcc_ai_conversation_id=? AND c.user_id=? AND c.assistant_type='coach' AND c.scope='internal_coach' AND m.message_type='chat' AND m.role IN ('user','assistant') ORDER BY m.fcc_ai_message_id ASC",[$id,$uid]);
+    $rows = fcc_partner_rows("SELECT m.fcc_ai_message_id,m.role,m.content,m.datetime,m.meta FROM fcc_ai_messages m JOIN fcc_ai_conversations c ON c.fcc_ai_conversation_id=m.fcc_ai_conversation_id WHERE c.fcc_ai_conversation_id=? AND c.user_id=? AND c.assistant_type='coach' AND c.scope='internal_coach' AND m.message_type='chat' AND m.role IN ('user','assistant') ORDER BY m.fcc_ai_message_id ASC",[$id,$uid]);
+    /* Custom code: FC-2026-10-13: Carry public product identities, never the full stored metadata. */
+    foreach($rows as &$row) {
+        $meta=json_decode((string)($row['meta']??'{}'),true)?:[];
+        $row['education_anchor']=array_values(array_filter((array)($meta['coach_decision']['education_product_keys']??$meta['product_education']['product_keys']??[]),static fn($key)=>is_string($key)&&preg_match('/^[a-z0-9-]{1,120}$/D',$key)));
+        unset($row['meta']);
+    }
+    unset($row);
+    return $rows;
+    /* /Custom code: FC-2026-10-13 */
 }
 
 function fcc_coach_history_tokens(string $text): array {

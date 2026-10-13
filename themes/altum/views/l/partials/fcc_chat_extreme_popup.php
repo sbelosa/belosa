@@ -2480,6 +2480,13 @@ foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','
             };
 
             const postForm = async (url, payload) => {
+            /* Custom code: FC-2026-10-13: Bind private Coach requests to the active session. */
+            if(root.dataset.assistantType === 'coach' && root.dataset.scope === 'internal_coach') {
+                const token = root.dataset.coachToken;
+                if(typeof token !== 'string' || token === '') throw new Error(window.fccT('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.'));
+                payload = {...payload, token};
+            }
+            /* /Custom code: FC-2026-10-13 */
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -3890,6 +3897,13 @@ foreach(['hr', 'en', 'sl', 'bg', 'de', 'sr', 'sq', 'cnr', 'fr', 'es','sv','hu','
         };
 
         const postForm = async (url, payload) => {
+            /* Custom code: FC-2026-10-13: Bind private Coach requests to the active session. */
+            if(root.dataset.assistantType === 'coach' && root.dataset.scope === 'internal_coach') {
+                const token = root.dataset.coachToken;
+                if(typeof token !== 'string' || token === '') throw new Error(window.fccT('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.'));
+                payload = {...payload, token};
+            }
+            /* /Custom code: FC-2026-10-13 */
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {

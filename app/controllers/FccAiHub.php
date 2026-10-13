@@ -558,9 +558,24 @@ class FccAiHub extends Controller {
         }catch(\Throwable $e){Response::json($e->getMessage(),'error');}
     }
 
+    /* Custom code: FC-2026-10-13: Reject requests before conversation writes or provider calls. */
+    private function ensure_coach_post_request(): void {
+        if(($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            header('Allow: POST');
+            Response::json('Invalid request method.', 'error');
+        }
+        if(!isset($_POST['token']) || !is_string($_POST['token']) || !hash_equals(\Altum\Csrf::get(), $_POST['token'])) {
+            http_response_code(403);
+            Response::json(fcc_t('Sesija je istekla. Osvježi stranicu i pokušaj ponovno.'), 'error');
+        }
+    }
+    /* /Custom code: FC-2026-10-13 */
+
     public function coach_conversation() {
         \Altum\Authentication::guard();
         $this->ensure_coach_json_access();
+        $this->ensure_coach_post_request();
 
         if(empty($_POST)) {
             die();
@@ -586,6 +601,7 @@ class FccAiHub extends Controller {
     public function coach_message() {
         \Altum\Authentication::guard();
         $this->ensure_coach_json_access();
+        $this->ensure_coach_post_request();
 
         if(empty($_POST)) {
             die();

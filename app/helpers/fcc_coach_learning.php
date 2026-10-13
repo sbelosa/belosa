@@ -10,8 +10,11 @@ function fcc_coach_knowledge(): array {
 function fcc_coach_topic_domain(string $text): string {
     $text=fcc_coach_normalize(fcc_german_query_equivalents($text));
     if(preg_match('/provizij|izplacil|placil|povracil|isplat|obracun|commission|payment|povrat novca/u',$text)) return 'support';
-    if(preg_match('/\b(?:cc|4core|4 core|supervisor|supervizor|manager|eagle|chairman\p{L}*|car program|auto program|forever2drive)\b|pozicij|poticajn|spodbud|nagradn|kaj je forever|kaj je fcc|sto je forever|sto je fcc/u',$text)) return 'business';
-    if(preg_match('/sestavin|sestav|izdelek|izdelk|ledvic|jetr|sastoj|sastav|selen|cink|vitamin|proizvod|aloe|arctic|bubreg|bubrez|jetru|jetra|tlak/u',$text)) return 'product';
+    if(preg_match('/\b(?:cc|4core|4 core|supervisor|supervizor|manager|eagle|chairman\p{L}*|car program|auto program|forever2drive)\b|pozicij|poticajn|spodbud|nagradn|kaj je forever|kaj je fcc|sto je forever|sto je fcc|suradni|saradni|sodelav|poslov|zarad|sponzor/u',$text)) return 'business';
+    /* Custom code: FC-2026-10-13: Explicit interface requests leave the previous product topic. */
+    if(preg_match('/instal|pocetni (?:zaslon|ekran)|home screen|postavk|settings|gdje (?:da )?klik|gde (?:da )?klik|where (?:do i )?click/u',$text)) return 'app';
+    /* /Custom code: FC-2026-10-13 */
+    if(preg_match('/sestavin|sestav|izdelek|izdelk|ledvic|jetr|sastoj|sastav|selen|cink|vitamin|proizvod|aloe|arctic|bubreg|bubrez|jetru|jetra|tlak|dijabet|diabet|inzulin|trudn|pregnan|dojenj|terapij|lijekov|medikament/u',$text)) return 'product';
     if(preg_match('/\b(?:kartic\p{L}*|gumb|aplikacij\p{L}*|lozink\p{L}*|gesl\p{L}*)\b/u',$text)) return 'app';
     return '';
 }
@@ -43,6 +46,29 @@ function fcc_coach_turn_intent(string $text): array {
     return ['mode'=>$mode,'recipient_required'=>$mode==='message','recipient_forbidden'=>in_array($mode,['learning','own_plan','support'],true),
         'domain'=>fcc_coach_topic_domain($text),'latest_question'=>mb_substr((string)end($lines),0,1600)];
 }
+
+/* Custom code: FC-2026-10-13: Bind intent to one complete request, carry only explicit continuations. */
+function fcc_coach_latest_turn_intent(string $latest, string $retrieval): array {
+    $latest = trim($latest);
+    if($latest === '') return fcc_coach_turn_intent($retrieval);
+    $n = fcc_coach_normalize($latest);
+    $continues = mb_strlen($n) <= 180 && preg_match('/^(?:(?:da|ja|ok|moze|lahko|yes|sure|skrati|krace|dodaj|ubaci|izbaci|izostavi|shorter|add)\b|preformul\p{L}*\b|u tekst\b|dio je\b|za nju\b|za njega\b|za istu\b|nisam (?:ovo|to|vas)\b|nije (?:ovo|to)\b|samo mi\b|make it\b|not what i\b|(?:hrvatsk\p{L}*|hrvask\p{L}*|sloven\p{L}*|njemack\p{L}*|nemcij\p{L}*|prv\p{L}* (?:razin\p{L}*|stopnj\p{L}*|ravn\p{L}*))$)/u', $n);
+    $intent = fcc_coach_turn_intent(str_replace(["\r", "\n"], ' ', $latest));
+    if($continues && $retrieval !== $latest) $intent = fcc_coach_turn_intent($retrieval);
+    if(preg_match('/(?:napisi|sastavi|pripremi|daj|write|list).{0,45}(?:pitanj|questions)|pitanja.{0,60}(?:suradni|saradni|cilj|razum)/u', $n)) {
+        $intent['mode']='learning'; $intent['recipient_required']=false; $intent['recipient_forbidden']=true;
+    }
+    if(!$continues && $intent['mode']==='contextual' && fcc_coach_topic_domain($latest)!=='') {
+        $intent['mode']='learning'; $intent['recipient_required']=false; $intent['recipient_forbidden']=true;
+    }
+    if(function_exists('fcc_product_education_coach_is_usage_question') && fcc_product_education_coach_is_usage_question($latest) && $intent['mode']==='contextual') {
+        $intent['mode']='learning'; $intent['recipient_required']=false; $intent['recipient_forbidden']=true;
+    }
+    $intent['latest_question']=mb_substr($latest,0,1600);
+    $intent['inherits_previous']=(bool)$continues;
+    return $intent;
+}
+/* /Custom code: FC-2026-10-13 */
 
 function fcc_coach_knowledge_context(string $text): array {
     $data=fcc_coach_knowledge(); $n=fcc_coach_retrieval_normalize($text); $market=fcc_coach_requested_market($text); $matches=[];

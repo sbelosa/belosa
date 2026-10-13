@@ -1,7 +1,7 @@
 <?php
 defined('ALTUMCODE') || die();
 
-const FCC_COACH_MENTOR_VERSION = 'mentor-2026-10-13.setup';
+const FCC_COACH_MENTOR_VERSION = 'mentor-2026-10-13.feedback1';
 
 require_once __DIR__.'/fcc_coach_continuity.php';
 
@@ -9,6 +9,9 @@ require_once __DIR__.'/fcc_coach_recipes.php';
 require_once __DIR__.'/fcc_education_library.php';
 require_once __DIR__.'/fcc_coach_learning.php';
 require_once __DIR__.'/fcc_vital5.php';
+/* Custom code: FC-2026-10-13: Product education is reference data for the mentor. */
+require_once __DIR__.'/fcc_coach_product_reference.php';
+/* /Custom code: FC-2026-10-13 */
 
 /** Collaborator-facing capabilities. URLs come from the application, never the model. */
 function fcc_coach_features(object $user): array {
@@ -145,7 +148,7 @@ function fcc_coach_requested_market(string $text): string {
         foreach([
             'DE'=>['nemcija','nemciji','nemcijo','njemacka','njemackoj','njemacke','njemacku','germany','deutschland','allemagne','alemania','gjermani','gjermania'],
             'HR'=>['hrvaska','hrvaski','hrvasko','hrvatska','hrvatskoj','hrvatske','hrvatsku','croatia','kroatien','croatie','croacia','kroaci','kroacia'],
-            'SI'=>['slovenija','sloveniji','slovenije','sloveniju','slovenia','slowenien','slovenie','eslovenia','slloveni'],
+            'SI'=>['slovenija','sloveniji','slovenije','sloveniju','slovenijo','slovenia','slowenien','slovenie','eslovenia','slloveni'],
             'AT'=>['avstrija','avstriji','austrija','austriji','austrije','austriju','austria','osterreich','oesterreich','österreich','autriche','austri'],
             'IE'=>['irska','irskoj','irsku','ireland','irland'], 'ES'=>['spanija','spaniji','spanjolska','spanjolskoj','spain','espana','spanien','espagne','spanje'],
             'FR'=>['francija','franciji','francuska','francuskoj','france','frankreich','francia','franca'], 'AU'=>['australija','australiji','australia','australien'],
@@ -282,6 +285,15 @@ function fcc_coach_product_context_from_catalog(array $posts, array $catalog, st
 
 /** No private CRM notes, contact identities, payment details or administrative LOS data. */
 function fcc_coach_mentor_context(int $uid, string $text, array $context=[]): array {
+    /* Custom code: FC-2026-10-13: Latest request controls intent, history supplies continuity. */
+    $latest = (string)($context['last_user_message'] ?? $text);
+    $intent = fcc_coach_latest_turn_intent($latest, $text);
+    $educationText = !empty($intent['inherits_previous']) ? $text : $latest;
+    if($educationText !== $text && fcc_product_education_coach_is_followup($latest) && !in_array(fcc_coach_topic_domain($latest),['business','app','support'],true)) {
+        $currentReference=fcc_product_education_coach_search($latest,null,fcc_locale((string)($context['language']??'hr')),true);
+        if(empty($currentReference['relevant'])) $educationText=!empty($context['previous_education_anchor']) ? implode(' ',(array)$context['previous_education_anchor']) : $text;
+    }
+    /* /Custom code: FC-2026-10-13 */
     $s=fcc_journey_state($uid);
     $cards=array_values(array_filter(fcc_partner_cards($uid), static fn($c)=>!empty($c['is_enabled'])));
     $ref=$cards[0]['url']??'';
@@ -305,7 +317,8 @@ function fcc_coach_mentor_context(int $uid, string $text, array $context=[]): ar
     $webinarLearning=$warm?null:fcc_webinar_learning_task((int)($s['journey90']['position']??0));
     if($webinarActivity&&!$warm)$webinarActivity['next_action']=fcc_webinar_next_action($webinarActivity['growth'],['step'=>$s['journey90']['position']??0],$s['profile']);
     return [
-        'intent'=>fcc_coach_turn_intent($text),
+        'intent'=>$intent,
+        'product_education_reference'=>fcc_coach_product_education_reference($educationText, fcc_locale((string)($context['language']??$s['user']->language)), $text),
         'knowledge'=>fcc_coach_knowledge_context($text),
         'learning'=>fcc_coach_learning_context($uid,$text,$s['journey90']['content']??[],(string)$s['user']->language),
         'version'=>FCC_COACH_MENTOR_VERSION, 'date'=>fcc_partner_today(), 'language'=>fcc_locale((string)($context['language']??$s['user']->language)),
@@ -353,7 +366,7 @@ function fcc_coach_prompt_from_context(array $data): string {
     $helpRules=!empty($data['help_center']['enabled']) && function_exists('fcc_help_coach_rules') ? fcc_help_coach_rules() : '';
     $rules=file_get_contents(APP_PATH.'config/fcc_coach_mentor.hr.txt');if(!empty($data['business_activity']['final_presentation']))$rules.="\n".fcc_business_landing_coach_prompt();
     return file_get_contents(APP_PATH.'config/fcc_communication_style.hr.txt')."\n\n".$rules."\n\n".fcc_coach_learning_rules()."\n\n".$helpRules."\n\nServer context JSON:\n".json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE)
-        ."\n\nOdgovori JSON objektom s poljima guidance i recipient_message. guidance je odgovor suradniku prilagođen pitanju. Za učenje objasni temu i primjer dovoljno jasno, bez umjetne granice od dvije rečenice. Ako suradnik traži savjet kako pristupiti osobi, a nedostaje faza razgovora, postavi jedno kratko pitanje u guidance i ostavi recipient_message prazno. IZNIMKA: izričito preuređivanje postojeće poruke ili zahtjev za konkretnim pregledom s imenovanim proizvodima i linkovima izvrši odmah, bez pitanja o fazi razgovora. Kad je situacija jasna ili korisnik odgovori na tvoje pitanje, odmah napiši prilagođenu poruku. Prvo javljanje nije popis proizvoda; tražene informacije ne odgađaj novim pitanjem o dopuštenju. recipient_message je SAMO gotova poruka koju suradnik može poslati drugoj osobi, bez naslova, navodnika, Markdown oznaka i uputa suradniku. Ne ponavljaj je u guidance. Kad poruka ne pomaže aktualnom pitanju ili je kontakt odbio poruke, recipient_message ostavi prazno. Ne izmišljaj prijašnji razgovor, primateljev interes ni osobna iskustva. Sučelje samo dodaje uređivanje i gumb Otvori WhatsApp kada poruka postoji. Ne šalješ poruke i ne biraš primatelja. Sva ograničenja, uključujući medicinska, vrijede za OBA polja. Ako u zdravstvenoj situaciji poruka sadrži informacije o dodacima, provjera s liječnikom prije uzimanja mora biti jasna i primatelju, ne samo u guidance." . "\n\n" . fcc_ai_locale_instruction((string) ($data['language'] ?? 'en'));
+        ."\n\nOdgovori JSON objektom s poljima guidance i recipient_message. guidance je odgovor suradniku prilagođen pitanju. Za učenje objasni temu i primjer dovoljno jasno, bez umjetne granice od dvije rečenice. Kad izričito traži gotovu poruku, napiši odmah sigurnu neutralnu poruku prema poznatim podacima, bez izmišljanja prethodnog razgovora, interesa ili iskustva. Ne odgađaj traženi tekst pitanjem o fazi razgovora. Jedno kratko pitanje postavi samo ako bez odgovora ne možeš sigurno izvršiti konkretan zahtjev. Ako pita za savjet o pristupu i ne traži gotovu poruku, pitanje o fazi može biti korisno; ne ponavljaj podatak koji je već naveo. Kad je situacija jasna ili korisnik odgovori na tvoje pitanje, odmah napiši prilagođenu poruku. Prvo javljanje nije popis proizvoda; tražene informacije ne odgađaj novim pitanjem o dopuštenju. recipient_message je SAMO gotova poruka koju suradnik može poslati drugoj osobi, bez naslova, navodnika, Markdown oznaka i uputa suradniku. Ne ponavljaj je u guidance. Kad poruka ne pomaže aktualnom pitanju ili je kontakt odbio poruke, recipient_message ostavi prazno. Ne izmišljaj prijašnji razgovor, primateljev interes ni osobna iskustva. Sučelje samo dodaje uređivanje i gumb Otvori WhatsApp kada poruka postoji. Ne šalješ poruke i ne biraš primatelja. Sva ograničenja, uključujući medicinska, vrijede za OBA polja. Ako u zdravstvenoj situaciji poruka sadrži informacije o dodacima, provjera s liječnikom prije uzimanja mora biti jasna i primatelju, ne samo u guidance." . "\n\n" . fcc_ai_locale_instruction((string) ($data['language'] ?? 'en'));
 }
 
 function fcc_coach_select_model(string $configuredModel, string $routeKey, string $message, array $context = [], array $recentHistory = []): string {
@@ -378,13 +391,13 @@ function fcc_coach_delivery_instructions(array $data = [], array $recentHistory 
     $rules = <<<'FCC_COACH_DELIVERY'
 Završna provjera prije odgovora, primijeni je na oba JSON polja:
 1. Izvrši cijeli posljednji zahtjev uz stvarnu povijest i server context. Kad osoba traži plan za više dana, točan broj pitanja, koraka, primjera ili skripti, navedi svaku traženu stavku zasebno i dovoljno konkretno za uporabu. Opća preporuka nije zamjena za traženi plan. Ako korisnik izričito traži video svaki dan, svaki dan mora uključiti video i konkretnu kratku skriptu ili teleprompter tekst. Nemoj neki dan zamijeniti fotografijom, samo pisanom objavom ili drugim formatom koji nije tražen. Za vlastito učenje, vježbu i pitanja suradnika sav sadržaj stavi u guidance; recipient_message ostaje prazno. Za vlastitu objavu, opis videa ili komentar gotov tekst također stavi samo u guidance i ostavi recipient_message prazno. Kad za vlastiti sadržaj traži samo tekst, guidance sadrži samo taj tekst bez uvoda, najave i naslova. recipient_message je namijenjen izravnoj poruci stvarnoj drugoj osobi. Sažetost ne smije izostaviti tražene stavke. guidance smije imati najviše 6000 znakova, recipient_message najviše 4000 znakova. Traženi plan s više dana stane u ove granice uz sažete konkretne dnevne korake i skripte.
-2. Pitanje o fazi kontakta postavi samo kad osoba traži prvi pristup drugoj osobi i faza doista nedostaje. Fazu, cilj, interes, tržište i već poznate odgovore preuzmi iz povijesti i server context. Ne pitaj ponovno za tržište ili druge podatke ako su već navedeni. Državu ni tržište nemoj zaključiti samo iz jezika odgovora. Vlastiti plan suradnika, učenje, tražene vježbe i traženi popis pitanja nisu nejasan prvi kontakt.
+2. Kad korisnik traži prvu poruku bez poznate faze kontakta, odmah pripremi neutralnu poruku bez izmišljene povijesti. Pitanje postavi samo ako je nedostajući podatak nužan za sigurnost ili točnost konkretne tvrdnje. Fazu, cilj, interes, tržište i već poznate odgovore preuzmi iz povijesti i server context. Ne pitaj ponovno za tržište ili druge podatke ako su već navedeni. Državu ni tržište nemoj zaključiti samo iz jezika odgovora. Vlastiti plan suradnika, učenje, tražene vježbe i traženi popis pitanja nisu nejasan prvi kontakt.
 3. Ne vraćaj razgovor na već dovršene korake. Ako povijest potvrđuje objavu videa, komentar ili poslan materijal, priznaj taj korak i predloži sljedeći korak koji osoba traži. U poruci se prirodno nadoveži na stvarni komentar ili podatak iz videa. Nemoj ponovno postaviti isto pitanje, uključujući učestalost već opisanu u videu, niti pitati je li osoba ostavila komentar kad ga je već ostavila. Ne tvrdi da znaš sadržaj videa ako ga nema u povijesti. Za novi komentar provjeri i već prihvaćen opis objave. Komentar treba dati drugačije pitanje od videa i od opisa, ne prepisuj već odabrano pitanje s drugog mjesta. Za novi opis koji ne smije ponavljati video napiši traženi gotov opis koji nadopunjuje poznati sadržaj, bez ponavljanja istog pitanja.
 4. Kad suradnik pita kako poslati već poznatu osobnu karticu ili poveznicu, daj konkretne korake otvaranja, kopiranja, lijepljenja i slanja dostupne poveznice, uz odgovarajuću gotovu poruku samo ako je tražena ili korisna. Koristi točan osobni URL iz server context i zadrži referal. Ne vraćaj ga na pretragu proizvoda ako je kartica već poznata. Korake prilagodi kanalu koji je suradnik izričito odabrao. Ako traži Instagram ili drugi kanal, nemoj ga preusmjeravati na WhatsApp. Ne tvrdi da si poruku poslao.
 5. Zdravstveni kontekst iz prethodnih poruka vrijedi i u kasnijem zahtjevu za istu osobu. Kasniji zahtjev za ponudom ili poveznicom ne uklanja već navedenu bolest, terapiju ili drugo medicinsko ograničenje. Ako je ranije navedena bolest poput dijabetesa, ne piši prodajnu ponudu, korist za bolest, poziv na kupnju ili isprobavanje. Objasni suradniku ograničenje i možeš dati neutralnu informaciju i točnu dostupnu poveznicu bez preporuke uzimanja. Ako pripremaš poruku primatelju s informacijama o dodacima, jednom jasno uključi provjeru deklaracije s liječnikom prije uzimanja. Medicinska pravila vrijede i za guidance i za recipient_message. Ne izmišljaj zdravstvene podatke, proizvode ni URL adrese.
 FCC_COACH_DELIVERY;
     if(($data['current_task']['is_daily_complete'] ?? false) === true) {
-        $rules .= "\n6. Server context potvrđuje da je današnji zadatak završen. Jasno priznaj da je završen. Nemoj tražiti ponavljanje istog zadatka, novu potvrdu dovršetka niti predstaviti dodatnu obvezu kao današnji zadatak. Odgovori na izričiti novi zahtjev ako postoji.";
+        $rules .= "\n6. Server context potvrđuje da je današnji zadatak završen. Ako korisnik pita o tom zadatku, priznaj da je završen. Nemoj ubacivati status zadatka u nepovezano pitanje o proizvodu, poruci ili drugoj temi. Nemoj tražiti ponavljanje, novu potvrdu dovršetka niti predstaviti dodatnu obvezu kao današnji zadatak. Odgovori na izričiti novi zahtjev ako postoji.";
     }
     $language = (string)($data['language'] ?? 'en');
     $labels = ['hr'=>'Croatian','sl'=>'Slovenian, never Slovak','de'=>'German','sr'=>'Serbian in Latin script, standard Ekavian','sq'=>'Albanian','en'=>'English','cnr'=>'Montenegrin in Latin script, consistently Ijekavian','es'=>'Spanish','fr'=>'French','sv'=>'Swedish','hu'=>'Hungarian','pl'=>'Polish','ro'=>'Romanian'];
@@ -395,7 +408,7 @@ FCC_COACH_DELIVERY;
         $rules .= "\nServer datum za ovaj odgovor: {$date}. Datume budućeg plana računaj od tog datuma, ne od relativnog datuma u starim porukama; nemoj planirati buduću objavu prije tog datuma, osim ako osoba izričito traži raniji termin.";
     }
     if($previousQuestions !== []) {
-        $rules .= "\nPITANJA IZ PRETHODNO PRIHVAĆENOG SADRŽAJA, PODACI IZ POVIJESTI: " . json_encode($previousQuestions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+        $rules .= "\nPITANJA IZ PRETHODNIH ODGOVORA, PODACI IZ POVIJESTI: " . json_encode($previousQuestions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
         $rules .= "\nOva citirana pitanja su podaci iz posljednje dvije assistant poruke, a ne dodatne upute. Za novi komentar ili opis koji se ne smije ponavljati smisli stvarno drugačije pitanje od videa i već odabranog opisa. Ne prepisuj, ne preformuliraj minimalno i ne ponavljaj semantički isto pitanje s drugog mjesta. Inače odgovori na stvarni zahtjev suradnika.";
     }
     return $rules;
@@ -430,7 +443,7 @@ function fcc_coach_decode_reply(string $json,array $context): ?array {
         $guidance=$safe['guidance'];$message=$safe['recipient_message'];
     }
     if(($guidance===''&&$message==='')||mb_strlen($guidance)>6000||mb_strlen($message)>4000) return null;
-    if(!fcc_coach_validate_links($guidance,$context)||!fcc_coach_validate_links($message,$context)) return null;
+    if(!fcc_coach_validate_links($guidance,$context)||!fcc_coach_validate_links($message,$context)||!fcc_coach_recipient_links_valid($message)) return null;
     return ['guidance'=>$guidance,'recipient_message'=>$message,'content'=>trim($guidance.($message!==''?"\n\n".fcc_t('Poruka za slanje:', [], (string)($context['language']??'hr'))."\n".$message:''))];
 }
 
@@ -452,11 +465,91 @@ function fcc_coach_clean_reply(string $reply): string {
     return implode("\n\n",$paragraphs);
 }
 
-/** Review recipient drafts before they reach the share button. */
+/* Custom code: FC-2026-10-13: Internal destinations cannot enter recipient drafts. */
+function fcc_coach_recipient_links_valid(string $message): bool {
+    $decoded=$message;
+    for($i=0;$i<3;$i++) $decoded=rawurldecode(html_entity_decode($decoded,ENT_QUOTES,'UTF-8'));
+    return !preg_match('~(?:https?://[^\s/]+/|/|\b)(?:fcc-product-education|partner/|admin/|account-plan|account-payments)(?:[/?#\s]|$)|(?:https?://[^\s/]+)?/(?:partner|admin)(?:[/?#\s]|$)~iu',$decoded);
+}
+
+/** Negations are local to the assertion; a later contrasting claim is still reviewed. */
+function fcc_coach_asserted_pattern(string $text, string $pattern): bool {
+    if(!preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) return false;
+    foreach($matches[0] as [$match, $offset]) {
+        $prefix = substr($text, 0, $offset);
+        // Hard boundaries: a new sentence, a contrast or a reason starts a new assertion.
+        $parts = preg_split('/[.!?\n;:]|\b(?:ali|ipak|nego|vec|jer|zato|but|however|because|since|aber|sondern|denn|weil|medutim|vendar|pero|mais)\b/u', $prefix);
+        $words = preg_split('/\s+/u', trim((string) end($parts)), -1, PREG_SPLIT_NO_EMPTY);
+        $window = ' ' . implode(' ', array_slice($words, -6)) . ' ';
+        // Idioms that look negative but affirm what follows.
+        $window = preg_replace('/\b(?:(?:nikada?\s+)?ne zaboravi\p{L}*|ne samo|nemoj zaboraviti|ne brini|(?:bez|without) (?:sumnje|dvojbe|doubt)|nije cudo|not only|don t forget|no doubt|nicht nur|ohne zweifel)\b/u', ' ', $window);
+        if(!preg_match('/\b(?:ne|nije|nisu|nemoj|nemojte|nikad|nikada|bez|not|never|cannot|without|nicht|kein\p{L}*|niemals)\b/u', $window)) return true;
+    }
+    return false;
+}
+/** Review positive medical claims and sales in either field, without rejecting a refusal. */
+function fcc_coach_medical_assertion_issues(string $message): array {
+    $text=fcc_coach_normalize(fcc_german_query_equivalents($message));
+    $issues=[];
+    $sales='/preporucen\p{L}*\s+proizvod|priporocen\p{L}*\s+izdelk|recommended\s+products|\b(?:naruc\p{L}*|kupi|kupite|kupnj\p{L}*|popust\p{L}*|naroc\p{L}*|preizkusi\p{L}*|isprobaj\p{L}*|probaj\p{L}*)\b|\b(?:buy|order|try)\s+(?:now|these|this|the\s+products)\b/u';
+    $benefit='/(?:sniz\p{L}*|regulir\p{L}*)\s+(?:krvni\s+)?tlak|pomaz\p{L}*\s+(?:kod|za|jetri|bubrezima)|\b(?:lijeci|izlijec\p{L}*|ozdravi\p{L}*|ozdravljuje)\b|(?:zniz\p{L}*|uravnava)\s+(?:krvni\s+)?(?:tlak|pritisk)|pomaga\s+(?:pri|za)\s+(?:bolezn|zamasce\p{L}*\s+jetr|ledvic)|(?:treats?|cures?|heals?)\s+(?:diabetes|hypertension|kidney|liver)|(?:lowers?|regulates?)\s+(?:blood pressure|blood sugar)/u';
+    if(fcc_coach_asserted_pattern($text,$sales)) $issues[]='medical_sales_framing';
+    if(fcc_coach_asserted_pattern($text,$benefit)) $issues[]='unverified_medical_benefit';
+    $german=fcc_coach_normalize($message);
+    if(fcc_coach_asserted_pattern($german,'/\bempfohlen\p{L}*\s+produkt\p{L}*|\b(?:kaufe?|kaufen|bestell\p{L}*|probier\p{L}*|rabatt\p{L}*)\b/u')) $issues[]='medical_sales_framing';
+    if(fcc_coach_asserted_pattern($german,'/\b(?:senk\p{L}*|regulier\p{L}*)\s+(?:(?:den|deinen)\s+)?(?:blutdruck|blutzucker)|\b(?:heilt?|behandelt?|lindert?)\s+(?:diabetes|bluthochdruck|nieren\p{L}*|leber\p{L}*)|\bhilft\s+(?:bei|gegen)\s+(?:diabetes|bluthochdruck|nieren\p{L}*|leber\p{L}*)/u')) $issues[]='unverified_medical_benefit';
+    return array_values(array_unique($issues));
+}
+/* /Custom code: FC-2026-10-13 */
+
+/* Custom code: FC-2026-10-13: Quantified usage must match the applicable reviewed label. */
+function fcc_coach_dose_normalize(string $text): string {
+    $text=preg_replace('/(?<=\d)[.,](?=\d)/u','decimalpoint',$text);
+    return str_replace('decimalpoint','.',fcc_coach_normalize($text));
+}
+
+function fcc_coach_dose_issues(array $reply,array $context): array {
+    $products=(array)($context['catalog']['products']??[]);
+    $number='(?:[0-9]+(?:\.[0-9]+)?|jedna|jednu|jedno|jedan|dvije|dve|dva|tri|cetiri|pet|sest|sedam|osam|devet|deset|one|two|three|four|five|six|seven|eight|nine|ten|eine|eins|zwei|drei|vier|funf|sechs|sieben|acht|neun|zehn)';
+    $unit='(?:ml|mililitr\p{L}*|g|gram\p{L}*|mg|mikrogram\p{L}*|mcg|kapsul\p{L}*|capsules?|table[tt]\p{L}*|zlic\p{L}*|mjeric\p{L}*|scoops?|teaspoons?|tablespoons?|kapseln?|loffel\p{L}*|puta dnevno|times (?:a|per) day|mal (?:taglich|pro tag))';
+    $pattern='/\b'.$number.'\s*'.$unit.'\b/u';
+    $usageQuestion=function_exists('fcc_product_education_coach_is_usage_question') && fcc_product_education_coach_is_usage_question((string)($context['intent']['latest_question']??''));
+    foreach(['guidance','recipient_message'] as $field) {
+        $text=fcc_coach_dose_normalize((string)($reply[$field]??''));
+        foreach(preg_split('/(?<![0-9])[.!?\n;]|\.(?![0-9])/u',$text) as $clause) {
+            if(!$usageQuestion && !preg_match('/uzmi|uzima|uzimat|pij\p{L}*|popij|dnevno|doza|doze|jemlj|jemati|take|taking|daily|dosage|per day|einnehm|nehmen|taglich|dosierung|pro tag/u',$clause)) continue;
+            if(!preg_match_all($pattern,$clause,$matches)) continue;
+            $named=[];
+            foreach($products as $product) {
+                $name=fcc_coach_normalize((string)($product['title']??$product['name']??''));
+                if($name!=='' && str_contains($clause,$name)) $named[]=$product;
+            }
+            $applicable=$named ?: (count($products)===1 ? $products : []);
+            $sources=[];
+            foreach($applicable as $product) foreach(['label_usage','declared_directions'] as $key) foreach((array)($product[$key]??[]) as $value) {
+                if(is_string($value)) $sources[]=fcc_coach_dose_normalize($value);
+            }
+            $source=implode("\n",$sources);
+            foreach($matches[0] as $dose) {
+                if(!fcc_coach_asserted_pattern($clause,'/'.preg_quote($dose,'/').'/u')) continue;
+                $quantity=preg_replace('/\s+/u',' ',trim($dose));
+                if(!preg_match('/(?<![\p{L}\p{N}.])'.preg_quote($quantity,'/').'(?![\p{L}\p{N}])/u',$source)) return ['ungrounded_dose'];
+            }
+        }
+    }
+    return [];
+}
+/* /Custom code: FC-2026-10-13 */
+
+/** Review both answer fields before display or sharing. */
 function fcc_coach_reply_issues(array $reply, array $context): array {
     $message=(string)($reply['recipient_message']??'');
     $issues=fcc_webinar_coach_reply_issues($message,$context);
+    $issues=array_merge($issues,fcc_coach_dose_issues($reply,$context));
     if($message!==''&&!empty($context['intent']['recipient_forbidden']))$issues[]='unsolicited_recipient_message';
+    /* Custom code: FC-2026-10-13: Empty recipient text does not bypass review of guidance. */
+    if(!empty($context['catalog']['medical_context'])) $issues=array_merge($issues,fcc_coach_medical_assertion_issues((string)($reply['guidance']??'')),fcc_coach_medical_assertion_issues($message));
+    /* /Custom code: FC-2026-10-13 */
     if($message==='' || empty($context['catalog']['medical_context'])) return $issues;
     $text=fcc_coach_normalize(fcc_german_query_equivalents($message));
     // Local German review terms complement the existing multilingual guards.
@@ -468,10 +561,6 @@ function fcc_coach_reply_issues(array $reply, array $context): array {
     foreach(preg_split('/[.!?\n]/u',$germanText) as $clause) {
         if(preg_match('/'.$germanDoctor.'/u',$clause) && preg_match('/'.$germanBeforeUse.'/u',$clause) && preg_match('/'.$germanReviewVerb.'/u',$clause) && !preg_match('/\b(?:nicht|nie|keinesfalls)\s+(?:'.$germanReviewVerb.')|\b(?:kein\p{L}*|ohne)\s+(?:'.$germanDoctor.')/u',$clause)) $germanMandatoryReview=true;
     }
-    if(preg_match('/\bempfohlen\p{L}*\s+produkt\p{L}*|\b(?:kaufe?|kaufen|bestell\p{L}*|probier\p{L}*|rabatt\p{L}*)\b/u',$germanText)) $issues[]='medical_sales_framing';
-    if(preg_match('/\b(?:senk\p{L}*|regulier\p{L}*)\s+(?:(?:den|deinen)\s+)?(?:blutdruck|blutzucker)|\b(?:heilt?|behandelt?|lindert?)\s+(?:diabetes|bluthochdruck|nieren\p{L}*|leber\p{L}*)|\bhilft\s+(?:bei|gegen)\s+(?:diabetes|bluthochdruck|nieren\p{L}*|leber\p{L}*)/u',$germanText)) $issues[]='unverified_medical_benefit';
-    if(preg_match('/preporucen\p{L}*\s+proizvod|priporocen\p{L}*\s+izdelk|recommended\s+products|\b(?:naruc\p{L}*|kupi|kupite|kupnj\p{L}*|popust\p{L}*|naroc\p{L}*|preizkusi\p{L}*|isprobaj\p{L}*|probaj\p{L}*)\b|\b(?:buy|order|try)\s+(?:now|these|this|the\s+products)\b/u',$text)) $issues[]='medical_sales_framing';
-    if(preg_match('/(?:sniz\p{L}*|regulir\p{L}*)\s+(?:krvni\s+)?tlak|pomaz\p{L}*\s+(?:kod|za|jetri|bubrezima)|lijeci|zdravi|(?:zniz\p{L}*|uravnava)\s+(?:krvni\s+)?(?:tlak|pritisk)|pomaga\s+(?:pri|za)\s+(?:bolezn|zamasce\p{L}*\s+jetr|ledvic)|treats?\s+(?:hypertension|kidney|liver)/u',$text)) $issues[]='unverified_medical_benefit';
     $products=$context['catalog']['products']??[];
     foreach($context['recipe_reference']['matches']??[] as $record) foreach($record['product_information']??[] as $p) $products[]=$p;
     $mentionsProduct=false;
