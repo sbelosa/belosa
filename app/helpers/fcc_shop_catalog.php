@@ -28,7 +28,12 @@ final class FccShopCatalog {
         $familyCard=!empty($data['selection_required']) && empty($data['sku'])
             && in_array(parse_url($url,PHP_URL_HOST),['foreverliving.com','www.foreverliving.com'],true)
             && !preg_match('~/(\d+[A-Za-z]?)-~',(string)parse_url($url,PHP_URL_PATH));
-        if(!$familyCard && strtolower(ltrim((string)($data['sku']??''),'0'))!==strtolower(ltrim($expected['sku'],'0'))) return false;
+        /* Custom code: FC-2026-10-14: observed schema family codes are exact aliases of the reviewed configurator. */
+        $schemaFamily=!empty($expected['selection_required'])
+            && in_array((string)($data['sku']??''),$expected['schema_skus']??[],true)
+            && ($data['default_sku']??null)===$expected['sku'];
+        if(!$familyCard && !$schemaFamily && strtolower(ltrim((string)($data['sku']??''),'0'))!==strtolower(ltrim($expected['sku'],'0'))) return false;
+        /* /Custom code: FC-2026-10-14 */
         if(empty($data['name'])) return false;
         foreach(['name','heading'] as $field) {
             if(empty($data[$field]))continue;
@@ -61,12 +66,42 @@ final class FccShopCatalog {
             }
             $identity=$translated[$postId];
         }
-        return ($identity['markets'][$market]??null)===self::clean($url);
+        /* Custom code: FC-2026-10-14: an article cannot reuse another formula's reviewed offer. */
+        $offer=self::identities()['offers'][self::clean($url)]??null;
+        return ($identity['markets'][$market]??null)===self::clean($url)
+            && $offer && $offer['family']===($identity['family']??null) && $offer['market']===$market;
+        /* /Custom code: FC-2026-10-14 */
     }
     public static function currencyAllowed(string $market,string $currency): bool {
         // The official Albanian storefront also publishes its guest offers in EUR.
         return $currency===(self::CURRENCIES[$market]??null) || ($market==='al' && $currency==='EUR');
     }
+    /* Custom code: FC-2026-10-14: one explicit local price with valid thousands grouping. */
+    private static function publicAmount(string $raw,string $currency): ?string {
+        if($currency==='')return null;
+        $codes=implode('|',array_unique(array_values(self::CURRENCIES)));
+        preg_match_all('/(?<![A-Za-z])(?:'.$codes.')(?![A-Za-z])/iu',$raw,$tags);
+        $seen=array_map('strtoupper',$tags[0]);
+        foreach(['US'=>'USD','CA'=>'CAD','AU'=>'AUD'] as $prefix=>$code)
+            if(preg_match('/(?<![A-Za-z])'.$prefix.'\$/iu',$raw))$seen[]=$code;
+        if(array_diff($seen,[$currency]))return null;
+        $symbol=['EUR'=>'€','GBP'=>'£','BAM'=>'KM','NOK'=>'kr','SEK'=>'kr','PLN'=>'zł'][$currency]??$currency;
+        if(!(in_array($currency,$seen,true) || str_contains($raw,$symbol)
+            || ($currency==='CHF' && str_contains($raw,'Fr.'))
+            || (in_array($currency,['USD','CAD','AUD'],true) && str_contains($raw,'$'))))return null;
+        if(preg_match_all('/[0-9][0-9.,\s]*/u',$raw,$numbers)!==1)return null;
+        $number=preg_replace('/^\s+|\s+$/u','',$numbers[0][0]);
+        $space='[\x{20}\x{A0}\x{202F}]';
+        if(preg_match('/^(?:[0-9]+|[0-9]{1,3}(?:'.$space.'[0-9]{3})+)$/u',$number)) {
+            $amount=preg_replace('/\s/u','',$number);
+        }elseif(preg_match('/^(?:[0-9]+|[0-9]{1,3}(?:'.$space.'[0-9]{3})+|[0-9]{1,3}(?:\.[0-9]{3})+),[0-9]{2}$/u',$number)) {
+            $amount=str_replace(',','.',str_replace('.','',preg_replace('/\s/u','',$number)));
+        }elseif(preg_match('/^(?:[0-9]+|[0-9]{1,3}(?:'.$space.'[0-9]{3})+|[0-9]{1,3}(?:,[0-9]{3})+)\.[0-9]{2}$/u',$number)) {
+            $amount=str_replace(',','',preg_replace('/\s/u','',$number));
+        }else return null;
+        return is_numeric($amount) && (float)$amount>0 && (float)$amount<100000?$amount:null;
+    }
+    /* /Custom code: FC-2026-10-14 */
     public static function clean(string $url): string {
         $p=parse_url(html_entity_decode(trim($url),ENT_QUOTES|ENT_HTML5));
         if(!$p || strtolower($p['scheme']??'')!=='https' || !in_array(strtolower($p['host']??''),self::HOSTS,true) || isset($p['user']) || isset($p['pass']) || isset($p['port'])) return '';
@@ -204,15 +239,9 @@ final class FccShopCatalog {
                 $node=$price_node->item(0)->cloneNode(true);
                 foreach(iterator_to_array($node->getElementsByTagName('label')) as $label) $label->parentNode->removeChild($label);
                 $raw=trim($node->textContent);
-                $symbol=['EUR'=>'€','GBP'=>'£','USD'=>'USD','CAD'=>'CAD','AUD'=>'AUD','NOK'=>'kr','SEK'=>'kr','CHF'=>'CHF','PLN'=>'zł','RSD'=>'RSD','AED'=>'AED','QAR'=>'QAR'][$currency]??$currency;
-                // Currency must be explicit, or unambiguous on the known country storefront.
-                $currency_seen=str_contains($raw,$symbol) || str_contains($raw,$currency) || ($currency==='CHF' && str_contains($raw,'Fr.')) || (in_array($currency,['USD','CAD','AUD'],true) && str_contains($raw,'$'));
-                if($currency_seen && preg_match_all('/[0-9][0-9.,\s]*/u',$raw,$matches)===1) {
-                    $amount=preg_replace('/\s/u','',$matches[0][0]);
-                    if(preg_match('/[,.][0-9]{2}$/',$amount)) {$dec=substr($amount,-3,1);$amount=str_replace($dec,'.',str_replace($dec===','?'.':',','',$amount));}
-                    else $amount=str_replace(',','',$amount);
-                    if(is_numeric($amount) && (float)$amount>0 && (float)$amount<100000) $price=$amount;
-                }
+                /* Custom code: FC-2026-10-14: use the same guarded public amount as product detail pages. */
+                $price=self::publicAmount($raw,$currency);
+                /* /Custom code: FC-2026-10-14 */
             }
             preg_match('~/(\d+[A-Za-z]?)-~',urldecode($href),$sku);
             // A family card price is displayed as a catalog price, not a selected variant.
@@ -271,7 +300,12 @@ final class FccShopCatalog {
         $h1=$xp->query('//h1')->item(0);$out['heading']=$h1?trim($h1->textContent):'';
         // Some official product pages omit JSON-LD but render a single labelled price.
         // Accept only the observed public product layout, with a matching item number.
-        if(count($products)===0 && preg_match('~/(\d+[A-Za-z]?)-[^/]+/?$~',urldecode((string)parse_url($source,PHP_URL_PATH)),$wanted)) {
+        /* Custom code: FC-2026-10-14: reviewed family pages can expose their default item only in the public DOM. */
+        $reviewed_identity=self::identities()['offers'][self::clean($source)]??[];
+        $numbered=preg_match('~/(\d+[A-Za-z]?)-[^/]+/?$~',urldecode((string)parse_url($source,PHP_URL_PATH)),$wanted)===1;
+        if(!$numbered && !empty($reviewed_identity['selection_required']) && preg_match('/^[0-9]+[A-Za-z]?$/D',$reviewed_identity['sku']??''))$wanted=[null,$reviewed_identity['sku']];
+        if(count($products)===0 && isset($wanted[1])) {
+        /* /Custom code: FC-2026-10-14 */
             $title=$xp->query('//h1[contains(concat(" ",normalize-space(@class)," ")," product-title ")]');
             $sku=$xp->query('//*[contains(concat(" ",normalize-space(@class)," ")," item-number ")]/span[last()]');
             $prices=$xp->query('//*[contains(concat(" ",normalize-space(@class)," ")," prod-price ")]/span[contains(concat(" ",normalize-space(@class)," ")," price ")]');
@@ -280,11 +314,10 @@ final class FccShopCatalog {
             if($title->length===1 && $sku->length===1 && strcasecmp(trim($sku->item(0)->textContent),$wanted[1])===0 && count($amounts)===1) {
                 $raw=trim($amounts[0]->textContent);$cc=self::CURRENCIES[$out['market']]??'';
             /* /Custom code: FC-2026-10-14 */
-                $symbol=['EUR'=>'€','GBP'=>'£','BAM'=>'KM'][$cc]??$cc;
-                if($symbol && (str_contains($raw,$symbol) || ($cc==='CHF' && str_contains($raw,'Fr.'))) && preg_match('/[0-9][0-9.,\s]*/u',$raw,$pm)) {
-                    $amount=preg_replace('/\s/u','',$pm[0]);
-                    if(preg_match('/[,.][0-9]{2}$/',$amount)) {$dec=substr($amount,-3,1);$amount=str_replace($dec,'.',str_replace($dec===','?'.':',','',$amount));}
-                    else $amount=str_replace(',','',$amount);
+                /* Custom code: FC-2026-10-14: country currency and unambiguous public amount. */
+                $amount=self::publicAmount($raw,$cc);
+                if($amount!==null) {
+                /* /Custom code: FC-2026-10-14 */
                     $products[]=['@type'=>'Product','name'=>trim($title->item(0)->textContent),'sku'=>trim($sku->item(0)->textContent),'offers'=>['@type'=>'Offer','url'=>$final,'price'=>$amount,'priceCurrency'=>$cc]];
                     $out['evidence']='public_product_dom';
                 }
@@ -295,6 +328,13 @@ final class FccShopCatalog {
         $p=$products[0];$out['name']=trim(strip_tags($p['name']??''));$out['sku']=(string)($p['sku']??$p['mpn']??'');
         $out['description']=trim(strip_tags($p['description']??''));
         if($out['name']==='' || !$h1) return $out;
+        /* Custom code: FC-2026-10-14: a schema family alias also needs its exact visible default item. */
+        if(!empty($reviewed_identity['selection_required']) && in_array($out['sku'],$reviewed_identity['schema_skus']??[],true)) {
+            $visible=$xp->query('//*[contains(concat(" ",normalize-space(@class)," ")," item-number ")]/span[last()]');
+            if($visible->length!==1 || trim($visible->item(0)->textContent)!==$reviewed_identity['sku']){$out['status']='sku_mismatch';return $out;}
+            $out['default_sku']=$reviewed_identity['sku'];
+        }
+        /* /Custom code: FC-2026-10-14 */
         $path=urldecode((string)parse_url($source,PHP_URL_PATH));
         if(preg_match('~/(\d+[A-Za-z]?)-[^/]+/?$~',$path,$m) && strcasecmp($m[1],$out['sku'])!==0) {$out['status']='sku_mismatch';return $out;}
         $offers=$p['offers']??[];
@@ -307,9 +347,8 @@ final class FccShopCatalog {
         if(strcasecmp(rtrim((string)parse_url($offer_url,PHP_URL_PATH),'/'),rtrim((string)parse_url($final,PHP_URL_PATH),'/'))!==0 && !(!empty($m[1]) && strcasecmp($m[1],$out['sku'])===0)) {$out['status']='offer_identity_mismatch';return $out;}
         $out['status']='verified_product';$out['availability']=$offers['availability']??null;
         // Reviewed family configurators must not present a selected variant price as a package price.
-        $reviewed_identity=self::identities()['offers'][self::clean($source)]??[];
         if(!empty($reviewed_identity['selection_required']) && ($reviewed_identity['sku']??'')!==''
-            && (string)$reviewed_identity['sku']===$out['sku'] && self::matchesIdentity($source,$out)) {
+            && self::matchesIdentity($source,$out)) {
             $out['selection_required']=true;$out['price']=null;$out['currency']=null;return $out;
         }
         if($selection){$out['selection_required']=true;return $out;}

@@ -130,6 +130,7 @@ jobs:
           php scripts/test_fcc_aloe_provenance.php
           # Custom code: FC-2026-10-14: official retail labels and family option identities.
           php scripts/test_fcc_shop_public_dom.php
+          php scripts/test_fcc_product_identity_gate.php
           # /Custom code: FC-2026-10-14
           # Custom code: FC-2026-10-13: Coach routing, safety, session and rating regressions
           php scripts/test_fcc_coach_communication.php

@@ -130,7 +130,6 @@
     "7": {
       "family": "fab-forever-active-boost",
       "markets": {
-        "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/napici/fab-new/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/fab-forever-active-boost/"
       }
     },
@@ -230,8 +229,7 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/470-Forever-Lite-Ultra-Vanilla",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/470-FOREVER-LITE-ULTRA-VANILLA",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/weight-management/470-FRVR-LT-U-AMNTN-VANILLA-POUCH",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/470-FOREVER-LITE-ULTRA-VANILLA",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/weight-management/470-FOREVER-LITE-ULTRA-VANILLA"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/470-FOREVER-LITE-ULTRA-VANILLA"
       }
     },
     "13": {
@@ -240,7 +238,6 @@
         "hr": "https://foreverliving.com/shop/hrv/hr-hr/products/nutritional/665-FOREVER-SENSATIABLE",
         "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/dodaci-prehrani/forever-sensatiable/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/shtesat-ushqimore/forever-sensatiable/",
-        "si": "https://foreverliving.com/shop/svn/sl-si/products/nutritional/665-FOREVER-SENSATIABLE",
         "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/weight-management/665-FOREVER-SENSATIABLE",
         "at": "https://foreverliving.com/shop/aut/en-at/products/665-FOREVER-SENSATIABLE",
         "de": "https://foreverliving.com/shop/deu/en-de/products/665-FOREVER-SENSATIABLE",
@@ -267,7 +264,6 @@
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/nutritional/656-FOREVER-PLANT-PROTEIN-POUCH",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/nutritional/656-FOREVER-PLANT-PROTEIN-POUCH",
         "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/656-Forever-PLANT-PROTEIN-POUCH",
-        "pl": "https://foreverliving.com/shop/pol/en-gb/products/656-FOREVER-PLANT-PROTEIN-POUCH",
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/656-Forever-PLANT-PROTEIN-POUCH",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/656-FOREVER-PLANT-PROTEIN-POUCH",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/656-FOREVER-PLANT-PROTEIN"
@@ -570,8 +566,7 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/473-FOREVER-ARGI-US-PACKET-POUCH",
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/473-FOREVER-ARGI-STICKS",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/473-ARGI-*",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/473-ARGI-STICK-PACK",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/473-FOREVER-ARGI-PACKET-POUCH"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/473-ARGI-STICK-PACK"
       }
     },
     "30": {
@@ -654,7 +649,7 @@
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/nutritional/206-FOREVER-CALCIUM",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/nutritional/206-FOREVER-CALCIUM",
         "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/206-FOREVER-CALCIUM",
-        "pl": "https://foreverliving.com/shop/pol/en-gb/products/206-FOREVER-CALCIUM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/206-FOREVER-CALCIUM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/206-FOREVER-CALCIUM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/206-FOREVER-CALCIUM",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/206-FOREVER-CALCIUM",
@@ -1038,8 +1033,7 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/bestsellers/028-FOREVER-BRIGHT-TOOTH-GEL",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/028-FOREVER-BRIGHT-TOOTHGEL",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/028-FOREVER-BRIGHT-TOOTHGEL",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/028-FOREVER-BRIGHT-TOOTH-GEL",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/personal-care/028-FOREVER-BRIGHT-TOOTHGEL"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/028-FOREVER-BRIGHT-TOOTH-GEL"
       }
     },
     "53": {
@@ -1279,7 +1273,7 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "au": "https://foreverliving.com/shop/aus/en-au/products/skin-care/664-ALOE-BIO-CELLULOSE-MASK",
         "ca": "https://foreverliving.com/shop/can/en-ca/products/skin-care/664-ALOE-BIO-CELLULOSE-MASK-US",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/664-FOREVER-BIO-CELLULOSE-MASK-X3",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/664-FOREVER-BIO-CELLULOSE-MASK-X-3",
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-NEW",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-NEW",
@@ -1316,7 +1310,7 @@
         "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/njega-koze/lice/protecting-day-lotion-2/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/kujdesi-i-lekures/fytyra/protecting-day-lotion-2/",
         "si": "https://foreverliving.com/shop/svn/sl-si/products/skin-care/645-PROTECTING-DAY-LOTION",
-        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/645-PROTECTING-DAY-LOTION",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/645-PROTECTING-DAY-LOTION",
         "at": "https://foreverliving.com/shop/aut/en-at/products/645-PROTECTING-DAY-LOTION",
         "de": "https://foreverliving.com/shop/deu/en-de/products/645-PROTECTING-DAY-LOTION",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/645-PROTECTING-DAY-LOTION",
@@ -1387,7 +1381,7 @@
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/skin-care/561-AWAKENING-EYE-CREAM",
         "nl": "https://foreverliving.com/shop/nld/nl-nl/products/561-AWAKENING-EYE-CREAM",
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/561-AWAKENING-EYE-CREAM",
-        "pl": "https://foreverliving.com/shop/pol/pl-pl/products/561-EYE-CREAM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/561-EYE-CREAM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/561-AWAKENING-EYE-CREAM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/561-AWAKENING-EYE-CREAM",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/561-AWAKENING-EYE-CREAM",
@@ -1638,13 +1632,12 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/063-ALOE-MOISTURIZING-LOTION-TUBE",
         "au": "https://foreverliving.com/shop/aus/en-au/products/personal-care/063-MOISTURISING-LOTION",
         "ca": "https://foreverliving.com/shop/can/en-ca/products/skin-care/063-Aloe-Moisturizing-Lotion",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/063-ALOE-MOISTURIZING-LOTION-TUBE",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/063-ALOE-MOISTURIZING-LOTION-TUBE",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/063-ALOE-MOISTURIZING-LOTION",
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/063-ALOE-MOISTURIZING-LOTION",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/063-ALOE-MOISTURIZING-LOTION",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/063-ALOE-MOISTURIZING-LOTION",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/063-ALOE-MOISTURIZING-LOTION",
-        "ae": "https://foreverliving.com/shop/are/ar-ae/products/skin-care/063-ALOE-MOISTURIZING-LOTION"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/063-ALOE-MOISTURIZING-LOTION"
       }
     },
     "81": {
@@ -1681,7 +1674,7 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "au": "https://foreverliving.com/shop/aus/en-au/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU",
         "ca": "https://foreverliving.com/shop/can/en-ca/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
@@ -1835,7 +1828,7 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/686-FOREVER-VITAMIN-C",
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/686-FOREVER-VITAMIN-C",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/686-FOREVER-VITAMIN-C",
-        "gb": "https://foreverliving.com/shop/gbr/en-gb/products/skin-care/686-FOREVER-VITAMIN-C",
+        "gb": "https://foreverliving.com/shop/gbr/en-gb/products/686-FOREVER-VITAMIN-C",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/686-FOREVER-VITAMIN-C"
       }
     },
@@ -1857,7 +1850,7 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/613-FOREVER-MARINE-COLLAGEN",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/613-MARINE-COLLAGEN-DRINK-PK-OF-30",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/613-FOREVER-MARINE-COLLAGEN",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/613-FOREVER-MARINE-COLLAGEN"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/bestsellers/613-FOREVER-MARINE-COLLAGEN"
       }
     },
     "519": {
@@ -1878,7 +1871,7 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/613-FOREVER-MARINE-COLLAGEN",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/613-MARINE-COLLAGEN-DRINK-PK-OF-30",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/613-FOREVER-MARINE-COLLAGEN",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/613-FOREVER-MARINE-COLLAGEN"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/bestsellers/613-FOREVER-MARINE-COLLAGEN"
       }
     },
     "529": {
@@ -1899,7 +1892,7 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/686-FOREVER-VITAMIN-C",
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/686-FOREVER-VITAMIN-C",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/686-FOREVER-VITAMIN-C",
-        "gb": "https://foreverliving.com/shop/gbr/en-gb/products/skin-care/686-FOREVER-VITAMIN-C",
+        "gb": "https://foreverliving.com/shop/gbr/en-gb/products/686-FOREVER-VITAMIN-C",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/686-FOREVER-VITAMIN-C"
       }
     },
@@ -2038,7 +2031,7 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "au": "https://foreverliving.com/shop/aus/en-au/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU",
         "ca": "https://foreverliving.com/shop/can/en-ca/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
@@ -2105,13 +2098,12 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/063-ALOE-MOISTURIZING-LOTION-TUBE",
         "au": "https://foreverliving.com/shop/aus/en-au/products/personal-care/063-MOISTURISING-LOTION",
         "ca": "https://foreverliving.com/shop/can/en-ca/products/skin-care/063-Aloe-Moisturizing-Lotion",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/063-ALOE-MOISTURIZING-LOTION-TUBE",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/063-ALOE-MOISTURIZING-LOTION-TUBE",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/063-ALOE-MOISTURIZING-LOTION",
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/063-ALOE-MOISTURIZING-LOTION",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/063-ALOE-MOISTURIZING-LOTION",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/063-ALOE-MOISTURIZING-LOTION",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/063-ALOE-MOISTURIZING-LOTION",
-        "ae": "https://foreverliving.com/shop/are/ar-ae/products/skin-care/063-ALOE-MOISTURIZING-LOTION"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/063-ALOE-MOISTURIZING-LOTION"
       }
     },
     "540": {
@@ -2341,7 +2333,7 @@
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/skin-care/561-AWAKENING-EYE-CREAM",
         "nl": "https://foreverliving.com/shop/nld/nl-nl/products/561-AWAKENING-EYE-CREAM",
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/561-AWAKENING-EYE-CREAM",
-        "pl": "https://foreverliving.com/shop/pol/pl-pl/products/561-EYE-CREAM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/561-EYE-CREAM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/561-AWAKENING-EYE-CREAM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/561-AWAKENING-EYE-CREAM",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/561-AWAKENING-EYE-CREAM",
@@ -2376,7 +2368,7 @@
         "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/njega-koze/lice/protecting-day-lotion-2/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/kujdesi-i-lekures/fytyra/protecting-day-lotion-2/",
         "si": "https://foreverliving.com/shop/svn/sl-si/products/skin-care/645-PROTECTING-DAY-LOTION",
-        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/645-PROTECTING-DAY-LOTION",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/645-PROTECTING-DAY-LOTION",
         "at": "https://foreverliving.com/shop/aut/en-at/products/645-PROTECTING-DAY-LOTION",
         "de": "https://foreverliving.com/shop/deu/en-de/products/645-PROTECTING-DAY-LOTION",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/645-PROTECTING-DAY-LOTION",
@@ -2422,7 +2414,7 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "au": "https://foreverliving.com/shop/aus/en-au/products/skin-care/664-ALOE-BIO-CELLULOSE-MASK",
         "ca": "https://foreverliving.com/shop/can/en-ca/products/skin-care/664-ALOE-BIO-CELLULOSE-MASK-US",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/664-FOREVER-BIO-CELLULOSE-MASK-X3",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/664-FOREVER-BIO-CELLULOSE-MASK-X-3",
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-NEW",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-NEW",
@@ -2722,8 +2714,7 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/bestsellers/028-FOREVER-BRIGHT-TOOTH-GEL",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/028-FOREVER-BRIGHT-TOOTHGEL",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/028-FOREVER-BRIGHT-TOOTHGEL",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/028-FOREVER-BRIGHT-TOOTH-GEL",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/personal-care/028-FOREVER-BRIGHT-TOOTHGEL"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/028-FOREVER-BRIGHT-TOOTH-GEL"
       }
     },
     "568": {
@@ -3073,7 +3064,7 @@
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/nutritional/206-FOREVER-CALCIUM",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/nutritional/206-FOREVER-CALCIUM",
         "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/206-FOREVER-CALCIUM",
-        "pl": "https://foreverliving.com/shop/pol/en-gb/products/206-FOREVER-CALCIUM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/206-FOREVER-CALCIUM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/206-FOREVER-CALCIUM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/206-FOREVER-CALCIUM",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/206-FOREVER-CALCIUM",
@@ -3182,8 +3173,7 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/473-FOREVER-ARGI-US-PACKET-POUCH",
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/473-FOREVER-ARGI-STICKS",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/473-ARGI-*",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/473-ARGI-STICK-PACK",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/473-FOREVER-ARGI-PACKET-POUCH"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/473-ARGI-STICK-PACK"
       }
     },
     "591": {
@@ -3371,7 +3361,6 @@
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/nutritional/656-FOREVER-PLANT-PROTEIN-POUCH",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/nutritional/656-FOREVER-PLANT-PROTEIN-POUCH",
         "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/656-Forever-PLANT-PROTEIN-POUCH",
-        "pl": "https://foreverliving.com/shop/pol/en-gb/products/656-FOREVER-PLANT-PROTEIN-POUCH",
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/656-Forever-PLANT-PROTEIN-POUCH",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/656-FOREVER-PLANT-PROTEIN-POUCH",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/656-FOREVER-PLANT-PROTEIN"
@@ -3424,8 +3413,7 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/470-Forever-Lite-Ultra-Vanilla",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/470-FOREVER-LITE-ULTRA-VANILLA",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/weight-management/470-FRVR-LT-U-AMNTN-VANILLA-POUCH",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/470-FOREVER-LITE-ULTRA-VANILLA",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/weight-management/470-FOREVER-LITE-ULTRA-VANILLA"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/470-FOREVER-LITE-ULTRA-VANILLA"
       }
     },
     "605": {
@@ -3451,7 +3439,6 @@
         "hr": "https://foreverliving.com/shop/hrv/hr-hr/products/nutritional/665-FOREVER-SENSATIABLE",
         "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/dodaci-prehrani/forever-sensatiable/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/shtesat-ushqimore/forever-sensatiable/",
-        "si": "https://foreverliving.com/shop/svn/sl-si/products/nutritional/665-FOREVER-SENSATIABLE",
         "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/weight-management/665-FOREVER-SENSATIABLE",
         "at": "https://foreverliving.com/shop/aut/en-at/products/665-FOREVER-SENSATIABLE",
         "de": "https://foreverliving.com/shop/deu/en-de/products/665-FOREVER-SENSATIABLE",
@@ -3545,7 +3532,6 @@
     "611": {
       "family": "fab-forever-active-boost",
       "markets": {
-        "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/napici/fab-new/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/lengjet/fab-forever-active-boost/"
       }
     },
@@ -3909,8 +3895,6 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/vital5",
         "de": "https://foreverliving.com/shop/deu/en-de/products/vital5",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/456-VITAL-5-PACK",
-        "lu": "https://foreverliving.com/shop/lux/en-gb/products/combo-paks/vital5-lux",
-        "nl": "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl",
         "no": "https://foreverliving.com/shop/nor/nn-no/products/v5",
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/456W-VITAL5-WITH-ALOE-VERA-GEL",
         "se": "https://foreverliving.com/shop/swe/sv-se/products/v5",
@@ -3931,8 +3915,6 @@
         "at": "https://foreverliving.com/shop/aut/en-at/products/vital5",
         "de": "https://foreverliving.com/shop/deu/en-de/products/vital5",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/456-VITAL-5-PACK",
-        "lu": "https://foreverliving.com/shop/lux/en-gb/products/combo-paks/vital5-lux",
-        "nl": "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl",
         "no": "https://foreverliving.com/shop/nor/nn-no/products/v5",
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/456W-VITAL5-WITH-ALOE-VERA-GEL",
         "se": "https://foreverliving.com/shop/swe/sv-se/products/v5",
@@ -3995,7 +3977,7 @@
         "si": "https://foreverliving.com/shop/svn/sl-si/products/drinks/822-FAB-X-ENERGY-DRINK",
         "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/drinks/822-FAB-X-ENERGY-DRINK",
         "at": "https://foreverliving.com/shop/aut/en-at/products/822-FAB-X-12-DRINK-2024",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/822-FAB-X-12-DRINK-2024",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/822-FAB-X-12-DRINK-2024",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/822-FAB-X-ENERGY-DRINK",
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/drinks/822-FAB-ENERGY-DRINK-X---2024",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/drinks/822-FAB-ENERGY-DRINK-X---2024",
@@ -4014,7 +3996,7 @@
         "si": "https://foreverliving.com/shop/svn/sl-si/products/drinks/822-FAB-X-ENERGY-DRINK",
         "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/drinks/822-FAB-X-ENERGY-DRINK",
         "at": "https://foreverliving.com/shop/aut/en-at/products/822-FAB-X-12-DRINK-2024",
-        "de": "https://foreverliving.com/shop/deu/en-de/products/822-FAB-X-12-DRINK-2024",
+        "de": "https://foreverliving.com/shop/deu/de-de/products/822-FAB-X-12-DRINK-2024",
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/822-FAB-X-ENERGY-DRINK",
         "lu": "https://foreverliving.com/shop/lux/en-gb/products/drinks/822-FAB-ENERGY-DRINK-X---2024",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/drinks/822-FAB-ENERGY-DRINK-X---2024",
@@ -4074,15 +4056,11 @@
     },
     "654": {
       "family": "mini-touch-of-forever",
-      "markets": {
-        "au": "https://foreverliving.com/shop/aus/en-au/products/combo-paks/002-MINI-TOUCH-OF-FOREVER-KIT"
-      }
+      "markets": {}
     },
     "655": {
       "family": "mini-touch-of-forever",
-      "markets": {
-        "au": "https://foreverliving.com/shop/aus/en-au/products/combo-paks/002-MINI-TOUCH-OF-FOREVER-KIT"
-      }
+      "markets": {}
     },
     "656": {
       "family": "forever-13-day-fit",
@@ -6809,7 +6787,8 @@
       "source": "https://foreverliving.com/shop/are/en-us/weight-management",
       "names": [
         "foreverliteultravanilla"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/nutritional/665-FOREVER-SENSATIABLE": {
       "market": "hr",
@@ -6866,7 +6845,8 @@
       "names": [
         "foreversensatiableprehranskodopolni",
         "foreversensatiableprehranskodopolnilo"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/weight-management/665-FOREVER-SENSATIABLE": {
       "market": "rs",
@@ -7174,7 +7154,8 @@
       "source": "https://foreverliving.com/shop/pol/en-gb/products/656-FOREVER-PLANT-PROTEIN-POUCH",
       "names": [
         "foreverplantprotein"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/swe/en-se/products/drinks/656-Forever-PLANT-PROTEIN-POUCH": {
       "market": "se",
@@ -7278,8 +7259,14 @@
       "pack": "",
       "source": "https://foreverliving.com/shop/svn/sl-si/products/c9",
       "names": [
-        "c9ultravanilla"
-      ]
+        "c9ultravanilla",
+        "c9"
+      ],
+      "selection_required": true,
+      "schema_skus": [
+        "C9V"
+      ],
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/aut/en-at/products/c9": {
       "market": "at",
@@ -7288,13 +7275,16 @@
         "c9",
         "clean9"
       ],
-      "sku": "",
+      "sku": "475",
       "name": "C9™",
       "pack": "Set",
       "source": "https://foreverliving.com/shop/aut/en-at/products?page=6&total=121",
       "names": [
-        "c9"
-      ]
+        "c9",
+        "c9aloevanilla"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/deu/en-de/products/c9": {
       "market": "de",
@@ -7303,13 +7293,16 @@
         "c9",
         "clean9"
       ],
-      "sku": "",
+      "sku": "475",
       "name": "C9™",
       "pack": "Set",
       "source": "https://foreverliving.com/shop/deu/en-de/products?page=5&total=118",
       "names": [
-        "c9"
-      ]
+        "c9",
+        "c9aloevanilla"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/irl/en-ie/products/C9": {
       "market": "ie",
@@ -7318,13 +7311,16 @@
         "c9",
         "clean9"
       ],
-      "sku": "",
+      "sku": "476",
       "name": "C9",
       "pack": "",
       "source": "https://foreverliving.com/shop/irl/en-ie/products?page=7&total=112",
       "names": [
-        "c9"
-      ]
+        "c9",
+        "c9aloeveragelchocolate"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/pol/en-gb/products/475W-CLEAN-9-ULTRA-VANILLA": {
       "market": "pl",
@@ -7348,13 +7344,16 @@
         "c9",
         "clean9"
       ],
-      "sku": "",
+      "sku": "476",
       "name": "C9",
       "pack": "",
       "source": "https://foreverliving.com/shop/gbr/en-gb/products?page=6&total=115",
       "names": [
-        "c9"
-      ]
+        "c9",
+        "c9aloeveragelchocolate"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/qat/en-us/products/weight-management/475-CLEAN9-ULTRA-VANILLA-POUCH": {
       "market": "qa",
@@ -7385,7 +7384,9 @@
       "names": [
         "c9",
         "c9vanilla"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/are/en-us/products/weight-management/475-CLEAN-9-ENG-VAN-LITE": {
       "market": "ae",
@@ -7642,8 +7643,14 @@
       "pack": "",
       "source": "https://foreverliving.com/shop/svn/sl-si/products/f15",
       "names": [
-        "f15beginnervanilla"
-      ]
+        "f15beginnervanilla",
+        "f15"
+      ],
+      "selection_required": true,
+      "schema_skus": [
+        "F15V"
+      ],
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/irl/en-ie/products/VF152": {
       "market": "ie",
@@ -7658,7 +7665,9 @@
       "names": [
         "f15",
         "f15beginnerchocolateandaloeveragel"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/gbr/en-gb/products/F15-F15": {
       "market": "gb",
@@ -7673,7 +7682,9 @@
       "names": [
         "f15",
         "f15beginnerchocolateandaloeveragel"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Native public view confirms default529 and twelve program options. Keep the configurator choice and suppress the default variant price."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/nutritional/672-ABSORBENT-D": {
       "market": "hr",
@@ -9178,8 +9189,10 @@
       "pack": "80 tablets",
       "source": "https://foreverliving.com/shop/deu/en-de/products?page=6&total=118",
       "names": [
-        "foreverfieldsofgreens"
-      ]
+        "foreverfieldsofgreens",
+        "fieldsofgreens"
+      ],
+      "review_note": "FC-2026-10-14: Exact observed public title accepted alongside the catalog card title; existing country, family and SKU remain required."
     },
     "https://foreverliving.com/shop/irl/en-ie/products/068-FIELDS-OF-GREENS": {
       "market": "ie",
@@ -9881,13 +9894,14 @@
         "activeprob",
         "activprob"
       ],
-      "sku": "",
+      "sku": "610C",
       "name": "Forever Active Pro-B™",
       "pack": "30 capsules",
       "source": "https://foreverliving.com/shop/can/en-ca/products?page=1&total=4",
       "names": [
         "foreveractiveprob"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Exact public country page confirms this item number and title; no option selector is present."
     },
     "https://foreverliving.com/shop/deu/en-de/products/610-FOREVER-ACTIVE-PRO-B": {
       "market": "de",
@@ -10442,7 +10456,8 @@
       "source": "https://foreverliving.com/shop/are/en-us/products?page=1&total=5",
       "names": [
         "foreverargipouch"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/nutritional/188-FOREVER-B-12-PLUS": {
       "market": "hr",
@@ -15552,7 +15567,8 @@
       "source": "https://foreverliving.com/shop/are/en-us/personal-care",
       "names": [
         "foreverbrighttoothgel"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/673-LOGIC-KIT": {
       "market": "hr",
@@ -22445,7 +22461,8 @@
       "source": "https://foreverliving.com/shop/are/ar-ae/products/skin-care/063-ALOE-MOISTURIZING-LOTION",
       "names": [
         "الوموستيريزنجلوشن"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/skin-care/647-ALOE-BODY-LOTION": {
       "market": "hr",
@@ -22809,8 +22826,10 @@
       "pack": "59 ml",
       "source": "https://foreverliving.com/shop/aut/en-at/products?page=10&total=121",
       "names": [
-        "logicbyforeversoothinggelmoisturize"
-      ]
+        "logicbyforeversoothinggelmoisturize",
+        "logicbyforeversoothinggelmoisturizer"
+      ],
+      "review_note": "FC-2026-10-14: Exact observed public title accepted alongside the catalog card title; existing country, family and SKU remain required."
     },
     "https://foreverliving.com/shop/aus/en-au/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU": {
       "market": "au",
@@ -22825,8 +22844,10 @@
       "pack": "59 ml",
       "source": "https://foreverliving.com/shop/aus/en-au/skin-care?page=1&total=22",
       "names": [
-        "logicbyforeversoothinggelmoisturiz"
-      ]
+        "logicbyforeversoothinggelmoisturiz",
+        "logicbyforeversoothinggelmoisturizer"
+      ],
+      "review_note": "FC-2026-10-14: Exact observed public title accepted alongside the catalog card title; existing country, family and SKU remain required."
     },
     "https://foreverliving.com/shop/can/en-ca/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOIST": {
       "market": "ca",
@@ -22988,8 +23009,10 @@
       "pack": "59 ml",
       "source": "https://foreverliving.com/shop/che/en-ch/products?page=9&total=118",
       "names": [
-        "logicbyforeversoothinggelmoisturize"
-      ]
+        "logicbyforeversoothinggelmoisturize",
+        "logicbyforeversoothinggelmoisturizer"
+      ],
+      "review_note": "FC-2026-10-14: Exact observed public title accepted alongside the catalog card title; existing country, family and SKU remain required."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/skin-care/667-LOGIC-ALOE-GEL-CLEANSER": {
       "market": "hr",
@@ -24588,8 +24611,10 @@
       "pack": "30 ml",
       "source": "https://foreverliving.com/shop/che/en-ch/products?page=4&total=118",
       "names": [
-        "forevervitamincbrighteningfacialmil"
-      ]
+        "forevervitamincbrighteningfacialmil",
+        "forevervitamincbrighteningfacialmilk"
+      ],
+      "review_note": "FC-2026-10-14: Exact observed public title accepted alongside the catalog card title; existing country, family and SKU remain required."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/drinks/613-FOREVER-MARINE-COLLAGEN": {
       "market": "hr",
@@ -25023,8 +25048,10 @@
       "pack": "",
       "source": "https://www.foreveralbania.com/produktet/produktet-me-pike/shtesat-ushqimore/forever-fiber-fusion/",
       "names": [
-        "foreverfiberfusion"
-      ]
+        "foreverfiberfusion",
+        "foreverfiberfusionmungesenekosove"
+      ],
+      "review_note": "FC-2026-10-14: Official AL 702 title includes Mungese ne Kosove. Accept only this observed title alongside the plain title. AL country and SKU remain required; JSON-LD determines availability."
     },
     "https://foreverliving.com/shop/hrv/hr-hr/products/nutritional/071-FOREVER-GARCINIA-PLUS": {
       "market": "hr",
@@ -25476,8 +25503,10 @@
       "pack": "Set",
       "source": "https://foreverliving.com/shop/aut/en-at/products?page=3&total=121",
       "names": [
-        "330mlforeveraloeveragelargitrip"
-      ]
+        "330mlforeveraloeveragelargitrip",
+        "330mlforeveraloeveragelargitripack"
+      ],
+      "review_note": "FC-2026-10-14: Exact observed public title accepted alongside the catalog card title; existing country, family and SKU remain required."
     },
     "https://foreverliving.com/shop/deu/en-de/products/71633-TRIPACK-330ML-ALOE-GEL-ARGI": {
       "market": "de",
@@ -25495,8 +25524,10 @@
       "pack": "Set",
       "source": "https://foreverliving.com/shop/deu/en-de/products?page=3&total=118",
       "names": [
-        "330mlforeveraloeveragelargitrip"
-      ]
+        "330mlforeveraloeveragelargitrip",
+        "330mlforeveraloeveragelargitripack"
+      ],
+      "review_note": "FC-2026-10-14: Exact full German-market product title confirmed on this URL with item71633; the country, formula and pack remain unchanged."
     },
     "https://foreverliving.com/shop/irl/en-ie/products/71633-ARGI-AND-ALOE-MINI-TRIPACK": {
       "market": "ie",
@@ -26254,7 +26285,9 @@
       "names": [
         "vital5",
         "vital5combopackfreedom"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/aut/en-at/products/vital5": {
       "market": "at",
@@ -26269,7 +26302,9 @@
       "names": [
         "vital5",
         "vital5freedom"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/deu/en-de/products/vital5": {
       "market": "de",
@@ -26284,7 +26319,9 @@
       "names": [
         "vital5",
         "vital5freedom"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/che/en-ch/products/vital5": {
       "market": "ch",
@@ -26292,13 +26329,16 @@
       "terms": [
         "vital5"
       ],
-      "sku": "",
+      "sku": "459",
       "name": "Vital5",
       "pack": "",
       "source": "https://foreverliving.com/shop/che/en-ch/products?page=6&total=118",
       "names": [
-        "vital5"
-      ]
+        "vital5",
+        "vital5foreverfreedom"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/forever-paketi/vital5-freedom/": {
       "market": "ba",
@@ -26363,13 +26403,15 @@
       "terms": [
         "touchofforever"
       ],
-      "sku": "",
+      "sku": "001",
       "name": "A Touch of Forever",
       "pack": "",
       "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/combo-paks",
       "names": [
         "atouchofforever"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/aus/en-au/products/combo-paks/001-TOUCH-OF-FOREVER": {
       "market": "au",
@@ -26831,7 +26873,8 @@
       "source": "https://foreverliving.com/shop/aus/en-au/combo-paks?page=1&total=16",
       "names": [
         "minitouchofforevercombo"
-      ]
+      ],
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/aut/en-at/products/4759-13-DAY-FIT-PROGRAM": {
       "market": "at",
@@ -27169,8 +27212,14 @@
       "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/Vital-5-",
       "name": "Vital⁵ - Freedom",
       "names": [
-        "vital5freedom"
-      ]
+        "vital5freedom",
+        "vital5"
+      ],
+      "selection_required": true,
+      "schema_skus": [
+        "Vital5V"
+      ],
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/irl/en-ie/products/456-VITAL-5-PACK": {
       "market": "ie",
@@ -27192,7 +27241,8 @@
         "vital5"
       ],
       "sku": "459",
-      "source": "https://foreverliving.com/shop/lux/en-gb/products/combo-paks/vital5-lux"
+      "source": "https://foreverliving.com/shop/lux/en-gb/products/combo-paks/vital5-lux",
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl": {
       "market": "nl",
@@ -27201,7 +27251,8 @@
         "vital5"
       ],
       "sku": "459",
-      "source": "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl"
+      "source": "https://foreverliving.com/shop/nld/en-gb/products/weight-management/vital-5-nl",
+      "review_note": "FC-2026-10-14: Public product link could not be verified in the current official catalog or exact public detail. Article market binding withheld; retain the FCC article and owner contact. This is not an out-of-stock claim."
     },
     "https://foreverliving.com/shop/nor/nn-no/products/v5": {
       "market": "no",
@@ -27213,8 +27264,10 @@
       "source": "https://foreverliving.com/shop/nor/nn-no/products/v5",
       "name": "Vital5™",
       "names": [
-        "vital5TM"
-      ]
+        "vital5"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/pol/en-gb/products/456W-VITAL5-WITH-ALOE-VERA-GEL": {
       "market": "pl",
@@ -27239,8 +27292,10 @@
       "source": "https://foreverliving.com/shop/swe/sv-se/products/v5",
       "name": "Vital5™",
       "names": [
-        "vital5TM"
-      ]
+        "vital5"
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
     },
     "https://foreverliving.com/shop/gbr/en-gb/products/456-VITAL5-PACK": {
       "market": "gb",
@@ -27282,7 +27337,149 @@
         "vital5aloeveragel",
         "vital5withaloeveragel",
         "vital5waloeveragel"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "FC-2026-10-14: Default title and visible item verified on this exact public country page. Observed configurator schema codes are exact aliases; retain the family URL and choice of variant, without a default variant price as the family price."
+    },
+    "https://foreverliving.com/shop/are/en-us/products/bestsellers/613-FOREVER-MARINE-COLLAGEN": {
+      "market": "ae",
+      "family": "marine-collagen",
+      "terms": [
+        "marinecollagen"
+      ],
+      "sku": "613",
+      "name": "FOREVER MARINE COLLAGEN™",
+      "pack": "30 x 15 mL  | Nt. Wt. 0.6451kg",
+      "source": "https://foreverliving.com/shop/are/en-us/products/",
+      "names": [
+        "forevermarinecollagen"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/deu/de-de/products/063-ALOE-MOISTURIZING-LOTION-TUBE": {
+      "market": "de",
+      "family": "forever-aloe-moisturizing-lotion",
+      "terms": [
+        "aloemoisturizinglotion",
+        "moisturisinglotion",
+        "الوموستيريزنجلوشن"
+      ],
+      "sku": "063",
+      "name": "Aloe Moisturizing Lotion",
+      "pack": "118 ml",
+      "source": "https://foreverliving.com/shop/deu/de-de/products?page=10&total=119",
+      "names": [
+        "aloemoisturizinglotion"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/deu/de-de/products/664-FOREVER-BIO-CELLULOSE-MASK-X3": {
+      "market": "de",
+      "family": "forever-bio-cellulose-mask",
+      "terms": [
+        "biocellulosemask"
+      ],
+      "sku": "664",
+      "name": "Aloe Bio-Cellulose Mask",
+      "pack": "3 x 25 g",
+      "source": "https://foreverliving.com/shop/deu/de-de/products?page=4&total=119",
+      "names": [
+        "aloebiocellulosemask"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/deu/de-de/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER": {
+      "market": "de",
+      "family": "forever-logic-aloe-soothing-gel-moisture",
+      "terms": [
+        "logicsoothinggelmoist",
+        "logicaloesoothinggelmoist",
+        "logicbyforeversoothinggelmoist"
+      ],
+      "sku": "669",
+      "name": "Logic by Forever Soothing Gel Moisturize...",
+      "pack": "59 ml",
+      "source": "https://foreverliving.com/shop/deu/de-de/products?page=10&total=119",
+      "names": [
+        "logicbyforeversoothinggelmoisturize"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/deu/de-de/products/822-FAB-X-12-DRINK-2024": {
+      "market": "de",
+      "family": "forever-fab-x",
+      "terms": [
+        "fabx"
+      ],
+      "sku": "822",
+      "name": "FAB X Forever Active Boost",
+      "pack": "12 x 250 ml",
+      "source": "https://foreverliving.com/shop/deu/de-de/products?page=4&total=119",
+      "names": [
+        "fabxforeveractiveboost"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/gbr/en-gb/products/686-FOREVER-VITAMIN-C": {
+      "market": "gb",
+      "family": "forever-vitamin-c",
+      "terms": [
+        "vitaminc"
+      ],
+      "sku": "686",
+      "name": "FOREVER VITAMIN C BRIGHTENING FACIAL MIL...",
+      "pack": "30 ml",
+      "source": "https://foreverliving.com/shop/gbr/en-gb/products?page=6&total=115",
+      "names": [
+        "forevervitamincbrighteningfacialmil"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/206-FOREVER-CALCIUM": {
+      "market": "pl",
+      "family": "forever-calcium",
+      "terms": [
+        "calcium"
+      ],
+      "sku": "206",
+      "name": "Forever Calcium",
+      "pack": "",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "forevercalcium"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/561-EYE-CREAM": {
+      "market": "pl",
+      "family": "forever-awakening-eye-cream",
+      "terms": [
+        "awakeningeyecream",
+        "اويكنينجكريمللعين"
+      ],
+      "sku": "561",
+      "name": "AWAKENING EYE CREAM",
+      "pack": "",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "awakeningeyecream"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/645-PROTECTING-DAY-LOTION": {
+      "market": "rs",
+      "family": "protecting-day-lotion",
+      "terms": [
+        "protectingdaylotion"
+      ],
+      "sku": "645",
+      "name": "Protecting Day Lotion",
+      "pack": "",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/skin-care?page=3&total=32",
+      "names": [
+        "protectingdaylotion"
+      ],
+      "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
     }
   }
 }

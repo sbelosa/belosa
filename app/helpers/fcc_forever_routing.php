@@ -134,9 +134,15 @@ function fcc_forever_product_identity_allows(object $post,?string $market,string
     if(!$identity)return true;
     $expected=$identity['markets'][$market]??null;
     if(!$expected)return false;
+    /* Custom code: FC-2026-10-14: reject a reviewed URL belonging to another formula or country. */
+    $offer=FccShopCatalog::identities()['offers'][$expected]??null;
+    if(!$offer || ($offer['family']??null)!==($identity['family']??null) || ($offer['market']??null)!==$market)return false;
+    /* /Custom code: FC-2026-10-14 */
     $snapshot=FccShopCatalog::cached($base);
     if(($snapshot['status']??'')==='verified_product')return FccShopCatalog::matchesIdentity($expected,$snapshot);
-    if(in_array($snapshot['status']??'',['article_identity_mismatch','category','not_found'],true)||in_array($snapshot['http']??0,[404,410],true))return false;
+    /* Custom code: FC-2026-10-14: a confirmed wrong redirect or product cannot pass URL equality. */
+    if(in_array($snapshot['status']??'',['article_identity_mismatch','category','not_found','wrong_market','wrong_market_redirect','sku_mismatch','offer_identity_mismatch','offer_market_mismatch'],true)||in_array($snapshot['http']??0,[404,410],true))return false;
+    /* /Custom code: FC-2026-10-14 */
     // A missing price cache does not remove a reviewed purchasing link.
     if(FccShopCatalog::clean($base)===FccShopCatalog::clean($expected))return true;
     // Titan has both flat and category-prefixed URLs for the same country/SKU.
