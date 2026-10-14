@@ -66,6 +66,9 @@
 !scripts/test_fcc_editor_transaction.php
 !scripts/test_fcc_classic_aloe.php
 !scripts/test_fcc_aloe_provenance.php
+# Custom code: FC-2026-10-14: official public product parser regression.
+!scripts/test_fcc_shop_public_dom.php
+# /Custom code: FC-2026-10-14
 # Custom code: FC-2026-10-14: worker regression guard
 !scripts/test_fcc_worker_cache.php
 !scripts/partner-notifications.php

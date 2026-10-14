@@ -275,8 +275,11 @@ final class FccShopCatalog {
             $title=$xp->query('//h1[contains(concat(" ",normalize-space(@class)," ")," product-title ")]');
             $sku=$xp->query('//*[contains(concat(" ",normalize-space(@class)," ")," item-number ")]/span[last()]');
             $prices=$xp->query('//*[contains(concat(" ",normalize-space(@class)," ")," prod-price ")]/span[contains(concat(" ",normalize-space(@class)," ")," price ")]');
-            if($title->length===1 && $sku->length===1 && strcasecmp(trim($sku->item(0)->textContent),$wanted[1])===0 && $prices->length===1) {
-                $raw=trim($prices->item(0)->textContent);$cc=self::CURRENCIES[$out['market']]??'';
+            /* Custom code: FC-2026-10-14: the retail label shares the price class, but contains no amount. */
+            $amounts=array_values(array_filter(iterator_to_array($prices),static fn($node)=>preg_match('/[0-9]/u',$node->textContent)));
+            if($title->length===1 && $sku->length===1 && strcasecmp(trim($sku->item(0)->textContent),$wanted[1])===0 && count($amounts)===1) {
+                $raw=trim($amounts[0]->textContent);$cc=self::CURRENCIES[$out['market']]??'';
+            /* /Custom code: FC-2026-10-14 */
                 $symbol=['EUR'=>'€','GBP'=>'£','BAM'=>'KM'][$cc]??$cc;
                 if($symbol && (str_contains($raw,$symbol) || ($cc==='CHF' && str_contains($raw,'Fr.'))) && preg_match('/[0-9][0-9.,\s]*/u',$raw,$pm)) {
                     $amount=preg_replace('/\s/u','',$pm[0]);

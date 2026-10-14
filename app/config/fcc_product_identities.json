@@ -7225,14 +7225,16 @@
         "c9",
         "clean9"
       ],
-      "sku": "C9V",
+      "sku": "475",
       "name": "C9",
       "pack": "",
       "source": "https://foreverliving.com/shop/hrv/hr-hr/products/C9",
       "names": [
         "c9",
         "c9aloevanilla"
-      ]
+      ],
+      "selection_required": true,
+      "review_note": "Custom code: FC-2026-10-14: Stvarna šifra zadane hrvatske ponude potvrđena u službenoj trgovini. Obiteljska adresa i izbor varijante ostaju sačuvani."
     },
     "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/regulacija-tjelesne-tezine/new-clean-9-ultra-vanilla/": {
       "market": "ba",
@@ -7588,13 +7590,16 @@
       "terms": [
         "f15"
       ],
-      "sku": "",
+      "sku": "528",
       "name": "F15",
       "pack": "",
       "source": "https://foreverliving.com/shop/hrv/hr-hr/weight-management?page=1&total=10",
       "names": [
-        "f15"
-      ]
+        "f15",
+        "f15vanilla"
+      ],
+      "selection_required": true,
+      "review_note": "Custom code: FC-2026-10-14: Potvrđena zadana hrvatska F15 Vanilla ponuda 528. Zadržana obiteljska adresa za izbor varijante, bez pripisivanja njezine cijene cijelom programu."
     },
     "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/regulacija-tjelesne-tezine/f15-advanced12-vanilla/": {
       "market": "ba",
@@ -26225,7 +26230,7 @@
       "terms": [
         "vital5"
       ],
-      "sku": "Vital5V",
+      "sku": "459",
       "name": "Vital5 - Forever Aloe Vera Gel",
       "pack": "",
       "source": "https://foreverliving.com/shop/hrv/hr-hr/combo-paks?page=1&total=12",
@@ -26233,7 +26238,8 @@
         "vital5foreveraloeveragel",
         "vital5foreverfreedom"
       ],
-      "selection_required": true
+      "selection_required": true,
+      "review_note": "Custom code: FC-2026-10-14: Stvarna šifra zadane hrvatske ponude potvrđena u službenoj trgovini. Obiteljska adresa i izbor varijante ostaju sačuvani."
     },
     "https://foreverliving.com/shop/svn/sl-si/products/combo-paks/vital5": {
       "market": "si",
@@ -26328,13 +26334,14 @@
       "terms": [
         "touchofforever"
       ],
-      "sku": "TOF-HRV",
+      "sku": "001",
       "name": "A Touch Of Forever",
       "pack": "",
       "source": "https://foreverliving.com/shop/hrv/hr-hr/products/combo-paks/touch-of-forever",
       "names": [
         "atouchofforever"
-      ]
+      ],
+      "review_note": "Custom code: FC-2026-10-14: Stvarna šifra zadane hrvatske ponude potvrđena u službenoj trgovini. Obiteljska adresa i izbor varijante ostaju sačuvani."
     },
     "https://foreverliving.com/shop/svn/sl-si/products/combo-paks/001-A-TOUCH-OF-FOREVER": {
       "market": "si",
