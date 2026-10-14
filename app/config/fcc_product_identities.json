@@ -215,7 +215,7 @@
     "12": {
       "family": "forever-ultra",
       "markets": {
-        "hr": "https://foreverliving.com/shop/hrv/hr-hr/products/forever-lite",
+        "hr": "https://foreverliving.com/shop/HRV/hr-HR/products/nutritional/471-FOREVER-LITE-U-CHOCOLA-15-SERV",
         "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/regulacija-tjelesne-tezine/forever-lite-u-vanilla-15-serv/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/rregullimi-i-peshes-trupore/forever-lite-u-vanilla-15-serv/",
         "si": "https://foreverliving.com/shop/svn/sl-si/products/nutritional/470-FOREVER-LITE-U-VANILLA-15-SERV",
@@ -3409,7 +3409,7 @@
     "604": {
       "family": "forever-ultra",
       "markets": {
-        "hr": "https://foreverliving.com/shop/hrv/hr-hr/products/forever-lite",
+        "hr": "https://foreverliving.com/shop/HRV/hr-HR/products/nutritional/471-FOREVER-LITE-U-CHOCOLA-15-SERV",
         "ba": "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/regulacija-tjelesne-tezine/forever-lite-u-vanilla-15-serv/",
         "al": "https://www.foreveralbania.com/produktet/produktet-me-pike/rregullimi-i-peshes-trupore/forever-lite-u-vanilla-15-serv/",
         "si": "https://foreverliving.com/shop/svn/sl-si/products/nutritional/470-FOREVER-LITE-U-VANILLA-15-SERV",
@@ -6505,23 +6505,21 @@
         "foreverfastbreak"
       ]
     },
-    "https://foreverliving.com/shop/hrv/hr-hr/products/forever-lite": {
+    "https://foreverliving.com/shop/HRV/hr-HR/products/nutritional/471-FOREVER-LITE-U-CHOCOLA-15-SERV": {
       "market": "hr",
       "family": "forever-ultra",
       "terms": [
-        "liteultra",
-        "ultravanilla",
-        "foreverlitev",
-        "ltuamntn",
-        "liteuvanilla"
+        "liteultrachocolate",
+        "liteuchocola"
       ],
-      "sku": "470",
-      "name": "Forever Lite Ultra - Vanilla",
-      "pack": "",
-      "source": "https://foreverliving.com/shop/hrv/hr-hr/products/forever-lite",
+      "sku": "471",
+      "name": "Forever Lite Ultra - Chocolate",
+      "pack": "375 g",
+      "source": "https://foreverliving.com/shop/HRV/hr-HR/products/nutritional/471-FOREVER-LITE-U-CHOCOLA-15-SERV",
       "names": [
-        "foreverliteultravanilla"
-      ]
+        "foreverliteultrachocolate"
+      ],
+      "review_note": "Custom code: FC-2026-10-14: Provjerena hrvatska ponuda artikla 471 za izravno naručivanje s preporukom suradnika."
     },
     "https://www.flpshop.ba/proizvodi/bodovni-proizvodi/regulacija-tjelesne-tezine/forever-lite-u-vanilla-15-serv/": {
       "market": "ba",
