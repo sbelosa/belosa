@@ -176,7 +176,8 @@ $copy = [
             <div class="fe-sheet-body" data-fe-sheet-body></div>
             <p class="fe-form-error" role="alert" data-fe-error hidden></p>
             <div class="fe-sheet-actions">
-                <button type="submit" class="fe-button" data-fe-sheet-save><?= $t('Spremi') ?></button>
+                <?php /* Custom code: FC-2026-10-15: the editor owns the AJAX button state across repeated saves. */ ?>
+                <button type="submit" class="fe-button" data-fe-sheet-save data-is-ajax><?= $t('Spremi') ?></button>
                 <button type="button" class="fe-button fe-button-danger-soft" data-fe-sheet-delete><?= $t('Ukloni blok') ?></button>
                 <span class="fe-confirm" data-fe-confirm hidden><span><?= $t('Ukloniti ovaj blok s kartice? Ovo se ne može poništiti.') ?></span> <button type="button" class="fe-button fe-button-danger" data-fe-confirm-yes><?= $t('Da, ukloni') ?></button> <button type="button" class="fe-button fe-button-soft" data-fe-confirm-no><?= $t('Odustani') ?></button></span>
             </div>

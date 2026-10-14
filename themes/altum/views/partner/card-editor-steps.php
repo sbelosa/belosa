@@ -27,7 +27,8 @@ $groups = fcc_card_block_groups();
         <label class="fe-field"><span><?= $t('Kratki opis ispod imena') ?></span><input type="text" name="role" maxlength="80" value="<?= $h($profile['role']) ?>" placeholder="<?= $t('Neovisni Forever Business Partner') ?>"><small><?= $t('Prikazuje se kao oznaka ispod imena.') ?></small></label>
         <label class="fe-field"><span><?= $t('O meni') ?></span><textarea name="about" rows="4" maxlength="600" placeholder="<?= $t('Za više informacija o Forever proizvodima ili poslovnoj suradnji slobodno me kontaktirajte.') ?>"><?= $h($profile['about']) ?></textarea><small><?= $t('Dvije do tri rečenice. Prazan red započinje novi odlomak.') ?></small></label>
         <?php if($profile['rich_text']): ?><p class="fe-note"><?= $t('Ovaj tekst ima posebno oblikovanje, primjerice poveznice ili boje. Spremanjem ovdje ostaje samo običan tekst.') ?></p><?php endif ?>
-        <div class="fe-form-actions"><button type="submit" class="fe-button"><?= $t('Spremi profil') ?></button></div>
+        <?php /* Custom code: FC-2026-10-15: keep the global navigation submit guard off AJAX saves and retries. */ ?>
+        <div class="fe-form-actions"><button type="submit" class="fe-button" data-is-ajax><?= $t('Spremi profil') ?></button></div>
         <p class="fe-form-error" role="alert" data-fe-error hidden></p>
     </form>
 </section>
@@ -156,7 +157,8 @@ $groups = fcc_card_block_groups();
         <?php /* On phones this bar stays at the bottom of the panel, so Spremi izgled is always in reach. */ ?>
         <div class="fe-save-bar">
             <p class="fe-preview-note" data-fe-design-note hidden><span><?= $t('Pregled prikazuje odabrani izgled. Spremi ga da ga vide i posjetitelji.') ?></span> <button type="button" class="fe-link-button" data-fe-design-revert><?= $t('Vrati spremljeno') ?></button></p>
-            <div class="fe-form-actions"><button type="submit" class="fe-button"><?= $t('Spremi izgled') ?></button></div>
+            <?php /* Custom code: FC-2026-10-15: the editor restores this AJAX submit button after each request. */ ?>
+            <div class="fe-form-actions"><button type="submit" class="fe-button" data-is-ajax><?= $t('Spremi izgled') ?></button></div>
             <p class="fe-form-error" role="alert" data-fe-error hidden></p>
         </div>
     </form>

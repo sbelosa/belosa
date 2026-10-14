@@ -135,6 +135,8 @@ jobs:
           # New FCC card: styles, PRO gating, core blocks and block guide
           php scripts/test_fcc_card.php
           php scripts/test_fcc_card_editor.php
+          # Custom code: FC-2026-10-15: repeated AJAX saves must not acquire the global submit lock.
+          node scripts/test_fcc_card_editor_submit.mjs
           php scripts/test_fcc_release_fixes.php
           php scripts/test_fcc_editor_transaction.php
           php scripts/test_fcc_classic_aloe.php
