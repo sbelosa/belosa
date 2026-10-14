@@ -104,7 +104,9 @@ function fcc_business_rate(string $scope,int $limit=40,int $seconds=3600): void 
  fcc_partner_query('INSERT INTO fcc_business_rate_limits (scope_hash,window_start,hits) VALUES (?,?,1) ON DUPLICATE KEY UPDATE hits=IF(window_start=VALUES(window_start),hits+1,1),window_start=VALUES(window_start)',[$hash,$window]);
  if((int)fcc_partner_one('SELECT hits FROM fcc_business_rate_limits WHERE scope_hash=?',[$hash])['hits']>$limit)throw new InvalidArgumentException(fcc_t('Previše pokušaja. Pokušaj ponovno kasnije.'));
 }
-function fcc_business_interest(string $token,array $in,bool $trustedPreview=false): array {
+/* Custom code: FC-2026-10-14: server-only source protects private login email in guest receipts. */
+function fcc_business_interest(string $token,array $in,bool $trustedPreview=false,string $trustedSource=''): array {
+ if(!in_array($trustedSource,['','sponsoring'],true))throw new InvalidArgumentException('Invalid source');
  $s=fcc_business_public($token);if(!$s||!$s['available'])throw new InvalidArgumentException(fcc_t('Prezentacija više ne prima upite.'));
  if(!empty($in['website']))throw new InvalidArgumentException(fcc_t('Upit nije prihvaćen.'));
  $name=fcc_partner_text($in['name']??'',120);$channel=fcc_partner_choice($in['channel']??'',['whatsapp'=>1,'email'=>1]);
@@ -114,7 +116,7 @@ function fcc_business_interest(string $token,array $in,bool $trustedPreview=fals
  $country=fcc_partner_text($in['country']??'',2);if($country!==''&&!isset(fcc_business_countries()[$country]))throw new InvalidArgumentException(fcc_t('Odaberi zemlju s popisa.'));
  $question=fcc_partner_text($in['question']??'',1000);$topic=fcc_partner_choice($in['topic']??'general',fcc_business_topics());$questionHash=hash('sha256',$question.'|'.$topic.'|'.$country);$request=fcc_partner_text($in['request_key']??'',64);if(!preg_match('/^[a-f0-9]{32,64}$/D',$request))throw new InvalidArgumentException(fcc_t('Osvježi obrazac.'));
  $request=hash('sha256',$token.':'.$request);$identity=hash_hmac('sha256',mb_strtolower($name).'|'.$email.'|'.$phone.'|'.$channel,fcc_business_key());$uid=(int)$s['user_id'];
- return fcc_business_atomic($uid,function()use($uid,$s,$in,$token,$name,$email,$phone,$channel,$country,$question,$topic,$questionHash,$request,$identity,$trustedPreview){
+ return fcc_business_atomic($uid,function()use($uid,$s,$in,$token,$name,$email,$phone,$channel,$country,$question,$topic,$questionHash,$request,$identity,$trustedPreview,$trustedSource){
   $fresh=fcc_business_public($token);if(!$fresh||!$fresh['available'])throw new InvalidArgumentException(fcc_t('Prezentacija više ne prima upite.'));
   $old=fcc_partner_one("SELECT id FROM fcc_business_leads WHERE user_id=? AND (request_key=? OR (share_id=? AND identity_key=? AND status='received' AND (question_hash=? OR (question_hash='' AND question=?)) AND received_at>DATE_SUB(UTC_TIMESTAMP(),INTERVAL 24 HOUR))) LIMIT 1",[$uid,$request,(int)$s['id'],$identity,$questionHash,$question]);if($old)return ['new'=>false,'lead_id'=>(int)$old['id']];
   if((int)($in['content_version']??0)!==(int)$fresh['current_version'])throw new InvalidArgumentException(fcc_t('Prezentacija je izmijenjena. Osvježi stranicu prije slanja.'));
@@ -122,6 +124,7 @@ function fcc_business_interest(string $token,array $in,bool $trustedPreview=fals
   $manage=bin2hex(random_bytes(32));
   fcc_partner_query('INSERT INTO fcc_business_leads (user_id,presentation_id,share_id,request_key,identity_key,name,email,phone,channel,country,question,content_version,consent_version,consent_at,is_demo,management_hash,management_sealed,received_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP(),?,?,?,UTC_TIMESTAMP())',[$uid,(int)$s['presentation_id'],(int)$s['id'],$request,$identity,$name,$email,$phone,$channel,$country,$question,(int)$fresh['current_version'],'business-2026-09-26.1',(int)$s['is_demo'],hash('sha256',$manage),fcc_business_seal($manage)]);$rid=(int)database()->insert_id;
   $snapshot=['presentation_version'=>(int)$fresh['current_version'],'asset_id'=>$fresh['asset']['id']??null,'asset_version'=>$fresh['asset']['version']??null,'title'=>$fresh['asset']['title']??'Upoznaj Forever posao','intro'=>$fresh['intro'],'language'=>fcc_locale()];
+  if($trustedSource==='sponsoring')$snapshot['source']='sponsoring';
   fcc_partner_query('UPDATE fcc_business_leads SET topic=?,question_hash=?,retention_until=DATE_ADD(UTC_TIMESTAMP(),INTERVAL 90 DAY),content_snapshot=? WHERE id=?',[$topic,$questionHash,fcc_business_json($snapshot),$rid]);
   if($trustedPreview){fcc_partner_query('UPDATE fcc_business_leads SET is_demo=1,landing_is_test=1 WHERE id=?',[$rid]);return ['new'=>true,'lead_id'=>$rid,'manage_token'=>$manage,'preview'=>true];}
   $candidates=fcc_partner_rows("SELECT * FROM fcc_partner_contacts WHERE user_id=? AND ((?<>'' AND LOWER(email)=?) OR (?<>'' AND phone=?)) LIMIT 10 FOR UPDATE",[$uid,$email,$email,$phone,$phone]);
@@ -139,10 +142,11 @@ function fcc_business_interest(string $token,array $in,bool $trustedPreview=fals
   fcc_partner_query('INSERT IGNORE INTO fcc_partner_pilot_events (user_id,step_id,kind,source,detail,request_key,created_at) VALUES (?,?,?,?,?,?,UTC_TIMESTAMP())',[$uid,$s['journey_step_id']?(int)$s['journey_step_id']:null,($s['is_demo']||$review)?'business_demo_interest':'business_interest',($s['is_demo']||$review)?'excluded_result':'server_verified','Zaprimljen upit o poslovnoj suradnji.','business:lead:'.$rid]);
   fcc_business_sync_reply_task($uid,$cid);
   fcc_partner_notify($uid,'business:lead:'.$rid,'service',$s['is_demo']?'Probni upit o poslovnoj suradnji':'Novi upit o poslovnoj suradnji','Otvori kontakt i pogledaj zatraženi način javljanja.','partner/contacts?id='.$cid,604800);
-  foreach(($email!==''?['guest','owner']:['owner']) as $kind)if($kind!=='owner'||$email!==mb_strtolower($fresh['owner']['email']))fcc_partner_query('INSERT IGNORE INTO fcc_business_jobs (lead_id,kind,due_at,updated_at) VALUES (?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())',[$rid,$kind]);
+  foreach(($trustedSource==='sponsoring'?['owner']:($email!==''?['guest','owner']:['owner'])) as $kind)if($kind!=='owner'||$email!==mb_strtolower($fresh['owner']['email']))fcc_partner_query('INSERT IGNORE INTO fcc_business_jobs (lead_id,kind,due_at,updated_at) VALUES (?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())',[$rid,$kind]);
   return ['new'=>true,'lead_id'=>$rid,'manage_token'=>$manage];
  });
 }
+/* /Custom code: FC-2026-10-14 */
 function fcc_business_private(string $token): ?array {if(!preg_match('/^[a-f0-9]{64}$/D',$token))return null;return fcc_partner_one("SELECT r.*,p.language FROM fcc_business_leads r JOIN fcc_business_presentations p ON p.id=r.presentation_id WHERE r.management_hash=? AND r.status<>'erased'",[hash('sha256',$token)]);}
 function fcc_business_withdraw(int $rid,bool $erase=false): void {
  $r=fcc_partner_one('SELECT * FROM fcc_business_leads WHERE id=?',[$rid]);if(!$r)return;

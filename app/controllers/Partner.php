@@ -45,6 +45,9 @@ class Partner extends Controller {
    return;
   }
   $uid=(int)$this->user->user_id;
+  /* Custom code: FC-2026-10-14: the fourth sharing choice has its own workspace. */
+  if($section==='share' && ($_GET['type']??'')==='sponsoring') { $this->sponsoring_share(); return; }
+  /* /Custom code: FC-2026-10-14 */
   /* Custom code: FC-2026-10-14: finance reads bypass unrelated workspace mutations. */
   if($section==='admin' && isset($_GET['finance'])) { $this->finance_report(); return; }
   /* /Custom code: FC-2026-10-14 */
@@ -284,6 +287,28 @@ class Partner extends Controller {
   $view=new \Altum\View('partner/index',(array)$this);
   $this->add_view_content('content',$view->run($data));
  }
+
+ /* Custom code: FC-2026-10-14: prepare the owner's personal link without changing prior invitations. */
+ private function sponsoring_share(): void {
+  if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){\Altum\Router::$controller_settings['has_view']=false;http_response_code(405);header('Allow: GET');return;}
+  $uid=(int)$this->user->user_id;$locale=fcc_sponsoring_locale($_GET['lang']??\Altum\Language::$code);
+  $data=['section'=>'share','share_type'=>'sponsoring','sponsoring'=>null,'error'=>null,'sponsoring_locale'=>$locale,'recovery_url'=>url('partner/cards'),'recovery_label'=>fcc_sponsoring_copy('edit_card',$locale)];
+  try{
+   if(!fcc_business_landing_access($uid))throw new \InvalidArgumentException(fcc_sponsoring_copy('workspace_unavailable',$locale));
+   $identity=fcc_partner_one('SELECT preferences FROM users WHERE user_id=?',[$uid]);
+   if(fcc_forever_id($identity['preferences']??'')===''){
+    $data['recovery_url']=url('account');$data['recovery_label']=fcc_sponsoring_copy('account_settings',$locale);
+    throw new \InvalidArgumentException(fcc_sponsoring_copy('forever_id_required',$locale));
+   }
+   $invite=fcc_invite_for_user($uid);$share=fcc_sponsoring_share($invite['code']);
+   if(!$share||!($data['sponsoring']=fcc_sponsoring_model($share,$invite['code'],$locale)))throw new \InvalidArgumentException(fcc_sponsoring_copy('profile_required',$locale));
+  }catch(\InvalidArgumentException $e){$data['error']=$e->getMessage();}
+  catch(\Throwable $e){error_log('FCC sponsoring workspace: '.get_class($e));$data['error']=fcc_sponsoring_copy('workspace_unavailable',$locale);}
+  \Altum\Title::set(fcc_sponsoring_copy('workspace_title',$locale));
+  $view=new \Altum\View('partner/sponsoring-workspace',(array)$this);
+  $this->add_view_content('content',$view->run($data));
+ }
+ /* /Custom code: FC-2026-10-14 */
 
  /* Custom code: FC-2026-10-14: administrator finance and safe filtered CSV exports. */
  private function finance_report(): void {

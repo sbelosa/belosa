@@ -98,6 +98,12 @@ jobs:
           php scripts/test_fcc_admin_finance.php
           php scripts/test_fcc_admin_finance_controller.php
           php scripts/test_fcc_admin_finance_view.php
+          # Custom code: FC-2026-10-14: personal public data, owner referral and contact boundaries.
+          php scripts/test_fcc_sponsoring.php
+          php scripts/test_fcc_sponsoring_controller.php
+          php scripts/test_fcc_sponsoring_interest.php
+          php scripts/test_fcc_sponsoring_workspace.php
+          # /Custom code: FC-2026-10-14
           # /Custom code: FC-2026-10-14
           php scripts/test_account_plan.php
           # Custom code: FC-2026-09-14: Verify registration rejection and success paths before publishing
@@ -227,11 +233,17 @@ jobs:
           # Publish the Coach token adapter before its controller starts requiring it.
           mkdir -p release-prerequisites/themes/altum/views/l/partials
           cp themes/altum/views/l/partials/fcc_chat_extreme_popup.php release-prerequisites/themes/altum/views/l/partials/
+          # Custom code: FC-2026-10-14: nested PDF metrics/fonts retain their paths and arrive before the new routes.
           while read -r helper; do
-            case "${helper}" in
-              *.php) if [ -f "${helper}" ]; then cp "${helper}" release-prerequisites/helpers/; fi ;;
-            esac
+            if [ -f "${helper}" ]; then
+              helper_target="release-prerequisites/helpers/${helper#app/helpers/}"
+              mkdir -p "$(dirname "${helper_target}")"
+              cp "${helper}" "${helper_target}"
+            fi
           done < release-prerequisites/new-helpers.txt
+          # The new contact handler requires the backward-compatible source argument before it is reachable.
+          cp app/helpers/fcc_business_presentations.php release-prerequisites/helpers/
+          # /Custom code: FC-2026-10-14
           # Custom code: FC-2026-10-12: existing editor helpers add compatible routing functions.
           # They must arrive before Link/Partner controllers or the editor view calls those functions.
           cp app/helpers/fcc_card_editor.php release-prerequisites/helpers/

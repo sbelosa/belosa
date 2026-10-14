@@ -107,6 +107,9 @@ class Router {
             'partner-marketing' => ['controller' => 'PartnerMarketing', 'settings' => ['wrapper' => 'app_wrapper', 'allow_indexing' => false, 'allow_team_access' => false]],
             'business' => ['controller' => 'BusinessPresentation', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
             'business-request' => ['controller' => 'BusinessPresentation', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
+            /* Custom code: FC-2026-10-14: a separate, personal business presentation and PDF. */
+            'suradnja' => ['controller' => 'Sponsoring', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_browser_language_detection' => true]],
+            /* /Custom code: FC-2026-10-14 */
             /* Custom code: FC-2026-10-12: permanent Pozivnica u tim short link */
             'poziv' => ['controller' => 'BusinessInvite', 'settings' => ['has_view' => false, 'allow_indexing' => false, 'allow_team_access' => false, 'no_authentication_check' => true, 'no_browser_language_detection' => true, 'allow_sessions' => false]],
             /* /Custom code: FC-2026-10-12 */

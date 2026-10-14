@@ -94,3 +94,13 @@
 !scripts/test_cc_publication_partial.mjs
 !scripts/test_top_program_progress.php
 # /Custom code: FC-2026-10-14
+
+# Custom code: FC-2026-10-14: personal sponsoring presentation regression checks.
+!scripts/test_fcc_sponsoring.php
+!scripts/test_fcc_sponsoring_controller.php
+!scripts/test_fcc_sponsoring_interest.php
+!scripts/test_fcc_sponsoring_workspace.php
+!scripts/test_fcc_sponsoring_pdf.php
+!scripts/render_fcc_sponsoring_pdf.php
+!scripts/render_fcc_sponsoring_fixture.php
+# /Custom code: FC-2026-10-14

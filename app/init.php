@@ -243,6 +243,10 @@ require_once APP_PATH . 'helpers/fcc_business_flow.php';
 require_once APP_PATH . 'helpers/fcc_business_landing.php';
 require_once APP_PATH . 'helpers/fcc_business_landing_locale.php';
 require_once APP_PATH . 'helpers/fcc_business_landing_coach.php';
+/* Custom code: FC-2026-10-14: personal business presentation and shared public copy. */
+require_once APP_PATH . 'helpers/fcc_sponsoring_copy.php';
+require_once APP_PATH . 'helpers/fcc_sponsoring.php';
+/* /Custom code: FC-2026-10-14 */
 require_once APP_PATH . 'helpers/sessions.php';
 require_once APP_PATH . 'helpers/sessions.php';
 require_once APP_PATH . 'helpers/others.php';

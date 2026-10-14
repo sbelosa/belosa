@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T22:04:17+00:00",
+  "title": "Design System: FCC osobno sponzoriranje",
+  "extensions": {
+    "colorMeta": {
+      "sp-ink": {
+        "role": "neutral",
+        "displayName": "Tamni zeleni tekst",
+        "canonical": "#143a2d",
+        "tonalRamp": [
+          "oklch(15% 0.0495 167.81)",
+          "oklch(27% 0.0495 167.81)",
+          "oklch(38% 0.0495 167.81)",
+          "oklch(49% 0.0495 167.81)",
+          "oklch(60% 0.0495 167.81)",
+          "oklch(71% 0.0495 167.81)",
+          "oklch(83% 0.0495 167.81)",
+          "oklch(95% 0.0495 167.81)"
+        ]
+      },
+      "sp-muted": {
+        "role": "neutral",
+        "displayName": "Prigušeni zeleni tekst",
+        "canonical": "#53675b",
+        "tonalRamp": [
+          "oklch(15% 0.0307 158.72)",
+          "oklch(27% 0.0307 158.72)",
+          "oklch(38% 0.0307 158.72)",
+          "oklch(49% 0.0307 158.72)",
+          "oklch(60% 0.0307 158.72)",
+          "oklch(71% 0.0307 158.72)",
+          "oklch(83% 0.0307 158.72)",
+          "oklch(95% 0.0307 158.72)"
+        ]
+      },
+      "sp-green": {
+        "role": "primary",
+        "displayName": "Akcijska zelena",
+        "canonical": "#186548",
+        "tonalRamp": [
+          "oklch(15% 0.0876 163.19)",
+          "oklch(27% 0.0876 163.19)",
+          "oklch(38% 0.0876 163.19)",
+          "oklch(49% 0.0876 163.19)",
+          "oklch(60% 0.0876 163.19)",
+          "oklch(71% 0.0876 163.19)",
+          "oklch(83% 0.0876 163.19)",
+          "oklch(95% 0.0876 163.19)"
+        ]
+      },
+      "sp-deep": {
+        "role": "primary",
+        "displayName": "Šumska zelena",
+        "canonical": "#103d2b",
+        "tonalRamp": [
+          "oklch(15% 0.0587 163.05)",
+          "oklch(27% 0.0587 163.05)",
+          "oklch(38% 0.0587 163.05)",
+          "oklch(49% 0.0587 163.05)",
+          "oklch(60% 0.0587 163.05)",
+          "oklch(71% 0.0587 163.05)",
+          "oklch(83% 0.0587 163.05)",
+          "oklch(95% 0.0587 163.05)"
+        ]
+      },
+      "sp-cream": {
+        "role": "neutral",
+        "displayName": "Topla svijetla podloga",
+        "canonical": "#f7f7ee",
+        "tonalRamp": [
+          "oklch(15% 0.0119 106.62)",
+          "oklch(27% 0.0119 106.62)",
+          "oklch(38% 0.0119 106.62)",
+          "oklch(49% 0.0119 106.62)",
+          "oklch(60% 0.0119 106.62)",
+          "oklch(71% 0.0119 106.62)",
+          "oklch(83% 0.0119 106.62)",
+          "oklch(95% 0.0119 106.62)"
+        ]
+      },
+      "sp-paper": {
+        "role": "neutral",
+        "displayName": "Topli papir",
+        "canonical": "#fffef9",
+        "tonalRamp": [
+          "oklch(15% 0.0067 97.35)",
+          "oklch(27% 0.0067 97.35)",
+          "oklch(38% 0.0067 97.35)",
+          "oklch(49% 0.0067 97.35)",
+          "oklch(60% 0.0067 97.35)",
+          "oklch(71% 0.0067 97.35)",
+          "oklch(83% 0.0067 97.35)",
+          "oklch(95% 0.0067 97.35)"
+        ]
+      },
+      "sp-lime": {
+        "role": "primary",
+        "displayName": "Svijetli limetni naglasak",
+        "canonical": "#d2ec87",
+        "tonalRamp": [
+          "oklch(15% 0.1299 120.88)",
+          "oklch(27% 0.1299 120.88)",
+          "oklch(38% 0.1299 120.88)",
+          "oklch(49% 0.1299 120.88)",
+          "oklch(60% 0.1299 120.88)",
+          "oklch(71% 0.1299 120.88)",
+          "oklch(83% 0.1299 120.88)",
+          "oklch(95% 0.1299 120.88)"
+        ]
+      },
+      "sp-line": {
+        "role": "neutral",
+        "displayName": "Tihi zeleni rub",
+        "canonical": "#d4ddcf",
+        "tonalRamp": [
+          "oklch(15% 0.0212 134.10)",
+          "oklch(27% 0.0212 134.10)",
+          "oklch(38% 0.0212 134.10)",
+          "oklch(49% 0.0212 134.10)",
+          "oklch(60% 0.0212 134.10)",
+          "oklch(71% 0.0212 134.10)",
+          "oklch(83% 0.0212 134.10)",
+          "oklch(95% 0.0212 134.10)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Glavni naslov",
+        "purpose": "Veliki početni naslov. Mobilne završne veličine su 46 i 42 px."
+      },
+      "headline": {
+        "displayName": "Naslov odjeljka",
+        "purpose": "Jasno otvaranje nove sadržajne cjeline."
+      },
+      "title": {
+        "displayName": "Manji naslov",
+        "purpose": "Kraći naslov sadržaja i komponente."
+      },
+      "body": {
+        "displayName": "Osnovni tekst",
+        "purpose": "Čitljiv razgovorni opis, na mobitelu 16 px."
+      },
+      "lead": {
+        "displayName": "Uvodni opis",
+        "purpose": "Početni opis na računalu. Mobilni kratki opis je 15 ili 14 px."
+      },
+      "label": {
+        "displayName": "Glavna radnja",
+        "purpose": "Vidljiv naziv i strelica glavnog gumba."
+      }
+    },
+    "shadows": [
+      {
+        "name": "phone",
+        "value": "0 30px 48px #18372b24",
+        "purpose": "Strukturna dubina velikog telefona."
+      },
+      {
+        "name": "phone-mobile",
+        "value": "0 19px 35px #18372b24",
+        "purpose": "Mobilni telefon bez promjene njegove važnosti."
+      },
+      {
+        "name": "language",
+        "value": "0 12px 30px #103d2b26",
+        "purpose": "Otvoreni jezični izbornik."
+      },
+      {
+        "name": "learning-sheet",
+        "value": "0 23px 30px #07281e36",
+        "purpose": "Odvajanje svijetlog lista učenja od tamne podloge."
+      },
+      {
+        "name": "button-hover",
+        "value": "0 7px 18px #103d2b20",
+        "purpose": "Stanje lebdenja glavnog gumba."
+      },
+      {
+        "name": "mobile-dock",
+        "value": "0 7px 24px #102e2940",
+        "purpose": "Odvajanje mobilne plutajuće radnje od sadržaja."
+      }
+    ],
+    "motion": [
+      {
+        "name": "card-arrive-duration",
+        "value": "0.8s",
+        "purpose": "Jednokratan dolazak kartice."
+      },
+      {
+        "name": "card-arrive-easing",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Smirivanje dolaska kartice iz pomaka od 12 px."
+      },
+      {
+        "name": "control-transition",
+        "value": "0.2s ease",
+        "purpose": "Boja i sjena gumba, vidljivost mobilne radnje i znak pitanja."
+      },
+      {
+        "name": "product-hover",
+        "value": "transform .25s ease",
+        "purpose": "Pomak fotografije proizvoda 4 px prema gore."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Isključene animacije, prijelazi i animirano pomicanje."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1550px"
+      },
+      {
+        "name": "desktop-compact",
+        "value": "1100px"
+      },
+      {
+        "name": "tablet",
+        "value": "850px"
+      },
+      {
+        "name": "mobile",
+        "value": "620px"
+      },
+      {
+        "name": "mobile-narrow",
+        "value": "365px"
+      }
+    ],
+    "scope": {
+      "target": "themes/altum/views/partner/sponsoring-public.php",
+      "authority": "Samo nova javna osobna poslovna prezentacija. Postojeća FCC aplikacija, privatni radni prostor i teme osobnih kartica zadržavaju vlastiti dizajn.",
+      "frontmatter": "../DESIGN.md",
+      "product": "../PRODUCT.md"
+    },
+    "provenance": {
+      "sourceCommit": "1b344eeadb88c5675b0eb634026b84454e539b74",
+      "css": "themes/altum/assets/css/fcc-sponsoring.css",
+      "javascript": "themes/altum/assets/js/fcc-sponsoring.js",
+      "copy": "app/helpers/fcc_sponsoring_copy.php",
+      "photos": "Stvarna javna fotografija vlasnika i tri postojeće fotografije proizvoda. Detaljne adrese i SHA256 nalaze se u PRODUCT.md.",
+      "generatedAssetsUsed": false,
+      "font": "Postojeći FCC DM Sans, lokalne WOFF2 datoteke i OFL.txt.",
+      "tonalRamps": "Izvedene OKLCH ljestvice služe samo prikazu tokena u panelu. Nisu nove boje produkcijskog CSS izvora."
+    },
+    "verification": {
+      "screenshotPrefix": "../visual-output/reviewer-final",
+      "screenshotCount": 28,
+      "views": 13,
+      "widths": [
+        1440,
+        390,
+        360
+      ],
+      "locales": [
+        "hr",
+        "en",
+        "sl",
+        "de",
+        "es"
+      ],
+      "measurement": "../visual-output/verification-reviewer-final.json",
+      "detector": "../visual-output/detector-reviewer-final.json",
+      "detectorFindings": 0,
+      "reviewDisposition": "ship",
+      "reviewScope": "Samo završna provjera prethodnih dorada F1 i F2. Obje riješene.",
+      "reviewReport": "/private/tmp/fcc-sponsoring-finish-verdict-20261014.md",
+      "productionVerifiedByTheseArtifacts": false
+    }
+  },
+  "components": [
+    {
+      "name": "Glavni gumb",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Poziv na razgovor i glavne radnje na svijetloj podlozi.",
+      "html": "<button class=\"ds-primary\">Želim vidjeti kako mogu krenuti<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:20px;border:0;border-radius:9px;min-height:56px;padding:15px 23px;font:650 15px/1.35 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:background-color .2s,color .2s,box-shadow .2s;background:var(--sp-green,#186548);color:#fff}.ds-primary:hover{background:#0e4e36;box-shadow:0 7px 18px #103d2b20}.ds-primary:focus-visible{outline:3px solid #2c8861;outline-offset:5px}.ds-primary:disabled{cursor:default} @media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Gumb na tamnoj podlozi",
+      "kind": "button",
+      "refersTo": "button-lime",
+      "description": "Limetna radnja u odjeljku učenja.",
+      "html": "<div class=\"ds-dark\"><button class=\"ds-lime\">Želim vidjeti kako mogu krenuti<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button></div>",
+      "css": ".ds-dark{padding:24px;background:var(--sp-deep,#103d2b)}.ds-lime{display:inline-flex;align-items:center;justify-content:center;gap:20px;border:0;border-radius:9px;min-height:56px;padding:15px 23px;font:650 15px/1.35 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:background-color .2s,color .2s,box-shadow .2s;background:var(--sp-lime,#d2ec87);color:var(--sp-deep,#103d2b)}.ds-lime:hover{background:#e0f4ac}.ds-lime:focus-visible{outline:3px solid #2c8861;outline-offset:5px} @media(prefers-reduced-motion:reduce){.ds-lime{transition:none}}"
+    },
+    {
+      "name": "Kontaktno polje",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Vidljiva oznaka, topla površina i jasan fokus.",
+      "html": "<label class=\"ds-label\" for=\"ds-name\">Tvoje ime</label><input class=\"ds-input\" id=\"ds-name\" autocomplete=\"name\" required>",
+      "css": ".ds-label{display:block;margin-bottom:9px;font:600 13px/1.5 \"DM Sans\",sans-serif;color:var(--sp-ink,#143a2d)}.ds-input{width:100%;border:1px solid #b9c9b1;background:var(--sp-paper,#fffef9);border-radius:6px;min-height:46px;font:400 15px/1.65 \"DM Sans\",sans-serif;padding:10px 12px;color:var(--sp-ink,#143a2d);box-shadow:none}.ds-input:focus-visible{outline:3px solid #2c8861;outline-offset:5px}@media(max-width:620px){.ds-input{font-size:16px;min-height:47px}}"
+    },
+    {
+      "name": "Odabir kontaktnog kanala",
+      "kind": "custom",
+      "description": "Dva postojeća radio odabira, s jasnim označenim stanjem.",
+      "html": "<fieldset class=\"ds-channel\"><legend>Kako ti se možemo javiti?</legend><div><label><input type=\"radio\" name=\"ds-channel\" value=\"email\" checked>E pošta</label><label><input type=\"radio\" name=\"ds-channel\" value=\"whatsapp\">WhatsApp</label></div></fieldset>",
+      "css": ".ds-channel{border:0;padding:0;margin:0;font:400 13px/1.5 \"DM Sans\",sans-serif;color:var(--sp-ink,#143a2d)}.ds-channel legend{font-weight:600;margin-bottom:10px}.ds-channel>div{display:flex;gap:11px}.ds-channel label{display:flex;align-items:center;gap:8px;border:1px solid #bdcbb4;padding:10px 14px;border-radius:6px;flex:1;cursor:pointer;min-height:44px}.ds-channel input{width:16px;height:16px;margin:0;accent-color:var(--sp-green,#186548)}.ds-channel label:has(input:checked){background:#e9efdf;border-color:#66835a}.ds-channel input:focus-visible{outline:3px solid #2c8861;outline-offset:5px}"
+    },
+    {
+      "name": "Navigacija odjeljaka",
+      "kind": "nav",
+      "description": "Sažete tekstualne poveznice u velikom zaglavlju.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Poslovna prezentacija\"><a href=\"#kartica\">Tvoja kartica</a><a href=\"#kako-radis\">Kako se radi</a><a href=\"#prvi-koraci\">Prvi koraci</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:32px;font:600 14px/1.65 \"DM Sans\",sans-serif;color:var(--sp-ink,#143a2d)}.ds-nav a{color:inherit;text-decoration:none;text-underline-offset:4px}.ds-nav a:hover{text-decoration:underline}.ds-nav a:focus-visible{outline:3px solid #2c8861;outline-offset:5px}"
+    },
+    {
+      "name": "Profil vlasnika",
+      "kind": "card",
+      "refersTo": "owner-profile",
+      "description": "Stvarni identitet na dubokoj zelenoj površini, ovdje prikazan u izvedenom stanju s inicijalima.",
+      "html": "<article class=\"ds-owner\"><span class=\"ds-initials\" aria-hidden=\"true\">SB</span><h2>Stjepan Beloša</h2><p>Neovisni suradnik Forever Living Products</p></article>",
+      "css": ".ds-owner{background:var(--sp-deep,#103d2b);color:var(--sp-paper,#fffef9);border-radius:17px;padding:20px 12px 18px;text-align:center;font-family:\"DM Sans\",sans-serif}.ds-initials{display:inline-flex;align-items:center;justify-content:center;width:105px;height:105px;border-radius:50%;background:#d5e1ca;color:var(--sp-deep,#103d2b);font-size:35px;font-weight:650;margin-bottom:13px}.ds-owner h2{margin:0;font-size:29px;font-weight:600;line-height:1.15;letter-spacing:-.03em}.ds-owner p{margin:10px 0 0;color:#cad8c3;font-size:11px;line-height:1.6}"
+    },
+    {
+      "name": "Površina osobne pozivnice",
+      "kind": "card",
+      "refersTo": "invitation-proof",
+      "description": "Ime vlasnika i konkretna sljedeća radnja u zelenom panelu.",
+      "html": "<article class=\"ds-invite\"><strong>Stjepan Beloša</strong><h3>Tvoja osobna pozivnica.</h3><p>Kartica. Proizvodi. Edukacija. Ljudi uz tebe.</p><a href=\"#razgovor\">Pogledaj sljedeći korak<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></a></article>",
+      "css": ".ds-invite{background:#e0e9cd;color:var(--sp-ink,#143a2d);padding:33px 35px;border-radius:12px;font-family:\"DM Sans\",sans-serif}.ds-invite strong{font-size:17px;line-height:1.35;font-weight:600}.ds-invite h3{font-size:35px;line-height:1.12;letter-spacing:-.02em;font-weight:600;margin:29px 0 20px}.ds-invite p{font-size:14px;line-height:1.8;max-width:340px}.ds-invite a{display:inline-flex;align-items:center;justify-content:center;gap:20px;border:0;border-radius:9px;min-height:56px;padding:15px 23px;font:650 15px/1.35 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:background-color .2s,color .2s,box-shadow .2s;background:var(--sp-green,#186548);color:#fff;font-size:12px;min-height:46px;padding:12px 17px;gap:14px}.ds-invite a:hover{background:#0e4e36;box-shadow:0 7px 18px #103d2b20}.ds-invite a:focus-visible{outline:3px solid #2c8861;outline-offset:5px} @media(prefers-reduced-motion:reduce){.ds-invite a{transition:none}}"
+    },
+    {
+      "name": "Otvorivo pitanje",
+      "kind": "custom",
+      "description": "Izvorni details prikaz s vodoravnim razdjelnicima i zakretanjem znaka.",
+      "html": "<details class=\"ds-faq\"><summary>Trebam li već imati iskustva u prodaji?<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg></summary><p>Za prvi razgovor ne trebaš imati iskustva. Predstavit ćemo ti način rada, a znanje i vještine razvijaš učenjem i stvarnim razgovorima.</p></details>",
+      "css": ".ds-faq{font-family:\"DM Sans\",sans-serif;color:var(--sp-ink,#143a2d);border-block:1px solid var(--sp-line,#d4ddcf)}.ds-faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:74px;padding-block:17px;font-size:16px;font-weight:600;line-height:1.45}.ds-faq summary::-webkit-details-marker{display:none}.ds-faq summary svg{flex-shrink:0;transition:transform .2s}.ds-faq[open] summary svg{transform:rotate(45deg)}.ds-faq p{font-size:14px;color:var(--sp-muted,#53675b);padding:0 32px 23px 0;line-height:1.85}.ds-faq summary:focus-visible{outline:3px solid #2c8861;outline-offset:5px} @media(prefers-reduced-motion:reduce){.ds-faq summary svg{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Osobna kartica u prvom planu",
+    "overview": "Topla svijetla podloga, duboka šumska zelena i velika stvarna osobna kartica čine mirnu, izražajnu prezentaciju poslovne prilike. Urednička tipografija daje početku težinu, dok fotografija vlasnika, preporuka konkretnog proizvoda i osobna pozivnica daju sadržaju vjerodostojan identitet. Ritam izmjenjuje otvorene odjeljke, zelene površine i čitljive kratke korake.\n\nOvaj dokument opisuje samo novu javnu osobnu prezentaciju iz `themes/altum/views/partner/sponsoring-public.php`. Preuzima postojeću FCC zelenu obitelj, logotip i DM Sans te zapisuje vlastitu kompoziciju i izmjerene vrijednosti te površine. Ne zamjenjuje globalni dizajn FCC aplikacije, privatni Partner prostor, odabrane teme osobnih kartica ili njihov postojeći dizajnerski autoritet. Radni prostor za dijeljenje, PDF i produkcijski postupci imaju zasebne provjere.",
+    "keyCharacteristics": [
+      "Velika kartica sa stvarnim identitetom i radnjama.",
+      "Topla svijetla podloga uz izražajnu FCC zelenu.",
+      "Jedna obitelj slova s jasnom razlikom naslova i pomoćnog teksta.",
+      "Konkretna preporuka i osobna pozivnica umjesto generičkih zamjenskih plakata.",
+      "Kratak mobilni uvod koji odmah pokazuje vlasnika kartice."
+    ],
+    "rules": [
+      {
+        "name": "Pravilo identiteta",
+        "body": "Izvorni FCC logotip i stvarne fotografije proizvoda zadržavaju svoje boje. Zelena pozadina nije razlog za bojanje ili izradu zamjenskih pakiranja.",
+        "section": "colors"
+      },
+      {
+        "name": "Pravilo prvog mobilnog dokaza",
+        "body": "Pri 390 × 844 i 360 × 800 px početak mora pokazati ime vlasnika i cijelu prvu radnju unutar kartice bez pomicanja. Završna mobilna kompozicija slaže osobni uvod, kratak naslov, kratko objašnjenje, karticu, glavni gumb, sekundarnu poveznicu i prateću rečenicu. Kartica se ne smanjuje da bi se sačuvali veliki slogani iz računalnog prikaza.",
+        "section": "layout"
+      },
+      {
+        "name": "Pravilo namjenske dubine",
+        "body": "Sjena razlikuje telefon, plutajuću radnju, izbornik ili list učenja od njihove okoline. Uobičajeni sadržajni odjeljci ostaju otvoreni i bez vlastite sjene.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Sačuvaj veliku stvarnu osobnu karticu i ranu mobilnu vidljivost imena vlasnika i prve radnje.",
+      "Koristi postojeći FCC logotip, DM Sans i provjerene fotografije vlasnika i proizvoda.",
+      "Poveži prikaz preporuke i pozivnice s postojećim osobnim poveznicama i stvarnim sadržajem.",
+      "Provjeri svih pet jezika, dugo ime, prazno stanje, pogrešku i uspjeh na utvrđenim širinama.",
+      "Sačuvaj vidljivi fokus, izvorne kontrole i postavku smanjenog kretanja.",
+      "Primjenjuj ove tokene samo na novu javnu osobnu prezentaciju."
+    ],
+    "donts": [
+      "Ne vraćaj odbačenu premalu karticu ili mobilni uvod koji odgađa glavni osobni dokaz.",
+      "Ne zamjenjuj konkretnu preporuku i osobnu pozivnicu velikim generičkim FCC plakatima.",
+      "Ne izrađuj zamjenske fotografije pakiranja, vlasnika, događaja ili svjedočanstava.",
+      "Ne prenosi ovu kompoziciju i vrijednosti na cijelu postojeću FCC aplikaciju ili tuđe osobne teme.",
+      "Ne tumači lokalne vizualne snimke kao potvrdu produkcijske isporuke, PDF prikaza ili slanja upita."
+    ]
+  }
+}
