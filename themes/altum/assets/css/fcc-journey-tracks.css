@@ -34,6 +34,11 @@
 .mp-member-main small{color:var(--fp-muted,#4d6a61);overflow-wrap:anywhere}
 .mp-member-main progress{width:100%;max-width:280px;height:6px;accent-color:#155845}
 .mp-member-actions{display:flex;flex-wrap:wrap;gap:8px}
+/* Custom code: FC-2026-10-14: explicit help resolution fits the existing mobile action stack. */
+.mp-help-resolution{display:grid;gap:8px;margin:0;flex-basis:100%;max-width:100%}
+.mp-help-resolution small{color:var(--fp-muted,#4d6a61);max-width:440px;overflow-wrap:anywhere}
+.mp-help-resolution .fp-button{width:100%}
+/* /Custom code: FC-2026-10-14 */
 .mp-team-privacy{margin-top:12px;font-size:12px}
 .mp-team-more{margin-top:10px}
 .mp-team-more>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid var(--fp-line,#d5e4dc);border-radius:12px;background:#f8fbf9;color:var(--fp-green,#177968);font-weight:650;font-size:14px}

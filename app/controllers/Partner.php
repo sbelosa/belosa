@@ -137,7 +137,7 @@ class Partner extends Controller {
     $target=$this->mutate($uid,$section,$_POST);
     fcc_los_event($uid,fcc_los_module('partner',$section,(string)($_GET['type']??'')),$losAction,'success',$losRequest);
     try{fcc_rel_usage($uid,$section,true);}catch(\Throwable $ignored){}
-    if(!in_array($_POST['action']??'',['pilot_open','card_delete_prepare','card_delete_cancel','mp_track','mp_stuck','mp_feedback'],true)) {
+    if(!in_array($_POST['action']??'',['pilot_open','card_delete_prepare','card_delete_cancel','mp_track','mp_stuck','mp_feedback','mp_help_resolve'],true)) { /* Custom code: FC-2026-10-14: the resolution has its own success notice. */
      $message=match($_POST['action']??'') {
       'pilot_draft'=>'Tvoj nacrt je spremljen.',
       'pilot_finish'=>'Korak je spremljen. Tvoj napredak je ažuriran.',
@@ -151,6 +151,7 @@ class Partner extends Controller {
      };
      \Altum\Alerts::add_success(fcc_t($message));
     }
+    /* /Custom code: FC-2026-10-14 */
     redirect($target);
    } catch(\InvalidArgumentException $e) { if($losRequest)fcc_los_event($uid,$section,$losAction,'failure',$losRequest);$error=$e->getMessage(); }
    catch(\Throwable $e) { if($losRequest)fcc_los_event($uid,$section,$losAction,'failure',$losRequest);error_log('Partner mutation: '.get_class($e)); $error=fcc_t('Spremanje nije uspjelo. Tvoj unos je sačuvan u obrascu; pokušaj ponovno.'); }
@@ -395,6 +396,9 @@ class Partner extends Controller {
   if($action==='mp_track'){fcc_mp_set_track($uid,$input);\Altum\Alerts::add_success(fcc_t('Tvoja staza je spremljena. Sljedeći korak je spreman.'));return 'partner?view=step';}
   if($action==='mp_stuck'){$notified=fcc_mp_stuck($uid,$input);\Altum\Alerts::add_success($notified?fcc_t('Tvoj sponzor je obaviješten i javit će ti se. Do tada možeš otvoriti pomoć uz korak.'):fcc_t('Zabilježeno je. Tvoj sponzor još nije povezan u FCC-u, pa se za pomoć javi podršci.'));return 'partner?view=step';}
   if($action==='mp_feedback'){$answer=fcc_mp_feedback($uid,$input);\Altum\Alerts::add_success($answer==='help'?fcc_t('Hvala. Sponzor je obaviješten da trebaš pomoć.'):fcc_t('Hvala na odgovoru.'));return 'partner';}
+  /* Custom code: FC-2026-10-14: explicit sponsor resolution uses the common authenticated CSRF path. */
+  if($action==='mp_help_resolve'){fcc_mp_help_resolve($uid,$input);\Altum\Alerts::add_success(fcc_mp_help_text('done'));return 'partner?view=team-progress';}
+  /* /Custom code: FC-2026-10-14 */
   if($action==='mp_celebration'){fcc_mp_celebration_respond($uid,$input);return 'partner';}
   if($action==='mp_rhythm'){fcc_mp_rhythm_save($uid,$input);return 'partner';}
   /* /Custom code: FC-2026-10-12 */

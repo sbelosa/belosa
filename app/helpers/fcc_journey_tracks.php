@@ -221,8 +221,10 @@ function fcc_mp_notice_display(array $notice, ?string $locale = null): array {
  if(preg_match('/^mp:milestone:\d+:(.+)$/', $key, $m)) {
   $label = fcc_mp_milestone_label($m[1], 'hr');$suffix = ': '.$label.'. Javi se i čestitaj.';
   if(str_ends_with($body, $suffix)) { $kind = 'milestone';$vars = ['name'=>substr($body, 0, -strlen($suffix)), 'milestone'=>fcc_mp_milestone_label($m[1], $locale)]; }
- } elseif(preg_match('/^mp:(?:stuck|help):/', $key) && preg_match('/^(.*) treba pomoć s korakom$/us', $title, $t) && preg_match('/^Korak: (.*)\. Javi se danas i prođite ga zajedno\.$/us', $body, $b)) {
+ /* Custom code: FC-2026-10-14: immutable requests retain existing help translations. */
+ } elseif(preg_match('/^mp:(?:stuck|help|request):/', $key) && preg_match('/^(.*) treba pomoć s korakom$/us', $title, $t) && preg_match('/^Korak: (.*)\. Javi se danas i prođite ga zajedno\.$/us', $body, $b)) {
   $kind = 'help';$vars = ['name'=>$t[1], 'step'=>fcc_t($b[1], [], $locale)];
+ /* /Custom code: FC-2026-10-14 */
  } elseif(str_starts_with($key, 'mp:weekly:') && preg_match('/^Napredovalo: (\d+)\. Stoji ili još nije krenulo: (\d+)\. Traži pomoć: (\d+)\.$/u', $body, $b)) {
   $kind = 'weekly';$vars = ['moved'=>$b[1], 'waiting'=>$b[2], 'help'=>$b[3]];
  } elseif(str_starts_with($key, 'mp:start:') && preg_match('/^(.*) ima svoj prvi korak Mojeg puta\./us', $body, $b)) {
@@ -270,37 +272,58 @@ function fcc_mp_celebration_respond(int $uid, array $in): void {
 /** Records the request and returns whether a sponsor could be notified. */
 function fcc_mp_stuck(int $uid, array $in): bool {
  if(!fcc_jp_enabled($uid)) throw new InvalidArgumentException(fcc_t('Moj put trenutačno nije uključen.'));
+ /* Custom code: FC-2026-10-14: serialize new requests and resolutions on the member. */
+ database()->begin_transaction();
+ try {
+ fcc_partner_query('SELECT user_id FROM users WHERE user_id=? FOR UPDATE', [$uid]);
  $step = fcc_partner_one('SELECT s.id,s.content_json FROM fcc_partner_journey_steps s JOIN fcc_partner_journey_cycles c ON c.id=s.cycle_id WHERE s.id=? AND s.user_id=? AND c.user_id=?', [(int)($in['step_id'] ?? 0), $uid, $uid]);
  if(!$step) throw new InvalidArgumentException(fcc_t('Otvori svoj korak pa javi gdje je zapelo.'));
  $task = json_decode($step['content_json'], true) ?: [];
  $text = fcc_partner_text($in['stuck_text'] ?? '', 300);
- $day = (new DateTimeImmutable('now', new DateTimeZone('Europe/Zagreb')))->format('Ymd');
- fcc_mp_event($uid, 'stuck', (int)($task['day'] ?? 0).'|'.($task['title'] ?? '').($text !== '' ? '|'.$text : ''), 'mp-stuck-'.(int)$step['id'].'-'.$day, (int)$step['id']);
+ $key=(string)($in['request_key']??'');
+ if(!preg_match('/^[a-f0-9]{32}$/D',$key)) throw new InvalidArgumentException(fcc_t('Osvježi obrazac i pokušaj ponovno.'));
+ fcc_mp_event($uid, 'stuck', (int)($task['day'] ?? 0).'|'.($task['title'] ?? '').($text !== '' ? '|'.$text : ''), 'mp-stuck-'.$key, (int)$step['id']);
+ $event=fcc_partner_one("SELECT id FROM fcc_partner_pilot_events WHERE user_id=? AND request_key=? AND kind='stuck'",[$uid,'mp-stuck-'.$key]);
  $sponsor = fcc_mp_sponsor_of($uid);
- if(!$sponsor) return false;
+ if(!$sponsor) {database()->commit();return false;}
  $name = trim((string)(fcc_partner_one('SELECT name FROM users WHERE user_id=?', [$uid])['name'] ?? ''));
  [$title, $body] = fcc_mp_notice_copy('help', ['name'=>$name, 'step'=>(string)($task['title'] ?? '')]);
- fcc_partner_notify((int)$sponsor['user_id'], 'mp:stuck:'.$uid.':'.(int)$step['id'].':'.$day, 'team', $title, $body, 'partner?view=team-progress', 3 * 86400);
+ fcc_partner_notify((int)$sponsor['user_id'], 'mp:request:'.$uid.':'.(int)$event['id'], 'team', $title, $body, 'partner?view=team-progress', 3 * 86400);
+ database()->commit();
  return true;
+ }catch(Throwable $e){database()->rollback();throw $e;}
+ /* /Custom code: FC-2026-10-14 */
 }
 
 /** One click answer after a saved step: easy, hard or needs help. A step confirmed as already known is not a worked step and is never rated. */
 function fcc_mp_feedback(int $uid, array $in): string {
  $answer = fcc_partner_choice($in['answer'] ?? '', ['easy'=>1, 'hard'=>1, 'help'=>1]);
+ /* Custom code: FC-2026-10-14: feedback gets an immutable identity, including same-second repeats. */
+ database()->begin_transaction();
+ try {
+ fcc_partner_query('SELECT user_id FROM users WHERE user_id=? FOR UPDATE', [$uid]);
  $today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Zagreb')))->format('Y-m-d');
  $row = fcc_partner_one("SELECT o.outcome_id,o.journey_step_id,s.content_json FROM forever_business_daily_outcomes o LEFT JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id WHERE o.recorded_by_user_id=? AND o.journey_cycle_id IS NOT NULL AND o.status='done' AND o.action_date=? AND (o.completion_mode IS NULL OR o.completion_mode<>'known') ORDER BY o.outcome_id DESC LIMIT 1", [$uid, $today]);
  if(!$row) throw new InvalidArgumentException(fcc_t('Danas još nema spremljenog koraka.'));
+ $key=(string)($in['request_key']??'');
+ if(!preg_match('/^[a-f0-9]{32}$/D',$key)) throw new InvalidArgumentException(fcc_t('Osvježi obrazac i pokušaj ponovno.'));
+ $prior=fcc_partner_one("SELECT id,detail FROM fcc_partner_pilot_events WHERE user_id=? AND request_key=? AND kind='help_feedback'",[$uid,'mp-feedback-'.$key]);
+ if($prior){$saved=json_decode($prior['detail'],true);database()->commit();return (string)($saved['answer']??$answer);}
  fcc_partner_query('UPDATE forever_business_daily_outcomes SET difficulty=?,needs_help=?,updated_at=UTC_TIMESTAMP() WHERE outcome_id=? AND recorded_by_user_id=?', [$answer === 'easy' ? 'easy' : 'hard', $answer === 'help' ? 1 : 0, (int)$row['outcome_id'], $uid]);
+ fcc_mp_event($uid,'help_feedback',json_encode(['outcome_id'=>(int)$row['outcome_id'],'answer'=>$answer]),'mp-feedback-'.$key,(int)$row['journey_step_id']);
+ $event=fcc_partner_one("SELECT id FROM fcc_partner_pilot_events WHERE user_id=? AND request_key=? AND kind='help_feedback'",[$uid,'mp-feedback-'.$key]);
  if($answer === 'help') {
   $task = json_decode((string)$row['content_json'], true) ?: [];
   $sponsor = fcc_mp_sponsor_of($uid);
   if($sponsor) {
    $name = trim((string)(fcc_partner_one('SELECT name FROM users WHERE user_id=?', [$uid])['name'] ?? ''));
    [$title, $body] = fcc_mp_notice_copy('help', ['name'=>$name, 'step'=>(string)($task['title'] ?? '')]);
-   fcc_partner_notify((int)$sponsor['user_id'], 'mp:help:'.$uid.':'.(int)$row['outcome_id'], 'team', $title, $body, 'partner?view=team-progress', 3 * 86400);
+   fcc_partner_notify((int)$sponsor['user_id'], 'mp:request:'.$uid.':'.(int)$event['id'], 'team', $title, $body, 'partner?view=team-progress', 3 * 86400);
   }
  }
- return $answer;
+ database()->commit();return $answer;
+ }catch(Throwable $e){database()->rollback();throw $e;}
+ /* /Custom code: FC-2026-10-14 */
 }
 
 function fcc_mp_feedback_given(int $uid): bool {
@@ -309,6 +332,101 @@ function fcc_mp_feedback_given(int $uid): bool {
 }
 
 /* ---------- Sponsor view ---------- */
+
+/* Custom code: FC-2026-10-14: preserve feedback history while tracking each resolved help signal. */
+function fcc_mp_help_text(string $key): string {
+ static $copy;
+ $copy??=require APP_PATH.'config/fcc_sponsor_help_locales.php';
+ return $copy[fcc_locale()][$key]??$copy['en'][$key]??$key;
+}
+
+/** Pure projection. A resolution applies only to its member and immutable source identity. */
+function fcc_mp_help_project(array $events,array $outcomes): array {
+ $resolved=[];$feedback=[];$requests=[];
+ foreach($events as $e){
+  $uid=(int)$e['user_id'];$detail=json_decode((string)$e['detail'],true);
+  if($e['kind']==='help_resolved'&&is_array($detail)&&is_string($detail['source']??null)
+   &&preg_match('/^(?:event:[1-9][0-9]*|outcome:[1-9][0-9]*:[a-f0-9]{24})$/D',$detail['source'])
+   &&(int)($detail['actor']??0)>0&&(int)($detail['sponsor']??0)>0
+   &&is_string($detail['snapshot']??null)&&preg_match('/^[a-f0-9]{64}$/D',$detail['snapshot'])
+   &&($e['request_key']??'')==='mp-resolve-'.substr(hash('sha256',$uid.':'.$detail['source']),0,48))$resolved[$uid][$detail['source']]=(int)($e['step_id']??0);
+  if($e['kind']==='help_feedback'&&is_array($detail)&&($oid=(int)($detail['outcome_id']??0))>0&&isset(['easy'=>1,'hard'=>1,'help'=>1][$detail['answer']??''])){
+   if((int)$e['id']>(int)($feedback[$uid][$oid]['id']??0))$feedback[$uid][$oid]=$e+['answer'=>$detail['answer']];
+  }
+ }
+ foreach($events as $e){
+  if($e['kind']!=='stuck')continue;
+  $uid=(int)$e['user_id'];$id=(int)$e['id'];$key='event:'.$id;$parts=explode('|',(string)$e['detail']);
+  if(isset($resolved[$uid][$key])&&$resolved[$uid][$key]===(int)($e['step_id']??0))continue;
+  $requests[$uid][$key]=['key'=>$key,'step_id'=>(int)($e['step_id']??0),'title'=>$parts[1]??'','help'=>true,'hard'=>false,'created_at'=>(string)$e['created_at'],
+   'notice_keys'=>['mp:request:'.$uid.':'.$id,'mp:stuck:'.$uid.':'.(int)($e['step_id']??0).':'.(new DateTimeImmutable($e['created_at'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone('Europe/Zagreb'))->format('Ymd')]];
+ }
+ foreach($outcomes as $o){
+  $uid=(int)$o['uid'];$oid=(int)$o['outcome_id'];$help=!empty($o['needs_help']);$hard=($o['difficulty']??'')==='hard';
+  if(!$help&&!$hard)continue;
+  $f=$feedback[$uid][$oid]??null;$expected=$help?'help':'hard';
+  $key=$f&&$f['answer']===$expected?'event:'.(int)$f['id']:'outcome:'.$oid.':'.substr(hash('sha256',json_encode([$o['updated_at']??'',$o['difficulty'],$help,(int)$o['journey_step_id']])),0,24);
+  if(isset($resolved[$uid][$key])&&$resolved[$uid][$key]===(int)$o['journey_step_id'])continue;
+  $task=json_decode((string)($o['content_json']??'{}'),true)?:[];
+  $notices=['mp:help:'.$uid.':'.$oid];if($f&&$f['answer']===$expected)$notices[]='mp:request:'.$uid.':'.(int)$f['id'];
+  $requests[$uid][$key]=['key'=>$key,'step_id'=>(int)$o['journey_step_id'],'title'=>(string)($task['title']??''),'help'=>$help,'hard'=>$hard,'notice_keys'=>$notices,'created_at'=>(string)($f&&$f['answer']===$expected?$f['created_at']:($o['updated_at']??''))];
+ }
+ // Message templates use the last source. Order by its time, then by numeric event identity.
+ foreach($requests as &$list)uasort($list,static fn($a,$b)=>strcmp($a['created_at'],$b['created_at'])?:strnatcmp($a['key'],$b['key']));unset($list);
+ return $requests;
+}
+
+function fcc_mp_help_pending(array $ids): array {
+ $ids=array_values(array_unique(array_filter(array_map('intval',$ids),static fn($id)=>$id>0)));if(!$ids)return [];
+ $in=implode(',',array_fill(0,count($ids),'?'));
+ // Feedback is measured by calendar day. Keep its identity beyond the rolling stuck window,
+ // including the UTC versus Zagreb midnight boundary, so a resolved source cannot become legacy again.
+ $events=fcc_partner_rows("SELECT id,user_id,step_id,kind,detail,request_key,created_at FROM fcc_partner_pilot_events WHERE user_id IN ($in) AND kind IN ('stuck','help_feedback','help_resolved') AND created_at>=UTC_TIMESTAMP()-INTERVAL 9 DAY AND (kind IN ('help_resolved','help_feedback') OR created_at>=UTC_TIMESTAMP()-INTERVAL 7 DAY) ORDER BY id",$ids);
+ $outcomes=fcc_partner_rows("SELECT o.recorded_by_user_id uid,o.outcome_id,o.journey_step_id,o.difficulty,o.needs_help,o.updated_at,s.content_json FROM forever_business_daily_outcomes o LEFT JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id WHERE o.recorded_by_user_id IN ($in) AND o.journey_cycle_id IS NOT NULL AND o.status='done' AND o.action_date>=CURDATE()-INTERVAL 7 DAY AND (o.needs_help=1 OR o.difficulty='hard')",$ids);
+ return fcc_mp_help_project($events,$outcomes);
+}
+
+function fcc_mp_help_token(int $uid,array $requests): string {
+ $keys=array_keys($requests);sort($keys,SORT_STRING);return hash('sha256',json_encode([$uid,$keys]));
+}
+
+/** Explicit sponsor confirmation, never called by a WhatsApp or clipboard action. */
+function fcc_mp_help_resolve(int $actor,array $in): int {
+ $member=(int)($in['member_id']??0);$token=$in['help_token']??'';
+ if($member<=0||!is_string($token)||!preg_match('/^[a-f0-9]{64}$/D',$token))throw new InvalidArgumentException(fcc_mp_help_text('changed'));
+ if(!(int)(fcc_partner_one("SELECT GET_LOCK('fcc_team_graph',10) ok")['ok']??0))throw new InvalidArgumentException(fcc_t('Povezivanje je u tijeku.'));
+ try {
+ database()->begin_transaction();
+ try{
+  $locks=[$actor,$member];sort($locks,SORT_NUMERIC);
+  fcc_partner_query('SELECT user_id FROM users WHERE user_id IN (?,?) ORDER BY user_id FOR UPDATE',$locks);
+  // Do not reuse a graph captured while this form was being rendered.
+  unset($GLOBALS['fcc_team_graph_run']);$graph=fcc_team_graph();$primary=fcc_team_primary($actor,$graph);
+  if(empty($graph[$actor])||(int)$graph[$actor]['status']!==1||!$primary||fcc_team_primary($member,$graph)!==$member||fcc_team_edge($member,$graph)!==$primary)throw new InvalidArgumentException(fcc_mp_help_text('denied'));
+  $pending=fcc_mp_help_pending([$member])[$member]??[];
+  if(!$pending){database()->commit();return 0;}
+  if(!hash_equals(fcc_mp_help_token($member,$pending),$token))throw new InvalidArgumentException(fcc_mp_help_text('changed'));
+  $keys=[];$count=0;
+  foreach($pending as $source){
+   $detail=json_encode(['source'=>$source['key'],'actor'=>$actor,'sponsor'=>$primary,'snapshot'=>$token]);
+   if(fcc_mp_event($member,'help_resolved',$detail,'mp-resolve-'.substr(hash('sha256',$member.':'.$source['key']),0,48),(int)$source['step_id']))$count++;
+   $keys=array_merge($keys,$source['notice_keys']);
+  }
+  $keys=array_values(array_unique($keys));
+  if($keys){
+   $inKeys=implode(',',array_fill(0,count($keys),'?'));
+   // Only these help notices are retired; the audit rows and other team notices remain.
+   fcc_partner_query("UPDATE fcc_partner_notifications SET read_at=COALESCE(read_at,UTC_TIMESTAMP()),body='',expires_at=UTC_TIMESTAMP() WHERE user_id=? AND category='team' AND event_key IN ($inKeys)",array_merge([$primary],$keys));
+   fcc_partner_query("UPDATE fcc_partner_push_deliveries d JOIN fcc_partner_notifications n ON n.id=d.notification_id SET d.status='skipped',d.last_code='help_resolved',d.updated_at=UTC_TIMESTAMP() WHERE n.user_id=? AND n.category='team' AND n.event_key IN ($inKeys) AND d.status IN ('pending','sending')",array_merge([$primary],$keys));
+  }
+  // The sponsor's existing revision polling now also observes this resolution on another device.
+  $handled=json_encode(['member'=>$member,'actor'=>$actor,'snapshot'=>$token,'count'=>$count]);
+  foreach(array_unique([$actor,$primary]) as $owner)fcc_mp_event($owner,'help_handled',$handled,'mp-handled-'.substr(hash('sha256',$member.':'.$token),0,48));
+  database()->commit();return $count;
+ }catch(Throwable $e){database()->rollback();throw $e;}
+ }finally{fcc_partner_query("SELECT RELEASE_LOCK('fcc_team_graph')");}
+}
+/* /Custom code: FC-2026-10-14 */
 
 function fcc_mp_member_progress(array $ids): array {
  $ids = array_values(array_unique(array_map('intval', $ids)));
@@ -325,16 +443,17 @@ function fcc_mp_member_progress(array $ids): array {
  foreach(fcc_partner_rows("SELECT o.recorded_by_user_id uid,s.content_json FROM forever_business_daily_outcomes o JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id WHERE o.outcome_id IN (SELECT MAX(outcome_id) FROM forever_business_daily_outcomes WHERE recorded_by_user_id IN ($in) AND journey_cycle_id IS NOT NULL AND status='done' GROUP BY recorded_by_user_id)", $ids) as $r) {
   if(isset($out[(int)$r['uid']])) $out[(int)$r['uid']]['last_title'] = (string)((json_decode($r['content_json'], true) ?: [])['title'] ?? '');
  }
- foreach(fcc_partner_rows("SELECT user_id,kind,detail FROM fcc_partner_pilot_events WHERE user_id IN ($in) AND kind IN ('track_chosen','stuck') AND (kind='track_chosen' OR created_at>=UTC_TIMESTAMP()-INTERVAL 7 DAY) ORDER BY id", $ids) as $e) {
+ foreach(fcc_partner_rows("SELECT user_id,kind,detail FROM fcc_partner_pilot_events WHERE user_id IN ($in) AND kind='track_chosen' ORDER BY id", $ids) as $e) {
   if(!isset($out[(int)$e['user_id']])) continue;
   if($e['kind'] === 'track_chosen' && fcc_mp_track_valid($e['detail'])) $out[(int)$e['user_id']]['track'] = $e['detail'];
-  if($e['kind'] === 'stuck') { $parts = explode('|', $e['detail']); $out[(int)$e['user_id']]['help'] = true; $out[(int)$e['user_id']]['help_title'] = $parts[1] ?? ''; }
  }
- foreach(fcc_partner_rows("SELECT recorded_by_user_id uid,MAX(needs_help) help,MAX(difficulty='hard') hard FROM forever_business_daily_outcomes WHERE recorded_by_user_id IN ($in) AND journey_cycle_id IS NOT NULL AND status='done' AND action_date>=CURDATE()-INTERVAL 7 DAY GROUP BY recorded_by_user_id", $ids) as $f) {
-  if(!isset($out[(int)$f['uid']])) continue;
-  if((int)$f['help']) $out[(int)$f['uid']]['help'] = true;
-  if((int)$f['hard']) $out[(int)$f['uid']]['hard'] = true;
+ /* Custom code: FC-2026-10-14: all sponsor surfaces share the same unresolved projection. */
+ foreach(fcc_mp_help_pending($ids) as $uid=>$requests){
+  if(!isset($out[$uid]))continue;
+  $out[$uid]['help_requests']=$requests;$out[$uid]['help_token']=fcc_mp_help_token($uid,$requests);
+  foreach($requests as $source){$out[$uid]['help']=$out[$uid]['help']||$source['help'];$out[$uid]['hard']=$out[$uid]['hard']||$source['hard'];$out[$uid]['help_title']=$source['title'];}
  }
+ /* /Custom code: FC-2026-10-14 */
  return $out;
 }
 

@@ -52,6 +52,14 @@ $mpIdle = static function(?int $days): string {
        <div class="mp-member-actions">
         <?php if($mpPhone !== ''): ?><a class="fp-button" href="<?= $h('https://wa.me/'.$mpPhone.'?text='.rawurlencode($mpMessage)) ?>" target="_blank" rel="noopener"><?= $mpText('Javi se na WhatsApp') ?></a><?php endif ?>
         <button type="button" class="fp-button fp-button-outline" data-copy-value="<?= $h($mpMessage) ?>" data-copy-done="<?= $mpText('Kopirano') ?>"><?= $mpText('Kopiraj poruku') ?></button>
+        <?php /* Custom code: FC-2026-10-14: only an explicit confirmation retires the visible help snapshot. */ if($mpKey==='help'&&!empty($mpMember['help_token'])): ?>
+        <form method="post" action="<?= url('partner?view=team-progress') ?>" class="mp-help-resolution">
+         <?= $token ?><input type="hidden" name="action" value="mp_help_resolve"><input type="hidden" name="member_id" value="<?= (int)$mpMember['user_id'] ?>"><input type="hidden" name="help_token" value="<?= $h($mpMember['help_token']) ?>">
+         <?php $mpTitles=array_values(array_unique(array_filter(array_column($mpMember['help_requests'],'title')))); if(count($mpTitles)>1): ?><small><?= $h(fcc_mp_help_text('open')) ?> <?= $h(implode('; ',array_map('fcc_t',$mpTitles))) ?></small><?php endif ?>
+         <small><?= $h(fcc_mp_help_text('hint')) ?></small>
+         <button type="submit" class="fp-button fp-button-outline"><i class="fas fa-check" aria-hidden="true"></i> <?= $h(fcc_mp_help_text('resolve')) ?></button>
+        </form>
+        <?php endif; /* /Custom code: FC-2026-10-14 */ ?>
        </div>
       </li>
      <?php endforeach ?>

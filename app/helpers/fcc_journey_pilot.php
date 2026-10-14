@@ -67,7 +67,9 @@ function fcc_jp_state(int $uid,array $access,?DateTimeImmutable $now=null): arra
  if($t&&$webinar['is_today']&&!$done)$action=array_merge($action,['key'=>'vip26_sunday_'.$now->format('Ymd'),'title'=>'Nedjeljni webinar u '.$webinar['time_label'],'is_weekly_plan'=>true,'can_complete'=>$enabled&&!empty($access['can_access_education'])&&$webinar['can_record_outcome'],'is_waiting_for_event_completion'=>!$webinar['can_record_outcome']]);
  return ['pilot'=>true,'cycle'=>$cycle,'rows'=>$rows,'position'=>$position,'completed'=>count($rows),'published_total'=>FCC_JP_TOTAL,'step'=>$step,'content'=>$t,'draft'=>$draft,'enabled'=>$enabled,'paused'=>$paused,'daily_done'=>$done,'webinar'=>$webinar,'action'=>$action,'fast'=>$fast,'pilot_finished'=>$position>FCC_JP_TOTAL,'readiness'=>['proposed_level'=>null],
  'due'=>fcc_partner_rows("SELECT id,name,next_followup FROM fcc_partner_contacts WHERE user_id=? AND next_followup<=? AND contact_permission<>'do_not_contact' ORDER BY next_followup,id LIMIT 3",[$uid,$now->format('Y-m-d')]),
- 'events'=>$step?fcc_partner_rows('SELECT * FROM fcc_partner_pilot_events WHERE user_id=? AND step_id=? ORDER BY id DESC LIMIT 20',[$uid,(int)$step['id']]):[],
+ /* Custom code: FC-2026-10-14: keep sponsor audit identifiers out of member Coach context. */
+ 'events'=>$step?fcc_partner_rows("SELECT * FROM fcc_partner_pilot_events WHERE user_id=? AND step_id=? AND kind NOT IN ('help_resolved','help_handled') ORDER BY id DESC LIMIT 20",[$uid,(int)$step['id']]):[],
+ /* /Custom code: FC-2026-10-14 */
  'mentor'=>fcc_jp_mentor($uid),'cc'=>fcc_j90_cc($uid,$access,$now),'needs_track'=>$needsTrack,'track'=>function_exists('fcc_mp_track')?fcc_mp_track($uid):null,'day'=>$mpDay,'capabilities'=>fcc_jp_capabilities(),'needs_help'=>false];
 }
 function fcc_jp_capabilities(): array {

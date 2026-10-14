@@ -60,6 +60,9 @@
 !scripts/check_geolite.py
 !scripts/test_invite_content_migration.php
 !scripts/test_journey_tracks.php
+# Custom code: FC-2026-10-14: explicit sponsor help lifecycle regression.
+!scripts/test_fcc_sponsor_help.php
+# /Custom code: FC-2026-10-14
 !scripts/test_fcc_card.php
 !scripts/test_fcc_card_editor.php
 !scripts/test_fcc_release_fixes.php

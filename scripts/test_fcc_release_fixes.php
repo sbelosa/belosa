@@ -77,6 +77,12 @@ namespace FccReleaseFixes {
     /* SQL double for the migration and Moj put helpers: only the statements these functions issue. */
     function fcc_partner_one(string $sql, array $args = []): ?array {
         $f = &$GLOBALS['FIX'];
+        /* Custom code: FC-2026-10-14: the real feedback helper has a replay-safe event. */
+        if(str_contains($sql,'FROM fcc_partner_pilot_events WHERE user_id=? AND request_key=?')) {
+            foreach($f['pilot_events']??[] as $event)if($event['user_id']===$args[0]&&$event['request_key']===$args[1])return $event;
+            return null;
+        }
+        /* /Custom code: FC-2026-10-14 */
         if(str_contains($sql, 'SELECT type,status FROM users')) return ['type' => 1, 'status' => 1];
         if(str_contains($sql, 'FROM links WHERE link_id=? FOR UPDATE')) {
             $row = $f['links'][(int) $args[0]] ?? null;
@@ -105,6 +111,13 @@ namespace FccReleaseFixes {
     }
     function fcc_partner_query(string $sql, array $args = []): object {
         $f = &$GLOBALS['FIX'];
+        /* Custom code: FC-2026-10-14: preserve the existing worked versus known regression. */
+        if($sql==='SELECT user_id FROM users WHERE user_id=? FOR UPDATE')return (object)['affected_rows'=>0];
+        if(str_contains($sql,'INSERT IGNORE INTO fcc_partner_pilot_events')){
+            $id=count($f['pilot_events']??[])+1;$f['pilot_events'][$id]=['id'=>$id,'user_id'=>$args[0],'step_id'=>$args[1],'kind'=>$args[2],'detail'=>$args[3],'request_key'=>$args[4]];
+            return (object)['affected_rows'=>1];
+        }
+        /* /Custom code: FC-2026-10-14 */
         if(str_contains($sql, 'INSERT INTO fcc_content_migration_log')) {
             $id = count($f['log']) + 1;
             $f['log'][$id] = ['id' => $id, 'migration_key' => $args[0], 'table_name' => $args[1], 'row_id' => $args[2], 'column_name' => $args[3], 'old_value' => $args[4], 'new_value' => $args[5], 'applied_at' => $GLOBALS['NOW'], 'group_key' => $args[7] ?? null, 'reverted_at' => null];
@@ -231,7 +244,9 @@ namespace FccReleaseFixes {
             ['outcome_id' => 102, 'recorded_by_user_id' => 7, 'action_date' => $today, 'status' => 'done', 'completion_mode' => 'known', 'difficulty' => 'hard', 'needs_help' => 0],
         ]];
         check(fcc_mp_feedback_given(7) === false, 'a known step does not count as rated');
-        fcc_mp_feedback(7, ['answer' => 'easy']);
+        /* Custom code: FC-2026-10-14: feedback forms now identify one submission. */
+        fcc_mp_feedback(7, ['answer' => 'easy','request_key'=>str_repeat('a',32)]);
+        /* /Custom code: FC-2026-10-14 */
         check($GLOBALS['FIX']['outcomes'][0]['difficulty'] === 'easy' && $GLOBALS['FIX']['outcomes'][1]['difficulty'] === 'hard', 'feedback rates the worked step, not the newer known one');
         check(fcc_mp_feedback_given(7) === true, 'the worked step now counts as rated');
 
