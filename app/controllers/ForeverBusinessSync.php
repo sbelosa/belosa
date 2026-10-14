@@ -109,7 +109,9 @@ class ForeverBusinessSync extends Controller {
         $metric = mb_strtolower(trim((string) ($_POST['metric'] ?? 'report')));
 
         if($metric === 'cc_publish') {
-            try { $records=json_decode((string)($_POST['records']??''),true,512,JSON_THROW_ON_ERROR);$result=fcc_cc_publish($period,$records,(string)($_POST['batch_key']??''));$this->output(['status'=>'success','metric'=>'cc_publish']+$result); }
+            /* Custom code: FC-2026-10-14: Explicitly preserve unconfirmed accounts without publishing their old values as fresh. */
+            try { $records=json_decode((string)($_POST['records']??''),true,512,JSON_THROW_ON_ERROR);$unconfirmed=json_decode((string)($_POST['unconfirmed_ids']??'[]'),true,512,JSON_THROW_ON_ERROR);$result=fcc_cc_publish($period,$records,(string)($_POST['batch_key']??''),$unconfirmed);$this->output(['status'=>'success','metric'=>'cc_publish']+$result); }
+            /* /Custom code: FC-2026-10-14 */
             catch(\Throwable $e){$this->fail('cc_publish_failed',$e->getMessage(),422);}
         }
 

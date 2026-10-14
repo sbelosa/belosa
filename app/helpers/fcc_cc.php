@@ -27,7 +27,18 @@ function fcc_cc_rank(string $title): int {
     return ['assistant supervisor'=>1,'supervisor'=>2,'assistant manager'=>3,'unrecognized manager'=>4,'manager'=>5,'recognized manager'=>5,'senior manager'=>6,'soaring manager'=>7,'sapphire manager'=>8,'diamond sapphire manager'=>9,'diamond manager'=>10,'double diamond manager'=>11,'triple diamond manager'=>12,'centurion diamond manager'=>13][$title]??0;
 }
 /** Only exact current values, attested by the successful sync client, can publish. */
-function fcc_cc_publish(string $period,array $expected,string $key): array {
+/* Custom code: FC-2026-10-14: A verified partial sync publishes only confirmed identities and preserves unavailable accounts. */
+function fcc_cc_publication_partition(array $expected,array $required,array $unconfirmed=[]): array {
+    if(!$expected||count($expected)>10000||!array_is_list($unconfirmed)||count($unconfirmed)>10000)throw new InvalidArgumentException('Invalid CC publication partition.');
+    $registered=[];foreach($required as $r){$fbo=(string)($r['fbo']??'');if(preg_match('/^[0-9]{12}$/D',$fbo))$registered[$fbo]=true;}
+    $records=[];foreach($expected as $e){if(!is_array($e))throw new InvalidArgumentException('Invalid CC record.');$fbo=(string)($e['fbo_id']??'');if(!preg_match('/^[0-9]{12}$/D',$fbo)||isset($records[$fbo]))throw new InvalidArgumentException('Invalid or repeated Forever ID.');$records[$fbo]=$e;}
+    $preserved=[];foreach($unconfirmed as $fbo){if(!is_string($fbo)||!preg_match('/^[0-9]{12}$/D',$fbo)||!isset($registered[$fbo])||isset($records[$fbo])||isset($preserved[$fbo]))throw new InvalidArgumentException('Invalid unconfirmed Forever ID.');$preserved[$fbo]=true;}
+    if($preserved)foreach($records as $fbo=>$_)if(!isset($registered[$fbo]))throw new InvalidArgumentException('Unregistered partial CC record.');
+    foreach($registered as $fbo=>$_)if(!isset($records[$fbo])&&!isset($preserved[$fbo]))throw new InvalidArgumentException('Incomplete CC publication.');
+    return ['records'=>$records,'preserved'=>count($preserved)];
+}
+/* /Custom code: FC-2026-10-14 */
+function fcc_cc_publish(string $period,array $expected,string $key,array $unconfirmed=[]): array {
     if(!fcc_cc_ready()||!preg_match('/^[a-f0-9]{64}$/D',$key)||!preg_match('/^\d{4}-\d{2}-01$/D',$period)||!$expected||count($expected)>10000)throw new InvalidArgumentException('Invalid CC publication.');
     if(!(int)(fcc_partner_one("SELECT GET_LOCK('fcc_cc_publish',15) ok")['ok']??0))throw new RuntimeException('CC publication busy.');
     database()->begin_transaction();
@@ -35,9 +46,8 @@ function fcc_cc_publish(string $period,array $expected,string $key): array {
         if($batch=fcc_partner_one('SELECT id FROM fcc_cc_batches WHERE batch_key=?',[$key])){database()->commit();return ['batch_id'=>(int)$batch['id'],'duplicate'=>true];}
         $expr=forever_business_user_fbo_sql_expression();
         $required=fcc_partner_rows("SELECT DISTINCT $expr fbo FROM users WHERE status=1 AND JSON_VALID(preferences)=1");
-        $records=[];
-        foreach($expected as $e){$fbo=(string)($e['fbo_id']??'');if(!preg_match('/^[0-9]{12}$/D',$fbo)||isset($records[$fbo]))throw new InvalidArgumentException('Invalid or repeated Forever ID.');$records[$fbo]=$e;}
-        foreach($required as $r)if(preg_match('/^[0-9]{12}$/D',(string)$r['fbo'])&&!isset($records[$r['fbo']]))throw new InvalidArgumentException('Incomplete CC publication.');
+        $partition=fcc_cc_publication_partition($expected,$required,$unconfirmed);
+        $records=$partition['records'];
         $now=gmdate('Y-m-d H:i:s');
         fcc_partner_query('INSERT INTO fcc_cc_batches(batch_key,period_month,published_at,record_count) VALUES(?,?,?,?)',[$key,$period,$now,count($records)]);
         $batchId=(int)fcc_partner_one('SELECT LAST_INSERT_ID() id')['id'];$changed=0;$events=0;
@@ -65,7 +75,7 @@ function fcc_cc_publish(string $period,array $expected,string $key): array {
                 $eventInsert=fcc_partner_query('INSERT IGNORE INTO fcc_cc_events(event_key,snapshot_id,fbo_id,period_month,kind,personal_delta,total_delta,active_delta,occurred_at) VALUES(?,?,?,?,?,?,?,?,?)',[$eventKey,$id,(string)$fbo,$period,$kind,$d['personal'],$d['total'],$d['active'],$now]);$events+=(int)$eventInsert->affected_rows;
             }
         }
-        database()->commit();return ['batch_id'=>$batchId,'changed'=>$changed,'events'=>$events,'records'=>count($records)];
+        database()->commit();return ['batch_id'=>$batchId,'changed'=>$changed,'events'=>$events,'records'=>count($records),'preserved'=>$partition['preserved'],'complete'=>$partition['preserved']===0];
     }catch(Throwable $e){database()->rollback();throw $e;}
     finally{fcc_partner_query("SELECT RELEASE_LOCK('fcc_cc_publish')");}
 }

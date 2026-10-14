@@ -1849,19 +1849,27 @@ export function ccPublicationRecords(records) {
         personal_cc: record.personalCc, total_cc: record.totalCc,
         total_active_cc: record.totalActiveCc, is_4cc_active: record.isFourCcActive ? 1 : 0}));
 }
-async function publishConfirmedCc(records, period, syncUrl, syncKey) {
+/* Custom code: FC-2026-10-14: An unavailable account must not block verified CC history for the rest of the team. */
+export function ccPublicationPayload(records, period, preservedRecords = new Map(), at = new Date().toISOString()) {
     const values = ccPublicationRecords(records);
-    const batchKey = crypto.createHash('sha256').update(JSON.stringify({period, values, at: new Date().toISOString()})).digest('hex');
+    const unconfirmed = [...preservedRecords.keys()].sort();
+    if(!values.length || unconfirmed.some(id => records.has(id))) throw new Error('Invalid CC publication partition.');
+    const batchKey = crypto.createHash('sha256').update(JSON.stringify({period, values, unconfirmed, at})).digest('hex');
+    return {metric: 'cc_publish', report_period: period, batch_key: batchKey,
+        records: JSON.stringify(values), unconfirmed_ids: JSON.stringify(unconfirmed)};
+}
+async function publishConfirmedCc(records, period, syncUrl, syncKey, preservedRecords = new Map()) {
+    const payload = ccPublicationPayload(records, period, preservedRecords);
     const response = await fetch(syncUrl, {method: 'POST', headers: {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
         'X-FCC-Forever-Sync-Key': syncKey,
-    }, body: new URLSearchParams({metric: 'cc_publish', report_period: period,
-        batch_key: batchKey, records: JSON.stringify(values)})});
+    }, body: new URLSearchParams(payload)});
     const result = await response.json();
     if(!response.ok || result.status !== 'success' || result.metric !== 'cc_publish')
         throw new Error('Potvrđena povijest CC bodova nije objavljena: ' + (result.error?.message || response.status));
-    console.log(`FCC CC povijest: ${result.changed || 0} promjena u potvrđenom učitavanju.`);
+    console.log(`FCC CC povijest: ${result.changed || 0} promjena u potvrđenom učitavanju; ${result.preserved || 0} nepotvrđenih računa ostaje sačuvano.`);
 }
+/* /Custom code: FC-2026-10-14 */
 
 async function uploadMemberLiveCc(record, isFourCcActive, period, syncUrl, syncKey) {
     const form = new URLSearchParams({
@@ -2329,10 +2337,12 @@ async function main() {
             // every registered ID and its official flag, including shared accounts.
             console.log(`4 CC opsezi: službeni FLP skup ${fourCc.rowCount}, potvrđeni FCC računi ${registeredVerified.activeFourCc}, vidljiva hijerarhija ${Number(status.summary.active_4cc)}.`);
             console.log(`FCC account provjera: ${registeredVerified.uniqueForeverIds} jedinstvenih Forever ID-jeva (${registeredVerified.activeAccountLinks} aktivnih računa), VIP upis potvrđen za ${registeredVerified.vipEnrolled}.`);
+            /* Custom code: FC-2026-10-14: Publish the verified subset before reporting the remaining source failure. */
+            if(!historicalReconcile) await publishConfirmedCc(expectedRecords, period, syncUrl, syncKey, preservedRecords);
             if(!historicalReconcile && preservedRecords.size > 0) {
-                throw new Error(`Sinkronizacija je djelomična: osvježeno ${expectedRecords.size} Forever ID-jeva, ${preservedRecords.size} nepotvrđenih računa sačuvano bez promjene; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}.`);
+                throw new Error(`Sinkronizacija je djelomična: osvježeno i objavljeno ${expectedRecords.size} Forever ID-jeva, ${preservedRecords.size} nepotvrđenih računa sačuvano bez promjene; razlozi ${JSON.stringify(liveCc.unconfirmedReasonCounts)}.`);
             }
-            if(!historicalReconcile) await publishConfirmedCc(expectedRecords, period, syncUrl, syncKey);
+            /* /Custom code: FC-2026-10-14 */
             console.log(`FLP360 → FCC registrirani sync za ${period} završen je uspješno; zadnji FCC podatak ${status.last_data_import_at || status.last_sync_at || 'potvrđen'}.`);
             return;
         }

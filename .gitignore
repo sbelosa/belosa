@@ -82,3 +82,9 @@
 # Root files that the deploy workflow does not upload; transferred by hand (docs/OBJAVA_2026-10-12.md)
 !fcc-partner-sw.js
 !llms.txt
+
+# Custom code: FC-2026-10-14: CC partial publication and progress regression checks
+!scripts/test_cc_publication_partial.php
+!scripts/test_cc_publication_partial.mjs
+!scripts/test_top_program_progress.php
+# /Custom code: FC-2026-10-14

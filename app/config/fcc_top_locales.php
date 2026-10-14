@@ -1,5 +1,6 @@
 <?php
 defined('ALTUMCODE') || die();
+/* Custom code: FC-2026-10-14: Weekly goals and overall programme progress have separate translated labels. */
 return json_decode(<<<'JSON'
 {
  "title": {
@@ -568,6 +569,51 @@ return json_decode(<<<'JSON'
   "sl": "Prikazanih je {shown} od {total} vidnih računov z več kot 0 knjiženimi CC v tem mesecu. Seznam prikazuje največ 10 računov.",
   "de": "Angezeigt werden {shown} von {total} sichtbaren Konten mit mehr als 0 verbuchten CC in diesem Monat. Die Liste zeigt höchstens 10 Konten.",
   "es": "Se muestran {shown} de {total} cuentas visibles con más de 0 CC contabilizados este mes. La lista muestra un máximo de 10 cuentas."
+ },
+ "education_weekly": {
+  "hr": "Završeni koraci u posljednjih 7 dana",
+  "en": "Steps completed in the last 7 days",
+  "sl": "Opravljeni koraki v zadnjih 7 dneh",
+  "de": "Abgeschlossene Schritte in den letzten 7 Tagen",
+  "es": "Pasos completados en los últimos 7 días",
+  "sr": "Završeni koraci u poslednjih 7 dana",
+  "fr": "Étapes terminées au cours des 7 derniers jours",
+  "cnr": "Završeni koraci u posljednjih 7 dana",
+  "sq": "Hapat e përfunduar gjatë 7 ditëve të fundit",
+  "hu": "Az elmúlt 7 napban elvégzett lépések",
+  "ro": "Pași finalizați în ultimele 7 zile",
+  "pl": "Kroki ukończone w ciągu ostatnich 7 dni",
+  "sv": "Steg slutförda under de senaste 7 dagarna"
+ },
+ "education_goal_label": {
+  "hr": "Tjedni cilj: {n} koraka",
+  "en": "Weekly goal: {n} steps",
+  "sl": "Tedenski cilj: {n} korakov",
+  "de": "Wochenziel: {n} Schritte",
+  "es": "Objetivo semanal: {n} pasos",
+  "sr": "Nedeljni cilj: {n} koraka",
+  "fr": "Objectif hebdomadaire : {n} étapes",
+  "cnr": "Sedmični cilj: {n} koraka",
+  "sq": "Objektivi javor: {n} hapa",
+  "hu": "Heti cél: {n} lépés",
+  "ro": "Obiectiv săptămânal: {n} pași",
+  "pl": "Cel tygodniowy: {n} kroków",
+  "sv": "Veckomål: {n} steg"
+ },
+ "education_total": {
+  "hr": "Ukupni napredak programa: {done} od {total} koraka",
+  "en": "Overall programme progress: {done} of {total} steps",
+  "sl": "Skupni napredek programa: {done} od {total} korakov",
+  "de": "Gesamtfortschritt im Programm: {done} von {total} Schritten",
+  "es": "Progreso total del programa: {done} de {total} pasos",
+  "sr": "Ukupni napredak programa: {done} od {total} koraka",
+  "fr": "Progression totale du programme : {done} sur {total} étapes",
+  "cnr": "Ukupni napredak programa: {done} od {total} koraka",
+  "sq": "Progresi i përgjithshëm i programit: {done} nga {total} hapa",
+  "hu": "A program teljes előrehaladása: {total} lépésből {done} kész",
+  "ro": "Progres total în program: {done} din {total} pași",
+  "pl": "Łączny postęp w programie: {done} z {total} kroków",
+  "sv": "Totala framsteg i programmet: {done} av {total} steg"
  }
 }
 JSON, true);

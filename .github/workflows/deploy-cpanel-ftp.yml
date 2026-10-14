@@ -62,6 +62,13 @@ jobs:
           # /Custom code: FC-2026-09-14
           coverage: none
 
+      # Custom code: FC-2026-10-14: Exercise the cloud CC publication payload before deployment.
+      - name: Use Node.js for CC regression checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # /Custom code: FC-2026-10-14
+
       - name: Lint deployed PHP files
         shell: bash
         run: |
@@ -101,6 +108,12 @@ jobs:
           php scripts/test_vip_funnel_persistence_guards.php
           # Custom code: FC-2026-10-11: CC-based public visibility and 4CC group rules
           php scripts/test_cc_visibility.php
+          # Custom code: FC-2026-10-14: Verified subsets publish without changing unavailable accounts or programme progress.
+          php scripts/test_cc_publication_partial.php
+          php scripts/test_top_program_progress.php
+          node scripts/test_cc_publication_partial.mjs
+          node scripts/test_flp360_cloud_sync.mjs
+          # /Custom code: FC-2026-10-14
           php scripts/test_invite_content_migration.php
           # /Custom code: FC-2026-10-11
           # Custom code: FC-2026-10-12: Moj put tracks, known steps, neutral copy and sponsor notices

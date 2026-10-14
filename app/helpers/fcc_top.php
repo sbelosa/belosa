@@ -104,6 +104,13 @@ function fcc_top_snapshot(array $dataset): void {
  $batch=[];foreach($dataset['lists'] as $cat=>$rows){$period=fcc_top_period_key($cat,$dataset);foreach($rows as $r)$batch[]=[$dataset['window']['day'],$cat,$period,$r['entity'],$r['position']];}
  foreach(array_chunk($batch,100) as $chunk)fcc_partner_query('INSERT IGNORE INTO fcc_top_positions(day,category,period_key,entity_key,position) VALUES'.implode(',',array_fill(0,count($chunk),'(?,?,?,?,?)')),array_merge(...$chunk));
 }
+/* Custom code: FC-2026-10-14: Read the member's existing cycle without creating or changing programme progress. */
+function fcc_top_program_progress(int $uid): ?array {
+ $cycle=fcc_partner_one('SELECT id,catalog_version FROM fcc_partner_journey_cycles WHERE user_id=? ORDER BY id DESC LIMIT 1',[$uid]);
+ if(!$cycle||!in_array($cycle['catalog_version'],fcc_top_program_versions(),true))return null;
+ return ['completed'=>count(fcc_j90_rows($uid,(int)$cycle['id'])),'total'=>FCC_JP_TOTAL];
+}
+/* /Custom code: FC-2026-10-14 */
 function fcc_top_page(int $uid,int $days,string $month): array {
  if(!fcc_pro_has_access($uid))throw new RuntimeException('PRO required');
  // Empty or invalid selections resolve to the current Zagreb calendar month in the dataset.
@@ -114,7 +121,7 @@ function fcc_top_page(int $uid,int $days,string $month): array {
   $cards[$key]=['rows'=>fcc_top_public($rows,$key,$uid),'own'=>['score'=>$value,'position'=>$own['position'],'movement'=>$old?(int)$old['position']-(int)$own['position']:null,'comparison_day'=>$old['day']??null],'count'=>count($rows),'visible_count'=>count(array_filter($rows,static fn($r)=>$r['visible']))];
  }
  $week=$days===7?$d:fcc_top_dataset(7,$d['month']);$weekly=[];foreach(['education'] as $cat)$weekly[$cat]=$week['scores'][$cat][$uid]??0;
- return ['cards'=>$cards,'days'=>$d['window']['days'],'month'=>$d['month'],'months'=>$d['months'],'sync'=>$d['sync'],'cc_accounts'=>$d['cc_accounts'],'accounts'=>$d['accounts'],'weekly'=>$weekly,'profile'=>fcc_top_profile($uid),'at'=>$d['window']['to']];
+ return ['cards'=>$cards,'days'=>$d['window']['days'],'month'=>$d['month'],'months'=>$d['months'],'sync'=>$d['sync'],'cc_accounts'=>$d['cc_accounts'],'accounts'=>$d['accounts'],'weekly'=>$weekly,'program_progress'=>fcc_top_program_progress($uid),'profile'=>fcc_top_profile($uid),'at'=>$d['window']['to']];
 }
 /** Optional inbox notices only. First observation sets a baseline, and at most two notices are created per week. */
 function fcc_top_notify_user(int $uid,DateTimeImmutable $now): void {
