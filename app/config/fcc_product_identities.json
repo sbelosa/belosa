@@ -62,7 +62,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/815-FOREVER-ALOE-VERA-GEL",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/815-FOREVER-ALOE-VERA-GEL",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/drinks/015-ALOE-VERA-GEL",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/drinks/815-ALOE-VERA-GEL"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/drinks/815-ALOE-VERA-GEL",
+        "ae": "https://foreverliving.com/shop/are/en-us/products/bestsellers/815-ALOE-VERA-GEL-PET"
       }
     },
     "4": {
@@ -441,7 +442,8 @@
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/065-FOREVER-GARLIC-THYME",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/065L-GARLIC-THYME",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/065-GARLIC-THYME",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/065L-GARLIC-THYME"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/065L-GARLIC-THYME",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/065-FOREVER-GARLIC-THYME"
       }
     },
     "24": {
@@ -483,7 +485,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/355-FOREVER-IMMUBLEND",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/355-FOREVER-IMMUBLEND",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/355-FOREVER-IMMUBLEND",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/355-FOREVER-IMMUBLEND"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/355-FOREVER-IMMUBLEND",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/355-FOREVER-IMMUBLEND"
       }
     },
     "26": {
@@ -527,7 +530,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/610-FOREVER-ACTIV-PRO-B",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/610-FOREVER-ACTIVE-PRO-B",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/610-FOREVER-ACTIVE-PRO-B",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/610-FOREVER-ACTIVE-PRO-B"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/610-FOREVER-ACTIVE-PRO-B",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/610-FOREVER-ACTIV-PRO-B"
       }
     },
     "28": {
@@ -690,7 +694,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/439-FOREVER-DAILY",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/439-FOREVER-DAILY",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/439-FOREVER-DAILY",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/439-FOREVER-DAILY"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/439-FOREVER-DAILY",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/439-FOREVER-DAILY"
       }
     },
     "36": {
@@ -729,7 +734,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/354-FOREVER-KIDS",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/354-FOREVER-KIDS",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/354-FOREVER-KIDS",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/354-KIDS"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/354-KIDS",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/354-FOREVER-KIDS"
       }
     },
     "38": {
@@ -748,7 +754,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/072-FOREVER-LYCIUM-PLUS",
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/072-FOREVER-LYCIUM-PLUS",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/072-FOREVER-LYCIUM-PLUS",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/072-FOREVER-LYCIUM-PLUS"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/072-FOREVER-LYCIUM-PLUS",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/072-LYCIUM-PLUS"
       }
     },
     "39": {
@@ -780,7 +787,9 @@
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/037-NATURE-MIN",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/nutritional/37-FOREVER-NATURE-MIN",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/037-NATURE-MIN",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/037L-NATURE-MIN"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/037L-NATURE-MIN",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/037-NATURE-MIN",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/037-NATURE-MIN"
       }
     },
     "41": {
@@ -801,7 +810,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/375-VITOLIZE-WOMEN",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/375-VITOLIZE-FOR-WOMEN",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/375L-FOREVER-VITOLIZE-WOMEN",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/375-VITOLIZE-WOMAN"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/375-VITOLIZE-WOMAN",
+        "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/375-VITOLIZE-WOMEN"
       }
     },
     "42": {
@@ -823,7 +833,8 @@
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/374-VITOLIZE-FOR-MEN",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/374L-FOREVER-VITOLIZE-MEN",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/374-VITOLIZE-MEN",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/374L-FOREVER-VITOLIZE-MEN"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/374L-FOREVER-VITOLIZE-MEN",
+        "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/374-VITOLIZE-MEN"
       }
     },
     "43": {
@@ -865,7 +876,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/676-Forever-Aloe-Turm",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/nutritional/676-FOREVER-TURM",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/676-FOREVER-TURM",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/676-FOREVER-TURM"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/676-FOREVER-TURM",
+        "si": "https://foreverliving.com/shop/svn/sl-si/products/nutritional/676-FOREVER-ALOETURM"
       }
     },
     "45": {
@@ -885,7 +897,8 @@
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/622-FOREVER-FOCUS",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/622-FOREVER-FOCUS",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/622-FOREVER-FOCUS",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/622-FOREVER-FOCUS"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/622-FOREVER-FOCUS",
+        "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/622-FOCUS"
       }
     },
     "46": {
@@ -1079,7 +1092,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/02212-ALOE-LIPS-PACK-OF-12",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/022-ALOE-LIPS-WITH-JOJOBA",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/022-ALOE-LIPS",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/022-ALOE-LIPS"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/022-ALOE-LIPS",
+        "ae": "https://foreverliving.com/shop/are/en-us/products/bestsellers/022-FOREVER-ALOE-LIPS"
       }
     },
     "55": {
@@ -1280,7 +1294,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/664-FOREVER-BIO-CELLULOSE-MASK-X-3",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/664-ALOE-BIO-CELLULOSE-MASK"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/664-ALOE-BIO-CELLULOSE-MASK",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X-3"
       }
     },
     "64": {
@@ -1300,7 +1315,9 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/651-deep-moisturizing-cream",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/651-deep-moisturizing-cream",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/651-DEEP-MOISTURIZING-CREAM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/651-DEEP-MOISTURIZING-CREAM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM"
       }
     },
     "65": {
@@ -1319,7 +1336,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/645-Protecting-day-lotion",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/645-Protecting-day-lotion",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/645-PROTECTING-DAY-LOTION",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/645-PROTECTING-DAY-LOTION"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/645-PROTECTING-DAY-LOTION",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/645-PROTECTING-DAY-LOTION"
       }
     },
     "66": {
@@ -1362,7 +1380,9 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/618-HYDRATING-SERUM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/618-HYDRATING-SERUM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/618-HYDRATING-SERUM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/618-FOREVER-HYDRATING-SERUM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/618-FOREVER-HYDRATING-SERUM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/618-HYDRATING-SERUM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/618-HYDRATING-SERUM"
       }
     },
     "68": {
@@ -1407,7 +1427,9 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/559-SMOOTHING-EXFOLIATOR",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/559-SMOOTHING-EXFOLIATOR",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/559-SMOOTHING-EXFOLIATOR-US",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/559-SMOOTHING-EXFOLIATOR"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/559-SMOOTHING-EXFOLIATOR",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/559-SMOOTHING-EXFOLIATOR",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/559-SMOOTHING-EXFOLIATOR"
       }
     },
     "70": {
@@ -1427,7 +1449,9 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/558-INFINITE-RESTORING-CREME",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/558-INFINITE-RESTORING-CREAM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/558-INFINITE-BY-FOREVER-RESTORING-CREAM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/558-INFINITE-RESTORING-CREAM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/558-INFINITE-RESTORING-CREAM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/558-INFINITE-RESTORING-CREAM",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/558-INFINITE-RESTORING-CREAM"
       }
     },
     "71": {
@@ -1447,7 +1471,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/556-INFINITE-BY-FOREVER-FIRMING-CO",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/556-INFINITE-FIRMING-COMPLEX",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/556-INFINITE-FIRMING-COMPLEX",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/556-INFINITE-FIRMING-COMPLEX"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/556-INFINITE-FIRMING-COMPLEX",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/556-INFINITE-FIRMING-COMPLEX"
       }
     },
     "72": {
@@ -1467,7 +1492,9 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/555-INFINITE-FIRMING-SERUM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/555-INFINITE-FIRMING-SERUM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/555-INFINITE-BY-FOREVER-FIRMING-SERUM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/555-INFINITE-FIRMING-SERUM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/555-INFINITE-FIRMING-SERUM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/555-INFINITE-FIRMING-SERUM",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/555-INFINITE-FIRMING-SERUM"
       }
     },
     "73": {
@@ -1488,7 +1515,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/554-INFINITE-HYDRATIN-CLEASNER",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/554-INFINITE-HYDRATING-CLEANSER",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/554-INFINITE-BY-FOREVER-HYDRATING-CLEANSER",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/554-INFINITE-HYDRATING-CLEANSER"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/554-INFINITE-HYDRATING-CLEANSER",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/554-INFINITE-HYDRATING-CLEANSER"
       }
     },
     "74": {
@@ -1509,7 +1537,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/553-INFINITE-SKIN-CARE-KIT",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/553P-INFINITE-BY-FOREVER-SET",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/553-INFINITE-BY-FOREVER-ADVANCED-SKINCARE-SYSTEM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/553-INFINITE-KIT"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/553-INFINITE-KIT",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/553-INFINITE-SKIN-CARE-KIT"
       }
     },
     "75": {
@@ -1597,7 +1626,9 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/612-ALOE-ACTIVATOR-2018",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/612-ALOE-ACTIVATOR",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/612-ALOE-ACTIVATOR-MIT-FREE",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/612-ALOE-ACTIVATOR"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/612-ALOE-ACTIVATOR",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/612-ALOE-ACTIVATOR",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/612-ALOE-ACTIVATOR-2018"
       }
     },
     "79": {
@@ -1682,7 +1713,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/669-LOGIC-ALOE-SOOTHING-GEL-MOIST"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU"
       }
     },
     "83": {
@@ -1785,7 +1817,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/650-RENEWING-SKIN-CREME",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/650-RENEWING-SKIN-CREME",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/skin-care/650-RENEWING-SKIN-CREME",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/650-RENEWING-SKIN-CR%C3%88ME"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/650-RENEWING-SKIN-CR%C3%88ME",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/650-RENEWING-SKIN-CREME"
       }
     },
     "88": {
@@ -1936,7 +1969,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/650-RENEWING-SKIN-CREME",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/650-RENEWING-SKIN-CREME",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/skin-care/650-RENEWING-SKIN-CREME",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/650-RENEWING-SKIN-CR%C3%88ME"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/650-RENEWING-SKIN-CR%C3%88ME",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/650-RENEWING-SKIN-CREME"
       }
     },
     "532": {
@@ -2039,7 +2073,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/669-LOGIC-SOOTHING-GEL-MOISTURIZER",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/669-LOGIC-ALOE-SOOTHING-GEL-MOIST"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/669-LOGIC-ALOE-SOOTHING-GEL-MOIST",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU"
       }
     },
     "537": {
@@ -2124,7 +2159,9 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/612-ALOE-ACTIVATOR-2018",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/612-ALOE-ACTIVATOR",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/612-ALOE-ACTIVATOR-MIT-FREE",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/612-ALOE-ACTIVATOR"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/612-ALOE-ACTIVATOR",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/612-ALOE-ACTIVATOR",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/612-ALOE-ACTIVATOR-2018"
       }
     },
     "541": {
@@ -2212,7 +2249,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/554-INFINITE-HYDRATIN-CLEASNER",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/554-INFINITE-HYDRATING-CLEANSER",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/554-INFINITE-BY-FOREVER-HYDRATING-CLEANSER",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/554-INFINITE-HYDRATING-CLEANSER"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/554-INFINITE-HYDRATING-CLEANSER",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/554-INFINITE-HYDRATING-CLEANSER"
       }
     },
     "545": {
@@ -2233,7 +2271,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/553-INFINITE-SKIN-CARE-KIT",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/553P-INFINITE-BY-FOREVER-SET",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/553-INFINITE-BY-FOREVER-ADVANCED-SKINCARE-SYSTEM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/553-INFINITE-KIT"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/553-INFINITE-KIT",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/553-INFINITE-SKIN-CARE-KIT"
       }
     },
     "546": {
@@ -2253,7 +2292,8 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/556-INFINITE-BY-FOREVER-FIRMING-CO",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/556-INFINITE-FIRMING-COMPLEX",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/556-INFINITE-FIRMING-COMPLEX",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/556-INFINITE-FIRMING-COMPLEX"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/556-INFINITE-FIRMING-COMPLEX",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/556-INFINITE-FIRMING-COMPLEX"
       }
     },
     "547": {
@@ -2274,7 +2314,9 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/559-SMOOTHING-EXFOLIATOR",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/559-SMOOTHING-EXFOLIATOR",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/skin-care/559-SMOOTHING-EXFOLIATOR-US",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/559-SMOOTHING-EXFOLIATOR"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/559-SMOOTHING-EXFOLIATOR",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/559-SMOOTHING-EXFOLIATOR",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/559-SMOOTHING-EXFOLIATOR"
       }
     },
     "548": {
@@ -2294,7 +2336,9 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/555-INFINITE-FIRMING-SERUM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/555-INFINITE-FIRMING-SERUM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/555-INFINITE-BY-FOREVER-FIRMING-SERUM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/555-INFINITE-FIRMING-SERUM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/555-INFINITE-FIRMING-SERUM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/555-INFINITE-FIRMING-SERUM",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/555-INFINITE-FIRMING-SERUM"
       }
     },
     "549": {
@@ -2314,7 +2358,9 @@
         "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/558-INFINITE-RESTORING-CREME",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/558-INFINITE-RESTORING-CREAM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/558-INFINITE-BY-FOREVER-RESTORING-CREAM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/558-INFINITE-RESTORING-CREAM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/558-INFINITE-RESTORING-CREAM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/558-INFINITE-RESTORING-CREAM",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/558-INFINITE-RESTORING-CREAM"
       }
     },
     "550": {
@@ -2358,7 +2404,9 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/618-HYDRATING-SERUM",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/618-HYDRATING-SERUM",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/618-HYDRATING-SERUM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/618-FOREVER-HYDRATING-SERUM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/618-FOREVER-HYDRATING-SERUM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/618-HYDRATING-SERUM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/618-HYDRATING-SERUM"
       }
     },
     "552": {
@@ -2377,7 +2425,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/645-Protecting-day-lotion",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/645-Protecting-day-lotion",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/645-PROTECTING-DAY-LOTION",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/645-PROTECTING-DAY-LOTION"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/645-PROTECTING-DAY-LOTION",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/645-PROTECTING-DAY-LOTION"
       }
     },
     "553": {
@@ -2421,7 +2470,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X3",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/664-FOREVER-BIO-CELLULOSE-MASK-X-3",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/664-ALOE-BIO-CELLULOSE-MASK"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/664-ALOE-BIO-CELLULOSE-MASK",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X-3"
       }
     },
     "555": {
@@ -2441,7 +2491,9 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/skin-care/651-deep-moisturizing-cream",
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/651-deep-moisturizing-cream",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/651-DEEP-MOISTURIZING-CREAM"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/skin-care/651-DEEP-MOISTURIZING-CREAM",
+        "nl": "https://foreverliving.com/shop/nld/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM"
       }
     },
     "556": {
@@ -2644,7 +2696,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/skin-care/02212-ALOE-LIPS-PACK-OF-12",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/022-ALOE-LIPS-WITH-JOJOBA",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/022-ALOE-LIPS",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/022-ALOE-LIPS"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/022-ALOE-LIPS",
+        "ae": "https://foreverliving.com/shop/are/en-us/products/bestsellers/022-FOREVER-ALOE-LIPS"
       }
     },
     "565": {
@@ -2835,7 +2888,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/676-Forever-Aloe-Turm",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/nutritional/676-FOREVER-TURM",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/676-FOREVER-TURM",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/676-FOREVER-TURM"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/676-FOREVER-TURM",
+        "si": "https://foreverliving.com/shop/svn/sl-si/products/nutritional/676-FOREVER-ALOETURM"
       }
     },
     "574": {
@@ -2855,7 +2909,8 @@
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/622-FOREVER-FOCUS",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/622-FOREVER-FOCUS",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/622-FOREVER-FOCUS",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/622-FOREVER-FOCUS"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/622-FOREVER-FOCUS",
+        "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/622-FOCUS"
       }
     },
     "575": {
@@ -2899,7 +2954,8 @@
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/374-VITOLIZE-FOR-MEN",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/374L-FOREVER-VITOLIZE-MEN",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/374-VITOLIZE-MEN",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/374L-FOREVER-VITOLIZE-MEN"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/374L-FOREVER-VITOLIZE-MEN",
+        "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/374-VITOLIZE-MEN"
       }
     },
     "577": {
@@ -2937,7 +2993,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/375-VITOLIZE-WOMEN",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/375-VITOLIZE-FOR-WOMEN",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/375L-FOREVER-VITOLIZE-WOMEN",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/375-VITOLIZE-WOMAN"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/375-VITOLIZE-WOMAN",
+        "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/375-VITOLIZE-WOMEN"
       }
     },
     "579": {
@@ -2952,7 +3009,9 @@
         "ie": "https://foreverliving.com/shop/irl/en-ie/products/037-NATURE-MIN",
         "nl": "https://foreverliving.com/shop/nld/en-gb/products/nutritional/37-FOREVER-NATURE-MIN",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/037-NATURE-MIN",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/037L-NATURE-MIN"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/037L-NATURE-MIN",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/037-NATURE-MIN",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/037-NATURE-MIN"
       }
     },
     "580": {
@@ -2971,7 +3030,8 @@
         "no": "https://foreverliving.com/shop/nor/en-no/products/nutritional/072-FOREVER-LYCIUM-PLUS",
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/072-FOREVER-LYCIUM-PLUS",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/072-FOREVER-LYCIUM-PLUS",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/072-FOREVER-LYCIUM-PLUS"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/072-FOREVER-LYCIUM-PLUS",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/072-LYCIUM-PLUS"
       }
     },
     "581": {
@@ -2990,7 +3050,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/354-FOREVER-KIDS",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/354-FOREVER-KIDS",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/354-FOREVER-KIDS",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/354-KIDS"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/354-KIDS",
+        "rs": "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/354-FOREVER-KIDS"
       }
     },
     "582": {
@@ -3030,7 +3091,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/439-FOREVER-DAILY",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/439-FOREVER-DAILY",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/439-FOREVER-DAILY",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/439-FOREVER-DAILY"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/439-FOREVER-DAILY",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/439-FOREVER-DAILY"
       }
     },
     "584": {
@@ -3193,7 +3255,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/355-FOREVER-IMMUBLEND",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/355-FOREVER-IMMUBLEND",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/355-FOREVER-IMMUBLEND",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/355-FOREVER-IMMUBLEND"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/355-FOREVER-IMMUBLEND",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/355-FOREVER-IMMUBLEND"
       }
     },
     "592": {
@@ -3214,7 +3277,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/nutritional/610-FOREVER-ACTIV-PRO-B",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/610-FOREVER-ACTIVE-PRO-B",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/610-FOREVER-ACTIVE-PRO-B",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/610-FOREVER-ACTIVE-PRO-B"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/610-FOREVER-ACTIVE-PRO-B",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/610-FOREVER-ACTIV-PRO-B"
       }
     },
     "593": {
@@ -3257,7 +3321,8 @@
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/065-FOREVER-GARLIC-THYME",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/nutritional/065L-GARLIC-THYME",
         "ch": "https://foreverliving.com/shop/che/en-ch/products/065-GARLIC-THYME",
-        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/065L-GARLIC-THYME"
+        "ae": "https://foreverliving.com/shop/are/en-us/products/nutritional/065L-GARLIC-THYME",
+        "pl": "https://foreverliving.com/shop/pol/en-gb/products/nutritional/065-FOREVER-GARLIC-THYME"
       }
     },
     "595": {
@@ -3617,7 +3682,8 @@
         "se": "https://foreverliving.com/shop/swe/en-se/products/drinks/815-FOREVER-ALOE-VERA-GEL",
         "gb": "https://foreverliving.com/shop/gbr/en-gb/products/815-FOREVER-ALOE-VERA-GEL",
         "qa": "https://foreverliving.com/shop/qat/en-us/products/drinks/015-ALOE-VERA-GEL",
-        "ch": "https://foreverliving.com/shop/che/en-ch/products/drinks/815-ALOE-VERA-GEL"
+        "ch": "https://foreverliving.com/shop/che/en-ch/products/drinks/815-ALOE-VERA-GEL",
+        "ae": "https://foreverliving.com/shop/are/en-us/products/bestsellers/815-ALOE-VERA-GEL-PET"
       }
     },
     "616": {
@@ -27480,6 +27546,494 @@
         "protectingdaylotion"
       ],
       "review_note": "FC-2026-10-14: Current exact official country product card confirms this URL, item, name and pack. The old address rendered no public product."
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/612-ALOE-ACTIVATOR": {
+      "market": "pl",
+      "family": "aloe-activator",
+      "terms": [
+        "aloeactivator"
+      ],
+      "sku": "612",
+      "name": "Aloe Activator",
+      "pack": "130ml",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "aloeactivator"
+      ]
+    },
+    "https://foreverliving.com/shop/nld/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM": {
+      "market": "nl",
+      "family": "deep-moisturizing-cream",
+      "terms": [
+        "deepmoisturizingcream"
+      ],
+      "sku": "651",
+      "name": "Deep Moisturizing Cream",
+      "pack": "Jar 71 gr.",
+      "source": "https://foreverliving.com/shop/nld/en-gb/skin-care?page=2&total=34",
+      "names": [
+        "deepmoisturizingcream"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/651-DEEP-MOISTURIZING-CREAM": {
+      "market": "pl",
+      "family": "deep-moisturizing-cream",
+      "terms": [
+        "deepmoisturizingcream"
+      ],
+      "sku": "651",
+      "name": "DEEP MOISTURIZING CREAM",
+      "pack": "",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "deepmoisturizingcream"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/610-FOREVER-ACTIV-PRO-B": {
+      "market": "pl",
+      "family": "forever-active-pro-b",
+      "terms": [
+        "activeprob",
+        "activprob"
+      ],
+      "sku": "610",
+      "name": "Forever Active Pro-B",
+      "pack": "30 capsules",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "foreveractiveprob"
+      ]
+    },
+    "https://foreverliving.com/shop/are/en-us/products/bestsellers/022-FOREVER-ALOE-LIPS": {
+      "market": "ae",
+      "family": "forever-aloe-lips",
+      "terms": [
+        "aloelips"
+      ],
+      "sku": "022",
+      "name": "ALOE LIPS",
+      "pack": "4.25g |  Nt. Wt. 0.008 kg",
+      "source": "https://foreverliving.com/shop/are/en-us/products?page=1&total=8",
+      "names": [
+        "aloelips"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/664-FOREVER-BIO-CELLULOSE-MASK-X-3": {
+      "market": "pl",
+      "family": "forever-bio-cellulose-mask",
+      "terms": [
+        "biocellulosemask"
+      ],
+      "sku": "664",
+      "name": "FOREVER BIO-CELLULOSE MASK",
+      "pack": "3 x 25 g",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "foreverbiocellulosemask"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/439-FOREVER-DAILY": {
+      "market": "pl",
+      "family": "forever-daily",
+      "terms": [
+        "daily"
+      ],
+      "sku": "439",
+      "name": "FOREVER DAILY",
+      "pack": "60 tablets",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "foreverdaily"
+      ]
+    },
+    "https://foreverliving.com/shop/nor/en-no/products/nutritional/622-FOCUS": {
+      "market": "no",
+      "family": "forever-focus",
+      "terms": [
+        "focus"
+      ],
+      "sku": "622",
+      "name": "Forever Focus™",
+      "pack": "120 capsules (64 g)",
+      "source": "https://foreverliving.com/shop/nor/en-no/nutritional?page=3&total=30",
+      "names": [
+        "foreverfocus"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/065-FOREVER-GARLIC-THYME": {
+      "market": "pl",
+      "family": "forever-garlic-thyme",
+      "terms": [
+        "garlicthyme"
+      ],
+      "sku": "065",
+      "name": "Forever Garlic-Thyme",
+      "pack": "100 softgels",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "forevergarlicthyme"
+      ]
+    },
+    "https://foreverliving.com/shop/nld/en-gb/products/skin-care/618-HYDRATING-SERUM": {
+      "market": "nl",
+      "family": "forever-hydrating-serum",
+      "terms": [
+        "hydratingserum"
+      ],
+      "sku": "618",
+      "name": "Hydrating Serum",
+      "pack": "50 ml",
+      "source": "https://foreverliving.com/shop/nld/en-gb/skin-care?page=2&total=34",
+      "names": [
+        "hydratingserum"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/618-HYDRATING-SERUM": {
+      "market": "pl",
+      "family": "forever-hydrating-serum",
+      "terms": [
+        "hydratingserum"
+      ],
+      "sku": "618",
+      "name": "HYDRATING SERUM",
+      "pack": "50ml",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "hydratingserum"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/355-FOREVER-IMMUBLEND": {
+      "market": "pl",
+      "family": "forever-immublend",
+      "terms": [
+        "immublend"
+      ],
+      "sku": "355",
+      "name": "Forever Immublend",
+      "pack": "60 tablets",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "foreverimmublend"
+      ]
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/354-FOREVER-KIDS": {
+      "market": "rs",
+      "family": "forever-kids",
+      "terms": [
+        "foreverkids",
+        "forevervit"
+      ],
+      "sku": "354",
+      "name": "Forever Kids",
+      "pack": "120 tableta.  Neto: 132 g",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/nutritional?page=3&total=29",
+      "names": [
+        "foreverkids"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/072-LYCIUM-PLUS": {
+      "market": "pl",
+      "family": "forever-lycium-plus",
+      "terms": [
+        "lyciumplus"
+      ],
+      "sku": "072",
+      "name": "Forever Lycium Plus",
+      "pack": "100 tablets",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "foreverlyciumplus"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/nutritional/037-NATURE-MIN": {
+      "market": "pl",
+      "family": "forever-nature-min",
+      "terms": [
+        "naturemin"
+      ],
+      "sku": "037",
+      "name": "Forever Nature-Min",
+      "pack": "180 tablets",
+      "source": "https://foreverliving.com/shop/pol/en-gb/nutritional?page=2&total=36",
+      "names": [
+        "forevernaturemin"
+      ]
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/037-NATURE-MIN": {
+      "market": "rs",
+      "family": "forever-nature-min",
+      "terms": [
+        "naturemin"
+      ],
+      "sku": "037",
+      "name": "Forever Nature-Min",
+      "pack": "180 tableta. Neto: 174,6 g",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/nutritional?page=2&total=29",
+      "names": [
+        "forevernaturemin"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/650-RENEWING-SKIN-CREME": {
+      "market": "pl",
+      "family": "forever-renewing-skin-creme",
+      "terms": [
+        "renewingskincreme"
+      ],
+      "sku": "650",
+      "name": "RENEWING SKIN CREME",
+      "pack": "56.7 g",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "renewingskincreme"
+      ]
+    },
+    "https://foreverliving.com/shop/nld/en-gb/products/skin-care/559-SMOOTHING-EXFOLIATOR": {
+      "market": "nl",
+      "family": "forever-smoothing-exfoliator",
+      "terms": [
+        "smoothingexfoliator"
+      ],
+      "sku": "559",
+      "name": "Smoothing Exfoliator",
+      "pack": "60 ml",
+      "source": "https://foreverliving.com/shop/nld/en-gb/skin-care?page=2&total=34",
+      "names": [
+        "smoothingexfoliator"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/559-SMOOTHING-EXFOLIATOR": {
+      "market": "pl",
+      "family": "forever-smoothing-exfoliator",
+      "terms": [
+        "smoothingexfoliator"
+      ],
+      "sku": "559",
+      "name": "SMOOTHING EXFOLIATOR",
+      "pack": "60ml",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "smoothingexfoliator"
+      ]
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/553-INFINITE-SKIN-CARE-KIT": {
+      "market": "rs",
+      "family": "infinite-by-forever-advanced-skincare",
+      "terms": [
+        "advancedskincare",
+        "infiniteskincarekit",
+        "infinitebyforeverset",
+        "infiniteskincareset",
+        "infinitebyforever",
+        "infinitekit"
+      ],
+      "sku": "553",
+      "name": "Infinite Skin Care Kit",
+      "pack": "",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/skin-care?page=3&total=32",
+      "names": [
+        "infiniteskincarekit"
+      ]
+    },
+    "https://foreverliving.com/shop/nld/en-gb/products/skin-care/555-INFINITE-FIRMING-SERUM": {
+      "market": "nl",
+      "family": "infinite-by-forever-firming-serum",
+      "terms": [
+        "firmingserum"
+      ],
+      "sku": "555",
+      "name": "Infinite Firming Serum",
+      "pack": "30 ml",
+      "source": "https://foreverliving.com/shop/nld/en-gb/skin-care?page=2&total=34",
+      "names": [
+        "infinitefirmingserum"
+      ]
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/555-INFINITE-FIRMING-SERUM": {
+      "market": "rs",
+      "family": "infinite-by-forever-firming-serum",
+      "terms": [
+        "firmingserum"
+      ],
+      "sku": "555",
+      "name": "Infinite Firming Serum",
+      "pack": "30 ml",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/skin-care?page=3&total=32",
+      "names": [
+        "infinitefirmingserum"
+      ]
+    },
+    "https://foreverliving.com/shop/nld/en-gb/products/skin-care/558-INFINITE-RESTORING-CREAM": {
+      "market": "nl",
+      "family": "infinite-by-forever-restoring-creme",
+      "terms": [
+        "restoringcreme",
+        "restoringcream"
+      ],
+      "sku": "558",
+      "name": "Infinite by Forever restoring crème",
+      "pack": "48,2 gr",
+      "source": "https://foreverliving.com/shop/nld/en-gb/skin-care?page=2&total=34",
+      "names": [
+        "infinitebyforeverrestoringcreme"
+      ]
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/558-INFINITE-RESTORING-CREAM": {
+      "market": "rs",
+      "family": "infinite-by-forever-restoring-creme",
+      "terms": [
+        "restoringcreme",
+        "restoringcream"
+      ],
+      "sku": "558",
+      "name": "Infinite Restoring Creme",
+      "pack": "48,2 g",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/skin-care?page=3&total=32",
+      "names": [
+        "infiniterestoringcreme"
+      ]
+    },
+    "https://foreverliving.com/shop/nld/en-gb/products/skin-care/554-INFINITE-HYDRATING-CLEANSER": {
+      "market": "nl",
+      "family": "infinite-hydrating-cleanser",
+      "terms": [
+        "infinitehydratingcleanser",
+        "infinitebyforeverhydratingcleanser"
+      ],
+      "sku": "554",
+      "name": "Infinite By Forever™ Hydrating Cleanser",
+      "pack": "118 ml",
+      "source": "https://foreverliving.com/shop/nld/en-gb/skin-care?page=2&total=34",
+      "names": [
+        "infinitebyforeverhydratingcleanser"
+      ]
+    },
+    "https://foreverliving.com/shop/pol/en-gb/products/skin-care/645-PROTECTING-DAY-LOTION": {
+      "market": "pl",
+      "family": "protecting-day-lotion",
+      "terms": [
+        "protectingdaylotion"
+      ],
+      "sku": "645",
+      "name": "PROTECTING DAY LOTION",
+      "pack": "60 ml",
+      "source": "https://foreverliving.com/shop/pol/en-gb/skin-care?page=2&total=26",
+      "names": [
+        "protectingdaylotion"
+      ]
+    },
+    "https://foreverliving.com/shop/nor/en-no/products/nutritional/374-VITOLIZE-MEN": {
+      "market": "no",
+      "family": "vitolize-men",
+      "terms": [
+        "vitolizemen",
+        "vitolizeformen",
+        "vitalizemen",
+        "vitlizemen"
+      ],
+      "sku": "374",
+      "name": "Vitolize™ Men",
+      "pack": "60 capsules (48 g)",
+      "source": "https://foreverliving.com/shop/nor/en-no/nutritional?page=3&total=30",
+      "names": [
+        "vitolizemen"
+      ]
+    },
+    "https://foreverliving.com/shop/nor/en-no/products/nutritional/375-VITOLIZE-WOMEN": {
+      "market": "no",
+      "family": "vitolize-women",
+      "terms": [
+        "vitolizewomen",
+        "vitolizeforwomen",
+        "vitalizewomen",
+        "vitlizewomen",
+        "vitlizeforwomen"
+      ],
+      "sku": "375",
+      "name": "Vitolize™ Women",
+      "pack": "120 tablets (86,4 g)",
+      "source": "https://foreverliving.com/shop/nor/en-no/nutritional?page=3&total=30",
+      "names": [
+        "vitolizewomen"
+      ]
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/669-LOGIC-ALOE-SOOTHING-GEL-MOISTU": {
+      "market": "rs",
+      "family": "forever-logic-aloe-soothing-gel-moisture",
+      "terms": [
+        "logicsoothinggelmoist",
+        "logicaloesoothinggelmoist",
+        "logicbyforeversoothinggelmoist"
+      ],
+      "sku": "669",
+      "name": "Logic by Forever™ Soothing Gel Moisturiz...",
+      "pack": "59 ml",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/skin-care?page=1&total=32",
+      "names": [
+        "logicbyforeversoothinggelmoisturiz",
+        "logicbyforeversoothinggelmoisturizer"
+      ],
+      "review_notes": "Aktualna službena ponuda ovog tržišta. Naziv i pakiranje preneseni su iz službene kartice. Ne tvrdi se jednakost formule s ranijom ponudom."
+    },
+    "https://foreverliving.com/shop/are/en-us/products/bestsellers/815-ALOE-VERA-GEL-PET": {
+      "market": "ae",
+      "family": "forever-aloe-vera-gel",
+      "terms": [
+        "aloeveragel"
+      ],
+      "sku": "815",
+      "name": "Forever Aloe Vera Gel® PET",
+      "pack": "1 Liter",
+      "source": "https://foreverliving.com/shop/are/en-us/products?page=1&total=8",
+      "names": [
+        "foreveraloeveragelpet"
+      ],
+      "review_notes": "Aktualna službena ponuda ovog tržišta. Naziv i pakiranje preneseni su iz službene kartice. Ne tvrdi se jednakost formule s ranijom ponudom."
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/nutritional/556-INFINITE-FIRMING-COMPLEX": {
+      "market": "rs",
+      "family": "forever-infinite-firming-complex",
+      "terms": [
+        "firmingcomplex",
+        "collagencomplex",
+        "collagenceramide"
+      ],
+      "sku": "556",
+      "name": "Forever Firming Complex",
+      "pack": "Neto: 29 g",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/nutritional?page=3&total=29",
+      "names": [
+        "foreverfirmingcomplex"
+      ],
+      "review_notes": "Aktualna službena ponuda ovog tržišta. Naziv i pakiranje preneseni su iz službene kartice. Ne tvrdi se jednakost formule s ranijom ponudom."
+    },
+    "https://foreverliving.com/shop/scg/sr-cyrl-rs/products/skin-care/612-ALOE-ACTIVATOR-2018": {
+      "market": "rs",
+      "family": "aloe-activator",
+      "terms": [
+        "aloeactivator"
+      ],
+      "sku": "612",
+      "name": "Aloe Activator 2018",
+      "pack": "130 ml",
+      "source": "https://foreverliving.com/shop/scg/sr-cyrl-rs/skin-care?page=3&total=32",
+      "names": [
+        "aloeactivator2018"
+      ],
+      "review_notes": "Aktualna službena ponuda ovog tržišta. Naziv i pakiranje preneseni su iz službene kartice. Ne tvrdi se jednakost formule s ranijom ponudom."
+    },
+    "https://foreverliving.com/shop/svn/sl-si/products/nutritional/676-FOREVER-ALOETURM": {
+      "market": "si",
+      "family": "forever-aloeturm",
+      "terms": [
+        "aloeturm"
+      ],
+      "sku": "676",
+      "name": "Forever AloeTurm™, prehransko dopolnilo",
+      "pack": "10 pastil",
+      "source": "https://foreverliving.com/shop/svn/sl-si/nutritional?page=2&total=39",
+      "names": [
+        "foreveraloeturmprehranskodopolnilo"
+      ]
     }
   }
 }
