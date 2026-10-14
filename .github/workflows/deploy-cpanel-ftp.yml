@@ -109,6 +109,9 @@ jobs:
           php scripts/test_fcc_aloe_provenance.php
           # Custom code: FC-2026-10-13: Coach routing, safety, session and rating regressions
           php scripts/test_fcc_coach_communication.php
+          # Custom code: FC-2026-10-14: worker memo scopes and fresh delivery reads
+          php scripts/test_fcc_worker_cache.php
+          # /Custom code: FC-2026-10-14
           # /Custom code: FC-2026-10-13
           # /Custom code: FC-2026-10-12
 

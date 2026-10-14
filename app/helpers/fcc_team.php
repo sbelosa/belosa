@@ -64,7 +64,11 @@ function fcc_team_registration_contact_available(int $uid,?array $record): bool 
          COALESCE(JSON_UNQUOTE(JSON_EXTRACT(before_json,'$.phone')),'')<>'') LIMIT 1",[$uid]);
 }
 function fcc_team_graph(): array {
-    if(!fcc_team_ready()) return [];
+    /* Custom code: FC-2026-10-14: reuse the graph only inside the CLI account sync scope. */
+    $memo=PHP_SAPI==='cli'&&array_key_exists('fcc_team_graph_run',$GLOBALS);
+    if($memo&&is_array($GLOBALS['fcc_team_graph_run']))return $GLOBALS['fcc_team_graph_run'];
+    if(!fcc_team_ready()){if($memo)$GLOBALS['fcc_team_graph_run']=[];return [];}
+    /* /Custom code: FC-2026-10-14 */
     $sql=forever_business_user_fbo_sql_expression('u.preferences');
     $rows=fcc_partner_rows("SELECT u.user_id,u.name,u.status,u.type,u.preferences,t.fbo_id,t.sponsor_user_id,t.sponsor_fbo_id,t.is_manager,t.version,t.relationship_version,t.linked_at,t.phone,t.contact_confirmed,t.source,
         m.title flp_title,m.is_privacy_requested,m.is_in_current_structure
@@ -78,7 +82,11 @@ function fcc_team_graph(): array {
             (!empty($r['is_in_current_structure']) && !empty($r['flp_title']) && stripos($r['flp_title'],'manager')!==false && stripos($r['flp_title'],'assistant')===false);
         $graph[(int)$r['user_id']]=$r;
     }
-    return fcc_team_accounts_ready()?fcc_team_apply_accounts($graph,fcc_partner_rows('SELECT * FROM fcc_team_accounts WHERE active=1')):$graph;
+    /* Custom code: FC-2026-10-14 */
+    $graph=fcc_team_accounts_ready()?fcc_team_apply_accounts($graph,fcc_partner_rows('SELECT * FROM fcc_team_accounts WHERE active=1')):$graph;
+    if($memo)$GLOBALS['fcc_team_graph_run']=$graph;
+    return $graph;
+    /* /Custom code: FC-2026-10-14 */
 }
 function fcc_team_edge(int $uid,array $graph): ?int {
     $uid=fcc_team_primary($uid,$graph);

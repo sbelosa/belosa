@@ -122,7 +122,11 @@ function fcc_event_save_series(int $actor,int $id,int $revision,array $input,str
  });
 }
 function fcc_event_member(int $uid,array $d): ?array {
- $u=fcc_partner_one('SELECT user_id,status,type,preferences FROM users WHERE user_id=?',[$uid]);
+ /* Custom code: FC-2026-10-14: memo only raw account facts, never per-session access decisions. */
+ $memo=PHP_SAPI==='cli'&&is_array($GLOBALS['fcc_event_reconcile_users']??null);
+ if($memo&&array_key_exists($uid,$GLOBALS['fcc_event_reconcile_users']))$u=$GLOBALS['fcc_event_reconcile_users'][$uid];
+ else {$u=fcc_partner_one('SELECT user_id,status,type,preferences FROM users WHERE user_id=?',[$uid]);if($memo)$GLOBALS['fcc_event_reconcile_users'][$uid]=$u;}
+ /* /Custom code: FC-2026-10-14 */
  if(!$u||(int)$u['status']!==1||!fcc_rollout_public_owner($uid))return null;
  $u['fbo_id']=forever_business_extract_user_fbo_id($u['preferences']);
  // FCC status=1 is the existing administrator approved account boundary.
@@ -130,11 +134,18 @@ function fcc_event_member(int $uid,array $d): ?array {
  return $u;
 }
 function fcc_event_cc(string $fbo,string $period): array {
+ /* Custom code: FC-2026-10-14: raw CC facts are shared only within one reconcile loop. */
+ $memo=PHP_SAPI==='cli'&&is_array($GLOBALS['fcc_event_reconcile_cc']??null);$key=$fbo.'|'.$period;
+ if($memo&&array_key_exists($key,$GLOBALS['fcc_event_reconcile_cc']))return $GLOBALS['fcc_event_reconcile_cc'][$key];
+ $finish=static function(array $result)use($memo,$key):array{if($memo)$GLOBALS['fcc_event_reconcile_cc'][$key]=$result;return $result;};
+ /* /Custom code: FC-2026-10-14 */
  $m=fcc_partner_one("SELECT m.*,i.report_kind FROM forever_business_metrics m LEFT JOIN forever_business_imports i ON i.import_id=m.source_import_id WHERE m.fbo_id=? AND m.period_month=?",[$fbo,$period]);
- if(!$m)return ['state'=>'pending','source'=>'unknown','at'=>null];
- if($m['source_import_id']!==null&&!in_array($m['report_kind'],['downline','four_cc_active'],true))return ['state'=>'pending','source'=>'unverified_import','at'=>$m['updated_at']];
+ /* Custom code: FC-2026-10-14 */
+ if(!$m)return $finish(['state'=>'pending','source'=>'unknown','at'=>null]);
+ if($m['source_import_id']!==null&&!in_array($m['report_kind'],['downline','four_cc_active'],true))return $finish(['state'=>'pending','source'=>'unverified_import','at'=>$m['updated_at']]);
  $known=$m['is_4cc_active']!==null||($m['personal_cc']!==null&&$m['total_active_cc']!==null);
- return ['state'=>!$known?'pending':(forever_business_has_verified_four_cc_activity($m)?'eligible':'ineligible'),'source'=>$m['is_4cc_active']!==null?'official':($known?'formula':'unknown'),'at'=>$m['updated_at']];
+ return $finish(['state'=>!$known?'pending':(forever_business_has_verified_four_cc_activity($m)?'eligible':'ineligible'),'source'=>$m['is_4cc_active']!==null?'official':($known?'formula':'unknown'),'at'=>$m['updated_at']]);
+ /* /Custom code: FC-2026-10-14 */
 }
 function fcc_event_access(int $uid,array $s,?DateTimeImmutable $now=null): array {
  $d=fcc_event_definition($s);$u=fcc_event_member($uid,$d);$out=['allowed'=>false,'state'=>'ineligible','reason'=>'account','periods'=>[],'checked_at'=>null];
@@ -294,9 +305,18 @@ function fcc_events_tick(?DateTimeImmutable $now=null): array {
  foreach($seriesBatch as $series){try{fcc_event_transaction(fn()=>fcc_event_materialize($series,$now));}catch(Throwable $e){$errors++;error_log('FCC calendar materialization: '.$series['id'].' '.get_class($e));}}
  $cursor=(int)fcc_partner_notification_config('webinar_calendar_cursor',0);
  $sessions=fcc_partner_rows("SELECT * FROM fcc_webinar_sessions WHERE series_id IS NOT NULL AND status='scheduled' AND ends_at_utc>? AND id>? ORDER BY id LIMIT 20",[$now->format('Y-m-d H:i:s'),$cursor]);
+ /* Custom code: FC-2026-10-14: dispose of facts before due jobs and their fresh delivery checks. */
+ $prior=[];foreach(['fcc_event_reconcile_users','fcc_event_reconcile_cc'] as $key)$prior[$key]=['present'=>array_key_exists($key,$GLOBALS),'value'=>$GLOBALS[$key]??null];
+ try {
+ foreach(array_keys($prior) as $key)$GLOBALS[$key]=[];
  foreach($sessions as $s){$users=fcc_partner_rows('SELECT user_id FROM users WHERE status=1 AND user_id>? ORDER BY user_id LIMIT 200',[(int)$s['member_cursor']]);foreach($users as $u)fcc_event_reconcile_member($s,(int)$u['user_id'],$now);fcc_partner_query('UPDATE fcc_webinar_sessions SET member_cursor=? WHERE id=?',[count($users)===200?(int)end($users)['user_id']:0,(int)$s['id']]);}
+ foreach(array_keys($prior) as $key)unset($GLOBALS[$key]);
+ /* /Custom code: FC-2026-10-14 */
  fcc_partner_notification_config_save('webinar_calendar_cursor',count($sessions)===20?(int)end($sessions)['id']:0);
  $result=fcc_event_run_jobs($now);fcc_wl_tick($now);fcc_partner_notification_config_save('webinar_calendar_heartbeat',['at'=>$now->format('c'),'errors'=>$errors,'sessions'=>count($sessions)]);return $result+['errors'=>$errors];
+ /* Custom code: FC-2026-10-14: restore nested caller data only after fresh due-job processing. */
+ }finally{foreach($prior as $key=>$scope){if($scope['present'])$GLOBALS[$key]=$scope['value'];else unset($GLOBALS[$key]);}}
+ /* /Custom code: FC-2026-10-14 */
 }
 function fcc_event_calendar(int $uid,array $s): string {
  if(!fcc_event_access($uid,$s)['allowed'])throw new InvalidArgumentException(fcc_t('Termin nije dostupan.'));

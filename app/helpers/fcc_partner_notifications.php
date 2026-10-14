@@ -70,7 +70,9 @@ function fcc_partner_notification_sync_user(array $u,DateTimeImmutable $now): vo
  fcc_cc_refresh_notifications($uid,$now);
  try{fcc_top_notify_user($uid,$now);}catch(Throwable $e){error_log('FCC Top notices: '.get_class($e));}
  $admin=(int)$u['type']>0;
- $source=fcc_partner_rows("SELECT internal_notification_id,title,description,url,datetime,for_who FROM internal_notifications WHERE (user_id=? OR user_id IS NULL) AND (for_who='user' OR (?=1 AND for_who='admin')) ORDER BY internal_notification_id DESC LIMIT 100",[$uid,$admin?1:0]);
+ /* Custom code: FC-2026-10-14: keep the original latest 100 horizon and skip already imported rows. */
+ $source=fcc_partner_rows("SELECT recent.* FROM (SELECT internal_notification_id,title,description,url,datetime,for_who FROM internal_notifications WHERE (user_id=? OR user_id IS NULL) AND (for_who='user' OR (?=1 AND for_who='admin')) ORDER BY internal_notification_id DESC LIMIT 100) recent WHERE NOT EXISTS (SELECT 1 FROM fcc_partner_notifications n WHERE n.user_id=? AND n.event_key=CONCAT('legacy:',recent.internal_notification_id)) ORDER BY recent.internal_notification_id DESC",[$uid,$admin?1:0,$uid]);
+ /* /Custom code: FC-2026-10-14 */
  foreach($source as $n) {
   $path=(string)$n['url'];if(str_starts_with($path,SITE_URL))$path=substr($path,strlen(SITE_URL));
   fcc_partner_notify($uid,'legacy:'.$n['internal_notification_id'],$n['for_who']==='admin'?'admin':'service',$n['title'],$n['description'],$path,86400,$n['datetime']);
@@ -201,22 +203,33 @@ function fcc_partner_push_deliver(DateTimeImmutable $now,?callable $transport=nu
 function fcc_partner_notifications_run(?DateTimeImmutable $now=null): array {
  if(getenv('FCC_PARTNER_ENABLED')!=='1') return ['disabled'=>true];
  if(!(int)(fcc_partner_one("SELECT GET_LOCK('fcc_partner_notifications',0) acquired")['acquired']??0)) return ['busy'=>true];
+ /* Custom code: FC-2026-10-14: preserve the caller memo while forcing fresh delivery reads. */
+ $hadGraph=array_key_exists('fcc_team_graph_run',$GLOBALS);$priorGraph=$GLOBALS['fcc_team_graph_run']??null;
+ /* /Custom code: FC-2026-10-14 */
  try {
   $now=($now??new DateTimeImmutable())->setTimezone(new DateTimeZone('Europe/Zagreb'));
   // Cursor ensures every active account is processed across bounded cron runs.
   $cursor=(int)fcc_partner_notification_config('user_cursor',0);
   $users=fcc_partner_rows('SELECT user_id,type FROM users WHERE status=1 AND user_id>? ORDER BY user_id LIMIT 100',[$cursor]);
-  foreach($users as $u) fcc_partner_notification_sync_user($u,$now);
+  /* Custom code: FC-2026-10-14: suspend the memo before all delivery checks, including nested callers. */
+  $GLOBALS['fcc_team_graph_run']=null;
+  try {foreach($users as $u)fcc_partner_notification_sync_user($u,$now);}
+  finally {unset($GLOBALS['fcc_team_graph_run']);}
+  /* /Custom code: FC-2026-10-14 */
   fcc_partner_notification_config_save('user_cursor',count($users)===100?(int)end($users)['user_id']:0);
   /* Custom code: FC-2026-10-12: weekly reminder before reviewed Start pack facts expire */
   if(function_exists('fcc_invite_starter_review_reminders')){try{fcc_invite_starter_review_reminders();}catch(\Throwable $e){error_log('Starter review reminder: '.get_class($e));}}
   if(function_exists('fcc_mp_weekly_summaries')){try{fcc_mp_weekly_summaries($now);}catch(\Throwable $e){error_log('Moj put weekly summary: '.get_class($e));}}
   /* /Custom code: FC-2026-10-12 */
-  fcc_partner_query("INSERT IGNORE INTO fcc_partner_push_deliveries (notification_id,subscription_id,available_at,updated_at) SELECT n.id,s.id,UTC_TIMESTAMP(),UTC_TIMESTAMP() FROM fcc_partner_notifications n JOIN fcc_partner_push_subscriptions s ON s.user_id=n.user_id AND s.active=1 WHERE n.expires_at>UTC_TIMESTAMP() AND n.created_at>=s.created_at AND n.event_key NOT LIKE 'top:%'");
+  /* Custom code: FC-2026-10-14: retain retries and create only missing notification/device pairs. */
+  fcc_partner_query("INSERT IGNORE INTO fcc_partner_push_deliveries (notification_id,subscription_id,available_at,updated_at) SELECT n.id,s.id,UTC_TIMESTAMP(),UTC_TIMESTAMP() FROM fcc_partner_notifications n JOIN fcc_partner_push_subscriptions s ON s.user_id=n.user_id AND s.active=1 WHERE n.expires_at>UTC_TIMESTAMP() AND n.created_at>=s.created_at AND n.event_key NOT LIKE 'top:%' AND NOT EXISTS (SELECT 1 FROM fcc_partner_push_deliveries d WHERE d.notification_id=n.id AND d.subscription_id=s.id)");
+  /* /Custom code: FC-2026-10-14 */
   $stats=fcc_partner_push_deliver($now);
   fcc_partner_notification_config_save(getenv('FCC_PHONE_PILOT')==='1'?'heartbeat_phone':'heartbeat',['at'=>gmdate('c'),'accounts'=>count($users),'transport'=>fcc_partner_push_mode(),'result'=>$stats]);
   return $stats;
- } finally { fcc_partner_query("SELECT RELEASE_LOCK('fcc_partner_notifications')"); }
+ /* Custom code: FC-2026-10-14 */
+ } finally {if($hadGraph)$GLOBALS['fcc_team_graph_run']=$priorGraph;else unset($GLOBALS['fcc_team_graph_run']);fcc_partner_query("SELECT RELEASE_LOCK('fcc_partner_notifications')");}
+ /* /Custom code: FC-2026-10-14 */
 }
 
 function fcc_partner_push_detach(int $uid,string $hash): void {
