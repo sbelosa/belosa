@@ -68,6 +68,11 @@
 !scripts/test_fcc_aloe_provenance.php
 # Custom code: FC-2026-10-14: worker regression guard
 !scripts/test_fcc_worker_cache.php
+!scripts/partner-notifications.php
+!scripts/deploy_fcc_partner_worker.py
+!scripts/test_fcc_worker_lock.php
+!scripts/fixtures/
+!scripts/fixtures/fcc_partner_worker_baseline_20261014.php
 # /Custom code: FC-2026-10-14
 !docs/ANALIZA_POSLOVNA_PREZENTACIJA_2026-10-12.md
 !docs/ANALIZA_MOJ_PUT_2026-10-12.md

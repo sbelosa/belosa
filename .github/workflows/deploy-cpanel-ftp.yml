@@ -7,6 +7,10 @@ on:
     paths:
       - 'app/**'
       - 'themes/**'
+      # Custom code: FC-2026-10-14: the background entry point is versioned and deployed atomically.
+      - 'scripts/partner-notifications.php'
+      - 'scripts/deploy_fcc_partner_worker.py'
+      # /Custom code: FC-2026-10-14
       - '.github/workflows/deploy-cpanel-ftp.yml'
   workflow_dispatch:
     inputs:
@@ -73,6 +77,7 @@ jobs:
             php -l "${php_file}" > /dev/null
           done
 
+          php -l scripts/partner-notifications.php > /dev/null
           echo "PHP lint passed for ${#php_files[@]} deployed files."
 
       - name: Run deterministic release guards
@@ -111,6 +116,7 @@ jobs:
           php scripts/test_fcc_coach_communication.php
           # Custom code: FC-2026-10-14: worker memo scopes and fresh delivery reads
           php scripts/test_fcc_worker_cache.php
+          php scripts/test_fcc_worker_lock.php
           # /Custom code: FC-2026-10-14
           # /Custom code: FC-2026-10-13
           # /Custom code: FC-2026-10-12
@@ -314,6 +320,17 @@ jobs:
           local-dir: ./themes/
           server-dir: /public_html/themes/
           dangerous-clean-slate: false
+
+      # Custom code: FC-2026-10-14: compatible helpers must be verified before replacing the CLI entry point.
+      - name: Deploy and verify Partner background worker atomically
+        env:
+          BEFORE_SHA: ${{ github.event.before || inputs.previous_main_sha }}
+          FTP_TLS_SERVER: ${{ secrets.FTP_TLS_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: python3 scripts/deploy_fcc_partner_worker.py
+      # /Custom code: FC-2026-10-14
 
       - name: Verify Forever Business runtime
         env:
