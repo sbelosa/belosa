@@ -45,6 +45,9 @@ class Partner extends Controller {
    return;
   }
   $uid=(int)$this->user->user_id;
+  /* Custom code: FC-2026-10-14: finance reads bypass unrelated workspace mutations. */
+  if($section==='admin' && isset($_GET['finance'])) { $this->finance_report(); return; }
+  /* /Custom code: FC-2026-10-14 */
   if($section==='help'){fcc_help_page($this);return;}
   // Contact import pilot retired. Old tabs must never exchange Google codes or run imports.
   if($section==='contacts') {
@@ -281,6 +284,46 @@ class Partner extends Controller {
   $view=new \Altum\View('partner/index',(array)$this);
   $this->add_view_content('content',$view->run($data));
  }
+
+ /* Custom code: FC-2026-10-14: administrator finance and safe filtered CSV exports. */
+ private function finance_report(): void {
+  if(!\Altum\Authentication::is_admin()) throw_404();
+  header('Cache-Control: no-store, private');
+  header('X-Robots-Tag: noindex, nofollow, noarchive');
+  if($_SERVER['REQUEST_METHOD']!=='GET') {
+   \Altum\Router::$controller_settings['has_view']=false;
+   http_response_code(405); header('Allow: GET'); return;
+  }
+  require_once APP_PATH.'helpers/fcc_admin_finance.php';
+  $finance=fcc_admin_finance_dashboard($_GET);
+  $export=is_string($_GET['export']??null)?$_GET['export']:'';
+  if(in_array($export,['monthly','accounts'],true)) {
+   \Altum\Router::$controller_settings['has_view']=false;
+   if(empty($finance['available'])){http_response_code(503);header('Content-Type: text/plain; charset=UTF-8');echo fcc_t('Financijski podaci trenutačno nisu dostupni. Pokušaj ponovno.');return;}
+   header('Content-Type: text/csv; charset=UTF-8');
+   header('Content-Disposition: attachment; filename="fcc-financije-'.($export==='monthly'?'mjeseci':'racuni').'.csv"');
+   header('X-Content-Type-Options: nosniff');
+   $out=fopen('php://output','w'); fwrite($out,"\xEF\xBB\xBF");
+   $safe=static function($v):string{$v=(string)$v;return preg_match('/^(?:[\t\r\n]|[\s\x00-\x1f\x{FEFF}]*(?:[=+@\-]|[\t\r\n]))/u',$v)?"'".$v:$v;};
+   $csv=static function(array $row)use($out,$safe):void{fputcsv($out,array_map($safe,$row),';','"','');};
+   if($export==='monthly') {
+    $csv(['Mjesec','Valuta','Naplaćeno','Povrati','Neto naplaćeno','Uplate','Neuspjeli pokušaji','Problematični računi','Pogođeni korisnici','Oporavci']);
+    $digits=$finance['minor_digits'];$money=static fn($v)=>number_format($v/(10**$digits),$digits,',','');
+    foreach($finance['monthly'] as $r)$csv([$r['month'],$finance['filters']['currency'],$money($r['gross_minor']),$money($r['refunded_minor']),$money($r['net_minor']),$r['paid_count'],(!isset($r['events_recorded'])||$r['events_recorded'])?$r['failed_count']:'Nije praćeno',(!isset($r['events_recorded'])||$r['events_recorded'])?$r['failed_invoices']:'Nije praćeno',(!isset($r['events_recorded'])||$r['events_recorded'])?$r['affected_users']:'Nije praćeno',(!isset($r['events_recorded'])||$r['events_recorded'])?$r['recovered_count']:'Nije praćeno']);
+   } else {
+    $csv(['ID korisnika','Ime','Email','Status','PRO pristup','Pretplata','Procesor','Valuta','Kraj razdoblja','Posljednja uplata','Razlog problema','Sljedeći pokušaj']);
+    $stateLabels=['renewing_paid'=>'Plaćena uz obnovu','trial'=>'Proba prema FCC evidenciji','payment_risk'=>'Problem s naplatom','nonrenewing'=>'Bez iduće obnove','access_revoked'=>'Pristup ukinut','manual_granted'=>'PRO bez pretplate','unknown_subscription'=>'Pretplata za provjeru','inactive'=>'Bez aktivnog PRO pristupa'];
+    foreach($finance['export_accounts'] as $r)$csv([$r['user_id'],$r['name'],$r['email'],$stateLabels[$r['state']]??$r['state'],$r['pro_access']?'Da':'Ne',$r['subscription']?'Da':'Ne',$r['processor'],$r['currency'],$r['due_at'],$r['last_paid_at'],$r['reason_code'],$r['next_retry_at']]);
+   }
+   fclose($out);return;
+  }
+  if(empty($finance['available']))http_response_code(503);
+  \Altum\Title::set(fcc_t('Financije'));
+  \Altum\Event::add_content('<link rel="stylesheet" href="'.ASSETS_FULL_URL.'css/fcc-admin-finance.css?v='.filemtime(ASSETS_PATH.'css/fcc-admin-finance.css').'">','fcc_styles');
+  $view=new \Altum\View('partner/admin-finance',(array)$this);
+  $this->add_view_content('content',$view->run(['finance'=>$finance,'finance_error'=>$finance['error']??null]));
+ }
+ /* /Custom code: FC-2026-10-14 */
 
  /* Custom code: FC-2026-10-12: the simple card editor. POST changes one thing and answers with fresh steps. */
  private function card_editor(int $uid): void {

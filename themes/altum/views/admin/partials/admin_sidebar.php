@@ -77,6 +77,9 @@ try {
             </div>
             <!-- /Custom code: FC-2026-08-21 -->
 
+            <!-- Custom code: FC-2026-10-14: the same finance report from the classic administrator menu. -->
+            <li><a class="nav-link text-truncate" href="<?= url('partner/admin?finance=1') ?>"><i class="fas fa-fw fa-sm fa-chart-line mr-2" aria-hidden="true"></i> <?= htmlspecialchars(fcc_t('Financije i naplata'), ENT_QUOTES, 'UTF-8') ?></a></li>
+            <!-- /Custom code: FC-2026-10-14 -->
             <li class="<?= \Altum\Router::$controller === 'AdminFccAccess' ? 'active' : null ?>"><a class="nav-link text-truncate" href="<?= url('admin/fcc-access') ?>"><i class="fas fa-fw fa-sm fa-user-check mr-2"></i> <?= htmlspecialchars(fcc_t('Pristup novom FCC-u'), ENT_QUOTES, 'UTF-8') ?></a></li>
             <li class="<?= in_array(\Altum\Router::$controller, ['AdminUsers', 'AdminUserUpdate', 'AdminUserCreate', 'AdminUserView']) ? 'active' : null ?>">
                 <a class="nav-link text-truncate" href="<?= url('admin/users') ?>">

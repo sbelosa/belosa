@@ -667,3 +667,13 @@ body.fcc-partner-mode .fp-section-notifications #preferences>p{font-size:13px;li
 @media(max-width:650px){body.fcc-partner-mode .fp-page .fp-card-preview{padding:0 20px 20px}body.fcc-partner-mode .fp-page .fp-card-preview .fp-card-cover{margin:0 -20px 18px;padding:18px 20px;height:76px!important}}
 /* Custom code: FC-2026-10-12: on Danas the buttons of the saved step and next event cards never touch the text below them. */
 .fp-page :is(.jp-done,.fp-event-next)>.fp-actions:not(:last-child){margin-bottom:18px}
+
+/* Custom code: FC-2026-10-14: readable invitation administration at all viewport widths. */
+body.fcc-partner-mode #invite-admin .fp-invite-confirm{width:100%;height:auto;min-height:44px;display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-start;gap:12px;line-height:1.6;color:var(--fp-ink,#143d35);padding:12px 0;border:0;border-radius:0;background:transparent;cursor:pointer}
+body.fcc-partner-mode #invite-admin .fp-invite-confirm input[type="checkbox"]{appearance:auto;width:20px;height:20px;min-height:20px;flex:0 0 20px;margin:2px 0 0;padding:0;accent-color:#106653}
+body.fcc-partner-mode #invite-admin .fp-form{gap:12px;margin:20px 0 28px}
+body.fcc-partner-mode #invite-admin .fp-button{max-width:100%;white-space:normal;text-align:center;line-height:1.45;min-height:48px}
+body.fcc-partner-mode #invite-admin .fp-invite-reviews{padding-left:24px;margin:16px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 32px;line-height:1.65;font-size:13px}
+body.fcc-partner-mode #invite-admin .fp-invite-reviews li{padding-left:3px;overflow-wrap:anywhere}
+@media(max-width:640px){body.fcc-partner-mode #invite-admin .fp-invite-reviews{grid-template-columns:1fr;gap:9px}body.fcc-partner-mode #invite-admin .fp-form>.fp-button{width:100%;align-self:stretch}}
+/* /Custom code: FC-2026-10-14 */

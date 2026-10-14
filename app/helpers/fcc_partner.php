@@ -260,8 +260,13 @@ function fcc_partner_activate_plan(int $uid,int $id): void {
 /** Admin aggregates always derive from canonical FCC tables and require admin identity. */
 function fcc_partner_admin_overview(): array {
  if(!\Altum\Authentication::is_admin()) throw new RuntimeException(fcc_t('Administrator required.'));
+ /* Custom code: FC-2026-10-14: the overview and finance report share the actual PRO entitlement. */
+ $userCounts=fcc_partner_one('SELECT COUNT(*) total,SUM(status=0) pending,SUM(status=1) active FROM users');
+ $userCounts['paid']=0;
+ foreach(fcc_partner_rows('SELECT status,plan_settings,plan_expiration_date,extra FROM users WHERE type=0')as$account)if(fcc_pro_access_for_user($account))$userCounts['paid']++;
+ /* /Custom code: FC-2026-10-14 */
  return [
-  'users'=>fcc_partner_one("SELECT COUNT(*) total,SUM(status=0) pending,SUM(status=1) active,SUM(status=1 AND plan_expiration_date>NOW() AND LOWER(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(plan_settings,'$.ai_growth_plan_is_enabled')),'')) IN ('true','1')) paid FROM users"),
+  'users'=>$userCounts,
   'content'=>fcc_partner_one("SELECT COUNT(*) total,SUM(is_published=1) published FROM blog_posts"),
   'cards'=>fcc_partner_one("SELECT COUNT(*) total,SUM(is_enabled=1) active FROM links WHERE type='biolink'"),
   'support'=>fcc_partner_one("SELECT COUNT(*) total,SUM(status<>'closed') open,SUM(status='open') waiting FROM feedback_tickets"),

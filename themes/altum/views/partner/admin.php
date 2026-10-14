@@ -1,6 +1,9 @@
 <?php defined('ALTUMCODE') || die(); if(!\Altum\Authentication::is_admin()) return; $a=$data->admin; ?>
 <?php foreach(['recipes'=>'admin-recipes','coach'=>'admin-coach','pilot'=>'admin-pilot'] as $q=>$view)if(isset($_GET[$q])){require THEME_PATH.'views/partner/'.$view.'.php';return;} ?>
 <nav class="fp-admin-shortcuts">
+<!-- Custom code: FC-2026-10-14: financial control is an administrator destination. -->
+<a class="fp-button fp-button-outline" href="<?= url('partner/admin?finance=1') ?>"><?= $h(fcc_t('Financije i naplata')) ?></a>
+<!-- /Custom code: FC-2026-10-14 -->
 <?php foreach([[fcc_rel_t('all_members'),'admin/users'],[fcc_rel_t('monitor'),'partner/admin#usage'],[fcc_t('Webinari i događaji'),'admin/webinars'],[fcc_t('Marketing plan i poslovne prezentacije'),'admin/marketing-plan'],[fcc_t('FCC recepture i izvori →'),'partner/admin?recipes=1'],[fcc_t('Ocjene AI Coacha →'),'partner/admin?coach=1'],[fcc_t('90 koraka · mentori i pregled'),'partner/admin?pilot=1'],[fcc_t('Pristup novom FCC-u →'),'admin/fcc-access']] as [$label,$path]): ?><a class="fp-button fp-button-outline" href="<?= url($path) ?>"><?= $h($label) ?></a><?php endforeach ?>
 </nav>
 <?php require THEME_PATH.'views/partner/admin-usage.php'; ?>

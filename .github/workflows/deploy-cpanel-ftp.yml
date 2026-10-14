@@ -94,6 +94,11 @@ jobs:
 
           php scripts/test_authentication_stripe_restore_guard.php
           php scripts/test_billing_recovery_guard.php
+          # Custom code: FC-2026-10-14: finance values, administrator guards and safe exports.
+          php scripts/test_fcc_admin_finance.php
+          php scripts/test_fcc_admin_finance_controller.php
+          php scripts/test_fcc_admin_finance_view.php
+          # /Custom code: FC-2026-10-14
           php scripts/test_account_plan.php
           # Custom code: FC-2026-09-14: Verify registration rejection and success paths before publishing
           php scripts/test_registration_security.php
