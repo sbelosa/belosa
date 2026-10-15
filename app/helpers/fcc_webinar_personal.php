@@ -14,10 +14,13 @@ function fcc_webinar_personal_owned(int $uid,int $id,bool $lock=false): array {
  if(!$s)throw new InvalidArgumentException(fcc_t('Vlastiti webinar nije pronađen.'));
  return $s;
 }
-function fcc_webinar_personal_overview(int $uid): array {
+/* Custom code: FC-2026-10-15: ongoing events remain current until their end, with a separate archive. */
+function fcc_webinar_personal_overview(int $uid,bool $archive=false): array {
  if(!fcc_webinar_personal_ready())return [];
- return fcc_partner_rows("SELECT s.*,(SELECT COUNT(*) FROM fcc_webinar_registrations r WHERE r.session_id=s.id AND r.user_id=s.owner_user_id AND r.status='registered') registrations FROM fcc_webinar_sessions s WHERE s.owner_user_id=? AND s.series_id IS NULL ORDER BY (s.status='scheduled' AND s.starts_at_utc>UTC_TIMESTAMP()) DESC,s.starts_at_utc DESC,s.id DESC LIMIT 100",[$uid]);
+ $current="s.status='scheduled' AND s.ends_at_utc>UTC_TIMESTAMP()";
+ return fcc_partner_rows("SELECT s.*,(SELECT COUNT(*) FROM fcc_webinar_registrations r WHERE r.session_id=s.id AND r.user_id=s.owner_user_id AND r.status='registered') registrations FROM fcc_webinar_sessions s WHERE s.owner_user_id=? AND s.series_id IS NULL AND ".($archive?'NOT ('.$current.')':$current)." ORDER BY s.starts_at_utc ".($archive?'DESC':'ASC').",s.id LIMIT 100",[$uid]);
 }
+/* /Custom code: FC-2026-10-15 */
 function fcc_webinar_personal_values(array $s): array {
  $date=(new DateTimeImmutable($s['starts_at_utc'],new DateTimeZone('UTC')))->setTimezone(new DateTimeZone($s['timezone']));
  return ['custom_title'=>$s['title'],'custom_description'=>fcc_event_definition($s)['description']??'','custom_date'=>$date->format('Y-m-d'),'custom_time'=>$date->format('H:i'),'custom_timezone'=>$s['timezone'],'custom_access_url'=>$s['access_url'],'custom_duration'=>(int)((strtotime($s['ends_at_utc'].' UTC')-strtotime($s['starts_at_utc'].' UTC'))/60),'revision'=>(int)$s['revision']];

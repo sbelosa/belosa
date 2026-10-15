@@ -98,6 +98,9 @@ jobs:
           php scripts/test_fcc_admin_finance.php
           php scripts/test_fcc_admin_finance_controller.php
           php scripts/test_fcc_admin_finance_view.php
+          # Custom code: FC-2026-10-15: protect webinar removal, recurrence and expiry boundaries.
+          php scripts/test_fcc_webinar_lifecycle.php
+          # /Custom code: FC-2026-10-15
           # Custom code: FC-2026-10-14: personal public data, owner referral and contact boundaries.
           php scripts/test_fcc_sponsoring.php
           php scripts/test_fcc_sponsoring_controller.php
@@ -252,6 +255,10 @@ jobs:
           # Custom code: FC-2026-10-12: existing editor helpers add compatible routing functions.
           # They must arrive before Link/Partner controllers or the editor view calls those functions.
           cp app/helpers/fcc_card_editor.php release-prerequisites/helpers/
+          # Custom code: FC-2026-10-15: compatible webinar helpers precede controllers and confirmation views.
+          cp app/helpers/fcc_webinar_events.php app/helpers/fcc_webinar_managed.php app/helpers/fcc_webinar_personal.php release-prerequisites/helpers/
+          cp themes/altum/assets/css/fcc-events.css release-prerequisites/themes/altum/assets/css/
+          # /Custom code: FC-2026-10-15
           cp app/init.php release-prerequisites/init/
           cp themes/altum/views/partner/journey.php themes/altum/views/partner/journey-pilot.php release-prerequisites/views/altum/views/partner/
           echo "Sent before app/init.php:"

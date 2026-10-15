@@ -8,7 +8,8 @@ class AdminWebinars extends Controller {
   $sid=(int)($_GET['session']??$_POST['session_id']??0);$id=(int)($_GET['series']??$_POST['series_id']??0);
   $s=$sid?fcc_partner_one('SELECT * FROM fcc_webinar_sessions WHERE id=? AND series_id IS NOT NULL',[$sid]):null;if($sid&&!$s)throw_404();if($s)$id=(int)$s['series_id'];
   $series=$id?fcc_partner_one('SELECT * FROM fcc_webinar_series WHERE id=?',[$id]):null;if($id&&!$series)throw_404();
-  if($series&&!empty($series['organizer_user_id'])){
+  /* Custom code: FC-2026-10-15: admin removal supports managed events without changing their organizer. */
+  if($series&&!empty($series['organizer_user_id'])&&!($_SERVER['REQUEST_METHOD']==='POST'&&($_POST['action']??'')==='remove_event')){
    $managedSession=$s?:fcc_partner_one("SELECT * FROM fcc_webinar_sessions WHERE series_id=? ORDER BY (status='scheduled' AND starts_at_utc>UTC_TIMESTAMP()) DESC,starts_at_utc LIMIT 1",[$id]);
    if($managedSession)redirect('partner-webinar?view=manage&session_id='.(int)$managedSession['id']);
   }
@@ -18,6 +19,8 @@ class AdminWebinars extends Controller {
   if($_SERVER['REQUEST_METHOD']==='POST'){
    try {
     if(!is_string($_POST['token']??null)||!hash_equals(\Altum\Csrf::get(),$_POST['token']))throw new \InvalidArgumentException(fcc_t('Sesija je istekla. Osvježi stranicu.'));
+    if(($_POST['action']??'')==='remove_event'){fcc_event_remove($uid,$sid,(int)($_POST['revision']??0),$_POST);redirect('admin/webinars?removed=1');}
+    /* /Custom code: FC-2026-10-15 */
     $action=(string)($_POST['action']??'');if(in_array($action,['save_draft','save_publish'],true)){$_POST['publish_state']=$action==='save_publish'?'published':'draft';$action='save';}
     if(in_array($action,['preview','save','change','edit'],true)){
      $_POST=\fcc_seminar_upload($_POST,$_FILES);$d=fcc_event_validate($_POST,false);$editing=true;
@@ -36,7 +39,9 @@ class AdminWebinars extends Controller {
    catch(\Throwable $e){error_log('FCC event admin: '.$e->getMessage());$error=fcc_t('Spremanje nije uspjelo. Tvoj unos je sačuvan.');http_response_code(500);}
   }
   $filter=in_array($_GET['view']??'',['series','archive'],true)?$_GET['view']:'upcoming';
-  $sessions=fcc_partner_rows("SELECT * FROM fcc_webinar_sessions WHERE series_id IS NOT NULL ".($id?'AND series_id=? ':($filter==='archive'?"AND (ends_at_utc<=UTC_TIMESTAMP() OR status='cancelled') ":"AND (ends_at_utc>UTC_TIMESTAMP() OR status='postponed') ")).'ORDER BY starts_at_utc,id LIMIT 200',$id?[$id]:[]);
+  /* Custom code: FC-2026-10-15: the active schedule ends exactly at the stored UTC end, including series views. */
+  $sessions=fcc_partner_rows("SELECT * FROM fcc_webinar_sessions WHERE series_id IS NOT NULL ".($id?'AND series_id=? ':'').($filter==='archive'?"AND (ends_at_utc<=UTC_TIMESTAMP() OR status IN ('cancelled','postponed')) ":"AND status='scheduled' AND ends_at_utc>UTC_TIMESTAMP() ").'ORDER BY starts_at_utc,id LIMIT 200',$id?[$id]:[]);
+  /* /Custom code: FC-2026-10-15 */
   $allSeries=fcc_partner_rows('SELECT * FROM fcc_webinar_series ORDER BY updated_at DESC LIMIT 100');
   $members=fcc_partner_rows('SELECT user_id,name FROM users WHERE status=1 ORDER BY name LIMIT 1000');
   $audit=$id?fcc_partner_rows('SELECT * FROM fcc_webinar_audit WHERE series_id=? ORDER BY id DESC LIMIT 15',[$id]):[];

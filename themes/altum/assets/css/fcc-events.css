@@ -3,3 +3,7 @@
 .fe-row strong,.fe-detail h1,.fe-detail h2{overflow-wrap:anywhere}
 @media(max-width:700px){.fe-row:has(.fe-date){display:grid;grid-template-columns:60px minmax(0,1fr) 12px;gap:12px}.fe-row:has(.fe-date)>.fe-badge{grid-column:2/-1;justify-self:start;margin-left:0}}
 .fe-row:not(:has(.fe-date))>span:first-child{flex:1;min-width:0}.fe-row:not(:has(.fe-date))>span:nth-child(2){flex:0 0 auto}
+
+/* Custom code: FC-2026-10-15: a separate deliberate removal action matches the existing event controls. */
+.fe-remove{max-width:850px;margin:20px 0;color:#7b2924}.fe-remove>summary{display:list-item;list-style-position:inside;cursor:pointer;border:1px solid #b56c65;border-radius:12px;padding:12px 16px;min-height:44px;width:fit-content;font-weight:600;background:#fff;box-sizing:border-box}.fe-remove>summary:hover{background:#fff5f3}.fe-remove-body{padding:20px 0;max-width:70ch;color:#173e32}.fe-remove-body h3{font-size:21px;margin:0 0 12px}.fe-remove-body p{line-height:1.6}.fe-remove-body .fe-check{margin:0;font-size:16px}.fe-remove-button.fp-button{color:#7b2924!important;border-color:#b56c65;justify-self:start}.fe-remove-button.fp-button:hover{color:#fff!important;background:#7b2924;border-color:#7b2924}.fe-remove:focus-within{outline-offset:4px}.fe-remove :focus-visible{outline:3px solid #185b49;outline-offset:3px}@media(max-width:700px){.fe-remove>summary,.fe-remove-button.fp-button{width:100%}.fe-remove-body select{font-size:16px}}
+/* /Custom code: FC-2026-10-15 */

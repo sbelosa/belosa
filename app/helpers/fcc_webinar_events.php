@@ -174,7 +174,9 @@ function fcc_event_list(int $uid,?DateTimeImmutable $now=null,bool $invitable=fa
   foreach($graph as $id=>$record)if(in_array(fcc_team_primary((int)$id,$graph),$path,true))$organizers[]=(int)$id;
   $visibility=' AND series_id IN (SELECT id FROM fcc_webinar_series WHERE organizer_user_id IS NULL OR organizer_user_id='.(int)$uid." OR (audience_scope='team' AND organizer_user_id IN (".implode(',',$organizers?:[0]).')))';
  }
- foreach(fcc_partner_rows("SELECT * FROM fcc_webinar_sessions WHERE series_id IS NOT NULL AND status<>'draft' AND (ends_at_utc>? OR (status='postponed' AND updated_at>?)) ".$visibility." ORDER BY starts_at_utc,id LIMIT 500",[$now->format('Y-m-d H:i:s'),$now->modify('-90 days')->format('Y-m-d H:i:s')]) as $s){
+ /* Custom code: FC-2026-10-15: only current published events belong in the active list. */
+ foreach(fcc_partner_rows("SELECT * FROM fcc_webinar_sessions WHERE series_id IS NOT NULL AND status='scheduled' AND ends_at_utc>? ".$visibility." ORDER BY starts_at_utc,id LIMIT 500",[$now->format('Y-m-d H:i:s')]) as $s){
+ /* /Custom code: FC-2026-10-15 */
   $d=fcc_event_definition($s);if($kind!==''&&$d['kind']!==$kind)continue;
   if(!fcc_event_access($uid,$s,$now)['allowed'])continue;
   if($invitable&&!fcc_event_invitable($uid,$s,$now))continue;$s['title']=fcc_webinar_title($s);$out[]=$s;
@@ -213,7 +215,8 @@ function fcc_event_reconcile_member(array $s,int $uid,?DateTimeImmutable $now=nu
 function fcc_event_slot(array $s): int {
  $d=fcc_event_definition($s);return (int)($d['slot_index']??0);
 }
-function fcc_event_apply_change(array $s,array $d,string $status,int $actor,string $reason,?DateTimeImmutable $now=null): void {
+/* Custom code: FC-2026-10-15: historical removals invalidate jobs without sending a new cancellation. */
+function fcc_event_apply_change(array $s,array $d,string $status,int $actor,string $reason,?DateTimeImmutable $now=null,bool $notify=true): void {
  $now=fcc_event_now($now);$start=$s['starts_at_utc'];$end=$s['ends_at_utc'];
  if($status==='scheduled'){$date=fcc_event_local_time($d['date'],$d['time'],$d['timezone']??'Europe/Zagreb');$start=$date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');$end=$date->modify('+'.$d['duration'].' minutes')->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');if($d['mode']==='online')fcc_event_collision($start,$end,(int)$s['id'],!empty($d['managed'])?$d['access_url']:null);}
  $d['date']=(new DateTimeImmutable($start,new DateTimeZone('UTC')))->setTimezone(new DateTimeZone($d['timezone']??$s['timezone']))->format('Y-m-d');
@@ -224,10 +227,44 @@ function fcc_event_apply_change(array $s,array $d,string $status,int $actor,stri
  fcc_partner_query("UPDATE fcc_partner_push_deliveries p JOIN fcc_partner_notifications n ON n.id=p.notification_id SET p.status='skipped',p.last_code='event_changed' WHERE n.event_key LIKE ? AND p.status IN ('pending','sending')",['webinar:calendar:'.$s['id'].':%']);
  fcc_partner_query("UPDATE fcc_webinar_jobs j JOIN fcc_webinar_registrations r ON r.id=j.registration_id SET j.state='cancelled',j.updated_at=UTC_TIMESTAMP() WHERE r.session_id=? AND j.state IN ('pending','processing') AND j.kind NOT IN ('project','owner_confirmation')",[(int)$s['id']]);
  $next=fcc_partner_one('SELECT * FROM fcc_webinar_sessions WHERE id=?',[(int)$s['id']]);
+ if($notify){
  foreach(fcc_partner_rows("SELECT * FROM fcc_webinar_registrations WHERE session_id=? AND status='registered'",[(int)$s['id']]) as $r){fcc_webinar_job((int)$r['id'],$status==='scheduled'?(!$r['email_verified_at']&&$r['reminder_opt_in']?'confirmation':'changed'):$status,(int)$next['revision'],$now->format('Y-m-d H:i:s'));fcc_webinar_schedule($r,$next,$now);}
  foreach(fcc_partner_rows("SELECT user_id FROM fcc_webinar_member_access WHERE session_id=? AND state='eligible'",[(int)$s['id']]) as $member)fcc_event_job($next,(int)$member['user_id'],$status==='scheduled'?'changed':$status,$now,$now->modify('+7 days'),null,$now);
+ }
  fcc_event_audit($actor,'change',(int)$s['series_id'],(int)$s['id'],['before'=>['start'=>$s['starts_at_utc'],'status'=>$s['status'],'revision'=>$s['revision']],'after'=>['start'=>$start,'status'=>$status,'revision'=>$next['revision']],'reason'=>$reason]);
 }
+/* /Custom code: FC-2026-10-15 */
+
+/* Custom code: FC-2026-10-15: admin removal keeps invitation and calendar identities for cancellation and history. */
+function fcc_event_remove(int $actor,int $sid,int $revision,array $input,?DateTimeImmutable $now=null): void {
+ fcc_event_admin($actor);
+ if(($input['confirm_remove']??'')!=='1')throw new InvalidArgumentException(fcc_t('Potvrdi uklanjanje ovog webinara.'));
+ $scope=fcc_partner_choice($input['remove_scope']??'one',['one'=>1,'future'=>1]);$now=fcc_event_now($now);
+ fcc_event_transaction(function()use($actor,$sid,$revision,$input,$scope,$now){
+  $s=fcc_partner_one('SELECT * FROM fcc_webinar_sessions WHERE id=? AND series_id IS NOT NULL FOR UPDATE',[$sid]);
+  if(!$s||(int)$s['revision']!==$revision)throw new InvalidArgumentException(fcc_t('Termin je izmijenjen. Osvježi prikaz.'));
+  $series=fcc_partner_one('SELECT * FROM fcc_webinar_series WHERE id=? FOR UPDATE',[(int)$s['series_id']]);
+  if(!$series)throw new InvalidArgumentException(fcc_t('Termin nije dostupan.'));
+  $targets=[$s];
+  if($scope==='future'){
+   if((int)$series['revision']!==(int)($input['series_revision']??0))throw new InvalidArgumentException(fcc_t('Serija je izmijenjena. Osvježi prikaz.'));
+   $targets=fcc_partner_rows('SELECT * FROM fcc_webinar_sessions WHERE series_id=? AND (ends_at_utc>? OR id=?) FOR UPDATE',[(int)$s['series_id'],$now->format('Y-m-d H:i:s'),$sid]);
+   $targets=array_values(array_filter($targets,fn($t)=>fcc_event_slot($t)>=fcc_event_slot($s)));
+   fcc_partner_query("UPDATE fcc_webinar_series SET status='paused',revision=revision+1,updated_at=UTC_TIMESTAMP() WHERE id=?",[(int)$s['series_id']]);
+  }
+  foreach($targets as $target){
+   if($target['status']==='cancelled')continue;
+   fcc_event_apply_change($target,fcc_event_definition($target),'cancelled',$actor,fcc_event_manage_t('reason'),$now,$target['ends_at_utc']>$now->format('Y-m-d H:i:s'));
+  }
+  fcc_event_audit($actor,'remove',(int)$s['series_id'],$sid,['scope'=>$scope,'count'=>count($targets)]);
+ });
+}
+function fcc_event_manage_t(string $key): string {
+ static $copy;
+ $copy??=json_decode(file_get_contents(APP_PATH.'config/webinar-management-copy.json'),true);
+ return $copy[fcc_locale()][$key]??$copy['en'][$key]??$key;
+}
+/* /Custom code: FC-2026-10-15 */
 function fcc_event_change(int $actor,int $sid,int $revision,array $input,string $status,string $scope='one',?DateTimeImmutable $now=null): void {
  $existing=fcc_partner_one('SELECT * FROM fcc_webinar_sessions WHERE id=?',[$sid]);$managed=$existing?fcc_mw_series($existing):null;
  if($managed)fcc_mw_require_owner($actor,$existing,$status!=='scheduled');else fcc_event_admin($actor);

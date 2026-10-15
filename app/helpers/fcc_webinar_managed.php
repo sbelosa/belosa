@@ -89,10 +89,14 @@ function fcc_mw_create(int $uid,array $input,?DateTimeImmutable $now=null): arra
   return fcc_partner_one('SELECT * FROM fcc_webinar_sessions WHERE series_id=? ORDER BY starts_at_utc LIMIT 1',[$id]);
  });
 }
-function fcc_mw_overview(int $uid): array {
+/* Custom code: FC-2026-10-15: keep completed series out of the current overview and retain an explicit archive. */
+function fcc_mw_overview(int $uid,bool $archive=false): array {
  if(!fcc_mw_ready())return [];
- return fcc_partner_rows("SELECT s.*,w.audience_scope,w.organizer_user_id,(SELECT COUNT(*) FROM fcc_webinar_registrations r WHERE r.session_id=s.id AND r.status='registered') registrations FROM fcc_webinar_series w JOIN fcc_webinar_sessions s ON s.series_id=w.id WHERE w.organizer_user_id=? AND s.id=COALESCE((SELECT x.id FROM fcc_webinar_sessions x WHERE x.series_id=w.id AND x.status='scheduled' AND x.starts_at_utc>UTC_TIMESTAMP() ORDER BY x.starts_at_utc LIMIT 1),(SELECT x.id FROM fcc_webinar_sessions x WHERE x.series_id=w.id ORDER BY x.starts_at_utc DESC LIMIT 1)) ORDER BY s.starts_at_utc LIMIT 100",[$uid]);
+ $current="x.status='scheduled' AND x.ends_at_utc>UTC_TIMESTAMP()";
+ $choice=$archive?"NOT (".$current.")":"(".$current.")";
+ return fcc_partner_rows("SELECT s.*,w.audience_scope,w.organizer_user_id,(SELECT COUNT(*) FROM fcc_webinar_registrations r WHERE r.session_id=s.id AND r.status='registered') registrations FROM fcc_webinar_series w JOIN fcc_webinar_sessions s ON s.series_id=w.id WHERE w.organizer_user_id=? AND s.id=(SELECT x.id FROM fcc_webinar_sessions x WHERE x.series_id=w.id AND ".$choice." ORDER BY x.starts_at_utc ".($archive?'DESC':'ASC').",x.id LIMIT 1) ORDER BY s.starts_at_utc ".($archive?'DESC':'ASC')." LIMIT 100",[$uid]);
 }
+/* /Custom code: FC-2026-10-15 */
 function fcc_mw_preferred(int $uid,array $events,int $explicit=0): ?array {
  if(!$events)return null;
  if($explicit)foreach($events as $s)if((int)$s['id']===$explicit)return $s;

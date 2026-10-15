@@ -19,7 +19,10 @@ function fcc_event_member_page($controller,array $params): void {
  }
  $error=null;
  if($_SERVER['REQUEST_METHOD']==='POST'){
-  try{if(!$s||!is_string($_POST['token']??null)||!hash_equals(\Altum\Csrf::get(),$_POST['token']))throw new InvalidArgumentException(fcc_t('Osvježi prikaz prije spremanja.'));if(($_POST['action']??'')==='rsvp') {fcc_event_rsvp_save($uid,$sid,(int)($_POST['revision']??0),(string)($_POST['rsvp']??''));redirect('partner/webinars/'.$sid.'?saved=rsvp#moja-prijava');}
+  try{if(!$s||!is_string($_POST['token']??null)||!hash_equals(\Altum\Csrf::get(),$_POST['token']))throw new InvalidArgumentException(fcc_t('Osvježi prikaz prije spremanja.'));/* Custom code: FC-2026-10-15: admin removal uses the same CSRF boundary as member actions. */
+   if(($_POST['action']??'')==='remove_event'){fcc_event_remove($uid,$sid,(int)($_POST['revision']??0),$_POST);redirect('partner/webinars?removed=1');}
+   /* /Custom code: FC-2026-10-15 */
+   if(($_POST['action']??'')==='rsvp') {fcc_event_rsvp_save($uid,$sid,(int)($_POST['revision']??0),(string)($_POST['rsvp']??''));redirect('partner/webinars/'.$sid.'?saved=rsvp#moja-prijava');}
    if(($_POST['action']??'')!=='mute')throw new InvalidArgumentException(fcc_t('Radnja nije dostupna.'));fcc_event_reconcile_member($s,$uid);fcc_partner_query('UPDATE fcc_webinar_member_access SET muted=? WHERE session_id=? AND user_id=?',[empty($_POST['muted'])?0:1,$sid,$uid]);redirect('partner/webinars/'.$sid.'?saved=1');}catch(InvalidArgumentException $e){$error=$e->getMessage();http_response_code(422);}
  }
  $kind=isset(fcc_event_types()[$_GET['kind']??''])?$_GET['kind']:'';$events=$s?[]:fcc_event_list($uid,null,false,$kind);

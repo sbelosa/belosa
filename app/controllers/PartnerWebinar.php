@@ -110,7 +110,10 @@ class PartnerWebinar extends Controller {
   }
   $data=['error'=>$error,'values'=>$input,'view'=>$view,'pro'=>$pro,'attempt'=>$a,'session'=>$s,'default'=>$default,'registrations'=>$registrations,'attempts'=>$attempts,'mail'=>$mail,'cards'=>$cards,'webinar'=>$webinar,'personal_events'=>$channel==='webinar'?fcc_webinar_personal_list($uid):[],'personal_ready'=>$channel==='webinar'&&fcc_webinar_personal_ready(),'share_type'=>$channel,'form_key'=>bin2hex(random_bytes(16)),'step'=>$selectedStep,'contact_id'=>(int)($_GET['contact_id']??0),'contacts'=>fcc_partner_rows("SELECT id,name FROM fcc_partner_contacts WHERE user_id=? AND contact_permission<>'do_not_contact' ORDER BY name LIMIT 200",[$uid])];
   $data['edit_session']=$editSession;
-  $data['managed_events']=$view==='events'?array_merge(fcc_mw_overview($uid),fcc_webinar_personal_overview($uid)):[];
+  /* Custom code: FC-2026-10-15: explicit archive, current webinars expire at their end. */
+  $data['events_archive']=($_GET['archive']??'')==='1';
+  $data['managed_events']=$view==='events'?array_merge(fcc_mw_overview($uid,$data['events_archive']),fcc_webinar_personal_overview($uid,$data['events_archive'])):[];
+  /* /Custom code: FC-2026-10-15 */
   $data['event_registrations']=$editSession?(int)fcc_partner_one("SELECT COUNT(*) n FROM fcc_webinar_registrations WHERE session_id=? AND user_id=? AND status='registered'",[(int)$editSession['id'],$uid])['n']:0;
   \Altum\Title::set(match($view){'edit'=>'Uredi webinar','events'=>'Moji webinari',default=>'Video pozivnica'});
   $template=new \Altum\View('partner/webinar-workspace',(array)$this);

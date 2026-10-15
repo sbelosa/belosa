@@ -16,6 +16,11 @@ $token='<input type="hidden" name="token" value="'.$h(\Altum\Csrf::get()).'">';
    <?php endif ?>
   </section>
   <section class="fp-invite-compose fv-config">
+   <!-- Custom code: FC-2026-10-15: administrators can remove an opened managed event. -->
+   <?php if($s&&\Altum\Authentication::is_admin()): ?>
+   <link rel="stylesheet" href="<?= ASSETS_FULL_URL ?>css/fcc-events.css?v=<?= filemtime(ASSETS_PATH.'css/fcc-events.css') ?>">
+   <?php require __DIR__.'/event-remove.php'; endif ?>
+   <!-- /Custom code: FC-2026-10-15 -->
    <?php if(!$upcoming): ?><p class="fv-notice"><?= $h($t('past')) ?></p><?php elseif(!$data->pro): ?><p class="fv-notice"><?= $h(fcc_t('Za uređivanje i ponovno otvaranje potreban je aktivni PRO paket. Webinar i dalje možeš ukloniti.')) ?></p><?php endif ?>
    <form method="post" action="<?= $h($base) ?>" class="fp-form">
     <?= $token ?><input type="hidden" name="session_id" value="<?= (int)($s['id']??0) ?>"><input type="hidden" name="revision" value="<?= (int)($v['revision']??$s['revision']??0) ?>"><input type="hidden" name="series_revision" value="<?= (int)($series['revision']??0) ?>"><input type="hidden" name="request_key" value="<?= $h($v['request_key']??'') ?>">
