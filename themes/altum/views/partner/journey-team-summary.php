@@ -7,7 +7,9 @@ $mpAttention = count($mpOverview['groups']['help']) + count($mpOverview['groups'
 <section class="fp-panel mp-team-summary">
  <div>
   <span class="fp-eyebrow"><?= htmlspecialchars(fcc_t('TVOJI SURADNICI NA MOJEM PUTU'), ENT_QUOTES, 'UTF-8') ?></span>
-  <strong><?= $mpAttention ? htmlspecialchars(sprintf(fcc_t('Suradnici kojima je danas potrebna tvoja poruka: %d.'), $mpAttention), ENT_QUOTES, 'UTF-8') : htmlspecialchars(fcc_t('Tvoji suradnici napreduju.'), ENT_QUOTES, 'UTF-8') ?></strong>
+  <?php /* Custom code: FC-2026-10-15: waiting for a reply does not imply that someone has progressed. */ ?>
+  <strong><?= $mpAttention ? htmlspecialchars(sprintf(fcc_t('Suradnici kojima je danas potrebna tvoja poruka: %d.'), $mpAttention), ENT_QUOTES, 'UTF-8') : htmlspecialchars(fcc_mp_followup_text('quiet'), ENT_QUOTES, 'UTF-8') ?></strong>
+  <?php /* /Custom code: FC-2026-10-15 */ ?>
   <small><?= htmlspecialchars(sprintf(fcc_t('Izravnih suradnika: %d · u programu: %d · aktivnih ovaj tjedan: %d'), (int)$mpOverview['total'], (int)$mpOverview['in_program'], (int)$mpOverview['active_week']), ENT_QUOTES, 'UTF-8') ?></small>
  </div>
  <a class="fp-button<?= $mpAttention ? '' : ' fp-button-outline' ?>" href="<?= url('partner?view=team-progress') ?>"><?= htmlspecialchars(fcc_t('Otvori napredak suradnika →'), ENT_QUOTES, 'UTF-8') ?></a>

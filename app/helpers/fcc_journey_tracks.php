@@ -436,10 +436,12 @@ function fcc_mp_member_progress(array $ids): array {
  foreach(fcc_partner_rows("SELECT u.user_id,u.name,r.first_entered_at FROM users u LEFT JOIN fcc_partner_rollout_access r ON r.user_id=u.user_id WHERE u.user_id IN ($in) AND u.status=1", $ids) as $u) {
   $out[(int)$u['user_id']] = ['user_id'=>(int)$u['user_id'], 'name'=>$u['name'], 'entered'=>!empty($u['first_entered_at']), 'cycle'=>false, 'completed'=>0, 'last_done'=>null, 'started_at'=>null, 'last_title'=>'', 'track'=>null, 'help'=>false, 'help_title'=>'', 'hard'=>false];
  }
- foreach(fcc_partner_rows("SELECT c.user_id,c.started_at,COUNT(o.outcome_id) completed,MAX(o.action_date) last_done FROM fcc_partner_journey_cycles c LEFT JOIN forever_business_daily_outcomes o ON o.journey_cycle_id=c.id AND o.status='done' WHERE c.user_id IN ($in) AND c.status IN ('active','completed') GROUP BY c.id", $ids) as $c) {
+ /* Custom code: FC-2026-10-15: when old cycles exist, the latest cycle consistently wins. */
+ foreach(fcc_partner_rows("SELECT c.user_id,c.started_at,COUNT(o.outcome_id) completed,MAX(o.action_date) last_done FROM fcc_partner_journey_cycles c LEFT JOIN forever_business_daily_outcomes o ON o.journey_cycle_id=c.id AND o.status='done' WHERE c.user_id IN ($in) AND c.status IN ('active','completed') GROUP BY c.id ORDER BY c.id", $ids) as $c) {
   if(!isset($out[(int)$c['user_id']])) continue;
   $out[(int)$c['user_id']] = array_replace($out[(int)$c['user_id']], ['cycle'=>true, 'completed'=>(int)$c['completed'], 'last_done'=>$c['last_done'], 'started_at'=>$c['started_at']]);
  }
+ /* /Custom code: FC-2026-10-15 */
  foreach(fcc_partner_rows("SELECT o.recorded_by_user_id uid,s.content_json FROM forever_business_daily_outcomes o JOIN fcc_partner_journey_steps s ON s.id=o.journey_step_id WHERE o.outcome_id IN (SELECT MAX(outcome_id) FROM forever_business_daily_outcomes WHERE recorded_by_user_id IN ($in) AND journey_cycle_id IS NOT NULL AND status='done' GROUP BY recorded_by_user_id)", $ids) as $r) {
   if(isset($out[(int)$r['uid']])) $out[(int)$r['uid']]['last_title'] = (string)((json_decode($r['content_json'], true) ?: [])['title'] ?? '');
  }
@@ -458,31 +460,40 @@ function fcc_mp_member_progress(array $ids): array {
 }
 
 /** Grouped overview of a sponsor's direct members for the sponsor view and the Today panel. */
-function fcc_mp_sponsor_overview(int $sponsor): array {
+/* Custom code: FC-2026-10-15: contacts suppress reminders, never a new request for help. */
+function fcc_mp_sponsor_overview(int $sponsor, ?DateTimeImmutable $now = null): array {
  $members = fcc_mp_direct_members($sponsor);
  $groups = ['help'=>[], 'inactive'=>[], 'not_started'=>[], 'progress'=>[], 'not_entered'=>[]];
- if(!$members) return ['groups'=>$groups, 'total'=>0, 'in_program'=>0, 'active_week'=>0];
+ if(!$members) return ['groups'=>$groups, 'contacted'=>[], 'total'=>0, 'in_program'=>0, 'active_week'=>0];
  $progress = fcc_mp_member_progress(array_keys($members));
- $today = new DateTimeImmutable('today', new DateTimeZone('Europe/Zagreb'));
+ $now = fcc_mp_followup_now($now);
+ $today = $now->setTimezone(new DateTimeZone('Europe/Zagreb'))->setTime(0, 0);
+ $primary = fcc_team_primary($sponsor, fcc_mp_graph());
+ $followups = fcc_mp_followup_read($primary, array_keys($progress), $now)['states'] ?? [];
+ $contacted = [];
  $inProgram = 0; $activeWeek = 0;
  foreach($progress as $uid => $p) {
   $p['phone'] = !empty($members[$uid]['contact_confirmed']) ? (string)($members[$uid]['phone'] ?? '') : '';
   $p['days_idle'] = $p['last_done'] ? (int)$today->diff(new DateTimeImmutable($p['last_done'], new DateTimeZone('Europe/Zagreb')))->days : null;
   if($p['cycle']) $inProgram++;
   if($p['days_idle'] !== null && $p['days_idle'] <= 7) $activeWeek++;
-  if(!$p['entered'] || !$p['cycle']) $groups['not_entered'][] = $p;
-  elseif($p['help'] || $p['hard']) $groups['help'][] = $p;
-  elseif($p['completed'] === 0) $groups['not_started'][] = $p;
-  elseif($p['completed'] < 90 && $p['days_idle'] !== null && $p['days_idle'] >= 3) $groups['inactive'][] = $p;
-  else $groups['progress'][] = $p;
+  $p['followup'] = $followups[$uid];
+  $group = fcc_mp_followup_group($p);
+  if(in_array($group, ['inactive', 'not_started', 'not_entered'], true) && !$p['followup']['due']) $contacted[] = $p;
+  else $groups[$group][] = $p;
  }
  foreach($groups as &$list) usort($list, static fn($a, $b) => [$b['completed'], $a['name']] <=> [$a['completed'], $b['name']]);
  unset($list);
- return ['groups'=>$groups, 'total'=>count($progress), 'in_program'=>$inProgram, 'active_week'=>$activeWeek];
+ usort($contacted, static fn($a, $b) => [$a['followup']['attempt'], $a['followup']['due_at'], $a['name']] <=> [$b['followup']['attempt'], $b['followup']['due_at'], $b['name']]);
+ return ['groups'=>$groups, 'contacted'=>$contacted, 'total'=>count($progress), 'in_program'=>$inProgram, 'active_week'=>$activeWeek];
 }
+/* /Custom code: FC-2026-10-15 */
 
 function fcc_mp_member_message(string $group, array $member): string {
  $first = explode(' ', trim((string)$member['name']))[0] ?? '';
+ /* Custom code: FC-2026-10-15: a gentle second message after the first waiting period. */
+ if(in_array($group, ['inactive','not_started','not_entered'], true) && (int)($member['followup']['attempt'] ?? 0) === 1) return fcc_mp_followup_text('second_message', ['{name}' => $first]);
+ /* /Custom code: FC-2026-10-15 */
  return match($group) {
   'help' => sprintf(fcc_t('Bok %s! Vidim da ti je zapelo na koraku „%s”. Kada možemo kratko proći zajedno?'), $first, $member['help_title'] ?: $member['last_title']),
   'inactive' => sprintf(fcc_t('Bok %s! Kako ide Moj put? Ako ti treba pomoć sa sljedećim korakom, tu sam.'), $first),
@@ -493,7 +504,9 @@ function fcc_mp_member_message(string $group, array $member): string {
 
 /** Weekly summary for sponsors on Monday morning, one notification per sponsor and week. */
 function fcc_mp_weekly_summaries(?DateTimeImmutable $now = null): int {
- $now = ($now ?? new DateTimeImmutable('now'))->setTimezone(new DateTimeZone('Europe/Zagreb'));
+ /* Custom code: FC-2026-10-15: reminders and their persisted contact times share the database clock. */
+ $now = fcc_mp_followup_now($now)->setTimezone(new DateTimeZone('Europe/Zagreb'));
+ /* /Custom code: FC-2026-10-15 */
  if($now->format('N') !== '1' || (int)$now->format('G') < 8 || !function_exists('fcc_jp_schema') || !fcc_jp_schema()) return 0;
  $week = $now->format('o-\WW');
  $graph = fcc_mp_graph();
@@ -506,12 +519,12 @@ function fcc_mp_weekly_summaries(?DateTimeImmutable $now = null): int {
  $sent = 0;
  foreach($bySponsor as $sid => $ids) {
   if(fcc_partner_one('SELECT 1 FROM fcc_partner_notifications WHERE user_id=? AND event_key=?', [$sid, 'mp:weekly:'.$week])) continue;
-  $progress = fcc_mp_member_progress($ids);$moved = 0;$waiting = 0;$help = 0;
-  foreach($progress as $p) {
-   if($p['help'] || $p['hard']) $help++;
-   if($p['last_done'] && $p['last_done'] >= $now->modify('-7 days')->format('Y-m-d')) $moved++;
-   elseif($p['completed'] < 90) $waiting++;
-  }
+  /* Custom code: FC-2026-10-15: the weekly reminder uses the same actionable counts as Today. */
+  $overview = fcc_mp_sponsor_overview($sid, $now);
+  $moved = $overview['active_week'];
+  $waiting = count($overview['groups']['inactive']) + count($overview['groups']['not_started']);
+  $help = count($overview['groups']['help']);
+  /* /Custom code: FC-2026-10-15 */
   [$title, $body] = fcc_mp_notice_copy('weekly', ['moved'=>$moved, 'waiting'=>$waiting, 'help'=>$help]);
   fcc_partner_notify($sid, 'mp:weekly:'.$week, 'team', $title, $body, 'partner?view=team-progress', 3 * 86400);
   $sent++;

@@ -143,7 +143,7 @@ class Partner extends Controller {
     $target=$this->mutate($uid,$section,$_POST);
     fcc_los_event($uid,fcc_los_module('partner',$section,(string)($_GET['type']??'')),$losAction,'success',$losRequest);
     try{fcc_rel_usage($uid,$section,true);}catch(\Throwable $ignored){}
-    if(!in_array($_POST['action']??'',['pilot_open','card_delete_prepare','card_delete_cancel','mp_track','mp_stuck','mp_feedback','mp_help_resolve'],true)) { /* Custom code: FC-2026-10-14: the resolution has its own success notice. */
+    if(!in_array($_POST['action']??'',['pilot_open','card_delete_prepare','card_delete_cancel','mp_track','mp_stuck','mp_feedback','mp_help_resolve','mp_followup'],true)) { /* Custom code: FC-2026-10-15: help and contact confirmations have their own success notice. */
      $message=match($_POST['action']??'') {
       'pilot_draft'=>'Tvoj nacrt je spremljen.',
       'pilot_finish'=>'Korak je spremljen. Tvoj napredak je ažuriran.',
@@ -466,6 +466,9 @@ class Partner extends Controller {
   if($action==='mp_feedback'){$answer=fcc_mp_feedback($uid,$input);\Altum\Alerts::add_success($answer==='help'?fcc_t('Hvala. Sponzor je obaviješten da trebaš pomoć.'):fcc_t('Hvala na odgovoru.'));return 'partner';}
   /* Custom code: FC-2026-10-14: explicit sponsor resolution uses the common authenticated CSRF path. */
   if($action==='mp_help_resolve'){fcc_mp_help_resolve($uid,$input);\Altum\Alerts::add_success(fcc_mp_help_text('done'));return 'partner?view=team-progress';}
+  /* Custom code: FC-2026-10-15: only an authenticated CSRF checked POST confirms a sent message. */
+  if($action==='mp_followup'){$saved=fcc_mp_followup_record($uid,$input);$notice=!$saved['changed']?'already':(($input['followup_operation']??'sent')==='undo'?'undone':($saved['attempt']===1?'saved_first':'saved_second'));\Altum\Alerts::add_success(fcc_mp_followup_text($notice));return 'partner?view=team-progress';}
+  /* /Custom code: FC-2026-10-15 */
   /* /Custom code: FC-2026-10-14 */
   if($action==='mp_celebration'){fcc_mp_celebration_respond($uid,$input);return 'partner';}
   if($action==='mp_rhythm'){fcc_mp_rhythm_save($uid,$input);return 'partner';}

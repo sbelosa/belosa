@@ -34,6 +34,25 @@
 .mp-member-main small{color:var(--fp-muted,#4d6a61);overflow-wrap:anywhere}
 .mp-member-main progress{width:100%;max-width:280px;height:6px;accent-color:#155845}
 .mp-member-actions{display:flex;flex-wrap:wrap;gap:8px}
+/* Custom code: FC-2026-10-15: contact confirmation stays distinct from opening and copying a message. */
+.mp-followup-intro{max-width:72ch;margin:0 0 20px;line-height:1.6}
+.mp-member-actions:has(.mp-followup-form){max-width:440px}
+.mp-followup-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin:4px 0 0;padding-top:12px;border-top:1px solid var(--fp-line,#d5e4dc);flex-basis:100%}
+.mp-followup-form small{font-size:12px;line-height:1.5;color:var(--fp-muted,#4d6a61);overflow-wrap:anywhere}
+.mp-followup-due{margin-top:6px;font-size:13px;color:var(--fp-green,#177968)}
+.mp-followup-form.mp-followup-undo{display:block;border:0;padding:0;margin:0;text-align:right}
+.mp-followup-undo-button{font:inherit;font-size:12px;line-height:1.5;color:var(--fp-muted,#4d6a61);background:transparent;border:0;cursor:pointer;min-height:44px;padding:8px 0;text-decoration:underline;text-underline-offset:3px}
+.mp-followup-undo-button:hover{color:var(--fp-ink,#173f36)}
+.mp-followup-undo-button:focus-visible,.mp-followup-history>summary:focus-visible{outline:2px solid var(--fp-green,#177968);outline-offset:4px}
+.mp-followup-undo-button:disabled{opacity:.55;cursor:wait}
+.mp-followup-history{margin-top:20px}
+.mp-followup-history>summary{display:flex;align-items:center;gap:12px;cursor:pointer;font-size:17px;color:var(--fp-ink,#173f36);min-height:44px}
+.mp-followup-history>summary::after{content:"";width:8px;height:8px;margin-left:auto;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+.mp-followup-history[open]>summary::after{transform:rotate(225deg)}
+.mp-followup-history>summary::-webkit-details-marker{display:none}
+.mp-followup-history .mp-followup-status{font-weight:600;color:var(--fp-ink,#173f36)}
+@media(max-width:640px){.mp-member-actions:has(.mp-followup-form){max-width:none}.mp-followup-form{grid-template-columns:1fr;gap:8px}.mp-followup-form .fp-button{width:100%}.mp-followup-form.mp-followup-undo{text-align:left}.mp-followup-history .mp-member-actions{width:auto}}
+/* /Custom code: FC-2026-10-15 */
 /* Custom code: FC-2026-10-14: explicit help resolution fits the existing mobile action stack. */
 .mp-help-resolution{display:grid;gap:8px;margin:0;flex-basis:100%;max-width:100%}
 .mp-help-resolution small{color:var(--fp-muted,#4d6a61);max-width:440px;overflow-wrap:anywhere}

@@ -131,6 +131,9 @@ jobs:
           php scripts/test_journey_tracks.php
           # Custom code: FC-2026-10-14: resolved help preserves history and reopens only on a new request.
           php scripts/test_fcc_sponsor_help.php
+          # Custom code: FC-2026-10-15: two explicit sponsor messages between actual completed steps.
+          php scripts/test_fcc_sponsor_followup.php
+          # /Custom code: FC-2026-10-15
           # /Custom code: FC-2026-10-14
           # New FCC card: styles, PRO gating, core blocks and block guide
           php scripts/test_fcc_card.php

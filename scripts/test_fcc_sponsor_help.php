@@ -28,6 +28,10 @@ if($formerWindowControl) {
     if($controlChanges !== 1) throw new RuntimeException('Former-window negative control no longer matches the frozen helper.');
 }
 eval('namespace FccSponsorHelpOffline; use InvalidArgumentException, RuntimeException, Throwable, Exception, DateTime, DateTimeImmutable, DateTimeZone;' . substr($code, 5));
+/* Custom code: FC-2026-10-15: overview now composes the contact projection with the unchanged help projection. */
+$followupCode = (string) file_get_contents(APP_PATH . 'helpers/fcc_sponsor_followup.php');
+eval('namespace FccSponsorHelpOffline; use InvalidArgumentException, RuntimeException, Throwable, DateTimeImmutable, DateTimeZone;' . substr($followupCode, 5));
+/* /Custom code: FC-2026-10-15 */
 foreach(['fcc_mp_help_project', 'fcc_mp_help_token'] as $required) {
     if(!function_exists(__NAMESPACE__ . '\\' . $required)) throw new RuntimeException('Frozen helper required: ' . $required);
 }
@@ -123,6 +127,9 @@ final class MemoryDatabase {
 }
 function database(): MemoryDatabase { static $db; return $db ??= new MemoryDatabase(); }
 function fcc_partner_one(string $sql, array $params = []): ?array {
+    /* Custom code: FC-2026-10-15: the composed overview uses the same database clock as contact events. */
+    if($sql === 'SELECT UTC_TIMESTAMP() followup_now' && $params === []) return ['followup_now' => $GLOBALS['fixture']['now']];
+    /* /Custom code: FC-2026-10-15 */
     if($sql !== "SELECT GET_LOCK('fcc_team_graph',10) ok" || $params !== []) throw new RuntimeException('Unexpected single row query: ' . $sql);
     if(database()->active() || $GLOBALS['fixture']['advisory_acquired']) throw new RuntimeException('Graph advisory lock not acquired before transaction.');
     $GLOBALS['fixture']['sql'][] = [$sql, $params];
@@ -178,6 +185,14 @@ function fcc_partner_query(string $sql, array $params = []): object {
 }
 function fcc_partner_rows(string $sql, array $params = []): array {
     $f = &$GLOBALS['fixture']; $f['sql'][] = [$sql, $params];
+    /* Custom code: FC-2026-10-15: explicit SQL boundaries for the composed contact read. */
+    if(str_starts_with($sql, 'SELECT recorded_by_user_id uid,MAX(outcome_id) outcome_id')) {
+        $anchors = [];
+        foreach($f['outcomes'] as $o) if(in_array($o['recorded_by_user_id'], $params, true) && $o['status'] === 'done' && $o['journey_cycle_id'] !== null && $o['journey_step_id'] !== null) $anchors[$o['recorded_by_user_id']] = max($anchors[$o['recorded_by_user_id']] ?? 0, $o['outcome_id']);
+        $rows = []; foreach($anchors as $uid => $oid) $rows[] = ['uid' => $uid, 'outcome_id' => $oid]; return $rows;
+    }
+    if(str_starts_with($sql, 'SELECT id,user_id,kind,detail,request_key,created_at FROM fcc_partner_pilot_events')) return array_values(array_filter($f['events'], static fn($e) => in_array($e['user_id'], $params, true) && in_array($e['kind'], ['sponsor_contact', 'sponsor_contact_undo'], true)));
+    /* /Custom code: FC-2026-10-15 */
     if(str_starts_with($sql, 'SELECT id,user_id,step_id,kind,detail,request_key,created_at FROM fcc_partner_pilot_events')) {
         if(!preg_match('/created_at>=UTC_TIMESTAMP\(\)-INTERVAL (\d+) DAY/', $sql, $outer)
             || !preg_match('/AND \((.*?) OR created_at>=UTC_TIMESTAMP\(\)-INTERVAL (\d+) DAY\)/', $sql, $inner)) throw new RuntimeException('Event time predicates differ from the allowlisted operation.');

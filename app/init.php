@@ -223,6 +223,9 @@ require_once APP_PATH . 'helpers/fcc_cc_visibility.php';
 require_once APP_PATH . 'helpers/fcc_content_migration.php';
 require_once APP_PATH . 'helpers/fcc_business_invite.php';
 require_once APP_PATH . 'helpers/fcc_journey_tracks.php';
+/* Custom code: FC-2026-10-15: sponsor contact reminders share one durable projection. */
+require_once APP_PATH . 'helpers/fcc_sponsor_followup.php';
+/* /Custom code: FC-2026-10-15 */
 /* /Custom code: FC-2026-10-12 */
 require_once APP_PATH . 'helpers/fcc_team.php';
 require_once APP_PATH . 'helpers/fcc_team_notifications.php';

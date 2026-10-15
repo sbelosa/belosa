@@ -3,6 +3,19 @@
 $uid = (int)$this->user->user_id;
 $mpOverview = fcc_mp_sponsor_overview($uid);
 $mpText = static fn(string $text): string => htmlspecialchars(fcc_t($text), ENT_QUOTES, 'UTF-8');
+/* Custom code: FC-2026-10-15: short, explicit actions with server validated progress snapshots. */
+$mpFollowupText = static fn(string $key, array $values = []): string => htmlspecialchars(fcc_mp_followup_text($key, $values), ENT_QUOTES, 'UTF-8');
+$mpContactForm = static function(array $member, bool $undo = false) use ($token, $h, $mpFollowupText): string {
+ $state = $member['followup']; $attempt = $undo ? $state['attempt'] : $state['attempt'] + 1;
+ $label = $undo ? 'undo' : ($attempt === 1 ? 'first' : 'second');
+ $hint = $undo ? '' : '<small>'.$mpFollowupText($attempt === 1 ? 'first_hint' : 'second_hint').'</small>';
+ return '<form method="post" action="'.url('partner?view=team-progress').'" class="mp-followup-form'.($undo ? ' mp-followup-undo' : '').'">'
+  .$token.'<input type="hidden" name="action" value="mp_followup"><input type="hidden" name="member_id" value="'.(int)$member['user_id'].'">'
+  .'<input type="hidden" name="followup_token" value="'.$h($state['token']).'"><input type="hidden" name="followup_attempt" value="'.$attempt.'">'
+  .'<input type="hidden" name="followup_operation" value="'.($undo ? 'undo' : 'sent').'">'.$hint
+  .'<button type="submit" class="'.($undo ? 'mp-followup-undo-button' : 'fp-button fp-button-outline').'">'.$mpFollowupText($label).'</button></form>';
+};
+/* /Custom code: FC-2026-10-15 */
 $mpGroups = [
  'help' => ['Trebaju tvoju pomoć', 'Javili su da su zapeli ili im je korak bio težak. Javi se danas.'],
  'inactive' => ['Stoje tri dana ili više', 'Kratka poruka podrške često je dovoljna da nastave.'],
@@ -33,6 +46,9 @@ $mpIdle = static function(?int $days): string {
    <div><strong><?= (int)$mpOverview['active_week'] ?></strong><span><?= $mpText('aktivnih ovaj tjedan') ?></span></div>
    <div><strong><?= count($mpOverview['groups']['help']) ?></strong><span><?= $mpText('traži pomoć') ?></span></div>
   </section>
+  <?php /* Custom code: FC-2026-10-15: the contact sequence is explained beside its controls. */ ?>
+  <p class="fp-muted mp-followup-intro"><?= $mpFollowupText('intro') ?></p>
+  <?php /* /Custom code: FC-2026-10-15 */ ?>
   <?php foreach($mpGroups as $mpKey => [$mpTitle, $mpHint]): if(!$mpOverview['groups'][$mpKey]) continue; ?>
    <section class="fp-panel mp-team-group mp-team-<?= $h($mpKey) ?>">
     <div class="fp-section-title"><h2><?= $mpText($mpTitle) ?></h2><span class="fp-count"><?= count($mpOverview['groups'][$mpKey]) ?></span></div>
@@ -48,10 +64,15 @@ $mpIdle = static function(?int $days): string {
         <small><?php if($mpMember['cycle']): ?><?= sprintf($mpText('Dovršeno %d od 90'), (int)$mpMember['completed']) ?><?php if($mpMember['track']): ?> · <?= $mpText(fcc_mp_tracks()[$mpMember['track']]['name']) ?><?php endif ?> · <?= $h($mpIdle($mpMember['days_idle'])) ?><?php else: ?><?= $mpText('Moj put još nije otvoren') ?><?php endif ?></small>
         <?php if($mpMember['cycle']): ?><progress max="90" value="<?= (int)$mpMember['completed'] ?>" aria-label="<?= $mpText('Dovršeni koraci') ?>"></progress><?php endif ?>
         <?php if($mpKey === 'help' && ($mpMember['help_title'] || $mpMember['last_title'])): ?><small class="mp-member-step"><?= $mpText('Korak:') ?> <?= $h(fcc_t($mpMember['help_title'] ?: $mpMember['last_title'])) ?></small><?php elseif($mpMember['last_title']): ?><small class="mp-member-step"><?= $mpText('Zadnje:') ?> <?= $h(fcc_t($mpMember['last_title'])) ?></small><?php endif ?>
+        <?php /* Custom code: FC-2026-10-15: a returning reminder clearly asks for the second message. */ if(in_array($mpKey,['inactive','not_started','not_entered'],true) && $mpMember['followup']['attempt'] === 1): ?><strong class="mp-followup-due"><?= $mpFollowupText('second_due') ?></strong><small><?= $mpFollowupText('sent_at',['{number}'=>'1','{date}'=>fcc_mp_followup_date($mpMember['followup']['sent_at'])]) ?></small><?php endif; /* /Custom code: FC-2026-10-15 */ ?>
        </div>
        <div class="mp-member-actions">
         <?php if($mpPhone !== ''): ?><a class="fp-button" href="<?= $h('https://wa.me/'.$mpPhone.'?text='.rawurlencode($mpMessage)) ?>" target="_blank" rel="noopener"><?= $mpText('Javi se na WhatsApp') ?></a><?php endif ?>
         <button type="button" class="fp-button fp-button-outline" data-copy-value="<?= $h($mpMessage) ?>" data-copy-done="<?= $mpText('Kopirano') ?>"><?= $mpText('Kopiraj poruku') ?></button>
+        <?php /* Custom code: FC-2026-10-15: opening or copying never records a sent contact. */ if(in_array($mpKey,['inactive','not_started','not_entered'],true)): ?>
+         <?= $mpContactForm($mpMember) ?>
+         <?php if($mpMember['followup']['attempt']): ?><?= $mpContactForm($mpMember,true) ?><?php endif ?>
+        <?php endif; /* /Custom code: FC-2026-10-15 */ ?>
         <?php /* Custom code: FC-2026-10-14: only an explicit confirmation retires the visible help snapshot. */ if($mpKey==='help'&&!empty($mpMember['help_token'])): ?>
         <form method="post" action="<?= url('partner?view=team-progress') ?>" class="mp-help-resolution">
          <?= $token ?><input type="hidden" name="action" value="mp_help_resolve"><input type="hidden" name="member_id" value="<?= (int)$mpMember['user_id'] ?>"><input type="hidden" name="help_token" value="<?= $h($mpMember['help_token']) ?>">
@@ -68,6 +89,23 @@ $mpIdle = static function(?int $days): string {
     <?php endforeach ?>
    </section>
   <?php endforeach ?>
+  <?php /* Custom code: FC-2026-10-15: hidden reminders remain inspectable and reversible outside the attention lists. */ if($mpOverview['contacted']): ?>
+   <details class="fp-panel mp-followup-history">
+    <summary><strong><?= $mpFollowupText('history') ?></strong><span class="fp-count"><?= count($mpOverview['contacted']) ?></span></summary>
+    <p class="fp-muted"><?= $mpFollowupText('history_hint') ?></p>
+    <ul class="mp-member-list">
+     <?php foreach($mpOverview['contacted'] as $mpMember): $mpFollowup=$mpMember['followup']; ?>
+      <li class="mp-member">
+       <div class="mp-member-main"><strong><?= $h($mpMember['name']) ?></strong>
+        <small><?= $mpFollowupText('sent_at',['{number}'=>(string)$mpFollowup['attempt'],'{date}'=>fcc_mp_followup_date($mpFollowup['sent_at'])]) ?></small>
+        <small class="mp-followup-status"><?= $mpFollowup['attempt']===1 ? $mpFollowupText('waiting',['{date}'=>fcc_mp_followup_date($mpFollowup['due_at'])]) : $mpFollowupText('paused') ?></small>
+       </div>
+       <div class="mp-member-actions"><?= $mpContactForm($mpMember,true) ?></div>
+      </li>
+     <?php endforeach ?>
+    </ul>
+   </details>
+  <?php endif; /* /Custom code: FC-2026-10-15 */ ?>
   <p class="fp-muted mp-team-privacy"><?= $mpText('Vidiš samo izravne suradnike s potvrđenom vezom u FCC-u. Ne prikazujemo sadržaj njihovih poruka ni bilježaka.') ?></p>
  <?php endif ?>
 </div>
