@@ -393,6 +393,12 @@ $forever_blocks = [
     ],
 ];
 
+/* Custom code: FC-2026-10-16: use one HTML limit in the editor and server without changing the plugin. */
+if(isset($pro_blocks['custom_html'])) {
+    $pro_blocks['custom_html']['max_length'] = \Altum\Helpers\FccCustomHtml::MAX_CHARACTERS;
+}
+/* /Custom code: FC-2026-10-16 */
+
 return array_merge(
     $default_blocks,
     $forever_blocks,

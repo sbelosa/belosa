@@ -10,12 +10,18 @@
 
     <div class="form-group">
         <label for="<?= 'custom_html_name_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-signature fa-sm text-muted mr-1"></i> <?= l('biolink_link.name') ?></label>
-        <input id="<?= 'custom_html_name_' . $row->biolink_block_id ?>" type="text" name="name" class="form-control" value="<?= $row->settings->name ?>" maxlength="128" />
+        <!-- Custom code: FC-2026-10-16: keep the block name inside its attribute. -->
+        <input id="<?= 'custom_html_name_' . $row->biolink_block_id ?>" type="text" name="name" class="form-control" value="<?= htmlspecialchars((string) $row->settings->name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" maxlength="128" />
+        <!-- /Custom code: FC-2026-10-16 -->
     </div>
 
     <div class="form-group">
         <label for="<?= 'custom_html_html_' . $row->biolink_block_id ?>"><i class="fas fa-fw fa-code fa-sm text-muted mr-1"></i> <?= l('biolink_custom_html.html') ?></label>
-        <textarea id="<?= 'custom_html_html_' . $row->biolink_block_id ?>" name="html" class="form-control" maxlength="<?= $data->biolink_blocks['custom_html']['max_length'] ?>"><?= $row->settings->html ?></textarea>
+        <!-- Custom code: FC-2026-10-16: preserve HTML source and validate Unicode character limits. -->
+        <textarea id="<?= 'custom_html_html_' . $row->biolink_block_id ?>" name="html" class="form-control" data-limit-message="<?= htmlspecialchars(\Altum\Helpers\FccCustomHtml::message('length'), ENT_QUOTES, 'UTF-8') ?>" oninput="this.nextElementSibling.querySelector('[data-html-count]').textContent = Array.from(this.value).length.toLocaleString(); this.setCustomValidity(Array.from(this.value).length > <?= \Altum\Helpers\FccCustomHtml::MAX_CHARACTERS ?> ? this.dataset.limitMessage : '')">
+<?= htmlspecialchars((string) $row->settings->html, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></textarea>
+        <small class="form-text text-muted"><span data-html-count aria-live="polite"><?= number_format(mb_strlen(str_replace(["\r\n", "\r"], "\n", (string) $row->settings->html), 'UTF-8'), 0, ',', '.') ?></span> / 50.000. <?= htmlspecialchars(\Altum\Helpers\FccCustomHtml::message('hint'), ENT_QUOTES, 'UTF-8') ?></small>
+        <!-- /Custom code: FC-2026-10-16 -->
     </div>
 
     <button class="btn btn-block btn-gray-300 my-4" type="button" data-toggle="collapse" data-target="#<?= 'display_settings_container_' . $row->biolink_block_id ?>" aria-expanded="false" aria-controls="<?= 'display_settings_container_' . $row->biolink_block_id ?>">

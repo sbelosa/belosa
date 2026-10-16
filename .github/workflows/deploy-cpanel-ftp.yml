@@ -140,6 +140,9 @@ jobs:
           # /Custom code: FC-2026-10-14
           # New FCC card: styles, PRO gating, core blocks and block guide
           php scripts/test_fcc_card.php
+          # Custom code: FC-2026-10-16: complete HTML source, Unicode limits and rejected saves.
+          php scripts/test_custom_html_limits.php
+          # /Custom code: FC-2026-10-16
           php scripts/test_fcc_card_editor.php
           # Custom code: FC-2026-10-15: repeated AJAX saves must not acquire the global submit lock.
           node scripts/test_fcc_card_editor_submit.mjs

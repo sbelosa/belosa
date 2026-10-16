@@ -2814,39 +2814,61 @@ class BiolinkBlockAjax extends Controller {
 
     private function create_biolink_custom_html() {
         $_POST['link_id'] = (int) $_POST['link_id'];
-        $_POST['html'] = mb_substr(trim($_POST['html']), 0, $this->biolink_blocks['custom_html']['max_length']);
+        /* Custom code: FC-2026-10-16: reject oversized HTML instead of silently cutting code. */
+        try {
+            $_POST['html'] = \Altum\Helpers\FccCustomHtml::validate($_POST['html'] ?? null);
+        } catch(\InvalidArgumentException $exception) {
+            Response::json(\Altum\Helpers\FccCustomHtml::message($exception->getMessage()), 'error');
+        }
+        /* /Custom code: FC-2026-10-16 */
 
         if(!$link = db()->where('link_id', $_POST['link_id'])->where('user_id', $this->user->user_id)->getOne('links')) {
             die();
         }
 
         $type = 'custom_html';
-        $settings = json_encode([
-			'name' => '',
-            'html' => $_POST['html'],
+        /* Custom code: FC-2026-10-16: validate the complete serialized settings before database writes. */
+        try {
+            $settings = \Altum\Helpers\FccCustomHtml::encode([
+                'name' => '',
+                'html' => $_POST['html'],
 
-            /* Display settings */
-            'display_continents' => [],
-            'display_countries' => [],
-            'display_cities' => [],
-            'display_devices' => [],
-            'display_languages' => [],
-            'display_operating_systems' => [],
-            'display_browsers' => [],
-        ]);
+                /* Display settings */
+                'display_continents' => [],
+                'display_countries' => [],
+                'display_cities' => [],
+                'display_devices' => [],
+                'display_languages' => [],
+                'display_operating_systems' => [],
+                'display_browsers' => [],
+            ]);
+        } catch(\InvalidArgumentException $exception) {
+            Response::json(\Altum\Helpers\FccCustomHtml::message($exception->getMessage()), 'error');
+        }
+        /* /Custom code: FC-2026-10-16 */
 
-        $settings = $this->process_biolink_theme_id_settings($link, $settings, $type);
+        /* Custom code: FC-2026-10-16: custom HTML is not themable; persist the validated settings unchanged. */
+        /* /Custom code: FC-2026-10-16 */
 
         /* Database query */
-        db()->insert('biolinks_blocks', [
-            'user_id' => $this->user->user_id,
-            'link_id' => $_POST['link_id'],
-            'type' => $type,
-            'location_url' => null,
-            'settings' => $settings,
-            'order' => settings()->links->biolinks_new_blocks_position == 'top' ? -$this->total_biolink_blocks : $this->total_biolink_blocks,
-            'datetime' => get_date(),
-        ]);
+        /* Custom code: FC-2026-10-16: report database failures without claiming that the HTML was saved. */
+        try {
+            $saved = db()->insert('biolinks_blocks', [
+                'user_id' => $this->user->user_id,
+                'link_id' => $_POST['link_id'],
+                'type' => $type,
+                'location_url' => null,
+                'settings' => $settings,
+                'order' => settings()->links->biolinks_new_blocks_position == 'top' ? -$this->total_biolink_blocks : $this->total_biolink_blocks,
+                'datetime' => get_date(),
+            ]);
+        } catch(\Throwable $exception) {
+            $saved = false;
+        }
+        if(!$saved) {
+            Response::json(\Altum\Helpers\FccCustomHtml::message('save'), 'error');
+        }
+        /* /Custom code: FC-2026-10-16 */
 
         /* Clear the cache */
         cache()->deleteItem('biolink_blocks?link_id=' . $_POST['link_id']);
@@ -2856,7 +2878,13 @@ class BiolinkBlockAjax extends Controller {
 
     private function update_biolink_custom_html() {
         $_POST['biolink_block_id'] = (int) $_POST['biolink_block_id'];
-        $_POST['html'] = mb_substr(trim($_POST['html']), 0, $this->biolink_blocks['custom_html']['max_length']);
+        /* Custom code: FC-2026-10-16: reject oversized HTML instead of silently cutting code. */
+        try {
+            $_POST['html'] = \Altum\Helpers\FccCustomHtml::validate($_POST['html'] ?? null);
+        } catch(\InvalidArgumentException $exception) {
+            Response::json(\Altum\Helpers\FccCustomHtml::message($exception->getMessage()), 'error');
+        }
+        /* /Custom code: FC-2026-10-16 */
 		$_POST['name'] = mb_substr(query_clean($_POST['name']), 0, 128);
 
         /* Display settings */
@@ -2866,33 +2894,49 @@ class BiolinkBlockAjax extends Controller {
             die();
         }
 
-        $settings = json_encode([
-			'html' => $_POST['html'],
-			'name' => $_POST['name'],
+        /* Custom code: FC-2026-10-16: validate the complete serialized settings before database writes. */
+        try {
+            $settings = \Altum\Helpers\FccCustomHtml::encode([
+                'html' => $_POST['html'],
+                'name' => $_POST['name'],
 
-            /* Display settings */
-            'display_continents' => $_POST['display_continents'],
-            'display_countries' => $_POST['display_countries'],
-            'display_cities' => $_POST['display_cities'],
-            'display_devices' => $_POST['display_devices'],
-            'display_languages' => $_POST['display_languages'],
-            'display_operating_systems' => $_POST['display_operating_systems'],
-            'display_browsers' => $_POST['display_browsers'],
-        ]);
+                /* Display settings */
+                'display_continents' => $_POST['display_continents'],
+                'display_countries' => $_POST['display_countries'],
+                'display_cities' => $_POST['display_cities'],
+                'display_devices' => $_POST['display_devices'],
+                'display_languages' => $_POST['display_languages'],
+                'display_operating_systems' => $_POST['display_operating_systems'],
+                'display_browsers' => $_POST['display_browsers'],
+            ]);
+        } catch(\InvalidArgumentException $exception) {
+            Response::json(\Altum\Helpers\FccCustomHtml::message($exception->getMessage()), 'error');
+        }
+        /* /Custom code: FC-2026-10-16 */
 
         /* Database query */
-        db()->where('biolink_block_id', $_POST['biolink_block_id'])->update('biolinks_blocks', [
-            'settings' => $settings,
-            'start_date' => $_POST['start_date'],
-            'end_date' => $_POST['end_date'],
-            'last_datetime' => get_date(),
-        ]);
+        /* Custom code: FC-2026-10-16: keep ownership filtering and report failed updates. */
+        try {
+            $saved = db()->where('biolink_block_id', $_POST['biolink_block_id'])->where('user_id', $this->user->user_id)->update('biolinks_blocks', [
+                'settings' => $settings,
+                'start_date' => $_POST['start_date'],
+                'end_date' => $_POST['end_date'],
+                'last_datetime' => get_date(),
+            ]);
+        } catch(\Throwable $exception) {
+            $saved = false;
+        }
+        if(!$saved) {
+            Response::json(\Altum\Helpers\FccCustomHtml::message('save'), 'error');
+        }
+        /* /Custom code: FC-2026-10-16 */
 
         /* Clear the cache */
         cache()->deleteItem('biolink_blocks?link_id=' . $biolink_block->link_id);
 
         Response::json(l('global.success_message.update2'), 'success');
     }
+
 
     private function create_biolink_vcard() {
         $_POST['link_id'] = (int) $_POST['link_id'];
@@ -10032,7 +10076,7 @@ class BiolinkBlockAjax extends Controller {
         Response::json('', 'success', ['url' => url('link/' . $_POST['link_id'] . '?tab=blocks')]);        
     }
 
-    
+
     private function create_biolink_link_save_contact() {
         $_POST['link_id'] = (int) $_POST['link_id'];
         $_POST['location_url'] = get_url($_POST['location_url']);

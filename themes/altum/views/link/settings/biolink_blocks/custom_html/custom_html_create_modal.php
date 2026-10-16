@@ -23,7 +23,10 @@
 
                     <div class="form-group">
                         <label for="custom_html_html"><i class="fas fa-fw fa-code fa-sm text-muted mr-1"></i> <?= l('biolink_custom_html.html') ?></label>
-                        <textarea id="custom_html_html" name="html" class="form-control" maxlength="<?= $data->biolink_blocks['custom_html']['max_length'] ?>"></textarea>
+                        <!-- Custom code: FC-2026-10-16: preserve HTML source and validate Unicode character limits. -->
+                        <textarea id="custom_html_html" name="html" class="form-control" data-limit-message="<?= htmlspecialchars(\Altum\Helpers\FccCustomHtml::message('length'), ENT_QUOTES, 'UTF-8') ?>" oninput="this.nextElementSibling.querySelector('[data-html-count]').textContent = Array.from(this.value).length.toLocaleString(); this.setCustomValidity(Array.from(this.value).length > <?= \Altum\Helpers\FccCustomHtml::MAX_CHARACTERS ?> ? this.dataset.limitMessage : '')"></textarea>
+                        <small class="form-text text-muted"><span data-html-count aria-live="polite">0</span> / 50.000. <?= htmlspecialchars(\Altum\Helpers\FccCustomHtml::message('hint'), ENT_QUOTES, 'UTF-8') ?></small>
+                        <!-- /Custom code: FC-2026-10-16 -->
                     </div>
 
                     <p class="small text-muted"><i class="fas fa-fw fa-sm fa-circle-info mr-1"></i> <?= l('link.create_info') ?></p>
